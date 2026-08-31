@@ -1,0 +1,322 @@
+@import 'tailwindcss';
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Incillum — the pre-launch surface.
+
+   One page, two typefaces, no colour. Everything below is either a token or a
+   pattern used more than twice; nothing here is a one-off.
+
+   The whole visual argument rests on three decisions:
+
+     1. A text serif set very large, at its single available weight, doing the
+        display work. No bold cut exists and none is synthesised — the size is
+        what carries the emphasis, which is why the hero can be quiet and still
+        be the loudest thing on the page.
+     2. A grotesk for everything a person operates: body, labels, controls.
+     3. No third voice, no accent hue, no gradient. Contrast is the only
+        emphasis available, so it has to be spent carefully.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Typefaces ────────────────────────────────────────────────────────────
+ *
+ * Self-hosted, served from the bundle: no third-party request in the critical
+ * path, and nothing to declare in a CSP beyond `font-src 'self'`. The `url()`s
+ * are relative to *this file*, which is what lets Vite hash and emit them
+ * through the CSS import chain.
+ *
+ * The files keep their original hashed names. Those names are the only
+ * provenance the binaries carry, and both licences exclude renaming.
+ *
+ * ⚠ LICENSING — READ BEFORE LAUNCH. These are another company's licensed web
+ * fonts, lifted from their site. They are correct for this design and they are
+ * not ours to ship on a commercial domain. Before incillum.com is public,
+ * either license these families or swap them: every reference in the codebase
+ * goes through `--font-display` and `--font-sans` below, so the swap is this
+ * block plus two lines, and nothing else in the project needs to change.
+ */
+@font-face {
+  font-family: 'Incillum Sans';
+  src: url('./fonts/HarveySansDiatypeVariable-s.p.3gw33igtr422g.woff2') format('woff2');
+  font-weight: 200 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Incillum Serif';
+  src: url('./fonts/subset_HarveySerif_Regular-s.p.3fyyxyg4mmi3v.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Incillum Serif';
+  src: url('./fonts/subset_HarveySerif_Italic-s.p.3vy99-_efieb4.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ── Raw values ───────────────────────────────────────────────────────────
+ *
+ * Declared on `:root` rather than inside `@theme` so the inverted scope below
+ * can reference the same values without redeclaring any of them.
+ *
+ * The paper is warm rather than neutral: #F7F7F5 against a pure-white browser
+ * chrome reads as paper, and against #FFFFFF content it gives the one step of
+ * elevation this palette can afford. The ink stops short of #000000 for the
+ * same reason a printer does — pure black on a light field vibrates at display
+ * sizes, and 8% off is invisible as a colour and calmer as a mass.
+ *
+ * Every text value is measured against the lightest surface it can land on:
+ *
+ *   ink-900 on paper       17.4:1     display and body
+ *   ink-600 on paper        9.1:1     secondary prose
+ *   ink-400 on paper        4.8:1     labels and captions — clears AA at 12px
+ *
+ * ink-400 is the floor. Anything quieter than this is a border, never type.
+ */
+:root {
+  --ic-paper: #f7f7f5;
+  --ic-paper-raised: #ffffff;
+  --ic-paper-sunken: #efefec;
+
+  --ic-ink-900: #111110;
+  --ic-ink-800: #1c1c1a;
+  --ic-ink-600: #45453f;
+  --ic-ink-400: #6e6e66;
+  --ic-ink-200: #a3a39a;
+
+  --ic-line: rgba(17, 17, 16, 0.11);
+  --ic-line-strong: rgba(17, 17, 16, 0.22);
+
+  /* Motion. Two durations and one curve — a page this quiet needs no more. */
+  --ic-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --ic-fast: 160ms;
+  --ic-slow: 520ms;
+}
+
+@theme inline {
+  --color-paper: var(--ic-paper);
+  --color-paper-raised: var(--ic-paper-raised);
+  --color-paper-sunken: var(--ic-paper-sunken);
+
+  --color-ink: var(--ic-ink-900);
+  --color-ink-800: var(--ic-ink-800);
+  --color-ink-600: var(--ic-ink-600);
+  --color-ink-400: var(--ic-ink-400);
+  --color-ink-200: var(--ic-ink-200);
+
+  --color-line: var(--ic-line);
+  --color-line-strong: var(--ic-line-strong);
+
+  --font-display: 'Incillum Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino,
+    Georgia, 'Times New Roman', serif;
+  --font-sans: 'Incillum Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    Roboto, Helvetica, Arial, sans-serif;
+
+  /* ── Type scale ─────────────────────────────────────────────────────────
+   *
+   * Four serif steps and four sans steps. The serif steps all sit near a 1.0
+   * line-height because the face has short descenders and a large x-height,
+   * and a display line set at 1.2 opens a gap the eye reads as two paragraphs.
+   *
+   * ── How --text-display was sized ──────────────────────────────────────
+   *
+   * Not by eye. The headline has to break in one specific place — after
+   * "doesn't", where the sense breaks — and both the size and the growth rate
+   * are derived from that.
+   *
+   * The face averages ~0.467em per character on this line, so "Finance work
+   * doesn't" (20 characters) occupies about 9.34em. The hero's left column is
+   * seven of twelve tracks with a 4rem gutter, which works out at ~0.53 of the
+   * viewport. Setting 9.34em ≤ 0.53vw and solving gives 5.67vw; 5.6vw is that
+   * with a little slack, and it holds the two-line break from roughly 900px
+   * upward rather than only at one width.
+   *
+   * The 4.5rem ceiling is where that rate meets the 1360px measure. Going
+   * larger pushes "keep" onto a third line and leaves "hours." alone on it,
+   * which is the exact orphan the ratio above exists to prevent.
+   */
+  --text-display: clamp(2.625rem, 5.6vw, 4.5rem);
+  --text-display--line-height: 1.02;
+  --text-display--font-weight: 400;
+  --text-display--letter-spacing: -0.021em;
+
+  --text-title: clamp(1.875rem, 3.3vw, 2.875rem);
+  --text-title--line-height: 1.06;
+  --text-title--font-weight: 400;
+  --text-title--letter-spacing: -0.018em;
+
+  --text-heading: clamp(1.25rem, 1.6vw, 1.5rem);
+  --text-heading--line-height: 1.2;
+  --text-heading--font-weight: 400;
+  --text-heading--letter-spacing: -0.012em;
+
+  --text-quote: clamp(1.125rem, 1.5vw, 1.375rem);
+  --text-quote--line-height: 1.42;
+  --text-quote--font-weight: 400;
+  --text-quote--letter-spacing: -0.008em;
+
+  --text-lede: 1.0625rem;
+  --text-lede--line-height: 1.6;
+  --text-lede--font-weight: 400;
+  --text-lede--letter-spacing: -0.004em;
+
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.62;
+  --text-body--font-weight: 400;
+
+  --text-small: 0.8125rem;
+  --text-small--line-height: 1.5;
+  --text-small--font-weight: 400;
+
+  /* The only tracked-out style on the page. Reserved for section labels. */
+  --text-label: 0.75rem;
+  --text-label--line-height: 1rem;
+  --text-label--font-weight: 500;
+  --text-label--letter-spacing: 0.1em;
+
+  /* Controls and buttons — sans, slightly tighter than body, never smaller. */
+  --text-ui: 0.9375rem;
+  --text-ui--line-height: 1.25rem;
+  --text-ui--font-weight: 500;
+  --text-ui--letter-spacing: -0.006em;
+
+  --radius-control: 6px;
+  --radius-panel: 12px;
+
+  --container-measure: 1360px;
+}
+
+/* ── The inverted scope ───────────────────────────────────────────────────
+ *
+ * One dark region on the page, and it re-points the same tokens rather than
+ * introducing a parallel set — so a button, a border or a piece of muted text
+ * inside it rethemes without the component knowing where it landed.
+ *
+ * The values are not the light ones flipped. Ink at 89% lightness on a dark
+ * field glares; the paper tones step down, and the muted tone steps *up* to
+ * #9C9C93 (5.2:1 on the panel) because a grey that clears AA on paper does not
+ * clear it here.
+ */
+[data-inverted] {
+  --ic-paper: #131312;
+  --ic-paper-raised: #1b1b19;
+  --ic-paper-sunken: #0d0d0c;
+
+  --ic-ink-900: #f2f2ee;
+  --ic-ink-800: #e2e2dc;
+  --ic-ink-600: #b6b6ad;
+  --ic-ink-400: #9c9c93;
+  --ic-ink-200: #6a6a63;
+
+  --ic-line: rgba(242, 242, 238, 0.13);
+  --ic-line-strong: rgba(242, 242, 238, 0.26);
+
+  background-color: var(--ic-paper);
+  color: var(--ic-ink-900);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--ic-paper);
+    color: var(--ic-ink-900);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    /* Diatype's default figures are proportional; the clock needs columns. */
+    font-feature-settings: 'ss01';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /**
+   * Every heading on this page is the serif. Set here rather than per-element
+   * so a heading added later cannot silently arrive in the grotesk.
+   */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+  }
+
+  /**
+   * One focus ring, everywhere, and it is never removed. `:focus-visible`
+   * keeps it off a mouse click and on for a keyboard tab, which is the only
+   * version of this that both designers and keyboard users accept.
+   */
+  :focus-visible {
+    outline: 2px solid var(--ic-ink-900);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: var(--ic-ink-900);
+    color: var(--ic-paper);
+  }
+}
+
+@layer components {
+  /** Figures that have to line up in a column: the clock, the hour scale. */
+  .ic-tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  /**
+   * The page's one entrance.
+   *
+   * Runs once on load, staggered by `--ic-enter-delay`, and only ever touches
+   * opacity and a 10px translate — both composited, neither able to affect
+   * layout. It is applied to the hero only: the sections below it are already
+   * on the page by the time anybody scrolls to them, and animating those would
+   * be decorating rather than explaining.
+   */
+  .ic-enter {
+    animation: ic-enter var(--ic-slow) var(--ic-ease) both;
+    animation-delay: var(--ic-enter-delay, 0ms);
+  }
+
+  @keyframes ic-enter {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 10px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/**
+ * Reduced motion is a hard stop, not a slower version. Content renders in its
+ * final state; nothing translates, nothing fades in, and the smooth scroll on
+ * `html` reverts to an instant jump.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .ic-enter {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
