@@ -82,6 +82,103 @@ export const instrument = {
 } as const
 
 /**
+ * The outline: what it will do, and how you will work with it.
+ *
+ * ── Why this is ten short lines and not five long ones ─────────────────────
+ *
+ * The full version of this material — five capabilities, each a paragraph with
+ * a schematic drawing beside it, plus a section of its own on interaction —
+ * exists on the `groundwork/full-capabilities` branch, and belongs on the
+ * product site when there is one. It is deliberately not here.
+ *
+ * A pre-launch page has one job, and a five-screen product tour in the middle
+ * of it competes with that job rather than supporting it. What a visitor needs
+ * before handing over an address is *the idea* — enough to know whether this is
+ * for them — and the idea fits in a line each.
+ *
+ * ── The tense, and why it is safe ──────────────────────────────────────────
+ *
+ * The section's lede puts everything below into the future: this is what the
+ * operator is *being built* to do. Once that is established, the entries can be
+ * written in the plain present tense of a specification, which is how anybody
+ * describes software under construction and is far easier to read than ten
+ * separately hedged lines.
+ *
+ * That contract is load-bearing. Delete the lede and these entries stop being a
+ * specification and start being a claim.
+ *
+ * ── Why every capability names a limit ─────────────────────────────────────
+ *
+ * Not inferred · nothing posts · no money moves · it hands the case over. The
+ * reader most worth convincing is a controller whose first question about any
+ * of this is "and what happens when it is wrong", and a capability list that
+ * never answers it is a brochure.
+ */
+export const outline = {
+  label: 'What it is being built to do',
+  /**
+   * Short enough to break in two lines at this section's measure. The longer
+   * version — "The work, end to end — and how you direct it." — took three, and
+   * broke across the em dash, which left "— and how you" stranded as a line of
+   * its own.
+   */
+  headline: 'The work, and how you direct it.',
+  lede: 'None of this has shipped. It is the specification the finance operator is being built against, in the order a piece of work moves through it.',
+
+  does: {
+    label: 'What it will do',
+    points: [
+      {
+        title: 'Read what arrives',
+        body: 'A PDF, a phone photo of a delivery note, a spreadsheet, or three lines in the body of an email. Fields it cannot find are listed as not found, never inferred.',
+      },
+      {
+        title: 'Match it three ways',
+        body: 'Invoice against purchase order against goods receipt, with the break named — quantity, price, a receipt that never arrived — before anybody opens the case.',
+      },
+      {
+        title: 'Build the schedule underneath',
+        body: 'Accruals, reconciliations and the payment run, assembled continuously instead of in the last four days of a month. Nothing posts and no money moves.',
+      },
+      {
+        title: 'Write it up so it can be read',
+        body: 'A close pack or a variance note in the format your team already sends, with each figure carrying a link back to the document it came from.',
+      },
+      {
+        title: 'Work the inbox you already have',
+        body: 'Forward it a thread and it picks the work up there — asking the supplier, filing the reply, coming back when the answer changes something.',
+      },
+    ],
+  },
+
+  working: {
+    label: 'How you will work with it',
+    points: [
+      {
+        title: 'Ask in a sentence',
+        body: '“Chase everything over sixty days from the top twenty suppliers.” No query syntax, no rule builder, no configuration screen in between.',
+      },
+      {
+        title: 'Tell it the rule once',
+        body: 'How your company codes a cost centre, which suppliers need two approvals, what counts as a tolerable variance. Applied to every case afterwards.',
+      },
+      {
+        title: 'It shows the working',
+        body: 'Not a confidence score. What it read, which document each figure came from, which rule applied, and what it did as a result.',
+      },
+      {
+        title: 'It stops rather than guesses',
+        body: 'When the evidence does not settle a question it hands the case over, with the question narrowed to the one thing it needs from you.',
+      },
+      {
+        title: 'The hundredth case is like the first',
+        body: 'A person triaging exceptions is slower on the fortieth than the first, and month-end is exactly when the volume arrives.',
+      },
+    ],
+  },
+} as const
+
+/**
  * The frame-correction section.
  *
  * Everybody arrives at an "AI for finance" page with a chatbot in their head,

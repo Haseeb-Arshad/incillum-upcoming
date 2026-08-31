@@ -51,6 +51,43 @@ export function Rule({ className }: { className?: string }) {
 }
 
 /**
+ * A labelled column of term-and-description pairs.
+ *
+ * Two sections are built from this — what it will do against how you direct it,
+ * and what it is against what it is not — and both put two of these side by
+ * side so the reader compares rather than infers. It lives here rather than
+ * inside either section because the second one to be written would otherwise
+ * have copied the first, and the two would have drifted on exactly the details
+ * that are invisible until a screen reader hits them.
+ *
+ * A real `<dl>`, not a stack of headings: each entry genuinely is a term and its
+ * description, and marking it up that way is what lets a screen reader move
+ * through the pairs as pairs.
+ */
+export function DefinitionColumn({
+  label,
+  points,
+}: {
+  label: string
+  points: ReadonlyArray<{ title: string; body: string }>
+}) {
+  return (
+    <div>
+      <Label className="border-b border-line-strong pb-4">{label}</Label>
+
+      <dl>
+        {points.map((point) => (
+          <div key={point.title} className="flex flex-col gap-2.5 border-b border-line py-7">
+            <dt className="max-w-[26ch] text-heading text-ink">{point.title}</dt>
+            <dd className="max-w-[48ch] text-body text-ink-600">{point.body}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )
+}
+
+/**
  * The arrow that rides in the primary button.
  *
  * Drawn inline rather than pulled from an icon package: it inherits

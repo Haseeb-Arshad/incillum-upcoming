@@ -20,6 +20,10 @@ export default tseslint.config(
       'dist/**',
       '.output/**',
       '.nitro/**',
+      // Nitro's Vercel adapter emits a bundled copy of the whole server here.
+      // It is generated, it is gitignored, and every file in it fails to parse
+      // because none of them are in the tsconfig project.
+      '.vercel/**',
       '.tanstack/**',
       'test-results/**',
       'playwright-report/**',

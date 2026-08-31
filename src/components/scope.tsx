@@ -1,4 +1,4 @@
-import { Container, Label } from '#/components/primitives.tsx'
+import { Container, DefinitionColumn, Label } from '#/components/primitives.tsx'
 import { scope } from '#/content/site.ts'
 
 /**
@@ -18,33 +18,11 @@ import { scope } from '#/content/site.ts'
  * pre-launch page. One that names its own limits before anyone asks is the only
  * kind a finance team has a reason to believe.
  *
- * Marked up as two `<dl>`s rather than two stacks of headings, because each
- * entry genuinely is a term and its description — which is what lets a screen
- * reader move through the six points as six pairs.
+ * It runs *after* `Outline` on purpose. A reader who has just been shown what
+ * something does is in a position to hear which of it a chatbot could not have
+ * done; the same words arriving first would be an argument with nothing to
+ * push against.
  */
-function Column({
-  label,
-  points,
-}: {
-  label: string
-  points: ReadonlyArray<{ title: string; body: string }>
-}) {
-  return (
-    <div>
-      <Label className="border-b border-line-strong pb-4">{label}</Label>
-
-      <dl>
-        {points.map((point) => (
-          <div key={point.title} className="flex flex-col gap-2.5 border-b border-line py-7">
-            <dt className="max-w-[26ch] text-heading text-ink">{point.title}</dt>
-            <dd className="max-w-[48ch] text-body text-ink-600">{point.body}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
-  )
-}
-
 export function Scope() {
   return (
     <section aria-labelledby="scope-heading" className="pb-20 sm:pb-28">
@@ -57,8 +35,8 @@ export function Scope() {
         </div>
 
         <div className="mt-12 grid gap-x-16 gap-y-10 sm:mt-16 lg:grid-cols-2">
-          <Column label={scope.is.label} points={scope.is.points} />
-          <Column label={scope.isNot.label} points={scope.isNot.points} />
+          <DefinitionColumn label={scope.is.label} points={scope.is.points} />
+          <DefinitionColumn label={scope.isNot.label} points={scope.isNot.points} />
         </div>
       </Container>
     </section>
