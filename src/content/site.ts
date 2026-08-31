@@ -61,22 +61,127 @@ export const instrument = {
    * Three shifts, each a real piece of finance operations work, each stated as
    * intent. The times illustrate *when the work arrives*; they are not claims
    * about anything the software has done.
+   *
+   * Kept to one sentence each. They used to run three, and every one of those
+   * extra sentences said something `capabilities` below now says properly, with
+   * a drawing beside it — so the same material was on the page twice, once
+   * badly. These say *when*; that section says *what*.
    */
   shifts: [
     {
       at: '23:40',
       title: 'An invoice lands after the last person has logged off.',
-      body: 'Read, coded to the right account and cost centre, and matched against the purchase order and the goods receipt. If the three agree it is ready to post. If they do not, it becomes an exception with the discrepancy already written down.',
+      body: 'By morning it is either ready to post or an exception with the discrepancy already written down.',
     },
     {
       at: '03:15',
       title: 'A payment run has to be ready for the morning cut-off.',
-      body: 'Assembled, checked against the vendor master and the duplicate history, then split into the batch that is clean and the batch that needs somebody. Nothing is released — releasing money is a person’s decision, by design.',
+      body: 'Assembled, checked and split into the batch that is clean and the batch that needs somebody. Nothing is released.',
     },
     {
       at: '06:50',
       title: 'The exception nobody has looked at gets chased.',
-      body: 'The supplier is asked for what is missing, the reply is filed against the case, and the evidence is attached. By the time the team is back it is a decision rather than an investigation.',
+      body: 'By the time the team is back it is a decision rather than an investigation.',
+    },
+  ],
+} as const
+
+/**
+ * What it does with the work.
+ *
+ * ── The tense, and why it is safe ──────────────────────────────────────────
+ *
+ * The section's own label and lede put everything below into the future: this
+ * is what the operator is *being built* to do. Once that is established, the
+ * individual entries can be written in the plain present tense of a
+ * specification, which is how anybody describes software under construction and
+ * is far easier to read than five paragraphs each hedging separately.
+ *
+ * That contract is load-bearing. If somebody ever deletes the lede, these
+ * entries stop being a specification and start being a claim.
+ *
+ * ── Why each one names a limit ─────────────────────────────────────────────
+ *
+ * Every entry says what it does *and* where it stops — the fields it could not
+ * find, the batch it will not release, the case it hands over. A capability
+ * list without limits is a brochure, and the reader most worth convincing here
+ * is a controller whose first question about any of this is "and what happens
+ * when it is wrong".
+ */
+export const capabilities = {
+  label: 'What it is being built to do',
+  headline: 'The work, in five parts.',
+  lede: 'None of this is shipped. It is the specification the finance operator is being built against, in the order a piece of work moves through it.',
+
+  items: [
+    {
+      figure: 'intake',
+      title: 'Read what actually arrives',
+      body: 'A supplier sends a PDF, a phone photo of a delivery note, a spreadsheet, or three lines in the body of an email. It reads all of them and pulls out what matters — supplier, dates, currency, tax, line items, the PO reference buried in a subject line.',
+      limit: 'The fields it could not find are listed as not found, never inferred to keep a record looking complete.',
+    },
+    {
+      figure: 'match',
+      title: 'Match it three ways',
+      body: 'Invoice against purchase order against goods receipt. When the three agree the case is ready to post. When they disagree, the break is named before anybody opens it — a quantity short, a price above tolerance, a receipt that never arrived.',
+      limit: 'A break is never closed by choosing the most likely answer. It becomes an exception with the working attached.',
+    },
+    {
+      figure: 'schedule',
+      title: 'Build the schedule underneath',
+      body: 'Accruals, prepayments, supplier statement reconciliations, the payment run. The arithmetic a team otherwise assembles by hand in the last four days of a month, assembled continuously instead, with every figure traceable to the document it came from.',
+      limit: 'Nothing posts and no money moves. The run is prepared for a person to release.',
+    },
+    {
+      figure: 'report',
+      title: 'Write it up so it can be read',
+      body: 'A close pack, a variance note, an ageing summary — in the format your team already sends, with each number carrying a link back to its evidence. Finished enough to read, rather than finished enough to start editing.',
+      limit: 'A figure it could not source is shown as unsourced rather than quietly rounded into a total.',
+    },
+    {
+      figure: 'inbox',
+      title: 'Work from the inbox you already have',
+      body: 'Forward it a thread and it picks the work up there: it asks the supplier for what is missing, files the reply against the case, and comes back to you when the answer changes something. There is no second inbox to check and no new place to look.',
+      limit: 'It writes to suppliers about facts and documents. Anything that commits the company goes out from a person.',
+    },
+  ],
+} as const
+
+/**
+ * How you work with it.
+ *
+ * The section that answers the question `scope` provokes. Once a reader has
+ * accepted that this is not a chat window, the very next thought is *then how
+ * do I tell it anything* — and leaving that unanswered is how a good frame
+ * correction turns into a page that sounds evasive.
+ *
+ * Five short entries rather than five paragraphs. This runs late on the page,
+ * after roughly four screens of argument, and by here a reader is scanning.
+ */
+export const working = {
+  label: 'Working with it',
+  headline: 'You talk to it like a colleague, and it answers like an auditor.',
+
+  points: [
+    {
+      title: 'Ask in a sentence',
+      body: '“Chase everything over sixty days from the top twenty suppliers.” No query syntax, no rule builder, no configuration screen between you and the work.',
+    },
+    {
+      title: 'Tell it the rule once',
+      body: 'How your company codes a cost centre, which suppliers need two approvals, what counts as a tolerable price variance. Written down once, applied to every case, and changed deliberately rather than re-explained each morning.',
+    },
+    {
+      title: 'It shows the working',
+      body: 'Not a confidence score. What it read, which document each figure came from, which rule applied, and what it did as a result — in that order, on the case itself.',
+    },
+    {
+      title: 'It stops rather than guesses',
+      body: 'When the evidence does not settle a question it hands the case over, with the question narrowed to the one thing it needs from you. A short answer is worth more than a confident wrong one.',
+    },
+    {
+      title: 'It runs the same at four thousand as at forty',
+      body: 'A person triaging exceptions is slower on the fortieth than the first, and month-end is exactly when the volume arrives. Nothing about the hundredth case here is different from the first.',
     },
   ],
 } as const

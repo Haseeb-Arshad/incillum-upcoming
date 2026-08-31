@@ -14,10 +14,18 @@ import { brand } from '#/content/site.ts'
  * for. What is left is the minimum a stranger needs: who is asking, what stage
  * this is, and the action.
  *
- * Not sticky. Sticky chrome earns its pixels on a long document where a reader
- * loses the top; this page is four screens and the action is in the first one.
- * A bar that follows you down four screens to offer something already on screen
- * is furniture.
+ * Sticky, which it was not at first and should have been sooner. The original
+ * reasoning — that a bar following you down a short page to offer something
+ * already on screen is furniture — was sound when the page was four screens.
+ * The capability and interaction sections took it past eight, and past about
+ * five the form is genuinely gone: a reader who is convinced by §04 has to
+ * scroll back through three sections to act on it. A single button that is
+ * always there is the cheapest possible fix.
+ *
+ * `bg-paper` is solid rather than translucent-with-blur. A backdrop filter over
+ * a page whose entire surface is one flat off-white buys no depth, costs a
+ * compositing layer on every scroll frame, and produces a faint seam where the
+ * blurred strip meets the identical colour beneath it.
  *
  * The stage sits beside the wordmark as a plain label rather than a pill with a
  * pulsing dot. It is a fact about where the company is, and setting it as a
@@ -25,7 +33,7 @@ import { brand } from '#/content/site.ts'
  */
 export function Masthead() {
   return (
-    <header className="border-b border-line">
+    <header className="sticky top-0 z-40 border-b border-line bg-paper">
       <Container className="flex h-[72px] items-center justify-between gap-6 sm:h-20">
         <div className="flex items-baseline gap-3 sm:gap-4">
           {/*
