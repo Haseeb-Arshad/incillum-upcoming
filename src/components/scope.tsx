@@ -1,4 +1,5 @@
 import { Container, DefinitionColumn, Label } from '#/components/primitives.tsx'
+import { Reveal } from '#/components/reveal.tsx'
 import { scope } from '#/content/site.ts'
 
 /**
@@ -27,17 +28,17 @@ export function Scope() {
   return (
     <section aria-labelledby="scope-heading" className="pb-20 sm:pb-28">
       <Container>
-        <div className="flex max-w-[40ch] flex-col gap-5">
+        <Reveal className="flex max-w-[40ch] flex-col gap-5">
           <Label>{scope.label}</Label>
           <h2 id="scope-heading" className="text-title text-ink">
             {scope.headline}
           </h2>
-        </div>
+        </Reveal>
 
-        <div className="mt-12 grid gap-x-16 gap-y-10 sm:mt-16 lg:grid-cols-2">
+        <Reveal delay={80} className="mt-12 grid gap-x-16 gap-y-10 sm:mt-16 lg:grid-cols-2">
           <DefinitionColumn label={scope.is.label} points={scope.is.points} />
           <DefinitionColumn label={scope.isNot.label} points={scope.isNot.points} />
-        </div>
+        </Reveal>
       </Container>
     </section>
   )

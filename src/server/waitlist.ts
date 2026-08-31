@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 
 import { createReference, heuristicSpamProtection } from '#/lib/spam.ts'
 import { waitlistSchema } from '#/lib/waitlist.ts'
+import { waitlistNotifier } from '#/server/notify.ts'
 
 import type { WaitlistResult } from '#/lib/waitlist.ts'
 
@@ -10,29 +11,23 @@ import type { WaitlistResult } from '#/lib/waitlist.ts'
  *
  * Runs on the server only. It re-validates the payload with the same schema the
  * browser used — the client check exists to give fast feedback, not to decide
- * anything — evaluates the spam signals, and records the request.
+ * anything — evaluates the spam signals, and delivers the record.
  *
- * NOTE FOR THE NEXT ENGINEER: there is no mailing list, no CRM and no backend
- * wired up yet, so a successful submission is written to the server log and
- * nothing else. Replacing the `console.info` below is the whole of the
- * remaining work; the validation, the verdict and the reference are not
- * scaffolding, and the shape of this handler should not change when a real
- * store arrives.
+ * ── Where a signup actually goes ───────────────────────────────────────────
  *
- * Until that lands, **the page must not promise more than a log file can
- * keep.** The success state says we have the address and will write once; it
- * never says "check your inbox", because nothing sends a confirmation.
+ * To an inbox, via `server/notify.ts`. There is still no database, and for a
+ * pre-launch list of a few hundred an inbox is a legitimate system of record:
+ * readable, searchable, and repliable in one keystroke. When a real store
+ * arrives it slots in beside the notifier rather than replacing it.
+ *
+ * The mail goes to *us*. Nothing is sent to the person who joined, which is why
+ * the success state on the form still refuses to say "check your inbox" — see
+ * `waitlist-form.tsx`. Sending a confirmation is a small addition; promising
+ * one that does not exist is the kind of first impression that is expensive.
  */
 export const joinWaitlist = createServerFn({ method: 'POST' })
   .validator((input: unknown) => waitlistSchema.parse(input))
-  /**
-   * Not `async`. There is nothing to await yet — the whole handler is
-   * synchronous validation plus a log line — and an `async` keyword with no
-   * `await` under it advertises I/O that is not happening. It becomes `async`
-   * the day a real store is called, and that diff will be the honest signal
-   * that the handler started doing something.
-   */
-  .handler(({ data }): WaitlistResult => {
+  .handler(async ({ data }): Promise<WaitlistResult> => {
     const verdict = heuristicSpamProtection.evaluate({
       honeypot: data.companyWebsite ?? '',
       renderedAt: data.renderedAt,
@@ -41,28 +36,47 @@ export const joinWaitlist = createServerFn({ method: 'POST' })
 
     if (!verdict.allowed) {
       /**
-       * A rejected submission gets the same response shape a real one does.
-       * Telling a bot which signal caught it is free tuning information, and a
-       * false positive on a real person is better handled by them emailing us
-       * than by an accusatory error on a one-field form.
+       * A rejected submission gets the same response shape a real one does, and
+       * sends no mail. Telling a bot which signal caught it is free tuning
+       * information, and a false positive on a real person is better handled by
+       * them emailing us than by an accusatory error on a one-field form.
        */
       console.warn('[waitlist] rejected', { reason: verdict.reason })
       return { status: 'joined', reference: createReference('IC') }
     }
 
     const reference = createReference('IC')
-
-    console.info('[waitlist] request received', {
+    const notification = {
       reference,
+      workEmail: data.workEmail,
       firstWorkflow: data.firstWorkflow ?? 'not answered',
+      receivedAt: new Date().toISOString(),
+    }
+
+    try {
+      await waitlistNotifier().send(notification)
+      console.info('[waitlist] joined', {
+        reference,
+        firstWorkflow: notification.firstWorkflow,
+        // Only the domain on the success path. The address is in the mail that
+        // was just delivered, so the log does not need a second copy of it.
+        emailDomain: data.workEmail.split('@')[1] ?? 'unknown',
+      })
+    } catch (error) {
       /**
-       * The address is the only directly identifying field on this form and the
-       * log is not the system of record, so only the domain is written. It is
-       * also the useful half before there is a real store: it says which
-       * companies are asking.
+       * A failed send must never fail the submission.
+       *
+       * From the visitor's side they filled in the form correctly; an error
+       * screen for our misconfigured mail provider would lose the signup *and*
+       * insult them. So the full record — address included, because at this
+       * point the log is the only copy left — goes to `error`, and they are
+       * told they are on the list. Which they are: we have it.
        */
-      emailDomain: data.workEmail.split('@')[1] ?? 'unknown',
-    })
+      console.error('[waitlist] NOTIFICATION FAILED — record follows', {
+        error,
+        notification,
+      })
+    }
 
     return { status: 'joined', reference }
   })

@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import appCss from '#/styles.css?url'
 import { Colophon } from '#/components/colophon.tsx'
 import { Masthead } from '#/components/masthead.tsx'
+import { gtmHeadScript, gtmNoScriptSrc } from '#/lib/analytics.ts'
 import { organizationJsonLd, seoTags } from '#/lib/seo.ts'
 
 import type { ReactNode } from 'react'
@@ -43,7 +44,16 @@ export const Route = createRootRoute({
         { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
         ...base.links,
       ],
-      scripts: [{ type: 'application/ld+json', children: organizationJsonLd() }],
+      /**
+       * Order matters. The GTM loader goes first so its `dataLayer` exists
+       * before anything else on the page could push to it, and `.filter`
+       * removes it entirely when no container is configured — an empty inline
+       * script tag on every page of an unconfigured deployment is litter.
+       */
+      scripts: [
+        gtmHeadScript(),
+        { type: 'application/ld+json', children: organizationJsonLd() },
+      ].filter((script) => script !== null),
     }
   },
   shellComponent: RootDocument,
@@ -91,6 +101,23 @@ function RootDocument({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        {/*
+          GTM's no-script fallback, first in `<body>` as Google requires, so
+          tags still fire for a visitor with JavaScript disabled. `title` is not
+          decoration — an iframe without an accessible name is a serious axe
+          violation, and this one is in the DOM on every page.
+        */}
+        {gtmNoScriptSrc ? (
+          <noscript>
+            <iframe
+              src={gtmNoScriptSrc}
+              title="Google Tag Manager"
+              height="0"
+              width="0"
+              style={{ display: 'none', visibility: 'hidden' }}
+            />
+          </noscript>
+        ) : null}
         {children}
         <Scripts />
       </body>

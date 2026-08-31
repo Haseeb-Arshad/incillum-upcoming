@@ -79,12 +79,12 @@ export function Hero() {
               email" label, which reads as a form that fell out of a page rather
               than as an invitation.
 
-              It names the thing (`the private preview`) while the button names
-              the act (`join the waitlist`), so the two are not two verbs for
-              one action. The success state and the masthead use the same two
-              words for the same two jobs.
+              It names the thing (`early access`) while the button names the
+              act (`join the waitlist`), so the two are never two verbs for one
+              action. The success state uses the same two words for the same two
+              jobs.
             */}
-            <h2 className="text-heading text-ink">The {brand.stage.toLowerCase()}</h2>
+            <h2 className="text-heading text-ink">{brand.access}</h2>
 
             <WaitlistForm />
 

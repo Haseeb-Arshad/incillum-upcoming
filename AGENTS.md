@@ -7,7 +7,7 @@ The operating contract for this repository. Read it before changing code.
 ## 1. What this is
 
 The public site at **incillum.com** while there is no product to show yet. One
-page, one argument, one conversion: an email address for the private preview.
+page, one argument, one conversion: an email address for the waitlist.
 
 It is deliberately **not** a marketing site with the product pages removed. It
 has no navigation, no pricing, no demo and no blog, because a pre-launch site
@@ -27,8 +27,8 @@ incillum/
 ├── src/
 │   ├── content/site.ts        every word the site renders
 │   ├── components/            one file per section, used once each
-│   ├── lib/                   schema, spam heuristic, seo, cn
-│   ├── server/waitlist.ts     the one server function
+│   ├── lib/                   schema, spam heuristic, seo, analytics, cn
+│   ├── server/                the one server function, its env, its notifier
 │   ├── routes/                __root, index, robots, sitemap
 │   ├── fonts/                 self-hosted woff2
 │   └── styles.css             tokens, type scale, the two scopes
@@ -48,10 +48,12 @@ relative import across repositories.
 TanStack Start · React 19 · strict TypeScript · TanStack Router · Tailwind CSS
 v4 · React Hook Form · Zod · Vitest · Playwright.
 
-No component library, no icon package, no animation library, no state manager.
-Each of those was considered and each would be carrying a dependency to solve a
-problem one page does not have. Adding one requires a reason written into the
-file that needs it.
+No component library, no icon package, no animation library, no state manager,
+no analytics SDK, no email SDK. Each was considered and each would be a
+dependency carried to solve a problem one page does not have — the reveal is
+eleven lines of CSS and one IntersectionObserver, the GTM loader is Google's own
+nine lines, and the mail is one `fetch`. Adding a dependency requires a reason
+written into the file that needs it.
 
 ---
 
@@ -70,9 +72,14 @@ carelessly is the fastest way to ruin this page.
   not a second palette, and it is used **once**.
 - Radii are 6px on controls and 12px on the one panel. Nothing else is rounded.
 - Depth comes from hairlines, never from shadows.
-- Motion explains or it does not exist. There is one entrance, on the hero, and
-  one live element, the clock. **Everything must honour
-  `prefers-reduced-motion`.**
+- Motion is restrained and has a job. One page-load entrance on the hero, one
+  scroll reveal per section, one live element (the clock), one arrow nudge and
+  one button press. That is the whole budget — a page where every card lifts and
+  every row slides is a page that is nervous.
+- **Everything must honour `prefers-reduced-motion`,** and honouring it means
+  rendering the final state, not a faster transition. A reveal that starts at
+  `opacity: 0` and depends on a script is worse for that reader than the
+  animation they were avoiding.
 
 ---
 
@@ -99,14 +106,21 @@ rule.
 
 ## 6. The promise the form makes
 
-`server/waitlist.ts` validates, screens for spam, mints a reference and writes
-one line to the server log. **Nothing stores the address and nothing sends a
-confirmation.**
+A signup is validated, screened for spam, given a reference and emailed to us
+(`server/notify.ts`). **Nothing is sent to the person who joined.**
 
-Until that changes, the success state may say we have the address and will write
-once. It may **not** say "check your inbox". There is a test for this. When a
-real store is wired in, replace the `console.info` and keep everything around
-it — the validation, the verdict and the reference are not scaffolding.
+So the success state may say we have the address and will write once. It may
+**not** say "check your inbox" — there is a test for this. Adding a confirmation
+to the joiner is a small change; the copy may change on the commit that adds it
+and not before.
+
+Two rules that go with it:
+
+- **A failed send never fails the submission.** The visitor did nothing wrong.
+  Log the full record at `error` and return success.
+- **The secret split is not negotiable.** `src/env.ts` is inlined into the
+  browser bundle; `src/server/env.ts` is not. An API key in the first one is
+  published, not leaked, and the code looks identical in review.
 
 ---
 

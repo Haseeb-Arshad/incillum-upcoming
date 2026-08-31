@@ -16,10 +16,12 @@ import { z } from 'zod'
  */
 
 /**
- * Free-mail domains are rejected with an explanation rather than silently. The
- * preview is scoped to finance teams; somebody using a personal address is
- * usually in the wrong place, and deserves to be told why rather than left
- * staring at a field that will not accept them.
+ * Free-mail domains are rejected with an explanation rather than silently.
+ *
+ * The list is for finance teams, so a personal address is usually somebody in
+ * the wrong place — and they deserve to be told why rather than left staring at
+ * a field that will not accept them. The rule survived the site going public:
+ * it is not a gate on who may join, it is what makes the list worth having.
  */
 const freeEmailDomains = new Set([
   'gmail.com',
@@ -72,7 +74,7 @@ export const waitlistSchema = z.object({
     .pipe(z.email('That does not look like a valid email address.'))
     .refine(
       isWorkEmail,
-      'Use your work email address — the preview is scoped to finance teams, not individuals.',
+      'Use your work email address — the list is for finance teams rather than individuals.',
     ),
 
   /**

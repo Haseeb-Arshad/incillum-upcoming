@@ -296,6 +296,62 @@
       transform: none;
     }
   }
+
+  /**
+   * Scroll reveal — the CSS half of `components/reveal.tsx`.
+   *
+   * The default state is *visible*. An element only becomes hideable once React
+   * has mounted and set `data-animatable`, which is what stops a blocked or
+   * slow-hydrating page from serving a blank screen. Read the component's
+   * header before changing either selector; the order matters more than it
+   * looks.
+   */
+  .ic-reveal[data-animatable='true'] {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+    transition:
+      opacity var(--ic-slow) var(--ic-ease),
+      transform var(--ic-slow) var(--ic-ease);
+    transition-delay: var(--ic-reveal-delay, 0ms);
+  }
+
+  .ic-reveal[data-animatable='true'][data-revealed='true'] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /**
+   * The arrow inside a primary button.
+   *
+   * Two pixels to the right on hover, on the same curve as everything else. It
+   * is the smallest possible acknowledgement that a control is live, and it is
+   * the only hover movement anywhere on the site — a page where every card
+   * lifts and every row slides is a page that is nervous.
+   *
+   * Guarded by `@media (hover: hover)` so a touch device, where `:hover` sticks
+   * after a tap, never leaves the arrow displaced.
+   */
+  @media (hover: hover) {
+    .ic-cta:hover .ic-cta-arrow {
+      transform: translateX(2px);
+    }
+  }
+
+  .ic-cta-arrow {
+    transition: transform var(--ic-fast) var(--ic-ease);
+  }
+
+  /**
+   * The press.
+   *
+   * One pixel down, and only while the pointer is held. Without it the button
+   * has no active state at all — the colour change on hover is already spent by
+   * the time somebody clicks — and a control that does not acknowledge a press
+   * is the single most common reason a person clicks it twice.
+   */
+  .ic-cta:active {
+    transform: translateY(1px);
+  }
 }
 
 /**
@@ -310,6 +366,28 @@
 
   .ic-enter {
     animation: none;
+  }
+
+  /**
+   * The reveal renders in its final state, not a faster version of the
+   * transition.
+   *
+   * This rule has to exist even though the blanket `transition-duration`
+   * override below would make the fade instant: the element would still start
+   * at `opacity: 0` and depend on an IntersectionObserver firing to become
+   * visible. A reader who has asked for reduced motion would get a page whose
+   * content appears only if a script runs — which is a worse outcome than the
+   * animation they were trying to avoid.
+   */
+  .ic-reveal[data-animatable='true'] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .ic-cta:active,
+  .ic-cta:hover .ic-cta-arrow {
+    transform: none;
   }
 
   *,

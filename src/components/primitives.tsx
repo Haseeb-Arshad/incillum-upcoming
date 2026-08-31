@@ -101,7 +101,10 @@ function ArrowRight() {
       viewBox="0 0 16 16"
       fill="none"
       aria-hidden="true"
-      className="size-[0.875em] shrink-0 translate-y-[0.5px]"
+      // `ic-cta-arrow` is what the parent's hover rule moves. The transform
+      // lives on the glyph rather than the button so the button's own box —
+      // and therefore the pointer target — never shifts under the cursor.
+      className="ic-cta-arrow size-[0.875em] shrink-0 translate-y-[0.5px]"
     >
       <path
         d="M3 8h10M9 4l4 4-4 4"
@@ -132,8 +135,9 @@ type Size = 'md' | 'lg'
  */
 function buttonClasses(tone: Tone, size: Size, className?: string): string {
   return cn(
-    'inline-flex items-center justify-center gap-2 rounded-control text-ui whitespace-nowrap',
-    'transition-[background-color,border-color,color] duration-[160ms] ease-[cubic-bezier(0.32,0.72,0,1)]',
+    // `ic-cta` carries the press and the arrow nudge — see styles.css.
+    'ic-cta inline-flex items-center justify-center gap-2 rounded-control text-ui whitespace-nowrap',
+    'transition-[background-color,border-color,color,transform] duration-[160ms] ease-[cubic-bezier(0.32,0.72,0,1)]',
     'disabled:pointer-events-none disabled:opacity-45',
     size === 'md' && 'h-10 px-4',
     size === 'lg' && 'h-12 px-6',

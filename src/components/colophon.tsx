@@ -1,4 +1,5 @@
 import { Container, Label, TextLink } from '#/components/primitives.tsx'
+import { Reveal } from '#/components/reveal.tsx'
 import { contactEmail } from '#/env.ts'
 import { brand, close } from '#/content/site.ts'
 
@@ -29,7 +30,7 @@ export function Colophon() {
   return (
     <footer className="border-t border-line py-20 sm:py-28">
       <Container>
-        <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
+        <Reveal className="grid gap-10 lg:grid-cols-12 lg:gap-16">
           <div className="flex flex-col gap-5 lg:col-span-7">
             <h2 className="max-w-[16ch] text-title text-ink">{close.headline}</h2>
             <p className="max-w-[52ch] text-lede text-ink-600">{close.body}</p>
@@ -44,7 +45,7 @@ export function Colophon() {
               {contactEmail}
             </TextLink>
           </div>
-        </div>
+        </Reveal>
 
         <div className="mt-16 flex flex-col gap-3 border-t border-line pt-7 sm:mt-20 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-small text-ink-400">

@@ -1,4 +1,5 @@
 import { Container, DefinitionColumn, Label } from '#/components/primitives.tsx'
+import { Reveal } from '#/components/reveal.tsx'
 import { outline } from '#/content/site.ts'
 
 /**
@@ -37,7 +38,7 @@ export function Outline() {
   return (
     <section aria-labelledby="outline-heading" className="pb-20 sm:pb-28">
       <Container>
-        <div className="flex max-w-[42ch] flex-col gap-5">
+        <Reveal className="flex max-w-[42ch] flex-col gap-5">
           <Label>{outline.label}</Label>
           <h2 id="outline-heading" className="text-title text-ink">
             {outline.headline}
@@ -50,12 +51,12 @@ export function Outline() {
             decorative, and it is not a candidate for trimming.
           */}
           <p className="text-lede text-ink-600">{outline.lede}</p>
-        </div>
+        </Reveal>
 
-        <div className="mt-12 grid gap-x-16 gap-y-10 sm:mt-16 lg:grid-cols-2">
+        <Reveal delay={80} className="mt-12 grid gap-x-16 gap-y-10 sm:mt-16 lg:grid-cols-2">
           <DefinitionColumn label={outline.does.label} points={outline.does.points} />
           <DefinitionColumn label={outline.working.label} points={outline.working.points} />
-        </div>
+        </Reveal>
       </Container>
     </section>
   )

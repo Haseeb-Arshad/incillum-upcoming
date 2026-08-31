@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import { Field, Honeypot, Input, Select } from '#/components/field.tsx'
 import { Button } from '#/components/primitives.tsx'
+import { trackEvent } from '#/lib/analytics.ts'
 import { financeWorkflows, waitlistSchema } from '#/lib/waitlist.ts'
 import { joinWaitlist } from '#/server/waitlist.ts'
 
@@ -92,6 +93,26 @@ export function WaitlistForm() {
     try {
       const result = await joinWaitlist({ data: values })
       setSubmitState({ kind: 'success', reference: result.reference })
+
+      /**
+       * The conversion event, and what is deliberately not in it.
+       *
+       * No email address, no reference. `dataLayer` is readable by every tag in
+       * the container and forwarded to whichever vendors are configured there —
+       * so anything pushed here should be assumed to end up in an analytics
+       * product, and a work email address in an analytics product is a data
+       * problem nobody signed up for.
+       *
+       * `first_workflow` is safe: it is one of nine fixed options and says
+       * nothing about who chose it. It is also the only part worth measuring —
+       * it tells you what to build next, which is why the field is on the form
+       * at all.
+       *
+       * A no-op when GTM is unconfigured, so this needs no guard.
+       */
+      trackEvent('waitlist_join', {
+        first_workflow: values.firstWorkflow || 'not_answered',
+      })
     } catch (error) {
       // Never swallow: surface a recovery path, keep the detail in the console.
       console.error('[waitlist] submission failed', error)
@@ -117,7 +138,7 @@ export function WaitlistForm() {
       >
         <p className="text-label uppercase text-ink-400">Request recorded</p>
         <p className="font-display text-heading text-ink">
-          You are on the list for the private preview.
+          You are on the waitlist.
         </p>
         <p className="text-body text-ink-600">
           We will write to you once, when the finance operator is ready for someone

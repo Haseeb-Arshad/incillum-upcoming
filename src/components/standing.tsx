@@ -1,4 +1,5 @@
 import { Container, Label } from '#/components/primitives.tsx'
+import { Reveal } from '#/components/reveal.tsx'
 import { standing } from '#/content/site.ts'
 
 /**
@@ -16,7 +17,7 @@ import { standing } from '#/content/site.ts'
  *
  * The numbering is real: these are sequential, and the order carries
  * information the reader needs — the operator could not be built before the
- * platform under it, and the preview cannot open before the operator runs.
+ * platform under it, and access cannot open before the operator runs.
  * Nothing else on this site is numbered, because nothing else on it is a
  * sequence.
  */
@@ -27,16 +28,18 @@ export function Standing() {
       className="border-t border-line bg-paper-sunken py-20 sm:py-28"
     >
       <Container>
-        <div className="flex max-w-[40ch] flex-col gap-5">
+        <Reveal className="flex max-w-[40ch] flex-col gap-5">
           <Label>{standing.label}</Label>
           <h2 id="standing-heading" className="text-title text-ink">
             {standing.headline}
           </h2>
-        </div>
+        </Reveal>
 
         <ol className="mt-12 border-t border-line-strong sm:mt-16">
           {standing.stages.map((stage, index) => (
-            <li
+            <Reveal
+              as="li"
+              delay={index * 60}
               key={stage.title}
               className="grid gap-x-10 gap-y-3 border-b border-line py-8 sm:grid-cols-12"
             >
@@ -49,7 +52,7 @@ export function Standing() {
               <h3 className="text-heading text-ink sm:col-span-4">{stage.title}</h3>
 
               <p className="text-body text-ink-600 sm:col-span-5">{stage.body}</p>
-            </li>
+            </Reveal>
           ))}
         </ol>
       </Container>

@@ -74,6 +74,19 @@ test.describe('the page', () => {
     }
   })
 
+  /**
+   * The site is public now. A page anybody can reach that calls itself private
+   * is either lying or telling the visitor they are not the audience, and
+   * "private preview" is exactly the phrase that creeps back in one careless
+   * edit at a time.
+   */
+  test('does not describe itself as private', async ({ page }) => {
+    await ready(page)
+    const body = (await page.locator('body').innerText()).toLowerCase()
+    expect(body).not.toContain('private preview')
+    expect(body).not.toContain('invitation only')
+  })
+
   test('claims nothing it cannot evidence', async ({ page }) => {
     await ready(page)
     const body = (await page.locator('body').innerText()).toLowerCase()
@@ -99,6 +112,28 @@ test.describe('the page', () => {
     const declared = /Sitemap: (\S+)/.exec(robotsBody)?.[1]
     expect(declared).toBeTruthy()
     expect(declared).toContain('/sitemap.xml')
+  })
+
+  /**
+   * The suite runs with no `VITE_GTM_ID`, which is also how a preview
+   * deployment and every developer's machine run. Nothing analytics-shaped may
+   * reach the page in that state: no loader, no iframe, no third-party request,
+   * no cookie. This is the test that fails if somebody hard-codes a container
+   * ID rather than configuring one.
+   */
+  test('ships no analytics when no container is configured', async ({ page, request }) => {
+    const thirdParty: Array<string> = []
+    page.on('request', (req) => {
+      if (new URL(req.url()).hostname.endsWith('googletagmanager.com')) {
+        thirdParty.push(req.url())
+      }
+    })
+
+    await ready(page)
+
+    expect(thirdParty).toEqual([])
+    await expect(page.locator('iframe[title="Google Tag Manager"]')).toHaveCount(0)
+    expect(await (await request.get('/')).text()).not.toContain('googletagmanager.com')
   })
 
   test('boots cleanly, with no console errors and no horizontal overflow', async ({ page }) => {
@@ -173,7 +208,7 @@ test.describe('the waitlist form', () => {
 
     await expect(page.getByRole('alert').first()).toBeVisible()
     await expect(emailField(page)).toHaveAttribute('aria-invalid', 'true')
-    await expect(page.getByText(/You are on the list/)).toHaveCount(0)
+    await expect(page.getByText(/You are on the waitlist/)).toHaveCount(0)
   })
 
   test('rejects a personal address with an explanation', async ({ page }) => {
@@ -208,7 +243,7 @@ test.describe('the waitlist form', () => {
     await page.waitForTimeout(PAST_SPAM_GATE_MS)
     await submit(page).click()
 
-    await expect(page.getByText(/You are on the list for the private preview/)).toBeVisible()
+    await expect(page.getByText(/You are on the waitlist/)).toBeVisible()
     await expect(page.getByText(/^IC-[A-Z0-9]+-[A-Z0-9]{3}$/)).toBeVisible()
   })
 
@@ -223,7 +258,7 @@ test.describe('the waitlist form', () => {
     await page.waitForTimeout(PAST_SPAM_GATE_MS)
     await submit(page).click()
 
-    await expect(page.getByText(/You are on the list for the private preview/)).toBeVisible()
+    await expect(page.getByText(/You are on the waitlist/)).toBeVisible()
   })
 
   /**
@@ -237,7 +272,7 @@ test.describe('the waitlist form', () => {
     await page.waitForTimeout(PAST_SPAM_GATE_MS)
     await submit(page).click()
 
-    await expect(page.getByText(/You are on the list/)).toBeVisible()
+    await expect(page.getByText(/You are on the waitlist/)).toBeVisible()
     await expect(page.getByText(/check your inbox/i)).toHaveCount(0)
     await expect(page.getByText(/confirmation email/i)).toHaveCount(0)
   })
@@ -257,6 +292,6 @@ test.describe('the waitlist form', () => {
     await expect(submit(page)).toBeFocused()
     await page.keyboard.press('Enter')
 
-    await expect(page.getByText(/You are on the list/)).toBeVisible()
+    await expect(page.getByText(/You are on the waitlist/)).toBeVisible()
   })
 })

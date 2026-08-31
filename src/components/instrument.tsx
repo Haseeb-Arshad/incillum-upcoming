@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { Container } from '#/components/primitives.tsx'
+import { Reveal } from '#/components/reveal.tsx'
 import { instrument } from '#/content/site.ts'
 
 /**
@@ -135,130 +136,139 @@ export function Instrument() {
   return (
     <section aria-label="A working day, drawn to scale" className="pb-16 sm:pb-24">
       <Container>
-        <div
-          data-inverted=""
-          className="rounded-panel border border-line px-6 py-10 sm:px-12 sm:py-14 lg:px-16 lg:py-16"
-        >
-          {/*
+        {/*
+          `Reveal` wraps the plate rather than being the plate. It takes a fixed
+          set of props and does not spread the rest, so a `data-inverted` passed
+          to it would be silently dropped — TypeScript permits hyphenated
+          attributes on a component without checking them, so nothing would have
+          complained and the dark scope would simply not have applied.
+        */}
+        <Reveal>
+          <div
+            data-inverted=""
+            className="rounded-panel border border-line px-6 py-10 sm:px-12 sm:py-14 lg:px-16 lg:py-16"
+          >
+            {/*
             The drawing is hidden from assistive technology and the caption
             below carries the same information as a sentence. A screen reader
             announcing twenty-five tick marks is noise, and a second description
             of the same clock would be read twice.
           */}
-          <div aria-hidden="true">
-            {/*
+            <div aria-hidden="true">
+              {/*
               The readout rides above the mark. Its horizontal position is
               clamped to 10–90% so a reader arriving at 00:10 or 23:50 gets a
               label inside the plate rather than one hanging off the edge. The
               mark itself is never clamped — the mark is the measurement, and
               moving it would make the drawing lie.
             */}
-            <div className="relative h-[4.5rem] sm:h-20">
-              <div
-                className="absolute bottom-0 flex -translate-x-1/2 flex-col items-center gap-1.5 transition-opacity duration-[520ms]"
-                style={{
-                  left: clock
-                    ? `${Math.min(Math.max((clock.hours / DAY_HOURS) * 100, 10), 90)}%`
-                    : '50%',
-                  opacity: clock ? 1 : 0,
-                }}
-              >
-                <span className="ic-tabular text-[2.25rem] leading-none text-ink sm:text-[2.75rem]">
-                  {clock?.time ?? '00:00'}
-                </span>
-                <span className="text-label uppercase text-ink-400">
-                  {clock?.zone ?? ''}
-                </span>
-              </div>
-            </div>
-
-            <div className="relative h-24 border-y border-line sm:h-28">
-              {/* The working day, at true width. */}
-              <div
-                className="absolute inset-y-0 border-x border-line-strong bg-ink/[0.06]"
-                style={{ left: percent(from), width: percent(to - from) }}
-              >
-                <p className="absolute inset-x-0 bottom-3 px-2 text-center text-label uppercase text-ink-400">
-                  {instrument.occupiedLabel}
-                </p>
+              <div className="relative h-[4.5rem] sm:h-20">
+                <div
+                  className="absolute bottom-0 flex -translate-x-1/2 flex-col items-center gap-1.5 transition-opacity duration-[520ms]"
+                  style={{
+                    left: clock
+                      ? `${Math.min(Math.max((clock.hours / DAY_HOURS) * 100, 10), 90)}%`
+                      : '50%',
+                    opacity: clock ? 1 : 0,
+                  }}
+                >
+                  <span className="ic-tabular text-[2.25rem] leading-none text-ink sm:text-[2.75rem]">
+                    {clock?.time ?? '00:00'}
+                  </span>
+                  <span className="text-label uppercase text-ink-400">
+                    {clock?.zone ?? ''}
+                  </span>
+                </div>
               </div>
 
-              {/* Hour ticks. Major hours run full height; the rest are stubs. */}
-              {Array.from({ length: DAY_HOURS + 1 }, (_, hour) => {
-                const major = (MAJOR_HOURS as ReadonlyArray<number>).includes(hour)
-                return (
-                  <span
-                    key={hour}
-                    className={
-                      major
-                        ? 'absolute inset-y-0 w-px bg-line-strong'
-                        : 'absolute top-0 h-2 w-px bg-line'
-                    }
-                    style={{ left: percent(hour) }}
-                  />
-                )
-              })}
+              <div className="relative h-24 border-y border-line sm:h-28">
+                {/* The working day, at true width. */}
+                <div
+                  className="absolute inset-y-0 border-x border-line-strong bg-ink/[0.06]"
+                  style={{ left: percent(from), width: percent(to - from) }}
+                >
+                  <p className="absolute inset-x-0 bottom-3 px-2 text-center text-label uppercase text-ink-400">
+                    {instrument.occupiedLabel}
+                  </p>
+                </div>
 
-              {/*
+                {/* Hour ticks. Major hours run full height; the rest are stubs. */}
+                {Array.from({ length: DAY_HOURS + 1 }, (_, hour) => {
+                  const major = (MAJOR_HOURS as ReadonlyArray<number>).includes(hour)
+                  return (
+                    <span
+                      key={hour}
+                      className={
+                        major
+                          ? 'absolute inset-y-0 w-px bg-line-strong'
+                          : 'absolute top-0 h-2 w-px bg-line'
+                      }
+                      style={{ left: percent(hour) }}
+                    />
+                  )
+                })}
+
+                {/*
                 The mark: one hairline in the surface's foreground, capped with a
                 small square so it terminates against the rule rather than
                 trailing off. It fades in on mount — opacity only, so a reader
                 who has asked for reduced motion still gets a transition rather
                 than a hard swap, and nothing on the page translates.
               */}
-              <span
-                className="absolute inset-y-0 w-px bg-ink transition-opacity duration-[520ms]"
-                style={{
-                  left: clock ? percent(clock.hours) : '50%',
-                  opacity: clock ? 1 : 0,
-                }}
-              >
-                <span className="absolute -top-px -left-[2px] size-[5px] bg-ink" />
-              </span>
-            </div>
-
-            {/* Numerals, hung from the same coordinates as the ticks. */}
-            <div className="relative h-7">
-              {MAJOR_HOURS.map((hour) => (
                 <span
-                  key={hour}
-                  className="ic-tabular absolute top-2.5 text-label text-ink-400"
+                  className="absolute inset-y-0 w-px bg-ink transition-opacity duration-[520ms]"
                   style={{
-                    left: percent(hour),
-                    /* The first and last hang inside the rule rather than
-                       straddling it, so neither overflows the plate. */
-                    transform:
-                      hour === 0
-                        ? 'none'
-                        : hour === DAY_HOURS
-                          ? 'translateX(-100%)'
-                          : 'translateX(-50%)',
+                    left: clock ? percent(clock.hours) : '50%',
+                    opacity: clock ? 1 : 0,
                   }}
                 >
-                  {String(hour).padStart(2, '0')}
+                  <span className="absolute -top-px -left-[2px] size-[5px] bg-ink" />
                 </span>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          {/*
+              {/* Numerals, hung from the same coordinates as the ticks. */}
+              <div className="relative h-7">
+                {MAJOR_HOURS.map((hour) => (
+                  <span
+                    key={hour}
+                    className="ic-tabular absolute top-2.5 text-label text-ink-400"
+                    style={{
+                      left: percent(hour),
+                      /* The first and last hang inside the rule rather than
+                       straddling it, so neither overflows the plate. */
+                      transform:
+                        hour === 0
+                          ? 'none'
+                          : hour === DAY_HOURS
+                            ? 'translateX(-100%)'
+                            : 'translateX(-50%)',
+                    }}
+                  >
+                    {String(hour).padStart(2, '0')}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/*
             Not a live region. It changes once a minute, and a polite
             announcement every minute for the length of a visit is a page nobody
             can read.
           */}
-          <p className="mt-8 max-w-[52ch] text-lede text-ink sm:mt-10">
-            {clock ? (
-              <>
-                It is <span className="ic-tabular">{clock.time}</span> where you are.{' '}
-                <span className="text-ink-400">
-                  {atDesks ? instrument.atDesks : instrument.awayFromDesks}
-                </span>
-              </>
-            ) : (
-              <span className="text-ink-400">{instrument.unknownTime}</span>
-            )}
-          </p>
-        </div>
+            <p className="mt-8 max-w-[52ch] text-lede text-ink sm:mt-10">
+              {clock ? (
+                <>
+                  It is <span className="ic-tabular">{clock.time}</span> where you are.{' '}
+                  <span className="text-ink-400">
+                    {atDesks ? instrument.atDesks : instrument.awayFromDesks}
+                  </span>
+                </>
+              ) : (
+                <span className="text-ink-400">{instrument.unknownTime}</span>
+              )}
+            </p>
+          </div>
+        </Reveal>
       </Container>
     </section>
   )

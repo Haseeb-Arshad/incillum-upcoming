@@ -17,6 +17,24 @@ const publicEnvSchema = z.object({
   VITE_SITE_URL: z.url().default('http://localhost:3200'),
   /** Address rendered in the colophon and used as the alternative to the form. */
   VITE_CONTACT_EMAIL: z.email().default('hello@incillum.com'),
+  /**
+   * Google Tag Manager container, e.g. `GTM-ABC1234`.
+   *
+   * A container ID is public by design — it ships in the page source of every
+   * site that uses one — so it belongs here rather than in the server-only
+   * module. It is *optional* and empty by default, which is what keeps local
+   * development and the end-to-end suite free of analytics: no ID, no script,
+   * no cookies, no network call.
+   *
+   * The pattern is checked rather than accepted as a free string. A typo in a
+   * container ID does not fail loudly — GTM simply never loads — and that is a
+   * fault you discover weeks later when you go looking for the data.
+   */
+  VITE_GTM_ID: z
+    .string()
+    .regex(/^GTM-[A-Z0-9]+$/, 'Expected a container ID of the form GTM-XXXXXXX.')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
 })
 
 function readPublicEnv(): z.infer<typeof publicEnvSchema> {
@@ -31,6 +49,7 @@ function readPublicEnv(): z.infer<typeof publicEnvSchema> {
   const result = publicEnvSchema.safeParse({
     VITE_SITE_URL: raw.VITE_SITE_URL,
     VITE_CONTACT_EMAIL: raw.VITE_CONTACT_EMAIL,
+    VITE_GTM_ID: raw.VITE_GTM_ID,
   })
 
   if (!result.success) {
@@ -48,6 +67,9 @@ const env = readPublicEnv()
 /** Trailing slash stripped so `${siteUrl}${path}` can never double up. */
 export const siteUrl: string = env.VITE_SITE_URL.replace(/\/$/, '')
 export const contactEmail: string = env.VITE_CONTACT_EMAIL
+
+/** `GTM-XXXXXXX`, or `undefined` when analytics is not configured. */
+export const gtmId: string | undefined = env.VITE_GTM_ID
 
 export function absoluteUrl(path: string): string {
   if (path.startsWith('http')) return path

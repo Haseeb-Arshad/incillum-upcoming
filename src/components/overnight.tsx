@@ -1,4 +1,5 @@
 import { Container, Label, Rule } from '#/components/primitives.tsx'
+import { Reveal } from '#/components/reveal.tsx'
 import { instrument } from '#/content/site.ts'
 
 /**
@@ -18,26 +19,28 @@ export function Overnight() {
   return (
     <section aria-labelledby="overnight-heading" className="pb-20 sm:pb-28">
       <Container>
-        <div className="flex max-w-[44ch] flex-col gap-5">
+        <Reveal className="flex max-w-[44ch] flex-col gap-5">
           <Label>{instrument.label}</Label>
           <h2 id="overnight-heading" className="text-title text-ink">
             {instrument.headline}
           </h2>
           <p className="text-lede text-ink-600">{instrument.lede}</p>
-        </div>
+        </Reveal>
 
         <Rule className="mt-12 sm:mt-16" />
 
         <ol className="grid lg:grid-cols-3">
-          {instrument.shifts.map((shift) => (
-            <li
+          {instrument.shifts.map((shift, index) => (
+            <Reveal
+              as="li"
+              delay={index * 60}
               key={shift.at}
               className="flex flex-col gap-3 border-b border-line py-8 lg:border-r lg:border-b-0 lg:pr-10 lg:last:border-r-0 lg:[&:not(:first-child)]:pl-10"
             >
               <p className="ic-tabular text-label text-ink-400">{shift.at}</p>
               <h3 className="max-w-[26ch] text-heading text-ink">{shift.title}</h3>
               <p className="max-w-[44ch] text-body text-ink-600">{shift.body}</p>
-            </li>
+            </Reveal>
           ))}
         </ol>
       </Container>

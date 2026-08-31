@@ -16,8 +16,20 @@
 export const brand = {
   name: 'Incillum',
   domain: 'incillum.com',
-  /** Sits beside the wordmark. A stage, not a slogan. */
-  stage: 'Private preview',
+  /**
+   * The noun for the thing somebody is joining.
+   *
+   * It was "Private preview", and that came off the site when it went public.
+   * A page anybody can reach that calls itself private is either lying or
+   * telling a visitor they are not the audience — and both readings cost more
+   * than the word was buying. "Early access" says the same thing about the
+   * stage without claiming a door that is not there.
+   *
+   * The masthead no longer prints it at all. The chip beside the wordmark was
+   * the only place on the page that announced a stage instead of describing the
+   * work, and the page is stronger with the wordmark standing on its own.
+   */
+  access: 'Early access',
 } as const
 
 export const hero = {
@@ -250,7 +262,7 @@ export const standing = {
     },
     {
       state: 'Opening',
-      title: 'The private preview',
+      title: 'Early access',
       body: 'A first group of finance teams, one workflow each, run alongside the way they do it today so the two can be compared before anything depends on ours.',
     },
   ],
@@ -265,5 +277,5 @@ export const close = {
 export const seoCopy = {
   title: 'Incillum — an AI coworker for finance operations',
   description:
-    'Incillum is building an AI coworker for finance operations: invoice intake, matching and exceptions, run inside your existing systems, through the hours nobody is in. Join the private preview.',
+    'Incillum is building an AI coworker for finance operations: invoice intake, matching and exceptions, run inside your existing systems, through the hours nobody is in. Join the waitlist.',
 } as const
