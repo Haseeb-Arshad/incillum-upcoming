@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { artifact } from '#/content/site.ts'
+import { access, artifact, direction, hero, outline } from '#/content/site.ts'
 
 /**
  * The example output has to add up.
@@ -119,5 +119,123 @@ describe('the example output', () => {
 
   it('is labelled as an example', () => {
     expect(artifact.label.toLowerCase()).toContain('example')
+  })
+})
+
+/**
+ * The system names, and the discipline holding them.
+ *
+ * NetSuite, Sage Intacct and Xero are the only vendor names on the site, and
+ * naming them is what turns "for finance teams" into a line a controller can
+ * act on. They are also one careless edit from being an integrations claim,
+ * which AGENTS.md §5 forbids outright.
+ *
+ * Two things keep them honest, and both are asserted here: they appear in
+ * exactly two places, and each of those places carries a sentence putting it in
+ * the future. The failure mode is not somebody writing "integrations" — it is a
+ * third mention appearing somewhere with no tense contract around it, most
+ * likely in `direction`, where a list of instructions with a system under each
+ * one would read as a connector grid.
+ */
+describe('the vendor names', () => {
+  const ERPS = ['NetSuite', 'Sage Intacct', 'Xero']
+
+  /** Every string in the deck, flattened, with the two licensed homes removed. */
+  function everywhereElse(): string {
+    const { qualifier: _qualifier, ...restOfHero } = hero
+    const { lede: _lede, ...restOfOutline } = outline
+    return JSON.stringify([restOfHero, restOfOutline, direction, artifact, access])
+  }
+
+  it('names them where the copy needs them', () => {
+    for (const erp of ERPS) {
+      expect(hero.qualifier).toContain(erp)
+      expect(outline.lede).toContain(erp)
+    }
+  })
+
+  it('puts both of those places in the future tense', () => {
+    expect(hero.qualifier).toMatch(/built for/i)
+    expect(outline.lede).toMatch(/being built against/i)
+  })
+
+  /**
+   * The one that will actually fail one day. `direction` is four instructions
+   * that look exactly like a place to hang a system name, which is precisely
+   * what the reference design for that section did with vendor logos.
+   */
+  it('names them nowhere else, and never under an instruction', () => {
+    const rest = everywhereElse()
+    for (const erp of ERPS) {
+      expect(rest).not.toContain(erp)
+    }
+  })
+})
+
+describe('how you ask', () => {
+  it('puts the instructions in the future tense', () => {
+    expect(direction.lede).toMatch(/being built to take/i)
+  })
+
+  /**
+   * The inversion this section is built on: where the reference design listed
+   * the vendors each instruction reaches, every entry here has to say what it
+   * hands back rather than settles. An instruction with no limit beside it is
+   * the pattern this section was written to avoid.
+   */
+  it('gives every instruction something it hands back', () => {
+    expect(direction.instructions.length).toBeGreaterThan(0)
+    for (const instruction of direction.instructions) {
+      expect(instruction.reads.trim()).not.toBe('')
+      expect(instruction.handsBack.trim()).not.toBe('')
+    }
+  })
+
+  /**
+   * The reader gives a standing rule about Halstead in this section and finds
+   * the held Halstead invoice one section below. Rename the supplier in one
+   * place and this fails rather than the through-line quietly breaking.
+   */
+  it('hands the reader on to the example output by name', () => {
+    const supplier = artifact.record.supplier.split(' ')[0]
+    expect(supplier).toBeTruthy()
+    expect(direction.instructions.some((one) => one.say.includes(supplier!))).toBe(true)
+  })
+})
+
+describe('data and access', () => {
+  /**
+   * §5 forbids compliance claims, and this is the only section on the site
+   * where one would look at home. There is no certification to name, so naming
+   * one — or naming a framework in a way a reader would take for one — is the
+   * failure this guards.
+   */
+  it('claims no certification and no framework', () => {
+    const text = `${access.headline} ${access.decided.title} ${access.decided.body} ${access.open.title} ${access.open.body}`
+    for (const forbidden of [
+      'SOC 2',
+      'SOC2',
+      'ISO 27001',
+      'GDPR-compliant',
+      'HIPAA',
+      'certified',
+      'compliant',
+    ]) {
+      expect(text.toLowerCase()).not.toContain(forbidden.toLowerCase())
+    }
+  })
+
+  it('asserts the one thing that is settled', () => {
+    expect(access.decided.body).toMatch(/train or fine-tune/i)
+  })
+
+  /**
+   * The admission is the point. A future edit that answers residency or
+   * retention here, to make the section read more confidently, is exactly the
+   * sentence this site exists not to write — it moves up into `decided` when it
+   * is true, and not before.
+   */
+  it('keeps saying that the rest is open', () => {
+    expect(access.open.body).toMatch(/being settled/i)
   })
 })

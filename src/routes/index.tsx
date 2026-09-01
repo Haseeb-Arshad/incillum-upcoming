@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 
+import { Access } from '#/components/access.tsx'
 import { Artifact } from '#/components/artifact.tsx'
+import { Direction } from '#/components/direction.tsx'
 import { Hero } from '#/components/hero.tsx'
 import { Instrument } from '#/components/instrument.tsx'
 import { Outline } from '#/components/outline.tsx'
@@ -16,10 +18,12 @@ import { Standing } from '#/components/standing.tsx'
  *   01  Hero        the argument, who it is for, and the one thing asked for
  *   02  Overnight   three hours of a night, described
  *   03  Instrument  those hours drawn to scale, marked at your own clock
- *   04  Outline     what it is being built to do, and how you direct it
- *   05  Artifact    what that produces, set as a document
- *   06  Scope       what it is, and what it is deliberately not
- *   07  Standing    how far along the build actually is
+ *   04  Outline     what it is being built to do
+ *   05  Direction   how you ask, and what comes back rather than gets decided
+ *   06  Artifact    what that produces, set as a document
+ *   07  Scope       what it is, and what it is deliberately not
+ *   08  Standing    how far along the build actually is
+ *   09  Access      what is decided about your data, and what is not
  *   ──  Colophon    the other door                           ← __root.tsx
  *
  * One argument, one conversion, no navigation. Everything a launched company's
@@ -39,11 +43,20 @@ import { Standing } from '#/components/standing.tsx'
  * the plate proves the proportion underneath them — description first, evidence
  * second, which is the order every other argument on this page runs in.
  *
- * §05 is new and it is the reason §04 could get shorter. A specification, however
- * carefully written, asks the reader to assemble the output in their own head;
- * showing it once is cheaper and lands harder. It sits after §04 because it is
- * the answer to §04, and before §06 because the frame correction wants a reader
- * holding something concrete to correct.
+ * §05 and §06 are the reason §04 could get shorter, and they are a pair: you
+ * ask in a sentence, and a record comes back. §05 repairs something the cut
+ * broke — direction had been a column of its own in §04 and ended up as a
+ * clause at the end of the last row, which is burial rather than folding. §06
+ * is the answer to both: a specification, however carefully written, asks the
+ * reader to assemble the output in their own head, and showing it once is
+ * cheaper and lands harder. Both sit before §07, because the frame correction
+ * wants a reader holding something concrete to correct.
+ *
+ * §09 is last for the same reason it exists at all. A finance team asks what
+ * happens to their data before they ask what the software does with it — but
+ * only once they have decided the software is interesting, which is what the
+ * eight sections above are for. Answering it earlier makes a reader defensive
+ * about a question they had not asked yet.
  *
  * ── On length, which is the standing temptation here ───────────────────────
  *
@@ -69,9 +82,11 @@ function HomePage() {
       <Overnight />
       <Instrument />
       <Outline />
+      <Direction />
       <Artifact />
       <Scope />
       <Standing />
+      <Access />
     </>
   )
 }

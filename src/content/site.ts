@@ -255,6 +255,82 @@ export const outline = {
 } as const
 
 /**
+ * How you ask.
+ *
+ * ── Where this shape came from, and what was left behind ───────────────────
+ *
+ * The reference was a capabilities display built out of floating cards: a
+ * natural-language instruction on each one, and under it the named systems that
+ * instruction reaches — a row of vendor logos per card. It is a good pattern and
+ * it is two claims at once: *you can ask in plain English*, and *we are already
+ * wired into all of these*.
+ *
+ * The second claim is the one that makes it work, and it is the one this site
+ * cannot make. Those are shipped integrations. Reproduced here with an ERP logo
+ * under every sentence it would be the most §5-violating element on the page,
+ * and it would violate it in the most efficient way available — a reader scans
+ * a logo row in about half a second and concludes "connected", and nothing else
+ * on the page outruns that impression afterwards.
+ *
+ * So the unit was taken and the proof was inverted. Each entry is still one
+ * instruction in a finance person's own words. But where the reference lists
+ * the vendors it reaches, this lists two things that are actually ours to
+ * claim: what it reads to answer, and what it hands back rather than decides.
+ * Theirs is a proof of reach; this is a proof of restraint, which is the only
+ * one a pre-launch page has standing to offer.
+ *
+ * `reads` names document types — an aged creditors list, a chart of accounts,
+ * ninety days of paid history — and never a product. The vendor names on this
+ * site appear exactly twice, in `hero.qualifier` and `outline.lede`, both under
+ * a future-tense contract. Adding a third place, in a list that looks like a
+ * connector grid, is how that discipline ends.
+ *
+ * ── The last entry, and why it names Halstead ──────────────────────────────
+ *
+ * "Do not pay anything from Halstead until I have looked at it" is the standing
+ * rule this section exists to show is possible, and it is deliberately the same
+ * supplier the `artifact` block below raises an exception against. A reader
+ * gives the instruction in one section and finds the held invoice waiting in
+ * the next. If either is renamed, both are.
+ */
+export const direction = {
+  label: 'How you ask',
+  headline: 'Say it the way you would say it to a person.',
+  lede: 'The instructions the finance operator is being built to take — and, which matters more, what each one hands back rather than settles on its own. No query syntax, no rule builder, no configuration screen in between.',
+
+  /** `dt` labels for the two lines under every instruction. */
+  readsLabel: 'Reads',
+  handsBackLabel: 'Hands back',
+
+  instructions: [
+    {
+      say: 'Chase everything over sixty days from the top twenty suppliers.',
+      reads: 'The aged creditors list, and every open thread with those suppliers.',
+      handsBack:
+        'One chaser per supplier, sent — and the three it did not send, because the balance is already in dispute.',
+    },
+    {
+      say: 'Code this batch the way we coded last month’s.',
+      reads: 'Last month’s postings, the chart of accounts, and the cost centre each supplier landed in.',
+      handsBack:
+        'The batch coded against that evidence, with the eleven it could not place listed as not found rather than guessed.',
+    },
+    {
+      say: 'Which of these could be duplicates, and why?',
+      reads: 'Ninety days of paid history, the vendor master, and the invoice in front of it.',
+      handsBack:
+        'Four candidates, each with the field that matched and the field that did not, so you can dismiss three in a minute.',
+    },
+    {
+      say: 'Do not pay anything from Halstead until I have looked at it.',
+      reads: 'Nothing. This one is a standing rule, and it holds until you lift it.',
+      handsBack:
+        'Every Halstead invoice, read and coded and held in one place — like the one below.',
+    },
+  ],
+} as const
+
+/**
  * One artifact.
  *
  * ── Why a mock-up is allowed here, when a screenshot is not ────────────────
@@ -436,6 +512,51 @@ export const standing = {
       body: 'A first group of finance teams, one workflow each, run alongside the way they do it today so the two can be compared before anything depends on ours.',
     },
   ],
+} as const
+
+/**
+ * Data and access.
+ *
+ * ── Why this section is two paragraphs and not a trust page ────────────────
+ *
+ * A finance team asks what happens to their invoice data before they ask what
+ * the software does with it, and its absence on a page about reading invoices
+ * is loud. So it is here. What it is not is a security page: there is no badge,
+ * no certification, no framework named, and nothing that could be mistaken for
+ * one. AGENTS.md §5 forbids compliance claims outright, and it is right to —
+ * a certification asserted before it is held is the one lie on a pre-launch
+ * site that a buyer can check in an afternoon.
+ *
+ * ── Why only one thing is asserted ─────────────────────────────────────────
+ *
+ * Because only one thing is settled. Training was a decision that could be made
+ * before anything shipped, so it was, and it is stated flatly. Residency,
+ * internal access, retention and audit are not settled, and every one of them
+ * was a candidate for a confident sentence here.
+ *
+ * Writing that sentence is the failure mode this whole site is built against.
+ * Nobody can check it today, everybody can check it later, and the version of
+ * this company that writes it now is the one that has to walk it back in front
+ * of its first ten customers. Saying "not yet, ask us and you will get the
+ * current answer" costs a visitor nothing they were not going to ask anyway,
+ * and it is the same argument `standing` makes about the product.
+ *
+ * If any of the open items is settled, it moves up into `decided` with the same
+ * flatness — and it does not move up a moment before.
+ */
+export const access = {
+  label: 'Data and access',
+  headline: 'What is decided, and what is not.',
+
+  decided: {
+    title: 'We will not train on your data',
+    body: 'Nothing a finance team sends — invoices, ledger detail, supplier correspondence — is used to train or fine-tune a model. That was a decision rather than a roadmap item, which is why it can be written down before anything else here can.',
+  },
+
+  open: {
+    title: 'The rest is open, and we are not going to pretend otherwise',
+    body: 'Where the data sits, which region it sits in, who on our side can reach it and what an audit of that looks like are being settled alongside the operator, with the first group of teams rather than in advance of them. Ask and you will get the answer as it stands today, not the one we would like to give.',
+  },
 } as const
 
 export const close = {
