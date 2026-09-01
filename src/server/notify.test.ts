@@ -10,7 +10,7 @@ import type { WaitlistNotification } from '#/server/notify.ts'
  * half-finished configuration fail safe rather than silently, and does a
  * provider outage surface loudly enough to be recoverable.
  *
- * `fetch` is stubbed rather than hit. A test that called Resend would need a
+ * `fetch` is stubbed rather than hit. A test that called the provider would need a
  * live key, would send real mail, and would fail in CI for reasons that have
  * nothing to do with this code.
  */
@@ -23,7 +23,7 @@ const notification: WaitlistNotification = {
 }
 
 const FULL_CONFIG = {
-  RESEND_API_KEY: 're_test_key',
+  BREVO_API_KEY: 'xkeysib-test-key',
   WAITLIST_NOTIFY_TO: 'team@incillum.com',
   WAITLIST_NOTIFY_FROM: 'waitlist@incillum.com',
 }
@@ -46,7 +46,7 @@ afterEach(() => {
 })
 
 describe('with the provider configured', () => {
-  it('posts the record to Resend', async () => {
+  it('posts the record to the provider', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
@@ -55,11 +55,14 @@ describe('with the provider configured', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
-    expect(url).toBe('https://api.resend.com/emails')
+    expect(url).toBe('https://api.brevo.com/v3/smtp/email')
     expect(init.method).toBe('POST')
 
+    // Brevo authenticates with an `api-key` header, not a bearer token. This is
+    // the single most likely thing to be wrong after porting a snippet from
+    // another vendor, and it fails as a 401 with no other symptom.
     const headers = init.headers as Record<string, string>
-    expect(headers.Authorization).toBe('Bearer re_test_key')
+    expect(headers['api-key']).toBe('xkeysib-test-key')
 
     // `BodyInit` includes streams and blobs, so `String()` on it is a lint
     // error waiting to produce '[object Object]'. The mock is handed a string
@@ -67,19 +70,21 @@ describe('with the provider configured', () => {
     // honest rather than convenient.
     expect(typeof init.body).toBe('string')
     const payload = JSON.parse(init.body as string) as Record<string, unknown>
-    expect(payload.from).toBe('waitlist@incillum.com')
-    expect(payload.to).toEqual(['team@incillum.com'])
+    // Addresses are objects here, not bare strings — the other detail that
+    // catches a port from a different provider.
+    expect(payload.sender).toMatchObject({ email: 'waitlist@incillum.com' })
+    expect(payload.to).toEqual([{ email: 'team@incillum.com' }])
     // Replying to the notification has to reach the person who joined —
     // otherwise answering somebody is a copy-paste out of the body.
-    expect(payload.reply_to).toBe('controller@northwind.co')
-    expect(String(payload.text)).toContain('IC-ABC123-XYZ')
-    expect(String(payload.text)).toContain('controller@northwind.co')
-    expect(String(payload.text)).toContain('Payment runs and approvals')
+    expect(payload.replyTo).toEqual({ email: 'controller@northwind.co' })
+    expect(String(payload.textContent)).toContain('IC-ABC123-XYZ')
+    expect(String(payload.textContent)).toContain('controller@northwind.co')
+    expect(String(payload.textContent)).toContain('Payment runs and approvals')
   })
 
   /**
-   * A refusal has to throw so the caller can log the full record. Resend
-   * answers an unverified sending domain with a 4xx and a JSON explanation, and
+   * A refusal has to throw so the caller can log the full record. Providers
+   * answer an unverified sender with a 4xx and a JSON explanation, and
    * swallowing that is how a waitlist quietly stops working.
    */
   it('throws with the provider’s explanation when the send is refused', async () => {
@@ -100,7 +105,7 @@ describe('with the provider configured', () => {
     const notifier = await loadNotifier(FULL_CONFIG)
     // One call, both assertions — the status tells you where to look and the
     // body tells you what to fix, and losing either sends somebody to the
-    // Resend dashboard for no reason.
+    // provider's dashboard for no reason.
     await expect(notifier.send(notification)).rejects.toThrow(/403.*not verified/s)
   })
 
@@ -128,8 +133,8 @@ describe('with the provider unconfigured', () => {
    */
   it.each([
     ['nothing set', {}],
-    ['a key but no destination', { RESEND_API_KEY: 're_test_key' }],
-    ['no sender', { RESEND_API_KEY: 're_test_key', WAITLIST_NOTIFY_TO: 'team@incillum.com' }],
+    ['a key but no destination', { BREVO_API_KEY: 'xkeysib-test-key' }],
+    ['no sender', { BREVO_API_KEY: 'xkeysib-test-key', WAITLIST_NOTIFY_TO: 'team@incillum.com' }],
   ])('logs rather than sending when there is %s', async (_label, config) => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)

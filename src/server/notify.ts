@@ -15,12 +15,38 @@ import { serverEnv } from '#/server/env.ts'
  * still refuses to say "check your inbox" — see `waitlist-form.tsx`. Sending a
  * confirmation is a small addition; promising one before it exists is not.
  *
- * ── Why `fetch` and not the `resend` package ───────────────────────────────
+ * ── The provider is Brevo, and why ─────────────────────────────────────────
  *
- * One POST to one documented endpoint. The SDK is a dependency, a version to
- * keep current and a bundle in the server output, in exchange for wrapping a
- * `fetch` call in a class. If the provider ever changes, the interface below is
- * the seam — not the package.
+ * Of the transactional APIs worth using, it is the only one whose free tier
+ * outlives a trial: 300 messages a day, permanently, with no card. A waitlist
+ * that receives four signups on a good day should not be on a plan that starts
+ * billing in month two.
+ *
+ * ── Swapping it ────────────────────────────────────────────────────────────
+ *
+ * `apiNotifier` below is the only provider-shaped code in the project.
+ * Everything else — the form, the server function, the failure policy, the
+ * tests — talks to the `Notifier` interface. Changing vendor means changing the
+ * endpoint, the auth header and the payload builder, and nothing else:
+ *
+ *   Mailgun    POST https://api.mailgun.net/v3/<domain>/messages
+ *              Authorization: Basic base64('api:' + key)   · form-encoded
+ *   SendGrid   POST https://api.sendgrid.com/v3/mail/send
+ *              Authorization: Bearer <key>                 · personalizations[]
+ *   Postmark   POST https://api.postmarkapp.com/email
+ *              X-Postmark-Server-Token: <key>              · From/To/TextBody
+ *   Resend     POST https://api.resend.com/emails
+ *              Authorization: Bearer <key>                 · from/to/text
+ *
+ * Rename `BREVO_API_KEY` in `server/env.ts` to match, and update the table in
+ * README. The two address variables are provider-neutral and stay as they are.
+ *
+ * ── Why no SDK ─────────────────────────────────────────────────────────────
+ *
+ * One POST to one documented endpoint. Every vendor SDK is that call wrapped in
+ * a class, plus a dependency, plus a version to keep current, plus a bundle in
+ * the server output. It also makes the swap above a rewrite rather than an
+ * edit.
  *
  * ── Failure policy, which is the important part ────────────────────────────
  *
@@ -52,7 +78,7 @@ export interface Notifier {
   send: (notification: WaitlistNotification) => Promise<void>
 }
 
-const RESEND_ENDPOINT = 'https://api.resend.com/emails'
+const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email'
 
 /**
  * Plain text, not HTML.
@@ -76,9 +102,9 @@ function body(notification: WaitlistNotification): string {
  * The no-op notifier, used whenever the provider is not configured.
  *
  * It logs the same record it would have sent, at `info`, so local development
- * and preview deployments still show the full path working without needing an
- * API key — and so nothing is lost if production is deployed before the key is
- * set. It is a fallback, not a silent failure: the record is always somewhere.
+ * and preview deployments still exercise the whole path without an API key —
+ * and so nothing is lost if production is deployed before the key is set. It is
+ * a fallback, not a silent failure: the record is always somewhere.
  */
 const loggingNotifier: Notifier = {
   send: (notification) => {
@@ -87,34 +113,42 @@ const loggingNotifier: Notifier = {
   },
 }
 
-function resendNotifier(apiKey: string, to: string, from: string): Notifier {
+/**
+ * The provider call. See the swap table at the top of this file.
+ *
+ * Brevo authenticates with an `api-key` header rather than a bearer token, and
+ * takes `sender` / `to` / `replyTo` as objects rather than bare strings — both
+ * are the details that catch people porting a snippet from another vendor.
+ */
+function apiNotifier(apiKey: string, to: string, from: string): Notifier {
   return {
     send: async (notification) => {
-      const response = await fetch(RESEND_ENDPOINT, {
+      const response = await fetch(BREVO_ENDPOINT, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
+          'api-key': apiKey,
+          accept: 'application/json',
+          'content-type': 'application/json',
         },
         body: JSON.stringify({
-          from,
-          to: [to],
+          sender: { email: from, name: 'Incillum waitlist' },
+          to: [{ email: to }],
           /**
            * Replies go to the person who joined, so answering somebody is one
            * keystroke rather than a copy-paste out of the body.
            */
-          reply_to: notification.workEmail,
+          replyTo: { email: notification.workEmail },
           subject: `Waitlist — ${notification.workEmail}`,
-          text: body(notification),
+          textContent: body(notification),
         }),
       })
 
       if (!response.ok) {
-        // Read the body before throwing: Resend explains refusals (unverified
-        // domain, bad key) in it, and a bare status code sends whoever is
-        // debugging this to the dashboard for no reason.
+        // Read the body before throwing: providers explain refusals (unverified
+        // sender, bad key, over quota) in it, and a bare status code sends
+        // whoever is debugging this to a dashboard for no reason.
         const detail = await response.text().catch(() => '<unreadable>')
-        throw new Error(`Resend responded ${response.status}: ${detail}`)
+        throw new Error(`Mail provider responded ${response.status}: ${detail}`)
       }
     },
   }
@@ -125,14 +159,14 @@ function resendNotifier(apiKey: string, to: string, from: string): Notifier {
  *
  * All three values are required together. Having a key but no destination is a
  * half-finished setup, and quietly sending to a default would be worse than
- * doing nothing — so it falls back to logging and says which piece is missing.
+ * doing nothing — so it falls back to logging.
  */
 export function waitlistNotifier(): Notifier {
-  const { RESEND_API_KEY, WAITLIST_NOTIFY_TO, WAITLIST_NOTIFY_FROM } = serverEnv()
+  const { BREVO_API_KEY, WAITLIST_NOTIFY_TO, WAITLIST_NOTIFY_FROM } = serverEnv()
 
-  if (!RESEND_API_KEY || !WAITLIST_NOTIFY_TO || !WAITLIST_NOTIFY_FROM) {
+  if (!BREVO_API_KEY || !WAITLIST_NOTIFY_TO || !WAITLIST_NOTIFY_FROM) {
     return loggingNotifier
   }
 
-  return resendNotifier(RESEND_API_KEY, WAITLIST_NOTIFY_TO, WAITLIST_NOTIFY_FROM)
+  return apiNotifier(BREVO_API_KEY, WAITLIST_NOTIFY_TO, WAITLIST_NOTIFY_FROM)
 }
