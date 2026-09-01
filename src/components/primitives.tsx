@@ -88,6 +88,44 @@ export function DefinitionColumn({
 }
 
 /**
+ * The same term-and-description pairs, one per full-width row.
+ *
+ * `DefinitionColumn` exists to be set beside a second copy of itself, so a
+ * reader compares two lists. `Outline` stopped being a comparison when it went
+ * from ten entries in two columns to five in one, and five entries stacked in a
+ * single narrow column would have left half the measure empty beside them.
+ *
+ * So the pair splits across the row instead: term on the left, description on
+ * the right, hairline between rows. That is the shape `Standing` already uses,
+ * which is the reason this exists rather than something newly invented — the
+ * page has one editorial system, and a third arrangement for a third list is
+ * how a page starts to read as assembled from parts.
+ *
+ * Still a real `<dl>`, for the same reason the column is: each entry genuinely
+ * is a term and its description, and marking it up that way is what lets a
+ * screen reader move through the pairs as pairs.
+ */
+export function DefinitionRows({
+  points,
+}: {
+  points: ReadonlyArray<{ title: string; body: string }>
+}) {
+  return (
+    <dl className="border-t border-line-strong">
+      {points.map((point) => (
+        <div
+          key={point.title}
+          className="grid gap-x-10 gap-y-2.5 border-b border-line py-7 sm:grid-cols-12 sm:py-8"
+        >
+          <dt className="max-w-[26ch] text-heading text-ink sm:col-span-4">{point.title}</dt>
+          <dd className="max-w-[68ch] text-body text-ink-600 sm:col-span-8">{point.body}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+/**
  * The arrow that rides in the primary button.
  *
  * Drawn inline rather than pulled from an icon package: it inherits

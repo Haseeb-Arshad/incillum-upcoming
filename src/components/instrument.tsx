@@ -19,8 +19,26 @@ import { instrument } from '#/content/site.ts'
  * against fifteen is a proportion, and a proportion shown is checked in a
  * glance while a proportion asserted is a number the reader has already stopped
  * reading. Whatever hour somebody arrives, the plate can point at the rule and
- * say *this hour, right now* — and for most of the day and all of the night the
- * mark is standing in the empty part.
+ * say *this hour, right now*.
+ *
+ * ── Which fifteen hours are shaded, and why it is not the nine ─────────────
+ *
+ * The first version of this plate shaded the working day and captioned itself
+ * from the reader's clock — *your team is at their desks* by day, *nobody is at
+ * their desks* at night. Read at 03:20 it was devastating. Read at 16:28, which
+ * is when most people actually arrive, the one live element on the page opened
+ * by telling a controller that everything was covered: the mass was under the
+ * hours somebody is in, and the caption confirmed it. The page spent its single
+ * moving element arguing against its own thesis for the whole of a business
+ * day.
+ *
+ * So the ink moved. The fifteen uncovered hours are the shaded mass — two
+ * bands, because they wrap midnight — and the nine hours of the working day are
+ * the gap in the middle. The caption no longer branches on the hour: it states
+ * the proportion, which is true at every hour, and then adds the reader's own
+ * time as a clause rather than as a verdict. At 03:20 the mark stands inside
+ * the shading; at 16:28 it stands in the gap with shading either side of it.
+ * Both readings support the same sentence, which is the entire fix.
  *
  * ── Why the reader's clock and not ours ────────────────────────────────────
  *
@@ -35,9 +53,15 @@ import { instrument } from '#/content/site.ts'
  *
  * The server cannot know what time it is where the reader is, and guessing with
  * its own clock would put the mark in the wrong place and then move it on
- * hydration. The rule, the working-day block, the hour numerals and the plate's
- * own caption all render on the server exactly as they end up; only the mark
- * and the readout wait for the client, and they fade rather than appear.
+ * hydration. The rule, the shaded bands, the working-day gap, the key, the hour
+ * numerals and the whole first sentence of the caption render on the server
+ * exactly as they end up. Only the mark, the readout and the caption's closing
+ * clause wait for the client, and the first two fade rather than appear.
+ *
+ * That split is what the inversion bought as well as fixing the argument: the
+ * sentence the server can print is now the sentence that carries the meaning,
+ * so a reader with no JavaScript gets the plate's whole point rather than a
+ * caption waiting to find out what time it is.
  */
 
 /** Hours in a day. Named because it is a divisor in five places. */
@@ -131,10 +155,19 @@ function percent(hour: number): string {
 export function Instrument() {
   const clock = useLocalClock()
   const { from, to } = instrument.officeHours
-  const atDesks = clock !== null && clock.hours >= from && clock.hours < to
+
+  /**
+   * The fifteen, as two bands: midnight to the start of the day, and the end of
+   * the day to midnight. They are what carries the shading — see the header for
+   * why it is these hours and not the nine between them.
+   */
+  const uncovered = [
+    { from: 0, to: from },
+    { from: to, to: DAY_HOURS },
+  ] as const
 
   return (
-    <section aria-label="A working day, drawn to scale" className="pb-16 sm:pb-24">
+    <section aria-label="A working day, drawn to scale" className="pb-20 sm:pb-28">
       <Container>
         {/*
           `Reveal` wraps the plate rather than being the plate. It takes a fixed
@@ -182,9 +215,29 @@ export function Instrument() {
               </div>
 
               <div className="relative h-24 border-y border-line sm:h-28">
-                {/* The working day, at true width. */}
+                {/*
+                  The fifteen, at true width, in two bands either side of the
+                  working day. Shaded rather than outlined: the argument is
+                  mass, and two-thirds of the rule carrying ink while the middle
+                  stays bare is readable before anybody has read a word of the
+                  caption.
+                */}
+                {uncovered.map((band) => (
+                  <div
+                    key={band.from}
+                    className="absolute inset-y-0 bg-ink/[0.06]"
+                    style={{ left: percent(band.from), width: percent(band.to - band.from) }}
+                  />
+                ))}
+
+                {/*
+                  The working day: the gap. Bordered on both edges so the nine
+                  hours read as a deliberate opening rather than as the place
+                  the shading happens to stop, and labelled because an unlabelled
+                  gap in a diagram is a mistake until proven otherwise.
+                */}
                 <div
-                  className="absolute inset-y-0 border-x border-line-strong bg-ink/[0.06]"
+                  className="absolute inset-y-0 border-x border-line-strong"
                   style={{ left: percent(from), width: percent(to - from) }}
                 >
                   <p className="absolute inset-x-0 bottom-3 px-2 text-center text-label uppercase text-ink-400">
@@ -248,21 +301,43 @@ export function Instrument() {
                   </span>
                 ))}
               </div>
+
+              {/*
+                The key.
+
+                Two-thirds of the rule is shaded and nothing on the drawing says
+                what the shading means, which in a diagram reads as a defect
+                until it is named. One swatch and four words, in the same muted
+                label style as the hour numerals, so it sits under the plate as
+                a key rather than as a second caption.
+              */}
+              <div className="mt-6 flex items-center gap-2.5">
+                <span className="size-2.5 shrink-0 border border-line bg-ink/[0.06]" />
+                <span className="text-label uppercase text-ink-400">
+                  {instrument.uncoveredLabel}
+                </span>
+              </div>
             </div>
 
             {/*
             Not a live region. It changes once a minute, and a polite
             announcement every minute for the length of a visit is a page nobody
             can read.
+
+            The sentence no longer branches on the hour — the header explains at
+            length why it used to and why that was the plate's one real fault.
+            What is left is a statement about the drawing, true at any hour, and
+            the reader's own time appended as a clause. The first sentence is in
+            the server's HTML; only the clause waits for a browser.
           */}
             <p className="mt-8 max-w-[52ch] text-lede text-ink sm:mt-10">
+              {instrument.caption}{' '}
               {clock ? (
-                <>
-                  It is <span className="ic-tabular">{clock.time}</span> where you are.{' '}
-                  <span className="text-ink-400">
-                    {atDesks ? instrument.atDesks : instrument.awayFromDesks}
-                  </span>
-                </>
+                <span className="text-ink-400">
+                  {instrument.captionLocalPrefix}
+                  <span className="ic-tabular">{clock.time}</span>
+                  {instrument.captionLocalSuffix}
+                </span>
               ) : (
                 <span className="text-ink-400">{instrument.unknownTime}</span>
               )}

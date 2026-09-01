@@ -3,12 +3,25 @@ import { Reveal } from '#/components/reveal.tsx'
 import { instrument } from '#/content/site.ts'
 
 /**
- * The shift the plate above is drawing.
+ * The shift the plate below is drawing.
  *
  * Three moments, each a real piece of finance operations work, each with the
  * hour it tends to arrive. The times are illustrations of when the work shows
  * up — not claims about anything the software has done, and the copy is written
  * so that distinction survives a skim.
+ *
+ * ── Why this runs before the plate, having once run after it ───────────────
+ *
+ * The original order put `Instrument` first, on the argument that these three
+ * scenes were unreadable before a diagram had established what a night looks
+ * like. In practice the reverse is true. This is the most concrete material on
+ * the site — an invoice at 23:40, a payment run at 03:15, an unchased exception
+ * at 06:50 — and it is the fastest route to a finance person recognising their
+ * own week. Putting an abstract twenty-four hour rule in front of it spent the
+ * page's most valuable scroll on a drawing nobody had a reason to read yet.
+ *
+ * So: three sentences of the night first, then the plate underneath proving the
+ * proportion. Description, then evidence.
  *
  * Three columns at `lg` and a stack below it. The columns are separated by the
  * hairline that divides everything else on this page rather than by cards: a

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import type { Page } from '@playwright/test'
+import type { Browser, Page } from '@playwright/test'
 
 /**
  * The site, end to end.
@@ -99,6 +99,25 @@ test.describe('the page', () => {
     }
   })
 
+  /**
+   * The one mock-up on a site that shows no screenshots.
+   *
+   * It is allowed to exist because it says what it is in its own first line, in
+   * the server's HTML, at reading size — not in small print under the panel
+   * where nobody looks. That sentence is the whole licence for the block, so it
+   * is asserted here as well as in the unit tests: those cover the content
+   * file, this covers what actually reaches a stranger's browser.
+   */
+  test('labels its example output as invented', async ({ page, request }) => {
+    await ready(page)
+
+    await expect(page.getByRole('heading', { name: /What is waiting when you get in/ })).toBeVisible()
+    await expect(page.getByText(/Invented, and not a screenshot/)).toBeVisible()
+
+    const html = await (await request.get('/')).text()
+    expect(html).toContain('Invented, and not a screenshot')
+  })
+
   test('serves robots and a sitemap that agree on the origin', async ({ request }) => {
     const robots = await request.get('/robots.txt')
     expect(robots.status()).toBe(200)
@@ -155,48 +174,71 @@ test.describe('the page', () => {
 })
 
 test.describe('the clock', () => {
-  test('reads the visitor’s own hour, and says the office is empty at 03:20', async ({
-    browser,
-  }) => {
+  /** A January date, so British Summer Time cannot move any of these. */
+  async function pageAt(browser: Browser, iso: string) {
     const context = await browser.newContext({
       timezoneId: 'Europe/London',
       locale: 'en-GB',
     })
     const page = await context.newPage()
-    // A January morning, so British Summer Time cannot move it.
-    await page.clock.setFixedTime(new Date('2026-01-14T03:20:00Z'))
-
+    await page.clock.setFixedTime(new Date(iso))
     await ready(page)
+    return { context, page }
+  }
+
+  test('reads the visitor’s own hour', async ({ browser }) => {
+    const { context, page } = await pageAt(browser, '2026-01-14T03:20:00Z')
 
     await expect(page.getByText(/It is\s*03:20\s*where you are/)).toBeVisible()
-    await expect(page.getByText(/Nobody is at their desks/)).toBeVisible()
-
-    await context.close()
-  })
-
-  test('says the office is occupied during working hours', async ({ browser }) => {
-    const context = await browser.newContext({
-      timezoneId: 'Europe/London',
-      locale: 'en-GB',
-    })
-    const page = await context.newPage()
-    await page.clock.setFixedTime(new Date('2026-01-14T14:05:00Z'))
-
-    await ready(page)
-    await expect(page.getByText(/Your team is at their desks/)).toBeVisible()
 
     await context.close()
   })
 
   /**
+   * The reason this plate was rebuilt, kept as a test so it cannot quietly
+   * revert.
+   *
+   * The first version captioned itself from the reader's clock — "your team is
+   * at their desks" by day, "nobody is at their desks" at night — which meant
+   * that for the whole of a working day the page's one live element argued
+   * against the page's own thesis. A visitor at 16:28 was told by the drawing
+   * that the hours were covered.
+   *
+   * The caption now states a proportion that is true at every hour. These two
+   * assertions are the same sentence read at 03:20 and at 16:28, and the second
+   * one is the one that used to fail.
+   */
+  test('makes the same argument at 03:20 and at 16:28', async ({ browser }) => {
+    const night = await pageAt(browser, '2026-01-14T03:20:00Z')
+    await expect(
+      night.page.getByText(/Fifteen of these twenty-four hours have nobody in them/),
+    ).toBeVisible()
+    await night.context.close()
+
+    const afternoon = await pageAt(browser, '2026-01-14T16:28:00Z')
+    await expect(
+      afternoon.page.getByText(/Fifteen of these twenty-four hours have nobody in them/),
+    ).toBeVisible()
+    await expect(afternoon.page.getByText(/It is\s*16:28\s*where you are/)).toBeVisible()
+
+    // The claim that used to sit here in the middle of the afternoon.
+    const body = await afternoon.page.locator('body').innerText()
+    expect(body).not.toContain('at their desks')
+    await afternoon.context.close()
+  })
+
+  /**
    * The section around the clock has to be readable before — and without — the
    * clock, because the server cannot render it. This asserts the words are in
-   * the server's HTML rather than only appearing after hydration.
+   * the server's HTML rather than only appearing after hydration, and that
+   * includes the sentence carrying the whole point of the plate: only the
+   * closing "it is HH:MM where you are" clause may wait for a browser.
    */
   test('renders its section on the server, clock or no clock', async ({ request }) => {
     const html = await (await request.get('/')).text()
     expect(html).toContain('Fifteen hours a day')
     expect(html).toContain('Your team')
+    expect(html).toContain('Fifteen of these twenty-four hours have nobody in them')
   })
 })
 

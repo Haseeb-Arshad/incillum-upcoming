@@ -29,11 +29,17 @@ import type { WaitlistFormValues } from '#/lib/waitlist.ts'
  *
  * ── The success state ──────────────────────────────────────────────────────
  *
- * It says we have the address and that we will write once. It does **not** say
- * "check your inbox", and that restraint is load-bearing rather than modest:
- * `server/waitlist.ts` writes to a log and nothing sends a confirmation, so a
- * page promising one would produce its first broken promise before the product
- * had shipped anything at all.
+ * It says we have the address and names what the one email will be *for* — a
+ * call, and one workflow run beside the way the team works now. That is the
+ * same promise the hero's assurance makes above the button and the same one
+ * `standing` commits to further down the page; three statements of one promise
+ * is a promise, three statements of three promises is a leak.
+ *
+ * It still does **not** say "check your inbox", and that restraint is
+ * load-bearing rather than modest: `server/waitlist.ts` writes to a log and
+ * nothing sends a confirmation, so a page promising one would produce its first
+ * broken promise before the product had shipped anything at all. There is a
+ * test for it.
  */
 
 type SubmitState =
@@ -141,8 +147,8 @@ export function WaitlistForm() {
           You are on the waitlist.
         </p>
         <p className="text-body text-ink-600">
-          We will write to you once, when the finance operator is ready for someone
-          outside the team to run it. Nothing is sent before then.
+          We will write to you once, to arrange a call and one workflow run
+          alongside the way you do it today. Nothing is sent before then.
         </p>
         <p className="ic-tabular text-small text-ink-400">{submitState.reference}</p>
       </div>

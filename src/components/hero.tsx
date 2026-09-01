@@ -29,12 +29,16 @@ import { brand, hero } from '#/content/site.ts'
  *
  * The reflex here is a screenshot of the app. There is nothing shipped to
  * screenshot, and a mocked-up dashboard would be a picture of a product that
- * does not exist, presented as though it does. The one picture on this site is
- * the section below, and it is a drawing of a clock — which is true.
+ * does not exist, presented as though it does. Two things stand in for it
+ * further down, and neither is a photograph of software: `Instrument` draws a
+ * clock, which is true, and `Artifact` sets out the record the operator is
+ * being built to leave behind, which says in its own first line that it is
+ * invented. Neither belongs up here — the hero's job is the thesis and the
+ * field, and an image in this band competes with the field.
  *
  * ── Motion ─────────────────────────────────────────────────────────────────
  *
- * One entrance, staggered across four elements over about a quarter of a
+ * One entrance, staggered across five elements over about a fifth of a
  * second, and nothing after it. It exists so the page assembles rather than
  * appears, not so anything is revealed: every element is in the server HTML and
  * readable without JavaScript. Opacity and a 10px translate, both composited,
@@ -67,6 +71,27 @@ export function Hero() {
             >
               {hero.lede}
             </p>
+
+            {/*
+              Who it is for, at body size under the lede rather than inside it.
+
+              It is deliberately the quietest line in the column: a reader who
+              already knows they run AP on one of these systems does not need it
+              at thesis size, and a reader who does not needs to find it exactly
+              once. Set at `text-small` in the muted tone, it reads as a spec
+              stamp under the argument rather than as part of the argument.
+
+              The rule above it is the same hairline the rest of the page
+              divides with — it separates the claim from its qualification,
+              which is the one place on this page where those two things being
+              confused would actually cost something.
+            */}
+            <div
+              className="ic-enter mt-8 border-t border-line pt-5 sm:mt-10"
+              style={{ ['--ic-enter-delay' as string]: '165ms' }}
+            >
+              <p className="max-w-[56ch] text-small text-ink-400">{hero.qualifier}</p>
+            </div>
           </div>
 
           <div
