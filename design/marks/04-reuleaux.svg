@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Reuleaux triangle">
+  <title>Reuleaux triangle</title>
+  <path d="M100 20L169.28 140L30.72 140L100 20" fill="none" stroke="#111110" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.35"/>
+  <path d="M100 20A138.56 138.56 0 0 1 169.28 140A138.56 138.56 0 0 1 30.72 140A138.56 138.56 0 0 1 100 20Z" fill="none" stroke="#111110" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="100" cy="20" r="3.4" fill="#111110"/>
+  <circle cx="169.28" cy="140" r="3.4" fill="#111110"/>
+  <circle cx="30.72" cy="140" r="3.4" fill="#111110"/>
+</svg>

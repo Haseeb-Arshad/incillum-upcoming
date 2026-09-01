@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Diel rosette">
+  <title>Diel rosette</title>
+  <circle cx="100" cy="100" r="84" fill="none" stroke="#111110" stroke-width="1.6"/>
+  <path d="M100 56L100 16M111.39 57.5L121.74 18.86M122 61.89L142 27.25M131.11 68.89L159.4 40.6M138.11 78L172.75 58M142.5 88.61L181.14 78.26M144 100L184 100M142.5 111.39L181.14 121.74M138.11 122L172.75 142M149.5 149.5L159.4 159.4M135 160.62L142 172.75M118.12 167.61L121.74 181.14M100 170L100 184M81.88 167.61L78.26 181.14M65 160.62L58 172.75M50.5 149.5L40.6 159.4M39.38 135L27.25 142M32.39 118.12L18.86 121.74M56 100L16 100M57.5 88.61L18.86 78.26M61.89 78L27.25 58M68.89 68.89L40.6 40.6M78 61.89L58 27.25M88.61 57.5L78.26 18.86" fill="none" stroke="#111110" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M124.04 75.96L168.59 31.41" fill="none" stroke="#111110" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
