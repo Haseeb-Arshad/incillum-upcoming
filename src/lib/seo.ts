@@ -63,7 +63,7 @@ export function organizationJsonLd(): string {
     name: brand.name,
     url: siteUrl,
     description: seoCopy.description,
-    logo: absoluteUrl('/logo.svg'),
+    logo: absoluteUrl('/logo.png'),
     sameAs: [],
   })
 }

@@ -6,7 +6,7 @@ import { brand } from '#/content/site.ts'
 /**
  * The masthead.
  *
- * Wordmark on the left, one black button on the right — the shape a serious
+ * Mark and wordmark on the left, one black button on the right — the shape a serious
  * software company's header has — with the six-item product menu that normally
  * sits between them removed rather than emptied.
  *
@@ -101,13 +101,21 @@ export function Masthead() {
     >
       <Container className="flex h-[72px] items-center justify-between gap-6 sm:h-20">
         {/*
-          The wordmark is the serif at display weight, set as text rather than
-          as a logotype image — it is the same face as the headline below, so
-          the page introduces itself in the voice it then speaks in.
+          The supplied mark identifies the brand at a glance; the wordmark stays
+          as live text so it remains crisp, searchable and available to assistive
+          technology.
         */}
-        <span className="font-display text-[1.5rem] leading-none tracking-[-0.02em] text-ink sm:text-[1.75rem]">
-          {brand.name}
-        </span>
+        <div className="flex min-w-0 items-center gap-3" aria-label={brand.name}>
+          <img
+            src="/logo.png"
+            alt=""
+            aria-hidden="true"
+            className="size-10 shrink-0 object-contain sm:size-11"
+          />
+          <span className="font-display text-[1.5rem] leading-none tracking-[-0.02em] text-ink sm:text-[1.75rem]">
+            {brand.name}
+          </span>
+        </div>
 
         <ButtonLink href="#waitlist" tone="primary" size="md" arrow>
           Join the waitlist
