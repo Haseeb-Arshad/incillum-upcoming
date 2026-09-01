@@ -24,6 +24,11 @@ export default tseslint.config(
       // It is generated, it is gitignored, and every file in it fails to parse
       // because none of them are in the tsconfig project.
       '.vercel/**',
+      // Design tooling: a standalone Node script that writes SVG candidates and
+      // is never imported by the app, so it sits outside the tsconfig project
+      // that the type-aware rules need. Including it would mean widening the
+      // app's tsconfig to cover a file the app does not use.
+      'design/**',
       '.tanstack/**',
       'test-results/**',
       'playwright-report/**',
