@@ -140,27 +140,46 @@ export const hero = {
 /**
  * The night plate — the one image on the site.
  *
- * ── Why it is drawn and not photographed ───────────────────────────────────
+ * ── What it is, and what it is not ─────────────────────────────────────────
  *
  * The slot a launched company fills here holds a product screenshot, and the
- * slot a pre-launch company fills holds a stock photograph of an office. There
- * is nothing shipped to screenshot, and the stock photograph is worse than
- * nothing: an empty office at dusk with a warm grade on it is the single most
- * reproduced image in enterprise software, and a reader has learned to see
- * through it before they have read a word.
+ * slot a pre-launch company usually fills holds a stock photograph of an
+ * office. There is nothing shipped to screenshot, and the stock version is
+ * worse than nothing: an empty office at dusk with a warm grade on it is the
+ * most reproduced image in enterprise software, and a reader sees through it
+ * before reading a word.
  *
- * So it is drawn, in the same flat hairline language the instrument below it
- * uses, out of the same tokens as the rest of the page. It says the thesis
- * without copy: a curtain wall at night, a city where a few other lights are
- * still on, a chair pushed back, a desk, and a quotation lying under the one
- * lamp that nobody turned off. The people left. The work is still lit.
+ * This is a commissioned frame built to one brief — `design/hero-image-brief.md`
+ * — and it earns the slot by refusing everything that makes the stock version
+ * useless. One light source. The lit object is paper, not a screen. The monitor
+ * in shot is off, which is the load-bearing detail: a glowing screen says
+ * somebody is sitting there. No people, no floating interface, no blue in the
+ * shadows, no legible text to zoom in on and catch out.
  *
- * The caption is the only text, and it is real text under the drawing rather
- * than inside it — so it is selectable, translatable, and read aloud.
+ * It replaced a drawing of the same scene built out of the site's own tokens.
+ * The drawing is at `550e87d` and its constraints are the acceptance criteria
+ * for anything that stands here.
+ *
+ * Both strings below are real text under the picture rather than inside it, so
+ * both are selectable, translatable and read aloud — and they say different
+ * things on purpose. See each.
  */
 export const nightfall = {
-  /** Announced to assistive technology in place of several hundred vectors. */
-  alt: 'A drawing: a commercial office at night, seen from inside. An empty chair, a desk, a quotation lying under a lamp that is still on, and a city beyond the window with a few lights left in it.',
+  /**
+   * What a non-sighted reader gets instead of the picture.
+   *
+   * It describes the composition rather than inventorying it, because what this
+   * image is for is the argument, not the furniture — and it deliberately stops
+   * short of stating the argument, which is the caption's job. An `alt` that
+   * says "the work is still lit" is editorialising in a field that is supposed
+   * to report.
+   */
+  alt: 'A commercial office at night, photographed from inside. A desk lamp is the only light on, falling across a printed quotation lying on the desk. The chair behind it is empty and pushed back, the monitor beside it is switched off, and beyond the window the city is dark except for a few lit floors.',
+  /**
+   * The picture's title, not an explanation of it — and the one place the
+   * argument is stated rather than shown. The `alt` above reports what is in
+   * the frame and stops there; this is the sentence the frame is for.
+   */
   caption: 'The office is empty. The quotation is not finished.',
 } as const
 

@@ -276,18 +276,46 @@ test.describe('the night', () => {
   })
 
   /**
-   * The plate is `aria-hidden` because a screen reader announcing four hundred
-   * rectangles is noise. That is only acceptable while the description beside
-   * it is real text.
+   * The one image on the site, and the two things it must not do: arrive
+   * without a description, and arrive without a reserved box.
+   *
+   * The caption and the alt say different things on purpose — the alt reports
+   * what is in the frame, the caption states what it means — so both are
+   * asserted. `width`/`height` are the layout-shift guard: this is the largest
+   * object on the page and it sits under the fold on a phone, which is where a
+   * reader is mid-sentence when it jumps.
    */
-  test('describes its one image in words', async ({ page }) => {
+  test('describes its one image, and reserves its box', async ({ page }) => {
     await ready(page)
 
     await expect(page.getByText(/The office is empty/)).toBeVisible()
-    await expect(page.locator('figure svg[aria-hidden="true"]')).toHaveCount(1)
 
-    const html = await page.locator('figcaption').innerText()
-    expect(html).toMatch(/commercial office at night/i)
+    const image = page.locator('figure img')
+    await expect(image).toHaveCount(1)
+    await expect(image).toHaveAttribute('alt', /commercial office at night/i)
+    await expect(image).toHaveAttribute('width', /\d+/)
+    await expect(image).toHaveAttribute('height', /\d+/)
+  })
+
+  /**
+   * The `sizes` attribute is the entire point of shipping four widths. Without
+   * it a phone downloads the 1672px file to paint 342 of them, and the fault is
+   * invisible on a desktop connection — which is where it would be reviewed.
+   */
+  test('serves the plate at a width the layout actually uses', async ({ page }) => {
+    await ready(page)
+
+    const chosen = await page
+      .locator('figure img')
+      .evaluate((node) => (node as HTMLImageElement).currentSrc)
+
+    expect(chosen).toMatch(/\/night\/night-\d+\.(avif|webp|jpg)$/)
+
+    // The desktop project is 1440 wide, where the plate paints at 1280 CSS px;
+    // mobile and tablet must not be handed the largest file.
+    const width = Number(/night-(\d+)\./.exec(chosen)?.[1])
+    const viewport = page.viewportSize()?.width ?? 0
+    expect(width).toBeLessThanOrEqual(viewport > 1000 ? 1672 : 1280)
   })
 
   test('runs the thread from 23:47 to 08:04, in order', async ({ page }) => {
