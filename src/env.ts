@@ -35,6 +35,29 @@ const publicEnvSchema = z.object({
     .regex(/^GTM-[A-Z0-9]+$/, 'Expected a container ID of the form GTM-XXXXXXX.')
     .optional()
     .or(z.literal('').transform(() => undefined)),
+
+  /**
+   * PostHog project API key, e.g. `phc_xxxxxxxx`.
+   *
+   * Public by design — it ships in the page source of every site that uses
+   * PostHog, and it only grants event ingestion, not read access — so it
+   * belongs here rather than in the server-only module. Optional and empty by
+   * default, which is what keeps local development and the end-to-end suite
+   * free of the snippet: no key, no script, no cookies, no network call. The
+   * pattern is checked rather than accepted as a free string for the same
+   * reason as the GTM ID — a typo does not fail loudly, it just never loads.
+   */
+  VITE_POSTHOG_KEY: z
+    .string()
+    .regex(/^phc_[A-Za-z0-9]+$/, 'Expected a project API key of the form phc_XXXXXXXX.')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  /**
+   * PostHog ingestion host. `https://us.i.posthog.com` or
+   * `https://eu.i.posthog.com` for PostHog Cloud, or a reverse-proxy origin.
+   * Has a default so it is only worth setting to change region or proxy.
+   */
+  VITE_POSTHOG_HOST: z.url().default('https://us.i.posthog.com'),
 })
 
 function readPublicEnv(): z.infer<typeof publicEnvSchema> {
@@ -50,6 +73,8 @@ function readPublicEnv(): z.infer<typeof publicEnvSchema> {
     VITE_SITE_URL: raw.VITE_SITE_URL,
     VITE_CONTACT_EMAIL: raw.VITE_CONTACT_EMAIL,
     VITE_GTM_ID: raw.VITE_GTM_ID,
+    VITE_POSTHOG_KEY: raw.VITE_POSTHOG_KEY,
+    VITE_POSTHOG_HOST: raw.VITE_POSTHOG_HOST,
   })
 
   if (!result.success) {
@@ -70,6 +95,11 @@ export const contactEmail: string = env.VITE_CONTACT_EMAIL
 
 /** `GTM-XXXXXXX`, or `undefined` when analytics is not configured. */
 export const gtmId: string | undefined = env.VITE_GTM_ID
+
+/** `phc_…`, or `undefined` when PostHog is not configured. */
+export const posthogKey: string | undefined = env.VITE_POSTHOG_KEY
+/** PostHog ingestion host. Only meaningful when `posthogKey` is set. */
+export const posthogHost: string = env.VITE_POSTHOG_HOST
 
 export function absoluteUrl(path: string): string {
   if (path.startsWith('http')) return path

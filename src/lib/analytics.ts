@@ -1,9 +1,32 @@
-import { gtmId } from '#/env.ts'
+import { gtmId, posthogHost, posthogKey } from '#/env.ts'
 
 /**
- * Google Tag Manager.
+ * Analytics: Google Tag Manager and PostHog.
  *
- * ── What is loaded, and when ───────────────────────────────────────────────
+ * Both are optional, both are inlined rather than pulled in as a package, and
+ * both render nothing at all unless their key is configured — see the note on
+ * each loader below. `trackEvent` at the bottom fans a conversion out to
+ * whichever of the two is present.
+ *
+ * ── Why PostHog is a snippet and not `posthog-js` ──────────────────────────
+ *
+ * The same reason as GTM. PostHog publishes a `<head>` snippet that is its own
+ * documented install path; it lazy-loads `array.js` from PostHog's CDN on first
+ * paint, so the library is never in this project's bundle, there is no version
+ * to keep current, and the end-to-end build stays free of it. `posthog-js` as
+ * a dependency would be the same loader wrapped in a module — AGENTS.md §3.
+ *
+ * ── Consent applies to both ────────────────────────────────────────────────
+ *
+ * Neither loader is behind a consent gate, and both need one before the site
+ * takes meaningful EU/UK traffic — GTM because of the tags people add to it,
+ * PostHog because its snippet sets cookies for `$pageview` and autocapture out
+ * of the box. The two closes below (Consent Mode for GTM; `opt_out_capturing`
+ * or a delayed `posthog.init` for PostHog) are both a state the same banner
+ * would write. Written here because this file is where somebody will be
+ * standing when the question comes up.
+ *
+ * ── Google Tag Manager: what is loaded, and when ──────────────────────────
  *
  * Nothing, unless `VITE_GTM_ID` is set. No container ID means no script tag, no
  * `dataLayer`, no cookies and no third-party request — which is what keeps
@@ -18,23 +41,14 @@ import { gtmId } from '#/env.ts'
  * already global. The one part worth writing carefully is the `dataLayer`
  * bootstrap, and it is below.
  *
- * ── Consent ────────────────────────────────────────────────────────────────
+ * ── PostHog: what is loaded, and when ────────────────────────────────────
  *
- * There is **no consent gate here**, and there needs to be one before this site
- * takes meaningful traffic from the EU or the UK. GTM itself sets no cookies,
- * but essentially every tag people put inside it does, and under GDPR/PECR
- * those require opt-in *before* they fire.
- *
- * Two ways to close that, in increasing order of effort:
- *
- *   1. Configure Google Consent Mode v2 inside the container, defaulting every
- *      storage type to `denied`, and add a banner that updates it. The tags
- *      stay in GTM; the gate is a `consent` push.
- *   2. Do not render this at all until a banner has been accepted — move the
- *      call behind the same state the banner writes.
- *
- * Written down here rather than in a ticket because this file is where somebody
- * will be standing when the question comes up.
+ * Nothing, unless `VITE_POSTHOG_KEY` is set. With it, the official `<head>`
+ * snippet renders: it installs a `window.posthog` stub, then loads `array.js`
+ * from `<host>-assets.i.posthog.com` and replays anything queued against the
+ * stub. `person_profiles: 'identified_only'` keeps anonymous visitors from
+ * creating a person each — this site never calls `identify`, so every visitor
+ * would otherwise be a distinct person for no gain.
  */
 
 /**
@@ -67,24 +81,54 @@ export const gtmNoScriptSrc: string | null = gtmId
   : null
 
 /**
- * Push an event onto the dataLayer.
+ * PostHog's `<head>` loader.
  *
- * Safe to call whether or not GTM is configured and whether or not it has
- * finished loading: the array exists from the head snippet onwards, and if
- * there is no container the call is a no-op rather than a thrown reference
- * error. Callers never have to check.
+ * The body of this string is PostHog's official install snippet, verbatim — the
+ * stub that queues calls against `window.posthog` until `array.js` finishes
+ * loading. Only the three values at the end are ours: the project key, the
+ * ingestion host, and the `defaults` date PostHog uses to pin recommended
+ * behaviour. `identified_only` is added because this site never identifies
+ * anyone.
  *
- * Kept to a narrow payload type on purpose. `dataLayer` is famously a place
- * where anything can be pushed, and a conversion event carrying a raw form
- * object is how an email address ends up in an analytics vendor's logs — see
- * the call site in `waitlist-form.tsx` for what is deliberately not sent.
+ * `defaults` is a dated string on purpose (PostHog's design): it locks in the
+ * set of defaults current on that date, so an upgrade of `array.js` cannot
+ * change how this behaves without the date here also moving.
+ *
+ * Returns `null` when unconfigured, so the caller spreads nothing.
+ */
+export function posthogHeadScript(): { children: string } | null {
+  if (!posthogKey) return null
+
+  return {
+    children:
+      `!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('${posthogKey}',{api_host:'${posthogHost}',defaults:'2025-05-24',person_profiles:'identified_only'});`,
+  }
+}
+
+/**
+ * Push an event to whichever analytics are present — the `dataLayer` for GTM,
+ * `posthog.capture` for PostHog.
+ *
+ * Safe to call whether or not either is configured and whether or not it has
+ * finished loading: `dataLayer` exists from the GTM snippet onwards, `posthog`
+ * exists as a call-queuing stub from its snippet onwards, and if neither is
+ * there the call is a no-op rather than a thrown reference error. Callers never
+ * have to check — `waitlist-form.tsx` calls this on the success path with no
+ * try/catch.
+ *
+ * Kept to a narrow payload type on purpose. These are places where anything can
+ * be pushed, and a conversion event carrying a raw form object is how an email
+ * address ends up in an analytics vendor's logs — see the call site in
+ * `waitlist-form.tsx` for what is deliberately not sent.
  */
 export function trackEvent(event: string, payload: Record<string, string> = {}): void {
   if (typeof window === 'undefined') return
 
-  const layer = (window as unknown as { dataLayer?: Array<Record<string, unknown>> })
-    .dataLayer
-  if (!layer) return
+  const w = window as unknown as {
+    dataLayer?: Array<Record<string, unknown>>
+    posthog?: { capture?: (event: string, payload?: Record<string, string>) => void }
+  }
 
-  layer.push({ event, ...payload })
+  w.dataLayer?.push({ event, ...payload })
+  w.posthog?.capture?.(event, payload)
 }
