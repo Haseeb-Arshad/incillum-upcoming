@@ -118,24 +118,67 @@ export function Select({
 }
 
 /**
+ * The one multi-line control on the site.
+ *
+ * `field-sizing: content` is deliberately absent. It is the modern answer and
+ * it is not supported everywhere yet, and the fallback — a box that never grows
+ * — is worse than a box that is the right size to begin with. Three rows fits
+ * the answer this asks for; anything longer scrolls, which is what the caller
+ * asked for by using a textarea.
+ *
+ * `resize-y` rather than the browser default of both axes: a control the
+ * visitor can drag wider than its own column is how a careful layout acquires a
+ * horizontal scrollbar at 390px.
+ */
+export function Textarea({
+  ref,
+  invalid,
+  className,
+  ...props
+}: ComponentProps<'textarea'> & { invalid?: boolean; ref?: Ref<HTMLTextAreaElement> }) {
+  return (
+    <textarea
+      ref={ref}
+      aria-invalid={invalid || undefined}
+      className={cn(controlClasses, 'resize-y py-2.5 leading-relaxed', className)}
+      {...props}
+    />
+  )
+}
+
+/**
  * The honeypot.
  *
  * Hidden from sight and from assistive technology, out of the tab order, and
  * given a plausible name and a matching label so a naive bot fills it in.
  * Positioned off-canvas rather than `display: none`, which anything
  * sophisticated detects — though sophistication is not what this catches.
+ *
+ * ── Why the id is generated ────────────────────────────────────────────────
+ *
+ * It used to be `${name}-field`, which is stable, readable, and wrong the
+ * moment the form is rendered twice on one page — which it now is, in the hero
+ * and again at the foot of the page. Two elements with one id is invalid HTML
+ * and an axe violation, and the specific failure is quiet: the second
+ * instance's `<label for>` resolves to the *first* instance's input.
+ *
+ * `useId` per instance, the same way `Field` does it. The `name` stays fixed,
+ * because the server reads the payload by name and it has to keep matching
+ * `waitlistSchema`.
  */
 export function Honeypot({
   ref,
   name,
   ...props
 }: ComponentProps<'input'> & { ref?: Ref<HTMLInputElement> }) {
+  const id = useId()
+
   return (
     <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
-      <label htmlFor={`${name}-field`}>Company website</label>
+      <label htmlFor={id}>Company website</label>
       <input
         ref={ref}
-        id={`${name}-field`}
+        id={id}
         name={name}
         type="text"
         tabIndex={-1}

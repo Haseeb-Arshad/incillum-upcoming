@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { financeWorkflows, isWorkEmail, waitlistSchema } from '#/lib/waitlist.ts'
+import { commercialWork, isWorkEmail, quoteVolumes, waitlistSchema } from '#/lib/waitlist.ts'
 
 /**
  * The waitlist contract.
@@ -12,7 +12,7 @@ import { financeWorkflows, isWorkEmail, waitlistSchema } from '#/lib/waitlist.ts
 
 const valid = {
   workEmail: 'controller@northwind.co',
-  firstWorkflow: 'Three-way match and PO exceptions',
+  commercialWork: 'Industrial distribution',
   companyWebsite: '',
   renderedAt: 1_700_000_000_000,
 }
@@ -39,10 +39,10 @@ describe('isWorkEmail', () => {
 })
 
 describe('waitlistSchema', () => {
-  it('accepts a work address with a chosen workflow', () => {
+  it('accepts a work address with a chosen kind of work', () => {
     const result = waitlistSchema.parse(valid)
     expect(result.workEmail).toBe('controller@northwind.co')
-    expect(result.firstWorkflow).toBe('Three-way match and PO exceptions')
+    expect(result.commercialWork).toBe('Industrial distribution')
   })
 
   it('trims surrounding whitespace from the address', () => {
@@ -72,31 +72,70 @@ describe('waitlistSchema', () => {
   })
 
   /**
-   * The optional field is the one most likely to be broken by a well-meaning
-   * change, because "make the select required" looks like an improvement and is
-   * measurable as a regression. Three cases pin it down: the untouched
-   * `<select>` value, an omitted key, and the collapse of the first into the
-   * second so the server never has to tell them apart.
+   * Seven optional fields, and every one of them is a candidate for somebody
+   * deciding the list would be higher quality if it were required. It would not
+   * — it would be shorter, which is a different thing — and the form's whole
+   * shape depends on the address being the only thing anybody has to answer.
+   *
+   * These are the cases that matter: the untouched `<select>` value, an omitted
+   * key, and the collapse of the first into the second so the server never has
+   * to tell them apart.
    */
-  it('accepts the untouched select and normalises it away', () => {
-    expect(waitlistSchema.parse({ ...valid, firstWorkflow: '' }).firstWorkflow).toBeUndefined()
+  it('accepts the untouched selects and normalises them away', () => {
+    const parsed = waitlistSchema.parse({ ...valid, commercialWork: '', quoteVolume: '' })
+    expect(parsed.commercialWork).toBeUndefined()
+    expect(parsed.quoteVolume).toBeUndefined()
   })
 
-  it('accepts the field being absent entirely', () => {
-    const { firstWorkflow: _omitted, ...withoutWorkflow } = valid
-    expect(waitlistSchema.parse(withoutWorkflow).firstWorkflow).toBeUndefined()
+  it('accepts every optional field being absent entirely', () => {
+    const { commercialWork: _omitted, ...bare } = valid
+    const parsed = waitlistSchema.parse(bare)
+    expect(parsed.commercialWork).toBeUndefined()
+    expect(parsed.quoteVolume).toBeUndefined()
+    expect(parsed.company).toBeUndefined()
+    expect(parsed.role).toBeUndefined()
+    expect(parsed.erp).toBeUndefined()
+    expect(parsed.pain).toBeUndefined()
   })
 
-  it('rejects a workflow that is not on the list', () => {
+  it('normalises an empty free-text answer away rather than storing ""', () => {
+    const parsed = waitlistSchema.parse({ ...valid, company: '   ', pain: '' })
+    expect(parsed.company).toBeUndefined()
+    expect(parsed.pain).toBeUndefined()
+  })
+
+  it('trims the free-text answers it does keep', () => {
+    expect(waitlistSchema.parse({ ...valid, company: '  Northwind  ' }).company).toBe(
+      'Northwind',
+    )
+  })
+
+  it('rejects a kind of work that is not on the list', () => {
     expect(
-      waitlistSchema.safeParse({ ...valid, firstWorkflow: 'Anything at all' }).success,
+      waitlistSchema.safeParse({ ...valid, commercialWork: 'Anything at all' }).success,
     ).toBe(false)
   })
 
-  it('accepts every workflow the form actually renders', () => {
-    for (const workflow of financeWorkflows) {
-      expect(waitlistSchema.safeParse({ ...valid, firstWorkflow: workflow }).success).toBe(true)
+  it('accepts every option the form actually renders', () => {
+    for (const kind of commercialWork) {
+      expect(waitlistSchema.safeParse({ ...valid, commercialWork: kind }).success).toBe(true)
     }
+    for (const band of quoteVolumes) {
+      expect(waitlistSchema.safeParse({ ...valid, quoteVolume: band }).success).toBe(true)
+    }
+  })
+
+  /**
+   * The caps are what stop the endpoint being a place to post an essay at us.
+   * They are generous enough that nobody legitimate reaches them, which is
+   * exactly why nobody would notice them being removed.
+   */
+  it('caps the free-text answers', () => {
+    expect(waitlistSchema.safeParse({ ...valid, company: 'x'.repeat(121) }).success).toBe(false)
+    expect(waitlistSchema.safeParse({ ...valid, role: 'x'.repeat(121) }).success).toBe(false)
+    expect(waitlistSchema.safeParse({ ...valid, erp: 'x'.repeat(121) }).success).toBe(false)
+    expect(waitlistSchema.safeParse({ ...valid, pain: 'x'.repeat(1_001) }).success).toBe(false)
+    expect(waitlistSchema.safeParse({ ...valid, pain: 'x'.repeat(1_000) }).success).toBe(true)
   })
 
   /**

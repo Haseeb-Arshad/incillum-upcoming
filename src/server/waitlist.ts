@@ -46,10 +46,27 @@ export const joinWaitlist = createServerFn({ method: 'POST' })
     }
 
     const reference = createReference('IC')
+    /**
+     * Every optional answer becomes the same literal when it is missing, here
+     * rather than in the mail template.
+     *
+     * The alternative is `??` in eight places inside `notify.ts`, where the one
+     * that gets forgotten produces `undefined` in the body of an email to a
+     * stranger's colleague. It is also the reason the fields are strings on
+     * `WaitlistNotification` rather than optionals: a notifier cannot render a
+     * field it was never given.
+     */
+    const answered = (value: string | undefined) => value ?? 'not answered'
+
     const notification = {
       reference,
       workEmail: data.workEmail,
-      firstWorkflow: data.firstWorkflow ?? 'not answered',
+      commercialWork: answered(data.commercialWork),
+      quoteVolume: answered(data.quoteVolume),
+      company: answered(data.company),
+      role: answered(data.role),
+      erp: answered(data.erp),
+      pain: answered(data.pain),
       receivedAt: new Date().toISOString(),
     }
 
@@ -57,7 +74,8 @@ export const joinWaitlist = createServerFn({ method: 'POST' })
       await waitlistNotifier().send(notification)
       console.info('[waitlist] joined', {
         reference,
-        firstWorkflow: notification.firstWorkflow,
+        commercialWork: notification.commercialWork,
+        quoteVolume: notification.quoteVolume,
         // Only the domain on the success path. The address is in the mail that
         // was just delivered, so the log does not need a second copy of it.
         emailDomain: data.workEmail.split('@')[1] ?? 'unknown',

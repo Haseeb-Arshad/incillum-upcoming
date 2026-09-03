@@ -25,7 +25,7 @@ export function Standing() {
   return (
     <section
       aria-labelledby="standing-heading"
-      className="border-t border-line bg-paper-sunken py-20 sm:py-28"
+      className="ic-textured border-t border-line bg-paper-sunken py-20 sm:py-28"
     >
       <Container>
         <Reveal className="flex max-w-[40ch] flex-col gap-5">

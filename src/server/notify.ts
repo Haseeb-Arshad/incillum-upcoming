@@ -66,7 +66,12 @@ import { serverEnv } from '#/server/env.ts'
 export interface WaitlistNotification {
   reference: string
   workEmail: string
-  firstWorkflow: string
+  commercialWork: string
+  quoteVolume: string
+  company: string
+  role: string
+  erp: string
+  pain: string
   /** ISO 8601, stamped on the server so every record is in one timezone. */
   receivedAt: string
 }
@@ -87,12 +92,32 @@ const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email'
  * plain body threads properly in every client, is searchable, never trips a
  * spam filter on its markup, and cannot render an address wrong.
  */
+/**
+ * The mail body.
+ *
+ * Fixed-width labels rather than a table or an HTML template: this arrives in
+ * somebody's inbox to be read in four seconds and replied to, and the whole of
+ * its job is to put the address and the qualifying answers where a person can
+ * see them without scrolling.
+ *
+ * The free-text answer goes last and on its own lines, because it is the only
+ * field whose length is unknown — inside the column layout it would push
+ * everything after it out of alignment the first time somebody wrote two
+ * sentences.
+ */
 function body(notification: WaitlistNotification): string {
   return [
     `Reference    ${notification.reference}`,
     `Email        ${notification.workEmail}`,
-    `First job    ${notification.firstWorkflow}`,
+    `Company      ${notification.company}`,
+    `Role         ${notification.role}`,
+    `Work         ${notification.commercialWork}`,
+    `Volume       ${notification.quoteVolume}`,
+    `ERP          ${notification.erp}`,
     `Received     ${notification.receivedAt}`,
+    '',
+    'What costs them the most:',
+    notification.pain,
     '',
     'Reply directly to this message to reach them.',
   ].join('\n')

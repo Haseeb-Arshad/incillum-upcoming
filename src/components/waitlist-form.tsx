@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { Field, Honeypot, Input, Select } from '#/components/field.tsx'
+import { Field, Honeypot, Input, Select, Textarea } from '#/components/field.tsx'
 import { Button } from '#/components/primitives.tsx'
+import { brand } from '#/content/site.ts'
 import { trackEvent } from '#/lib/analytics.ts'
-import { financeWorkflows, waitlistSchema } from '#/lib/waitlist.ts'
+import { commercialWork, quoteVolumes, waitlistSchema } from '#/lib/waitlist.ts'
 import { joinWaitlist } from '#/server/waitlist.ts'
 
 import type { WaitlistFormValues } from '#/lib/waitlist.ts'
@@ -13,13 +14,42 @@ import type { WaitlistFormValues } from '#/lib/waitlist.ts'
 /**
  * The waitlist form.
  *
- * ── Why it is two fields and not one ───────────────────────────────────────
+ * ── One question, then seven ───────────────────────────────────────────────
  *
- * One required (where to write back) and one optional (which finance workflow
- * you would hand over first). The optional one earns its place because the
- * answer is the ranking input for what gets built after invoice intake — not
- * because a one-field form looks unserious. It stays optional, and there is a
- * test that fails if somebody decides otherwise.
+ * The site is looking for design partners, and identifying one needs to know
+ * what they quote, how much of it, what it lands in and which part of it hurts.
+ * Asking all of that up front is how a form collects nothing: eight fields in
+ * front of somebody who has not yet decided to give you an address is a page
+ * that has confused qualification with conversion.
+ *
+ * So the form opens on the address and one question, and the other six sit
+ * behind a disclosure the reader opens. Every one of them is optional and there
+ * is a test that fails if one of them stops being.
+ *
+ * ── Why a disclosure, and not a reveal ────────────────────────────────────
+ *
+ * The first build of this revealed the block automatically once the address was
+ * blurred and valid, on the reasoning that blur is a completed action and
+ * therefore a safe moment to change the layout. It is not, and the end-to-end
+ * suite found the reason in four tests: **clicking the submit button is a
+ * blur**. Somebody who types an address and goes straight for the button gets
+ * five fields inserted above it at the instant they press, the button slides
+ * down, and the click lands on nothing. The most decisive visitor on the page
+ * is the one it fails.
+ *
+ * Narrowing the trigger — checking `relatedTarget`, ignoring a blur toward the
+ * submit button — fixes the symptom and keeps the shape of the fault: browsers
+ * disagree about whether clicking a button focuses it, so the guard would work
+ * on one engine and not another, and the failure would be invisible again.
+ *
+ * So the block is a `<details>` the reader opens. Nothing moves unless somebody
+ * asked it to, the summary is keyboard-operable and announced as expanded or
+ * collapsed without a line of ARIA, and it works with no JavaScript at all.
+ *
+ * The cost is real and it is accepted: fewer people will answer seven optional
+ * questions they have to open than would answer seven that appeared in front of
+ * them. The ones who open it are the ones worth calling first, and a form that
+ * occasionally eats a submission is worse than a form that collects less.
  *
  * ── Why the address field is not a placeholder-only input ──────────────────
  *
@@ -29,17 +59,21 @@ import type { WaitlistFormValues } from '#/lib/waitlist.ts'
  *
  * ── The success state ──────────────────────────────────────────────────────
  *
- * It says we have the address and names what the one email will be *for* — a
- * call, and one workflow run beside the way the team works now. That is the
- * same promise the hero's assurance makes above the button and the same one
- * `standing` commits to further down the page; three statements of one promise
- * is a promise, three statements of three promises is a leak.
+ * It says we have the address and names what the one email will be for — a
+ * call, then one real case run beside the way the team works now. That is the
+ * same promise the hero makes above the button and the same one `earlyAccess`
+ * commits to at the end of the page: three statements of one promise is a
+ * promise, three statements of three promises is a leak.
  *
  * It still does **not** say "check your inbox", and that restraint is
- * load-bearing rather than modest: `server/waitlist.ts` writes to a log and
- * nothing sends a confirmation, so a page promising one would produce its first
- * broken promise before the product had shipped anything at all. There is a
- * test for it.
+ * load-bearing rather than modest: `server/waitlist.ts` mails *us* and nothing
+ * sends a confirmation, so a page promising one would produce its first broken
+ * promise before the product had shipped anything at all. There is a test.
+ *
+ * The motto is the last line, and this is one of the two places on the site it
+ * is allowed to appear. It earns the position: somebody who has just joined is
+ * the one reader who has agreed with the argument, and four words is the whole
+ * of what is left to say to them.
  */
 
 type SubmitState =
@@ -68,7 +102,12 @@ export function WaitlistForm() {
     reValidateMode: 'onChange',
     defaultValues: {
       workEmail: '',
-      firstWorkflow: '',
+      commercialWork: '',
+      quoteVolume: '',
+      company: '',
+      role: '',
+      erp: '',
+      pain: '',
       companyWebsite: '',
       /**
        * Zero until the effect below runs. It cannot be `Date.now()` here for
@@ -103,21 +142,23 @@ export function WaitlistForm() {
       /**
        * The conversion event, and what is deliberately not in it.
        *
-       * No email address, no reference. `dataLayer` is readable by every tag in
-       * the container and forwarded to whichever vendors are configured there —
-       * so anything pushed here should be assumed to end up in an analytics
-       * product, and a work email address in an analytics product is a data
-       * problem nobody signed up for.
+       * No email address, no company, no role, no free text. `dataLayer` is
+       * readable by every tag in the container and forwarded to whichever
+       * vendors are configured there — so anything pushed here should be
+       * assumed to end up in an analytics product, and a person's employer and
+       * job title in an analytics product is a data problem nobody signed up
+       * for.
        *
-       * `first_workflow` is safe: it is one of nine fixed options and says
-       * nothing about who chose it. It is also the only part worth measuring —
-       * it tells you what to build next, which is why the field is on the form
-       * at all.
+       * The two that go are safe and are the two worth measuring: both are
+       * fixed option sets, neither identifies anybody, and between them they
+       * say which vertical and which size of operation this page is actually
+       * reaching — which is what decides who the first ten calls are with.
        *
        * A no-op when GTM is unconfigured, so this needs no guard.
        */
       trackEvent('waitlist_join', {
-        first_workflow: values.firstWorkflow || 'not_answered',
+        commercial_work: values.commercialWork || 'not_answered',
+        quote_volume: values.quoteVolume || 'not_answered',
       })
     } catch (error) {
       // Never swallow: surface a recovery path, keep the detail in the console.
@@ -143,14 +184,21 @@ export function WaitlistForm() {
         className="flex flex-col gap-3 rounded-panel border border-line-strong bg-paper-raised p-6 sm:p-7"
       >
         <p className="text-label uppercase text-ink-400">Request recorded</p>
-        <p className="font-display text-heading text-ink">
-          You are on the waitlist.
-        </p>
+        <p className="font-display text-heading text-ink">You’re on the list.</p>
         <p className="text-body text-ink-600">
-          We will write to you once, to arrange a call and one workflow run
-          alongside the way you do it today. Nothing is sent before then.
+          If the workflow looks like a fit, we’ll reach out about running one real
+          case alongside the way your team works today. Nothing is sent before
+          then.
         </p>
         <p className="ic-tabular text-small text-ink-400">{submitState.reference}</p>
+        {/*
+          The motto, in the serif, behind the page's hairline. One of two
+          placements on the whole site — see `brand.motto`. It is last because
+          there is nothing to say after it.
+        */}
+        <p className="mt-2 border-t border-line pt-4 font-display text-quote text-ink">
+          Until then: {brand.motto.toLowerCase()}
+        </p>
       </div>
     )
   }
@@ -185,9 +233,8 @@ export function WaitlistForm() {
       </Field>
 
       <Field
-        label="The first thing you would hand it"
-        hint="Changes what we build after invoice intake."
-        error={errors.firstWorkflow?.message}
+        label="What kind of commercial work do you handle?"
+        error={errors.commercialWork?.message}
       >
         {({ id, describedBy, invalid }) => (
           <Select
@@ -195,17 +242,146 @@ export function WaitlistForm() {
             aria-describedby={describedBy}
             invalid={invalid}
             defaultValue=""
-            {...register('firstWorkflow')}
+            {...register('commercialWork')}
           >
             <option value="">Skip this</option>
-            {financeWorkflows.map((workflow) => (
-              <option key={workflow} value={workflow}>
-                {workflow}
+            {commercialWork.map((kind) => (
+              <option key={kind} value={kind}>
+                {kind}
               </option>
             ))}
           </Select>
         )}
       </Field>
+
+      {/*
+        The qualifying questions, behind a disclosure the reader opens.
+
+        `<details>` rather than a state flag and a conditional render: the
+        summary is focusable, operable with Enter and Space, and announced with
+        its expanded state, all without a line of ARIA — and it works before
+        hydration, which a React-controlled version does not.
+
+        The `[&::-webkit-details-marker]` reset removes Safari's legacy triangle
+        so the disclosure reads as a line of the form rather than as a native
+        control dropped into it. The `group-open` rotation on the chevron is the
+        one piece of motion here and it is a 160ms transform on an inline SVG,
+        which is the same budget the button's arrow spends.
+      */}
+      <details className="group border-t border-line pt-5">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-[2px] text-small font-medium text-ink [&::-webkit-details-marker]:hidden">
+          <span>
+            Tell us about the work
+            <span className="ml-1.5 font-normal text-ink-400">optional</span>
+          </span>
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden="true"
+            className="size-4 shrink-0 text-ink-400 transition-transform duration-[160ms] ease-[cubic-bezier(0.32,0.72,0,1)] group-open:rotate-180"
+          >
+            <path
+              d="M4 6l4 4 4-4"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </summary>
+
+        <div className="mt-5 flex flex-col gap-5">
+          {/*
+            Why, not whether. The summary above already says optional and every
+            field below carries its own marker — a third statement of the same
+            fact is noise, and the one thing none of them says is what answering
+            actually buys.
+          */}
+          <p className="text-small text-ink-400">
+            It is what tells us whether to start with your team.
+          </p>
+
+          <Field label="Company" error={errors.company?.message}>
+            {({ id, describedBy, invalid }) => (
+              <Input
+                id={id}
+                type="text"
+                autoComplete="organization"
+                aria-describedby={describedBy}
+                invalid={invalid}
+                {...register('company')}
+              />
+            )}
+          </Field>
+
+          <Field label="Your role" error={errors.role?.message}>
+            {({ id, describedBy, invalid }) => (
+              <Input
+                id={id}
+                type="text"
+                autoComplete="organization-title"
+                aria-describedby={describedBy}
+                invalid={invalid}
+                {...register('role')}
+              />
+            )}
+          </Field>
+
+          <Field
+            label="Roughly how many RFQs or quotes a month?"
+            error={errors.quoteVolume?.message}
+          >
+            {({ id, describedBy, invalid }) => (
+              <Select
+                id={id}
+                aria-describedby={describedBy}
+                invalid={invalid}
+                defaultValue=""
+                {...register('quoteVolume')}
+              >
+                <option value="">Skip this</option>
+                {quoteVolumes.map((band) => (
+                  <option key={band} value={band}>
+                    {band}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+
+          <Field
+            label="Current ERP"
+            hint="Or whatever the quotation has to end up in."
+            error={errors.erp?.message}
+          >
+            {({ id, describedBy, invalid }) => (
+              <Input
+                id={id}
+                type="text"
+                autoComplete="off"
+                aria-describedby={describedBy}
+                invalid={invalid}
+                {...register('erp')}
+              />
+            )}
+          </Field>
+
+          <Field
+            label="What part of quoting costs you the most?"
+            error={errors.pain?.message}
+          >
+            {({ id, describedBy, invalid }) => (
+              <Textarea
+                id={id}
+                rows={3}
+                aria-describedby={describedBy}
+                invalid={invalid}
+                {...register('pain')}
+              />
+            )}
+          </Field>
+        </div>
+      </details>
 
       <Button
         type="submit"
@@ -215,7 +391,7 @@ export function WaitlistForm() {
         disabled={isSubmitting}
         className="w-full sm:w-auto sm:self-start"
       >
-        {isSubmitting ? 'Sending…' : 'Join the waitlist'}
+        {isSubmitting ? 'Sending…' : 'Join early access'}
       </Button>
 
       {submitState.kind === 'error' ? (
