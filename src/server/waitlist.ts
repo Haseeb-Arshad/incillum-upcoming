@@ -81,10 +81,8 @@ export const joinWaitlist = createServerFn({ method: 'POST' })
      * for our misconfigured backend would lose the signup *and* insult them.
      * See AGENTS.md §6.
      */
-    let notified = false
     try {
       await waitlistNotifier().send(notification)
-      notified = true
     } catch (error) {
       console.error('[waitlist] NOTIFICATION FAILED — record follows', {
         error,
@@ -92,10 +90,8 @@ export const joinWaitlist = createServerFn({ method: 'POST' })
       })
     }
 
-    let persisted = false
     try {
       await waitlistStore().save(notification)
-      persisted = true
     } catch (error) {
       console.error('[waitlist] PERSIST FAILED — record follows', {
         error,
@@ -103,15 +99,18 @@ export const joinWaitlist = createServerFn({ method: 'POST' })
       })
     }
 
+    /**
+     * The signup is accepted regardless of what the two calls above did. The
+     * outcome of each — delivered, written, fell back to a log line, or failed
+     * loudly at `error` — is logged by the notifier and the store themselves;
+     * this line is just the "a real person joined" marker with the two answers
+     * worth counting. The address is in the mail and the row already, so only
+     * its domain is here.
+     */
     console.info('[waitlist] joined', {
       reference,
-      // Whether each half landed. Both false means the two `error` lines above
-      // hold the only copies of this signup.
-      notified,
-      persisted,
       commercialWork: notification.commercialWork,
       quoteVolume: notification.quoteVolume,
-      // Only the domain here. The address is in the mail and the row already.
       emailDomain: data.workEmail.split('@')[1] ?? 'unknown',
     })
 

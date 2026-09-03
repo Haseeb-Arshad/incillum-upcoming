@@ -55,9 +55,16 @@ const publicEnvSchema = z.object({
   /**
    * PostHog ingestion host. `https://us.i.posthog.com` or
    * `https://eu.i.posthog.com` for PostHog Cloud, or a reverse-proxy origin.
-   * Has a default so it is only worth setting to change region or proxy.
+   *
+   * `preprocess` rather than `.default()` because a host dashboard supplies an
+   * unset variable as the empty string, not as absent — and `z.url().default()`
+   * does not fire on `''`, it rejects it and fails the whole boot. Empty or
+   * missing collapses to the US host here; anything else must be a valid URL.
    */
-  VITE_POSTHOG_HOST: z.url().default('https://us.i.posthog.com'),
+  VITE_POSTHOG_HOST: z.preprocess(
+    (value) => (value === '' || value == null ? 'https://us.i.posthog.com' : value),
+    z.url(),
+  ),
 })
 
 function readPublicEnv(): z.infer<typeof publicEnvSchema> {

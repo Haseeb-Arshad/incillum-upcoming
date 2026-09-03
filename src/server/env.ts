@@ -75,12 +75,22 @@ let cached: ServerEnv | null = null
 export function serverEnv(): ServerEnv {
   if (cached) return cached
 
+  /**
+   * A host dashboard, and a copied `.env.example`, both supply an unset
+   * variable as the empty string rather than as absent. Every field here is
+   * `.optional()`, but `''` is not absent — it is a present value that fails
+   * `.min(1)` / `.email()` / `.url()`, and because `safeParse` is atomic one
+   * empty line would disable *all* of email and storage, not just its own
+   * feature. So empty collapses to `undefined` before the schema sees it.
+   */
+  const fromEnv = (value: string | undefined) => (value === '' ? undefined : value)
+
   const result = serverEnvSchema.safeParse({
-    BREVO_API_KEY: process.env.BREVO_API_KEY,
-    WAITLIST_NOTIFY_TO: process.env.WAITLIST_NOTIFY_TO,
-    WAITLIST_NOTIFY_FROM: process.env.WAITLIST_NOTIFY_FROM,
-    SUPABASE_URL: process.env.SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    BREVO_API_KEY: fromEnv(process.env.BREVO_API_KEY),
+    WAITLIST_NOTIFY_TO: fromEnv(process.env.WAITLIST_NOTIFY_TO),
+    WAITLIST_NOTIFY_FROM: fromEnv(process.env.WAITLIST_NOTIFY_FROM),
+    SUPABASE_URL: fromEnv(process.env.SUPABASE_URL),
+    SUPABASE_SERVICE_ROLE_KEY: fromEnv(process.env.SUPABASE_SERVICE_ROLE_KEY),
   })
 
   if (!result.success) {
