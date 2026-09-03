@@ -36,7 +36,7 @@ export function seoTags() {
       { property: 'og:image:height', content: '630' },
       {
         property: 'og:image:alt',
-        content: `${brand.name} — an AI coworker for finance operations`,
+        content: `${brand.name} — the work doesn’t leave when you do`,
       },
 
       { name: 'twitter:card', content: 'summary_large_image' },

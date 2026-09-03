@@ -18,7 +18,12 @@ import type { WaitlistNotification } from '#/server/notify.ts'
 const notification: WaitlistNotification = {
   reference: 'IC-ABC123-XYZ',
   workEmail: 'controller@northwind.co',
-  firstWorkflow: 'Payment runs and approvals',
+  commercialWork: 'Industrial distribution',
+  quoteVolume: '200 to 1,000 a month',
+  company: 'Northwind Trading',
+  role: 'Commercial Director',
+  erp: 'not answered',
+  pain: 'Matching customer part numbers to our own catalogue.',
   receivedAt: '2026-01-14T03:20:00.000Z',
 }
 
@@ -79,7 +84,14 @@ describe('with the provider configured', () => {
     expect(payload.replyTo).toEqual({ email: 'controller@northwind.co' })
     expect(String(payload.textContent)).toContain('IC-ABC123-XYZ')
     expect(String(payload.textContent)).toContain('controller@northwind.co')
-    expect(String(payload.textContent)).toContain('Payment runs and approvals')
+    expect(String(payload.textContent)).toContain('Industrial distribution')
+    expect(String(payload.textContent)).toContain('200 to 1,000 a month')
+    expect(String(payload.textContent)).toContain('Northwind Trading')
+    expect(String(payload.textContent)).toContain('Commercial Director')
+    // The free-text answer, which is the reason a person reads this mail twice.
+    expect(String(payload.textContent)).toContain(
+      'Matching customer part numbers to our own catalogue.',
+    )
   })
 
   /**

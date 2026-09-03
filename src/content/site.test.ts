@@ -1,215 +1,346 @@
 import { describe, expect, it } from 'vitest'
 
-import { access, artifact, direction, hero, outline } from '#/content/site.ts'
+import {
+  access,
+  boundary,
+  brand,
+  earlyAccess,
+  evidence,
+  firstBuild,
+  hero,
+  instrument,
+  nightfall,
+  standing,
+  thread,
+} from '#/content/site.ts'
 
 /**
- * The example output has to add up.
+ * The copy, held to the rules it is written under.
  *
- * `artifact` is the one block on this site that prints figures, and the reader
- * it exists for is a controller who will check them — quietly, in about four
- * seconds, and then decide what to think about everything else on the page. An
- * illustration of a three-way match that does not reconcile is worse than no
- * illustration, and it fails in front of exactly the audience it was built for.
+ * Three kinds of assertion live here, and only the first is about arithmetic:
  *
- * The numbers are also the easiest thing on the site to break by accident. They
- * live in four places that have to agree — three table rows, a document line
- * and a sentence naming the break — and a copy edit to any one of them looks
- * completely harmless in review. So the arithmetic is asserted rather than
- * remembered.
- *
- * These are tests of internal consistency, not of anything the software has
- * done. Everything in `artifact` is invented; see its comment in site.ts.
+ *   1. The illustrative quotation has to add up, and it has to add up *across*
+ *      two sections that show it at two magnifications. A commercial reader
+ *      will check it, and an example that does not reconcile fails hardest in
+ *      front of exactly the reader it exists for.
+ *   2. The labels that license the illustrative material have to be present. A
+ *      night thread this specific and a document this exact are honest only
+ *      while their own first lines say they are invented — and that sentence is
+ *      the first thing somebody trims when a section feels long.
+ *   3. The words this site may never say have to stay unsaid, and the words it
+ *      says exactly twice have to stay twice.
  */
 
-/** `£18,240.00` → `18240`. Returns `null` when the string is not money. */
-function money(value: string): number | null {
-  const match = /£([\d,]+(?:\.\d{2})?)/.exec(value)
-  if (!match?.[1]) return null
-  return Number(match[1].replaceAll(',', ''))
+/** Pulls a decimal out of `EUR 162,816.00`, ignoring the currency and commas. */
+function money(value: string): number {
+  const match = /EUR ([\d,]+\.\d{2})/.exec(value)
+  expect(match?.[1], `no EUR amount in ${JSON.stringify(value)}`).toBeTruthy()
+  return Number(match![1]!.replaceAll(',', ''))
 }
 
-/** `480 units` → `480`. */
-function units(value: string): number | null {
-  const match = /^(\d+) units$/.exec(value)
-  return match?.[1] ? Number(match[1]) : null
+/** Pulls `15.2%` out of anywhere in a string. */
+function percent(value: string): number {
+  const match = /([\d.]+)%/.exec(value)
+  expect(match?.[1], `no percentage in ${JSON.stringify(value)}`).toBeTruthy()
+  return Number(match![1]!)
 }
 
-/** `18240` → `£18,240.00`, in the format the copy is written in. */
 function formatMoney(value: number): string {
-  return `£${value.toLocaleString('en-GB', {
+  return `EUR ${value.toLocaleString('en-GB', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`
 }
 
-describe('the example three-way match', () => {
-  const rows = artifact.record.matchRows
-  const [invoice, purchaseOrder, goodsReceipt] = rows
+/** The single line item the `evidence` document takes apart. */
+const UNITS = 1_200
 
-  it('is three rows, exactly one of which broke', () => {
-    expect(rows).toHaveLength(3)
-    expect(rows.filter((row) => !row.agrees)).toHaveLength(1)
-    expect(goodsReceipt.agrees).toBe(false)
+describe('the evidence document’s arithmetic', () => {
+  const rows = evidence.record.calculation.rows
+  const row = (basis: string) => {
+    const found = rows.find((entry) => entry.basis.startsWith(basis))
+    expect(found, `no calculation row starting "${basis}"`).toBeTruthy()
+    return found!
+  }
+
+  const cost = money(row('Cost').amount)
+  const quoted = money(row('Quoted').amount)
+  const margin = money(row('Margin').amount)
+  const atFloor = money(row('At the').amount)
+  const shortfall = money(evidence.record.calculation.shortfall.amount)
+  const floor = percent(row('At the').basis)
+
+  it('states the quantity once, and multiplies by it correctly', () => {
+    expect(evidence.record.part).toContain(UNITS.toLocaleString('en-GB'))
+    expect(money(row('Cost').working) * UNITS).toBeCloseTo(cost, 2)
+    expect(money(row('Quoted').working) * UNITS).toBeCloseTo(quoted, 2)
   })
 
-  /**
-   * The invoice and the purchase order agreeing on every figure is what makes
-   * this a *quantity* break rather than a price dispute — which is what the
-   * copy below the table says it is, and what the drafted supplier email asks
-   * about. Let one of them drift and the block quietly describes a different
-   * exception from the one it narrates.
-   */
-  it('breaks on quantity alone: invoice and purchase order agree throughout', () => {
-    expect(invoice.quantity).toBe(purchaseOrder.quantity)
-    expect(invoice.total).toBe(purchaseOrder.total)
+  it('derives the margin from the two figures above it', () => {
+    expect(quoted - cost).toBeCloseTo(margin, 2)
+    expect((margin / quoted) * 100).toBeCloseTo(percent(row('Margin').working), 3)
   })
 
-  it('prices every row identically, so the only variable is quantity', () => {
-    const unitPrices = rows.map((row) => {
-      const total = money(row.total)
-      const quantity = units(row.quantity)
-      expect(total).not.toBeNull()
-      expect(quantity).not.toBeNull()
-      return total! / quantity!
-    })
-
-    expect(new Set(unitPrices).size).toBe(1)
+  it('is below the floor, which is the only reason the section exists', () => {
+    expect(percent(row('Margin').working)).toBeLessThan(floor)
   })
 
-  it('names the shortfall in the sentence, to the penny', () => {
-    const billed = money(invoice.total)!
-    const received = money(goodsReceipt.total)!
-    const shortfall = billed - received
-
-    expect(shortfall).toBeGreaterThan(0)
-    expect(artifact.record.discrepancy.body).toContain(formatMoney(shortfall))
-    expect(artifact.record.decision.body).toContain(formatMoney(shortfall))
+  it('prices the floor from the cost, not from the quoted price', () => {
+    expect(cost / (1 - floor / 100)).toBeCloseTo(atFloor, 2)
+    expect(money(row('At the').working) * UNITS).toBeCloseTo(atFloor, 2)
   })
 
-  it('quotes the unit price in the sentence that does the arithmetic', () => {
-    const unitPrice = money(invoice.total)! / units(invoice.quantity)!
-    expect(artifact.record.discrepancy.body).toContain(formatMoney(unitPrice))
+  it('names the shortfall to the cent, per unit and in total', () => {
+    expect(atFloor - quoted).toBeCloseTo(shortfall, 2)
+    expect(money(evidence.record.calculation.shortfall.working) * UNITS).toBeCloseTo(
+      shortfall,
+      2,
+    )
   })
 
-  it('shows the invoice total on the document line above the table', () => {
-    expect(artifact.record.document).toContain(invoice.total)
+  it('carries the cost rise through from the finding that caused it', () => {
+    // The supplier confirmation is the reason this line moved: 128.00 × 1.06.
+    const [was, now] = [...evidence.record.finding.body.matchAll(/EUR ([\d,]+\.\d{2})/g)].map(
+      (match) => Number(match[1]!.replaceAll(',', '')),
+    )
+    expect(was).toBeTruthy()
+    expect(now).toBeCloseTo(was! * 1.06, 2)
+    expect(money(row('Cost').working)).toBeCloseTo(now!, 2)
   })
 
-  /**
-   * The decision this record hands back is a person's, and saying so is the
-   * argument the whole page makes. A copy edit that drops it turns the example
-   * into a picture of software posting to a ledger on its own.
-   */
-  it('leaves the posting and the payment to a person', () => {
-    expect(artifact.record.decision.body).toMatch(/nothing posts and no money moves/i)
-  })
-})
-
-describe('the example output', () => {
-  /**
-   * The block is a mock-up on a site whose stated rule is that it shows no
-   * screenshots. What makes that honest is one sentence, above the panel, at
-   * reading size. If it moves, shrinks, or softens, the block stops being an
-   * illustration and starts being a product shot.
-   */
-  it('says it is invented, in its own lede', () => {
-    expect(artifact.lede).toMatch(/invented/i)
-    expect(artifact.lede).toMatch(/not a screenshot/i)
-  })
-
-  it('is labelled as an example', () => {
-    expect(artifact.label.toLowerCase()).toContain('example')
+  it('leaves the decision to a person, and says so', () => {
+    expect(evidence.record.decision.body).toMatch(/until a person/i)
+    expect(evidence.record.decision.body).toMatch(/nothing is sent/i)
   })
 })
 
 /**
- * The system names, and the discipline holding them.
- *
- * NetSuite, Sage Intacct and Xero are the only vendor names on the site, and
- * naming them is what turns "for finance teams" into a line a controller can
- * act on. They are also one careless edit from being an integrations claim,
- * which AGENTS.md §5 forbids outright.
- *
- * Two things keep them honest, and both are asserted here: they appear in
- * exactly two places, and each of those places carries a sentence putting it in
- * the future. The failure mode is not somebody writing "integrations" — it is a
- * third mention appearing somewhere with no tense contract around it, most
- * likely in `direction`, where a list of instructions with a system under each
- * one would read as a connector grid.
+ * The two sections are the same quotation at two magnifications, and the whole
+ * point of showing the second one is that it explains the first. If they stop
+ * reconciling, the page is quietly telling a commercial reader that neither
+ * number can be trusted.
  */
-describe('the vendor names', () => {
-  const ERPS = ['NetSuite', 'Sage Intacct', 'Xero']
-
-  /** Every string in the deck, flattened, with the two licensed homes removed. */
-  function everywhereElse(): string {
-    const { qualifier: _qualifier, ...restOfHero } = hero
-    const { lede: _lede, ...restOfOutline } = outline
-    return JSON.stringify([restOfHero, restOfOutline, direction, artifact, access])
+describe('the night thread and the evidence document reconcile', () => {
+  const beat = thread.beats.find((entry) => entry.figures)
+  const figure = (term: string) => {
+    const found = beat!.figures!.find((entry) => entry.term === term)
+    expect(found, `no figure "${term}"`).toBeTruthy()
+    return found!
   }
 
-  it('names them where the copy needs them', () => {
-    for (const erp of ERPS) {
-      expect(hero.qualifier).toContain(erp)
-      expect(outline.lede).toContain(erp)
+  it('quotes one set of figures, at one hour', () => {
+    expect(beat, 'no beat carries the ledger').toBeTruthy()
+    expect(beat!.at).toBe('06:50')
+  })
+
+  it('prices the whole quotation short of the same floor', () => {
+    const quote = money(figure('Quote value').value)
+    const expected = percent(figure('Expected margin').value)
+    const floor = percent(figure('Commercial floor').value)
+    const short = money(figure('Short of the floor').value)
+
+    expect(expected).toBeLessThan(floor)
+
+    // cost = quote × (1 − margin); the price that clears the floor is cost ÷ (1 − floor).
+    const cost = quote * (1 - expected / 100)
+    expect(cost / (1 - floor / 100) - quote).toBeCloseTo(short, 2)
+  })
+
+  it('uses the same commercial floor in both sections', () => {
+    const threadFloor = percent(figure('Commercial floor').value)
+    const documentFloor = percent(
+      evidence.record.calculation.rows.find((row) => row.basis.startsWith('At the'))!.basis,
+    )
+    expect(threadFloor).toBe(documentFloor)
+  })
+
+  it('leaves the other lines carrying a plausible margin, not an impossible one', () => {
+    const quote = money(figure('Quote value').value)
+    const expected = percent(figure('Expected margin').value)
+    const wholeMargin = quote * (expected / 100)
+
+    const lineQuoted = money(
+      evidence.record.calculation.rows.find((row) => row.basis.startsWith('Quoted'))!.amount,
+    )
+    const lineMargin = money(
+      evidence.record.calculation.rows.find((row) => row.basis.startsWith('Margin'))!.amount,
+    )
+
+    // The one line has to fit inside the quotation it belongs to …
+    expect(lineQuoted).toBeLessThan(quote)
+    expect(lineMargin).toBeLessThan(wholeMargin)
+
+    // … and what is left for the other lines has to be a margin somebody could
+    // actually have quoted: positive, and not above a hundred per cent.
+    const restMargin = ((wholeMargin - lineMargin) / (quote - lineQuoted)) * 100
+    expect(restMargin).toBeGreaterThan(0)
+    expect(restMargin).toBeLessThan(100)
+  })
+
+  it('holds two of twenty lines, and prices the other eighteen', () => {
+    const text = thread.beats.map((entry) => `${entry.title} ${entry.body}`).join(' ')
+    expect(text).toContain('twenty line items')
+    expect(text).toMatch(/remaining eighteen|Eighteen lines/)
+  })
+
+  it('spends the same amount of money in the document as in the thread', () => {
+    // Not a coincidence to be maintained by hand: the shortfall on the one line
+    // and the shortfall on the whole quotation are different numbers, and the
+    // test exists so nobody "fixes" one to match the other.
+    expect(money(evidence.record.calculation.shortfall.amount)).not.toBe(
+      money(figure('Short of the floor').value),
+    )
+    expect(formatMoney(money(figure('Short of the floor').value))).toBe(
+      figure('Short of the floor').value,
+    )
+  })
+})
+
+describe('the illustrative material says it is illustrative', () => {
+  it('labels the night thread, in its label and its lede', () => {
+    expect(thread.label.toLowerCase()).toContain('illustrative')
+    expect(thread.lede).toMatch(/invented/i)
+  })
+
+  it('labels the evidence document, in its label and its lede', () => {
+    expect(evidence.label.toLowerCase()).toContain('illustrative')
+    expect(evidence.lede).toMatch(/invented/i)
+    expect(evidence.lede).toMatch(/not a screenshot/i)
+  })
+})
+
+/**
+ * The claim this page is most likely to acquire by accident.
+ *
+ * Reading a mailbox is a thing software does; contacting somebody's suppliers
+ * on their behalf is a different promise, and the moment this page makes it,
+ * the first conversation with every design partner starts with a correction.
+ * The supplier answer *arrives*. It is not requested.
+ */
+describe('nothing claims outbound supplier contact', () => {
+  const everything = JSON.stringify([thread, evidence, firstBuild, boundary, hero, standing])
+
+  it('never says it asks, chases or contacts a supplier', () => {
+    for (const forbidden of [
+      'asks the supplier',
+      'chases the supplier',
+      'contacts the supplier',
+      'emails the supplier',
+      'chased the supplier',
+      'reaches out to the supplier',
+    ]) {
+      expect(everything.toLowerCase()).not.toContain(forbidden)
     }
   })
 
-  it('puts both of those places in the future tense', () => {
-    expect(hero.qualifier).toMatch(/built for/i)
-    expect(outline.lede).toMatch(/being built against/i)
+  it('describes the supplier answer as arriving', () => {
+    const beat = thread.beats.find((entry) => entry.at === '03:42')
+    expect(beat).toBeTruthy()
+    expect(`${beat!.title} ${beat!.body}`).toMatch(/lands|arrives|answer/i)
   })
+})
 
-  /**
-   * The one that will actually fail one day. `direction` is four instructions
-   * that look exactly like a place to hang a system name, which is precisely
-   * what the reference design for that section did with vendor logos.
-   */
-  it('names them nowhere else, and never under an instruction', () => {
-    const rest = everywhereElse()
-    for (const erp of ERPS) {
-      expect(rest).not.toContain(erp)
+/**
+ * No ERP is named in the rendered copy. The previous version of this site named
+ * three, under a future-tense contract that was easy to state and easy to break
+ * in one edit; the question is now asked on the form instead, where it costs
+ * nothing and claims nothing.
+ */
+describe('no system is named on the page', () => {
+  const everything = JSON.stringify([
+    hero,
+    nightfall,
+    instrument,
+    thread,
+    boundary,
+    evidence,
+    firstBuild,
+    standing,
+    access,
+    earlyAccess,
+  ])
+
+  it('names no ERP, CRM or mail client', () => {
+    for (const system of [
+      'NetSuite',
+      'Sage',
+      'Intacct',
+      'Xero',
+      'SAP',
+      'Salesforce',
+      'Dynamics',
+      'Outlook',
+      'Gmail',
+      'HubSpot',
+    ]) {
+      expect(everything).not.toContain(system)
     }
   })
 })
 
-describe('how you ask', () => {
-  it('puts the instructions in the future tense', () => {
-    expect(direction.lede).toMatch(/being built to take/i)
+describe('the motto', () => {
+  it('is the short form, never extended', () => {
+    expect(brand.motto).toBe('Stay with the work.')
   })
 
   /**
-   * The inversion this section is built on: where the reference design listed
-   * the vendors each instruction reaches, every entry here has to say what it
-   * hands back rather than settles. An instruction with no limit beside it is
-   * the pattern this section was written to avoid.
+   * Scarcity is the whole of why it works. The two placements are the close and
+   * the success state; both render `brand.motto` rather than a copy of the
+   * string, so a third occurrence would have to be written into the content
+   * file — which is what this catches.
    */
-  it('gives every instruction something it hands back', () => {
-    expect(direction.instructions.length).toBeGreaterThan(0)
-    for (const instruction of direction.instructions) {
-      expect(instruction.reads.trim()).not.toBe('')
-      expect(instruction.handsBack.trim()).not.toBe('')
+  it('appears in the content file exactly once, as its own field', () => {
+    const everywhereElse = JSON.stringify([
+      hero,
+      nightfall,
+      instrument,
+      thread,
+      boundary,
+      evidence,
+      firstBuild,
+      standing,
+      access,
+      earlyAccess,
+    ])
+    expect(everywhereElse.toLowerCase()).not.toContain('stay with the work')
+  })
+})
+
+describe('the hero', () => {
+  it('opens the night at the hour the proof beat names', () => {
+    const hour = /(\d{2}:\d{2})/.exec(hero.proof)?.[1]
+    expect(hour).toBeTruthy()
+    expect(thread.beats[0]!.at).toBe(hour)
+  })
+
+  it('keeps the claim in the future', () => {
+    expect(hero.lede).toMatch(/being built/i)
+    expect(hero.proofTail).toMatch(/should be/i)
+  })
+
+  it('promises no confirmation email', () => {
+    expect(hero.assurance.toLowerCase()).not.toContain('check your inbox')
+    expect(hero.assurance).toMatch(/no newsletter/i)
+  })
+})
+
+describe('where it stops', () => {
+  it('names a limit in every entry, and softens none of them', () => {
+    expect(boundary.points.length).toBeGreaterThanOrEqual(4)
+    for (const point of boundary.points) {
+      expect(point.body.trim()).not.toBe('')
+      // "but usually it can work it out" is the sentence that makes this
+      // section worthless, and it arrives as a hedge on a limit.
+      expect(point.body.toLowerCase()).not.toMatch(/but usually|most of the time|in practice it/)
     }
   })
 
-  /**
-   * The reader gives a standing rule about Halstead in this section and finds
-   * the held Halstead invoice one section below. Rename the supplier in one
-   * place and this fails rather than the through-line quietly breaking.
-   */
-  it('hands the reader on to the example output by name', () => {
-    const supplier = artifact.record.supplier.split(' ')[0]
-    expect(supplier).toBeTruthy()
-    expect(direction.instructions.some((one) => one.say.includes(supplier!))).toBe(true)
+  it('keeps the boundary in the future tense', () => {
+    expect(boundary.lede).toMatch(/being built/i)
   })
 })
 
 describe('data and access', () => {
-  /**
-   * §5 forbids compliance claims, and this is the only section on the site
-   * where one would look at home. There is no certification to name, so naming
-   * one — or naming a framework in a way a reader would take for one — is the
-   * failure this guards.
-   */
   it('claims no certification and no framework', () => {
     const text = `${access.headline} ${access.decided.title} ${access.decided.body} ${access.open.title} ${access.open.body}`
     for (const forbidden of [
@@ -229,13 +360,29 @@ describe('data and access', () => {
     expect(access.decided.body).toMatch(/train or fine-tune/i)
   })
 
-  /**
-   * The admission is the point. A future edit that answers residency or
-   * retention here, to make the section read more confidently, is exactly the
-   * sentence this site exists not to write — it moves up into `decided` when it
-   * is true, and not before.
-   */
   it('keeps saying that the rest is open', () => {
     expect(access.open.body).toMatch(/being settled/i)
+  })
+})
+
+describe('where this stands', () => {
+  it('describes progress as states, never as a date', () => {
+    for (const stage of standing.stages) {
+      expect(stage.state).toMatch(/^(Built|In build|Opening)$/)
+    }
+    const text = JSON.stringify(standing)
+    for (const calendar of [
+      'Q1',
+      'Q2',
+      'Q3',
+      'Q4',
+      'January',
+      'February',
+      'March',
+      '2026',
+      '2027',
+    ]) {
+      expect(text).not.toContain(calendar)
+    }
   })
 })

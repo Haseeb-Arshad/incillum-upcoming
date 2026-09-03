@@ -7,9 +7,9 @@ import { access } from '#/content/site.ts'
  *
  * ── Why it is four lines and not a trust page ──────────────────────────────
  *
- * A finance team asks what happens to their invoice data before they ask what
+ * A commercial team asks what happens to their cost base before they ask what
  * the software does with it, and the absence of any answer on a page about
- * reading invoices is loud. So there is an answer. What there is not is a
+ * reading supplier costs and margins is loud. So there is an answer. What there is not is a
  * security page: no badge, no certification, no framework named, no lock icon,
  * nothing that could be mistaken for an attestation. AGENTS.md §5 forbids
  * compliance claims outright, and a certification asserted before it is held
@@ -39,7 +39,7 @@ export function Access() {
   return (
     <section
       aria-labelledby="access-heading"
-      className="border-t border-line bg-paper-sunken py-16 sm:py-20"
+      className="ic-textured border-t border-line bg-paper-sunken py-16 sm:py-20"
     >
       <Container>
         <Reveal className="flex flex-col gap-5">

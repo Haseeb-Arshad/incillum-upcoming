@@ -1,17 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Incillum">
   <!--
-    The mark: a serif capital I, drawn as geometry rather than set as text.
+    The mark: a Reuleaux triangle, the curve of constant width — a shape that
+    never loses contact with the square it turns inside. See
+    src/components/mark.tsx for why this one and not the seven other candidates
+    in design/marks/.
 
-    A <text> element in a favicon renders in whatever the viewer's system
-    considers a serif, so the one glyph that is supposed to be the brand would
-    look different in every browser. Three rectangles always look the same.
+    Knocked out of a filled tile rather than drawn on transparency. A favicon
+    lands on whatever colour the browser's tab strip happens to be, in light
+    mode and dark, and a bare stroke disappears against half of them. The tile
+    is the same warm black the site's ink is, and the form is the same paper.
 
-    The proportions are the display face's own: a stem a little under a fifth of
-    the cap height, and slab serifs that overhang it by the same amount on each
-    side. It reads at 16px, which is the only size that actually matters.
+    The geometry is the component's, scaled: arcs swung at the side length and
+    centred on the opposite vertex, at a stroke weight that survives 16px, which
+    is the only size that actually matters.
   -->
   <rect width="32" height="32" rx="6" fill="#111110" />
-  <rect x="9" y="8" width="14" height="2.6" fill="#f7f7f5" />
-  <rect x="14.4" y="8" width="3.2" height="16" fill="#f7f7f5" />
-  <rect x="9" y="21.4" width="14" height="2.6" fill="#f7f7f5" />
+  <path
+    d="M16 7.5A17 17 0 0 1 24.5 22.22A17 17 0 0 1 7.5 22.22A17 17 0 0 1 16 7.5Z"
+    fill="none"
+    stroke="#f7f7f5"
+    stroke-width="2.6"
+    stroke-linejoin="round"
+  />
 </svg>

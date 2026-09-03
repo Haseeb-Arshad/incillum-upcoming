@@ -1,5 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react'
 
+import { Mark } from '#/components/mark.tsx'
 import { ButtonLink, Container } from '#/components/primitives.tsx'
 import { brand } from '#/content/site.ts'
 
@@ -36,6 +37,13 @@ import { brand } from '#/content/site.ts'
  * a surface that is one flat off-white buys no depth, costs a compositing layer
  * on every scroll frame, and leaves a faint seam where the blurred strip meets
  * the identical colour beneath it.
+ *
+ * It also has to stay solid now that there is a night in the middle of the
+ * page. A translucent header would show the dark band moving through it for
+ * four screens; a header that inverted along with the band would change colour
+ * twice a visit. It stays paper, and the night scrolls underneath it — which is
+ * the correct reading anyway, since the masthead is the part of the page that
+ * is always in the room.
  *
  * ── What happens on scroll ─────────────────────────────────────────────────
  *
@@ -101,24 +109,37 @@ export function Masthead() {
     >
       <Container className="flex h-[72px] items-center justify-between gap-6 sm:h-20">
         {/*
-          The supplied mark identifies the brand at a glance; the wordmark stays
-          as live text so it remains crisp, searchable and available to assistive
+          The mark identifies the brand at a glance; the wordmark stays as live
+          text so it remains crisp, searchable and available to assistive
           technology.
+
+          The mark is inline SVG rather than the `logo.png` that used to be
+          here: a rose curve, rasterised, 224 kB on every page load, and a grey
+          smudge at the one size a brand mark has to survive. This is about
+          three hundred bytes, inherits `currentColor`, and cannot shift the
+          layout while it loads because there is nothing to load. See
+          `components/mark.tsx` for why this shape and not the seven others in
+          `design/marks/`.
+
+          `aria-hidden` on the mark and a plain text wordmark beside it, so the
+          brand is announced once. The container carries no `aria-label` — one
+          on a `div` wrapping readable text is a second name for the same thing,
+          and some screen readers then read the label instead of the text.
         */}
-        <div className="flex min-w-0 items-center gap-3" aria-label={brand.name}>
-          <img
-            src="/logo.png"
-            alt=""
-            aria-hidden="true"
-            className="size-10 shrink-0 object-contain sm:size-11"
-          />
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Mark className="size-7 shrink-0 text-ink sm:size-8" />
           <span className="font-display text-[1.5rem] leading-none tracking-[-0.02em] text-ink sm:text-[1.75rem]">
             {brand.name}
           </span>
         </div>
 
+        {/*
+          Names the act, where the form column names the thing. Two verbs for
+          one action is how a page ends up with a reader wondering whether the
+          waitlist and early access are different lists.
+        */}
         <ButtonLink href="#waitlist" tone="primary" size="md" arrow>
-          Join the waitlist
+          Join early access
         </ButtonLink>
       </Container>
     </header>
