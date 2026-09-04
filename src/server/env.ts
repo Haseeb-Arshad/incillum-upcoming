@@ -47,6 +47,25 @@ const serverEnvSchema = z.object({
    * delivered, which is the worst failure shape available.
    */
   WAITLIST_NOTIFY_FROM: z.email().optional(),
+
+  /**
+   * Supabase project URL, e.g. `https://rsburzsagfpsconfyvrl.supabase.co`.
+   *
+   * Server-only alongside the key below, not because the URL is secret — it is
+   * not — but because the two are only ever used together, in `server/store.ts`,
+   * and splitting them across the public and server modules is how one gets
+   * left behind in a rename. The public half of Supabase (`VITE_SUPABASE_*`)
+   * does not exist in this project: the site never talks to Supabase from the
+   * browser.
+   */
+  SUPABASE_URL: z.url().optional(),
+  /**
+   * Supabase `service_role` key. It bypasses RLS, so it is server-only in the
+   * strongest sense — inlining it would hand every visitor write access to the
+   * waitlist table. Absent means signups are logged rather than stored, exactly
+   * like a missing mail key: nothing breaks, the record just lands in the log.
+   */
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 })
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>
@@ -56,10 +75,22 @@ let cached: ServerEnv | null = null
 export function serverEnv(): ServerEnv {
   if (cached) return cached
 
+  /**
+   * A host dashboard, and a copied `.env.example`, both supply an unset
+   * variable as the empty string rather than as absent. Every field here is
+   * `.optional()`, but `''` is not absent — it is a present value that fails
+   * `.min(1)` / `.email()` / `.url()`, and because `safeParse` is atomic one
+   * empty line would disable *all* of email and storage, not just its own
+   * feature. So empty collapses to `undefined` before the schema sees it.
+   */
+  const fromEnv = (value: string | undefined) => (value === '' ? undefined : value)
+
   const result = serverEnvSchema.safeParse({
-    BREVO_API_KEY: process.env.BREVO_API_KEY,
-    WAITLIST_NOTIFY_TO: process.env.WAITLIST_NOTIFY_TO,
-    WAITLIST_NOTIFY_FROM: process.env.WAITLIST_NOTIFY_FROM,
+    BREVO_API_KEY: fromEnv(process.env.BREVO_API_KEY),
+    WAITLIST_NOTIFY_TO: fromEnv(process.env.WAITLIST_NOTIFY_TO),
+    WAITLIST_NOTIFY_FROM: fromEnv(process.env.WAITLIST_NOTIFY_FROM),
+    SUPABASE_URL: fromEnv(process.env.SUPABASE_URL),
+    SUPABASE_SERVICE_ROLE_KEY: fromEnv(process.env.SUPABASE_SERVICE_ROLE_KEY),
   })
 
   if (!result.success) {

@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import appCss from '#/styles.css?url'
 import { Colophon } from '#/components/colophon.tsx'
 import { Masthead } from '#/components/masthead.tsx'
-import { gtmHeadScript, gtmNoScriptSrc } from '#/lib/analytics.ts'
+import { gtmHeadScript, gtmNoScriptSrc, posthogHeadScript } from '#/lib/analytics.ts'
 import { organizationJsonLd, seoTags } from '#/lib/seo.ts'
 
 import type { ReactNode } from 'react'
@@ -45,13 +45,15 @@ export const Route = createRootRoute({
         ...base.links,
       ],
       /**
-       * Order matters. The GTM loader goes first so its `dataLayer` exists
-       * before anything else on the page could push to it, and `.filter`
-       * removes it entirely when no container is configured — an empty inline
-       * script tag on every page of an unconfigured deployment is litter.
+       * Order matters. The GTM and PostHog loaders go first so their globals
+       * (`dataLayer`, the `posthog` stub) exist before anything else on the
+       * page could push to them, and `.filter` removes each one entirely when
+       * its key is unset — an empty inline script tag on every page of an
+       * unconfigured deployment is litter.
        */
       scripts: [
         gtmHeadScript(),
+        posthogHeadScript(),
         { type: 'application/ld+json', children: organizationJsonLd() },
       ].filter((script) => script !== null),
     }

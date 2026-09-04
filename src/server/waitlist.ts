@@ -3,6 +3,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { createReference, heuristicSpamProtection } from '#/lib/spam.ts'
 import { waitlistSchema } from '#/lib/waitlist.ts'
 import { waitlistNotifier } from '#/server/notify.ts'
+import { waitlistStore } from '#/server/store.ts'
 
 import type { WaitlistResult } from '#/lib/waitlist.ts'
 
@@ -15,10 +16,11 @@ import type { WaitlistResult } from '#/lib/waitlist.ts'
  *
  * ── Where a signup actually goes ───────────────────────────────────────────
  *
- * To an inbox, via `server/notify.ts`. There is still no database, and for a
- * pre-launch list of a few hundred an inbox is a legitimate system of record:
- * readable, searchable, and repliable in one keystroke. When a real store
- * arrives it slots in beside the notifier rather than replacing it.
+ * Two places, independently: an inbox via `server/notify.ts`, and a Supabase
+ * row via `server/store.ts`. The store is the durable copy; the mail is how a
+ * person hears about it and replies. Either can be unconfigured — then that
+ * half logs instead — and **neither failing fails the submission** (AGENTS.md
+ * §6): a signup that reached this function is on the list regardless.
  *
  * The mail goes to *us*. Nothing is sent to the person who joined, which is why
  * the success state on the form still refuses to say "check your inbox" — see
@@ -70,31 +72,47 @@ export const joinWaitlist = createServerFn({ method: 'POST' })
       receivedAt: new Date().toISOString(),
     }
 
+    /**
+     * The mail and the row are attempted independently, and a failure in
+     * either is logged with the full record — address included, because on the
+     * failure path the log may be the only copy left — and then swallowed. A
+     * failed delivery or a failed write must never fail the submission: from
+     * the visitor's side they filled in the form correctly, and an error screen
+     * for our misconfigured backend would lose the signup *and* insult them.
+     * See AGENTS.md §6.
+     */
     try {
       await waitlistNotifier().send(notification)
-      console.info('[waitlist] joined', {
-        reference,
-        commercialWork: notification.commercialWork,
-        quoteVolume: notification.quoteVolume,
-        // Only the domain on the success path. The address is in the mail that
-        // was just delivered, so the log does not need a second copy of it.
-        emailDomain: data.workEmail.split('@')[1] ?? 'unknown',
-      })
     } catch (error) {
-      /**
-       * A failed send must never fail the submission.
-       *
-       * From the visitor's side they filled in the form correctly; an error
-       * screen for our misconfigured mail provider would lose the signup *and*
-       * insult them. So the full record — address included, because at this
-       * point the log is the only copy left — goes to `error`, and they are
-       * told they are on the list. Which they are: we have it.
-       */
       console.error('[waitlist] NOTIFICATION FAILED — record follows', {
         error,
         notification,
       })
     }
+
+    try {
+      await waitlistStore().save(notification)
+    } catch (error) {
+      console.error('[waitlist] PERSIST FAILED — record follows', {
+        error,
+        notification,
+      })
+    }
+
+    /**
+     * The signup is accepted regardless of what the two calls above did. The
+     * outcome of each — delivered, written, fell back to a log line, or failed
+     * loudly at `error` — is logged by the notifier and the store themselves;
+     * this line is just the "a real person joined" marker with the two answers
+     * worth counting. The address is in the mail and the row already, so only
+     * its domain is here.
+     */
+    console.info('[waitlist] joined', {
+      reference,
+      commercialWork: notification.commercialWork,
+      quoteVolume: notification.quoteVolume,
+      emailDomain: data.workEmail.split('@')[1] ?? 'unknown',
+    })
 
     return { status: 'joined', reference }
   })

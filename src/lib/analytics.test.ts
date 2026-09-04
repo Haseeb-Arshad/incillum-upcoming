@@ -19,9 +19,14 @@ afterEach(() => {
   vi.doUnmock('#/env.ts')
 })
 
-async function loadAnalytics(gtmId: string | undefined) {
+async function loadAnalytics(
+  gtmId: string | undefined,
+  posthogKey: string | undefined = undefined,
+) {
   vi.doMock('#/env.ts', () => ({
     gtmId,
+    posthogKey,
+    posthogHost: 'https://eu.i.posthog.com',
     siteUrl: 'https://incillum.com',
     contactEmail: 'hello@incillum.com',
     absoluteUrl: (path: string) => `https://incillum.com${path}`,
@@ -29,11 +34,16 @@ async function loadAnalytics(gtmId: string | undefined) {
   return import('#/lib/analytics.ts')
 }
 
-describe('when no container is configured', () => {
-  it('renders no head script and no noscript iframe', async () => {
+describe('when nothing is configured', () => {
+  it('renders no GTM head script and no noscript iframe', async () => {
     const analytics = await loadAnalytics(undefined)
     expect(analytics.gtmHeadScript()).toBeNull()
     expect(analytics.gtmNoScriptSrc).toBeNull()
+  })
+
+  it('renders no PostHog head script', async () => {
+    const analytics = await loadAnalytics(undefined, undefined)
+    expect(analytics.posthogHeadScript()).toBeNull()
   })
 
   /**
@@ -45,6 +55,56 @@ describe('when no container is configured', () => {
     const analytics = await loadAnalytics(undefined)
     vi.stubGlobal('window', {})
     expect(() => analytics.trackEvent('waitlist_join')).not.toThrow()
+  })
+})
+
+describe('when PostHog is configured', () => {
+  it('emits the loader carrying the key, host and init call', async () => {
+    const analytics = await loadAnalytics(undefined, 'phc_test1234')
+    const script = analytics.posthogHeadScript()
+
+    expect(script).not.toBeNull()
+    expect(script?.children).toContain("posthog.init('phc_test1234'")
+    // The host comes from env, not a hard-coded default.
+    expect(script?.children).toContain("api_host:'https://eu.i.posthog.com'")
+    // Anonymous visitors must not each become a person — this site never
+    // calls identify.
+    expect(script?.children).toContain("person_profiles:'identified_only'")
+    // Session replay is off until there is a consent gate — the dated defaults
+    // would otherwise switch it on.
+    expect(script?.children).toContain('disable_session_recording:true')
+    // The stub has to install before init runs, or the queued call is lost.
+    expect(script?.children.indexOf('window.posthog=e')).toBeLessThan(
+      script?.children.indexOf('posthog.init') ?? -1,
+    )
+  })
+
+  it('forwards an event to posthog.capture with the same payload', async () => {
+    const analytics = await loadAnalytics(undefined, 'phc_test1234')
+    const capture = vi.fn()
+    vi.stubGlobal('window', { posthog: { capture } })
+
+    analytics.trackEvent('waitlist_join', { commercial_work: 'not_answered' })
+
+    expect(capture).toHaveBeenCalledWith('waitlist_join', {
+      commercial_work: 'not_answered',
+    })
+  })
+
+  it('reaches both GTM and PostHog when both are present', async () => {
+    const analytics = await loadAnalytics('GTM-ABC1234', 'phc_test1234')
+    const dataLayer: Array<Record<string, unknown>> = []
+    const capture = vi.fn()
+    vi.stubGlobal('window', { dataLayer, posthog: { capture } })
+
+    analytics.trackEvent('waitlist_join', { quote_volume: 'not_answered' })
+
+    expect(dataLayer).toEqual([
+      { event: 'waitlist_join', quote_volume: 'not_answered' },
+    ])
+    expect(capture).toHaveBeenCalledWith('waitlist_join', {
+      quote_volume: 'not_answered',
+    })
   })
 })
 
