@@ -8,6 +8,7 @@ import { FirstBuild } from '#/components/first-build.tsx'
 import { Hero } from '#/components/hero.tsx'
 import { Night } from '#/components/night.tsx'
 import { Standing } from '#/components/standing.tsx'
+import { seoTags } from '#/lib/seo.ts'
 
 /**
  * incillum.com — the work doesn't leave when you do.
@@ -85,6 +86,14 @@ import { Standing } from '#/components/standing.tsx'
  * earlier makes a reader defensive about a question they had not asked yet.
  */
 export const Route = createFileRoute('/')({
+  /**
+   * The canonical, and only the canonical. Everything else in this page's head
+   * — title, description, Open Graph, Twitter — is the site default and already
+   * comes from the root. The link lives here rather than there because links
+   * concatenate across nested routes while meta deduplicates, so a canonical
+   * emitted by the root would appear a second time on every other page.
+   */
+  head: () => ({ links: seoTags().links }),
   component: HomePage,
 })
 

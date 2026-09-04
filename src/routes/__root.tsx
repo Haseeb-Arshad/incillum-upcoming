@@ -39,10 +39,16 @@ export const Route = createRootRoute({
         { name: 'color-scheme', content: 'light' },
         ...base.meta,
       ],
+      /**
+       * No canonical here. Meta tags deduplicate by name as routes nest, so a
+       * page can override the title and the Open Graph block — but `links`
+       * concatenate, and a document carrying two canonicals is worse than one
+       * carrying none, because a crawler discards both. Each route therefore
+       * owns its own, and `seoTags` is still the only place one is built.
+       */
       links: [
         { rel: 'stylesheet', href: appCss },
         { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
-        ...base.links,
       ],
       /**
        * Order matters. The GTM and PostHog loaders go first so their globals

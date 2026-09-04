@@ -1,3 +1,5 @@
+import { useRouterState } from '@tanstack/react-router'
+
 import { Mark } from '#/components/mark.tsx'
 import { Container, Label, TextLink } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
@@ -31,18 +33,37 @@ import { brand, close } from '#/content/site.ts'
  *
  * It is never extended. "AI that stays with your work" is the same idea with
  * the conviction removed.
+ *
+ * ── Why this knows which page it is on ─────────────────────────────────────
+ *
+ * Two of the three blocks below belong to the home page rather than to the
+ * document, and the whole footer is rendered from the root so that it is a
+ * real `contentinfo` landmark:
+ *
+ *   · The ask — "tell us the request that always arrives late" — is the site's
+ *     one conversion. A second page repeating it is a second ask on a site that
+ *     has deliberately made one.
+ *   · The motto is used exactly twice on the whole site, and it survives on
+ *     that scarcity. Rendering it on every route would be the third, fourth and
+ *     fifth placement, which is precisely the thing the rule exists to stop.
+ *
+ * The address and the signature are the document's, so they stay everywhere. A
+ * page that is not the argument gets the door and the name, and not the close.
  */
 export function Colophon() {
   const year = new Date().getFullYear()
+  const isHome = useRouterState({ select: (state) => state.location.pathname === '/' })
 
   return (
     <footer className="border-t border-line py-20 sm:py-28">
       <Container>
         <Reveal className="grid gap-10 lg:grid-cols-12 lg:gap-16">
-          <div className="flex flex-col gap-5 lg:col-span-7">
-            <h2 className="max-w-[18ch] text-title text-ink">{close.headline}</h2>
-            <p className="max-w-[54ch] text-lede text-ink-600">{close.body}</p>
-          </div>
+          {isHome ? (
+            <div className="flex flex-col gap-5 lg:col-span-7">
+              <h2 className="max-w-[18ch] text-title text-ink">{close.headline}</h2>
+              <p className="max-w-[54ch] text-lede text-ink-600">{close.body}</p>
+            </div>
+          ) : null}
 
           <div className="flex flex-col gap-4 lg:col-span-5 lg:pt-2">
             <Label>{close.emailLabel}</Label>
@@ -75,7 +96,9 @@ export function Colophon() {
               {brand.name}
             </span>
           </div>
-          <p className="font-display text-title text-ink">{brand.motto}</p>
+          {isHome ? (
+            <p className="font-display text-title text-ink">{brand.motto}</p>
+          ) : null}
         </Reveal>
 
         <div className="mt-14 flex flex-col gap-3 border-t border-line pt-7 sm:mt-16 sm:flex-row sm:items-center sm:justify-between">
