@@ -85,14 +85,20 @@ export const gtmNoScriptSrc: string | null = gtmId
  *
  * The body of this string is PostHog's official install snippet, verbatim — the
  * stub that queues calls against `window.posthog` until `array.js` finishes
- * loading. Only the three values at the end are ours: the project key, the
- * ingestion host, and the `defaults` date PostHog uses to pin recommended
- * behaviour. `identified_only` is added because this site never identifies
- * anyone.
+ * loading. Everything from `posthog.init` on is ours:
  *
- * `defaults` is a dated string on purpose (PostHog's design): it locks in the
- * set of defaults current on that date, so an upgrade of `array.js` cannot
- * change how this behaves without the date here also moving.
+ * - the project key and ingestion host, from env;
+ * - `defaults: '2026-05-30'` — a dated string, by PostHog's design: it pins the
+ *   set of defaults current on that date, so a newer `array.js` cannot change
+ *   behaviour unless this date also moves;
+ * - `person_profiles: 'identified_only'` — this site never calls `identify`, so
+ *   anonymous visitors should not each spawn a person record;
+ * - `disable_session_recording: true` — the `2026-05-30` defaults switch replay
+ *   on. Autocapture and pageviews are analytics; recording a stranger's session
+ *   on a page with an email field, with no consent gate in front of it, is a
+ *   different commitment. Turn it on deliberately — drop this flag, or enable it
+ *   in the PostHog project — once there is a banner. See the consent note at the
+ *   top of this file.
  *
  * Returns `null` when unconfigured, so the caller spreads nothing.
  */
@@ -101,7 +107,7 @@ export function posthogHeadScript(): { children: string } | null {
 
   return {
     children:
-      `!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('${posthogKey}',{api_host:'${posthogHost}',defaults:'2025-05-24',person_profiles:'identified_only'});`,
+      `!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('${posthogKey}',{api_host:'${posthogHost}',defaults:'2026-05-30',person_profiles:'identified_only',disable_session_recording:true});`,
   }
 }
 

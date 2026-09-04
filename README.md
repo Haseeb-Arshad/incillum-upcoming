@@ -117,6 +117,11 @@ cookies, no request.
 banner that gates GTM should gate this — `posthog.opt_out_capturing()` by
 default, or hold the snippet back until accepted.
 
+**Session replay is off.** The pinned `defaults` date would switch it on; the
+snippet passes `disable_session_recording: true` to keep it off until there is a
+consent banner. To enable it later, drop that flag in `src/lib/analytics.ts` (or
+turn it on in the PostHog project).
+
 ## Where a signup goes
 
 **Two places, independently.** A Supabase row (`src/server/store.ts`) is the

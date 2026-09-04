@@ -70,6 +70,9 @@ describe('when PostHog is configured', () => {
     // Anonymous visitors must not each become a person — this site never
     // calls identify.
     expect(script?.children).toContain("person_profiles:'identified_only'")
+    // Session replay is off until there is a consent gate — the dated defaults
+    // would otherwise switch it on.
+    expect(script?.children).toContain('disable_session_recording:true')
     // The stub has to install before init runs, or the queued call is lost.
     expect(script?.children.indexOf('window.posthog=e')).toBeLessThan(
       script?.children.indexOf('posthog.init') ?? -1,
