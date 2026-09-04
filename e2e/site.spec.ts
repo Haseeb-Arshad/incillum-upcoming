@@ -79,6 +79,20 @@ test.describe('the page', () => {
     await expect(page.getByRole('link', { name: /Skip to main content/ })).toHaveCount(1)
   })
 
+  test('uses the supplied logo for the visible mark and favicon', async ({ page, request }) => {
+    await ready(page)
+
+    const marks = page.locator('img[src="/logo.png"][aria-hidden="true"]')
+    await expect(marks).toHaveCount(2)
+    await expect(marks.first()).toHaveJSProperty('complete', true)
+    await expect(marks.first()).toHaveJSProperty('naturalWidth', 1254)
+
+    await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/favicon.svg')
+    const favicon = await request.get('/favicon.svg')
+    expect(favicon.status()).toBe(200)
+    expect(await favicon.text()).toContain('href="/logo.png"')
+  })
+
   test('has no product navigation to leave through', async ({ page }) => {
     await ready(page)
 

@@ -1,25 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Incillum">
-  <!--
-    The mark: a Reuleaux triangle, the curve of constant width — a shape that
-    never loses contact with the square it turns inside. See
-    src/components/mark.tsx for why this one and not the seven other candidates
-    in design/marks/.
-
-    Knocked out of a filled tile rather than drawn on transparency. A favicon
-    lands on whatever colour the browser's tab strip happens to be, in light
-    mode and dark, and a bare stroke disappears against half of them. The tile
-    is the same warm black the site's ink is, and the form is the same paper.
-
-    The geometry is the component's, scaled: arcs swung at the side length and
-    centred on the opposite vertex, at a stroke weight that survives 16px, which
-    is the only size that actually matters.
-  -->
-  <rect width="32" height="32" rx="6" fill="#111110" />
-  <path
-    d="M16 7.5A17 17 0 0 1 24.5 22.22A17 17 0 0 1 7.5 22.22A17 17 0 0 1 16 7.5Z"
-    fill="none"
-    stroke="#f7f7f5"
-    stroke-width="2.6"
-    stroke-linejoin="round"
-  />
+  <!-- Keep the favicon on the exact same supplied logo asset as the site mark. -->
+  <rect width="32" height="32" rx="6" fill="#f7f7f5" />
+  <image href="/logo.png" x="1" y="1" width="30" height="30" preserveAspectRatio="xMidYMid meet" />
 </svg>

@@ -113,13 +113,10 @@ export function Masthead() {
           text so it remains crisp, searchable and available to assistive
           technology.
 
-          The mark is inline SVG rather than the `logo.png` that used to be
-          here: a rose curve, rasterised, 224 kB on every page load, and a grey
-          smudge at the one size a brand mark has to survive. This is about
-          three hundred bytes, inherits `currentColor`, and cannot shift the
-          layout while it loads because there is nothing to load. See
-          `components/mark.tsx` for why this shape and not the seven others in
-          `design/marks/`.
+          The mark uses the supplied transparent logo asset, shared with the
+          favicon and structured data so the brand stays consistent wherever it
+          appears. Its fixed class dimensions keep the header stable while it
+          loads. See `components/mark.tsx` for the shared source of truth.
 
           `aria-hidden` on the mark and a plain text wordmark beside it, so the
           brand is announced once. The container carries no `aria-label` — one
