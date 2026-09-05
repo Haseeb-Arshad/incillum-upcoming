@@ -70,6 +70,20 @@ describe('the evidence document’s arithmetic', () => {
   const shortfall = money(evidence.record.calculation.shortfall.amount)
   const floor = percent(row('At the').basis)
 
+  it('reconciles the visual comparison with the source record', () => {
+    const visual = evidence.visual
+    expect(visual.units).toBe(UNITS)
+    expect(visual.unitCostAfter).toBeCloseTo(visual.unitCostBefore * 1.06, 2)
+    expect(visual.unitCostAfter * visual.units).toBeCloseTo(cost, 2)
+    expect(visual.unitPrice * visual.units).toBeCloseTo(quoted, 2)
+    expect((1 - visual.unitCostBefore / visual.unitPrice) * 100).toBeCloseTo(floor, 2)
+    expect((1 - visual.unitCostAfter / visual.unitPrice) * 100).toBeCloseTo(
+      percent(row('Margin').working),
+      2,
+    )
+    expect(visual.floorPercent).toBe(floor)
+  })
+
   it('states the quantity once, and multiplies by it correctly', () => {
     expect(evidence.record.part).toContain(UNITS.toLocaleString('en-GB'))
     expect(money(row('Cost').working) * UNITS).toBeCloseTo(cost, 2)
@@ -100,9 +114,9 @@ describe('the evidence document’s arithmetic', () => {
 
   it('carries the cost rise through from the finding that caused it', () => {
     // The supplier confirmation is the reason this line moved: 128.00 × 1.06.
-    const [was, now] = [...evidence.record.finding.body.matchAll(/EUR ([\d,]+\.\d{2})/g)].map(
-      (match) => Number(match[1]!.replaceAll(',', '')),
-    )
+    const [was, now] = [
+      ...evidence.record.finding.body.matchAll(/EUR ([\d,]+\.\d{2})/g),
+    ].map((match) => Number(match[1]!.replaceAll(',', '')))
     expect(was).toBeTruthy()
     expect(now).toBeCloseTo(was! * 1.06, 2)
     expect(money(row('Cost').working)).toBeCloseTo(now!, 2)
@@ -149,7 +163,8 @@ describe('the night thread and the evidence document reconcile', () => {
   it('uses the same commercial floor in both sections', () => {
     const threadFloor = percent(figure('Commercial floor').value)
     const documentFloor = percent(
-      evidence.record.calculation.rows.find((row) => row.basis.startsWith('At the'))!.basis,
+      evidence.record.calculation.rows.find((row) => row.basis.startsWith('At the'))!
+        .basis,
     )
     expect(threadFloor).toBe(documentFloor)
   })
@@ -160,10 +175,12 @@ describe('the night thread and the evidence document reconcile', () => {
     const wholeMargin = quote * (expected / 100)
 
     const lineQuoted = money(
-      evidence.record.calculation.rows.find((row) => row.basis.startsWith('Quoted'))!.amount,
+      evidence.record.calculation.rows.find((row) => row.basis.startsWith('Quoted'))!
+        .amount,
     )
     const lineMargin = money(
-      evidence.record.calculation.rows.find((row) => row.basis.startsWith('Margin'))!.amount,
+      evidence.record.calculation.rows.find((row) => row.basis.startsWith('Margin'))!
+        .amount,
     )
 
     // The one line has to fit inside the quotation it belongs to …
@@ -218,7 +235,14 @@ describe('the illustrative material says it is illustrative', () => {
  * The supplier answer *arrives*. It is not requested.
  */
 describe('nothing claims outbound supplier contact', () => {
-  const everything = JSON.stringify([thread, evidence, firstBuild, boundary, hero, standing])
+  const everything = JSON.stringify([
+    thread,
+    evidence,
+    firstBuild,
+    boundary,
+    hero,
+    standing,
+  ])
 
   it('never says it asks, chases or contacts a supplier', () => {
     for (const forbidden of [
@@ -331,7 +355,9 @@ describe('where it stops', () => {
       expect(point.body.trim()).not.toBe('')
       // "but usually it can work it out" is the sentence that makes this
       // section worthless, and it arrives as a hedge on a limit.
-      expect(point.body.toLowerCase()).not.toMatch(/but usually|most of the time|in practice it/)
+      expect(point.body.toLowerCase()).not.toMatch(
+        /but usually|most of the time|in practice it/,
+      )
     }
   })
 

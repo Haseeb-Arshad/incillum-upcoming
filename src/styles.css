@@ -20,23 +20,7 @@
         with nothing lit in it is not a night, it is a blank.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Typefaces ────────────────────────────────────────────────────────────
- *
- * Self-hosted, served from the bundle: no third-party request in the critical
- * path, and nothing to declare in a CSP beyond `font-src 'self'`. The `url()`s
- * are relative to *this file*, which is what lets Vite hash and emit them
- * through the CSS import chain.
- *
- * The files keep their original hashed names. Those names are the only
- * provenance the binaries carry, and both licences exclude renaming.
- *
- * ⚠ LICENSING — READ BEFORE LAUNCH. These are another company's licensed web
- * fonts, lifted from their site. They are correct for this design and they are
- * not ours to ship on a commercial domain. Before incillum.com is public,
- * either license these families or swap them: every reference in the codebase
- * goes through `--font-display` and `--font-sans` below, so the swap is this
- * block plus two lines, and nothing else in the project needs to change.
- */
+/* Original self-hosted typefaces, retained by request. See AGENTS.md section 7. */
 @font-face {
   font-family: 'Incillum Sans';
   src: url('./fonts/HarveySansDiatypeVariable-s.p.3gw33igtr422g.woff2') format('woff2');
@@ -151,7 +135,27 @@
   /* Motion. Two durations and one curve — a page this quiet needs no more. */
   --ic-ease: cubic-bezier(0.32, 0.72, 0, 1);
   --ic-fast: 160ms;
-  --ic-slow: 520ms;
+  --ic-slow: 480ms;
+  --ic-stagger: 40ms;
+  --ic-title-duration: 640ms;
+  --ic-title-clearance: 0.12em;
+  --ic-entrance-distance: 12px;
+  --ic-hero-top: clamp(3.5rem, 7vw, 6.5rem);
+  --ic-hero-gap: clamp(2rem, 5vw, 5rem);
+  --ic-hero-copy-width: 43ch;
+  --ic-hero-copy-gap: clamp(1.75rem, 3vw, 2.75rem);
+  --ic-hero-panel-width: 24rem;
+  --ic-hero-panel-padding: clamp(1.25rem, 2vw, 1.75rem);
+  --ic-bridge-gap: clamp(2rem, 3vw, 2.5rem);
+  --ic-bridge-padding: 1.5rem;
+  --ic-night-gap: clamp(2.5rem, 5vw, 5rem);
+  --ic-evidence-padding: clamp(1.25rem, 3vw, 2.5rem);
+  --ic-evidence-gap: clamp(2rem, 4vw, 4rem);
+  --ic-chart-bar-height: 0.75rem;
+  --ic-chart-floor-height: 1.5rem;
+  --ic-chart-row-gap: 1.75rem;
+  --ic-shortfall-size: clamp(1.75rem, 3vw, 2.75rem);
+  --ic-anchor-offset: 7rem;
 }
 
 @theme inline {
@@ -171,51 +175,25 @@
   --color-signal: var(--ic-signal);
   --color-signal-soft: var(--ic-signal-soft);
 
-  --font-display: 'Incillum Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino,
-    Georgia, 'Times New Roman', serif;
-  --font-sans: 'Incillum Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
-    Roboto, Helvetica, Arial, sans-serif;
+  --font-display:
+    'Incillum Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia,
+    'Times New Roman', serif;
+  --font-sans:
+    'Incillum Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
 
-  /* ── Type scale ─────────────────────────────────────────────────────────
-   *
-   * Four serif steps and four sans steps. The serif steps all sit near a 1.0
-   * line-height because the face has short descenders and a large x-height,
-   * and a display line set at 1.2 opens a gap the eye reads as two paragraphs.
-   *
-   * ── How --text-display was sized ──────────────────────────────────────
-   *
-   * Not by eye. The headline has to break in one specific place, and both the
-   * size and the growth rate are derived from that.
-   *
-   * The line is "The work doesn't leave when you do." and the break belongs
-   * after "leave": that isolates "when you do" as its own line, which is the
-   * clause about the person and the only half of the sentence a reader has to
-   * put themselves into. Breaking after "doesn't" instead leaves "leave when
-   * you do" running on, and the sentence loses its turn.
-   *
-   * The face averages ~0.467em per character, so "The work doesn't leave"
-   * (22 characters) occupies about 10.3em and the same line plus " when"
-   * (27 characters) about 12.6em. The hero's left column is seven of twelve
-   * tracks with a 4rem gutter, or ~0.53 of the viewport. The break holds while
-   * 10.3em ≤ 0.53·100vw and 12.6em > 0.53·100vw — that is, between 4.21vw and
-   * 5.15vw. 4.9vw sits inside that band with slack at both ends, so the break
-   * survives from roughly 900px upward rather than landing at one width.
-   *
-   * The 4.5rem ceiling is where that rate meets the 1360px measure. Larger and
-   * "do." goes over on its own, which is the orphan the band above exists to
-   * prevent.
-   */
-  --text-display: clamp(2.5rem, 4.9vw, 4.5rem);
-  --text-display--line-height: 1.02;
+  /* Two voices: a condensed display serif and a readable operational sans. */
+  --text-display: clamp(2.75rem, 6.3vw, 5.75rem);
+  --text-display--line-height: 0.98;
   --text-display--font-weight: 400;
   --text-display--letter-spacing: -0.021em;
 
-  --text-title: clamp(1.875rem, 3.3vw, 2.875rem);
-  --text-title--line-height: 1.06;
+  --text-title: clamp(2.5rem, 4vw, 3.75rem);
+  --text-title--line-height: 1.04;
   --text-title--font-weight: 400;
   --text-title--letter-spacing: -0.018em;
 
-  --text-heading: clamp(1.25rem, 1.6vw, 1.5rem);
+  --text-heading: clamp(1.5rem, 2vw, 1.875rem);
   --text-heading--line-height: 1.2;
   --text-heading--font-weight: 400;
   --text-heading--letter-spacing: -0.012em;
@@ -230,11 +208,11 @@
   --text-lede--font-weight: 400;
   --text-lede--letter-spacing: -0.004em;
 
-  --text-body: 0.9375rem;
+  --text-body: 1rem;
   --text-body--line-height: 1.62;
   --text-body--font-weight: 400;
 
-  --text-small: 0.8125rem;
+  --text-small: 0.875rem;
   --text-small--line-height: 1.5;
   --text-small--font-weight: 400;
 
@@ -330,6 +308,10 @@
     font-weight: 400;
   }
 
+  [id] {
+    scroll-margin-top: var(--ic-anchor-offset);
+  }
+
   /**
    * One focus ring, everywhere, and it is never removed. `:focus-visible`
    * keeps it off a mouse click and on for a keyboard tab, which is the only
@@ -377,6 +359,231 @@
    * on the page by the time anybody scrolls to them, and animating those would
    * be decorating rather than explaining.
    */
+  .ic-hero {
+    padding-top: var(--ic-hero-top);
+  }
+
+  .ic-hero-line {
+    display: block;
+    text-wrap: nowrap;
+    overflow: clip;
+    padding-bottom: var(--ic-title-clearance);
+    margin-bottom: calc(var(--ic-title-clearance) * -1);
+  }
+
+  .ic-hero-line > span {
+    display: block;
+    animation: ic-title-enter var(--ic-title-duration) var(--ic-ease) both;
+  }
+
+  .ic-hero-line + .ic-hero-line > span {
+    animation-delay: var(--ic-stagger);
+  }
+
+  @keyframes ic-title-enter {
+    from {
+      transform: translateY(105%);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  .ic-hero-grid {
+    display: grid;
+    gap: var(--ic-hero-gap);
+    align-items: start;
+  }
+
+  .ic-hero-lede {
+    max-width: var(--ic-hero-copy-width);
+    margin-top: var(--ic-hero-copy-gap);
+    text-wrap: pretty;
+  }
+
+  .ic-hero-access {
+    min-width: 0;
+    padding: var(--ic-hero-panel-padding);
+    border: 1px solid var(--ic-line);
+    border-radius: var(--radius-panel);
+    background: var(--ic-paper-raised);
+  }
+
+  .ic-hero-access button[type='submit'] {
+    width: 100%;
+  }
+
+  .ic-hero-bridge {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ic-bridge-padding);
+    margin-top: var(--ic-bridge-gap);
+    padding-block: var(--ic-bridge-padding);
+    border-top: 1px solid var(--ic-line-strong);
+  }
+
+  .ic-story-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ic-bridge-padding);
+    min-height: 2.75rem;
+    color: var(--ic-ink-900);
+    text-underline-offset: 0.25em;
+  }
+
+  .ic-story-link:hover {
+    text-decoration: underline;
+  }
+
+  .ic-night-opening {
+    display: grid;
+    gap: var(--ic-night-gap);
+    align-items: center;
+    padding-bottom: var(--ic-night-gap);
+  }
+
+  .ic-evidence-intro {
+    display: grid;
+    align-items: end;
+    gap: var(--ic-evidence-gap);
+  }
+
+  .ic-evidence-panel {
+    overflow: clip;
+    border: 1px solid var(--ic-line-strong);
+    border-radius: var(--radius-panel);
+    background: var(--ic-paper-raised);
+  }
+
+  .ic-evidence-metadata {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--ic-bridge-padding);
+    padding: var(--ic-bridge-padding) var(--ic-evidence-padding);
+    border-bottom: 1px solid var(--ic-line);
+  }
+
+  .ic-evidence-flow,
+  .ic-evidence-detail-grid {
+    display: grid;
+    gap: var(--ic-evidence-gap);
+    padding: var(--ic-evidence-padding);
+  }
+
+  .ic-evidence-source {
+    min-width: 0;
+  }
+
+  .ic-source-sheet {
+    margin-top: var(--ic-chart-row-gap);
+    padding: var(--ic-bridge-padding);
+    border: 1px solid var(--ic-line-strong);
+    background-color: var(--ic-paper);
+    background-image: var(--ic-grain);
+  }
+
+  .ic-cost-comparison {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--ic-bridge-padding);
+  }
+
+  .ic-margin-chart {
+    margin-top: var(--ic-evidence-padding);
+  }
+
+  .ic-margin-row + .ic-margin-row {
+    margin-top: var(--ic-chart-row-gap);
+  }
+
+  .ic-margin-track {
+    position: relative;
+    height: var(--ic-chart-bar-height);
+    background: var(--ic-paper-sunken);
+  }
+
+  .ic-margin-bar {
+    height: 100%;
+    background: var(--ic-ink-900);
+  }
+
+  .ic-margin-floor {
+    position: absolute;
+    top: 50%;
+    height: var(--ic-chart-floor-height);
+    border-left: 1px solid var(--ic-ink-400);
+    transform: translateY(-50%);
+  }
+
+  .ic-shortfall {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ic-chart-bar-height);
+    margin-top: var(--ic-chart-row-gap);
+    padding-top: var(--ic-bridge-padding);
+    border-top: 1px solid var(--ic-line);
+  }
+
+  .ic-shortfall-number {
+    font-size: var(--ic-shortfall-size);
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+  }
+
+  .ic-evidence-decision {
+    display: grid;
+    gap: var(--ic-chart-row-gap);
+    padding: var(--ic-evidence-padding);
+    border-block: 1px solid var(--ic-line);
+    background: var(--ic-paper);
+  }
+
+  .ic-evidence-details summary {
+    list-style: none;
+    padding: var(--ic-bridge-padding) var(--ic-evidence-padding);
+  }
+
+  .ic-evidence-details summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .ic-evidence-details[open] summary {
+    border-bottom: 1px solid var(--ic-line);
+  }
+
+  .ic-enter-copy {
+    --ic-enter-delay: calc(var(--ic-stagger) * 2);
+  }
+  .ic-enter-form {
+    --ic-enter-delay: calc(var(--ic-stagger) * 3);
+  }
+
+  @media (min-width: 64rem) {
+    .ic-hero-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, var(--ic-hero-panel-width));
+    }
+
+    .ic-night-opening {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    }
+
+    .ic-evidence-intro,
+    .ic-evidence-flow,
+    .ic-evidence-detail-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .ic-evidence-decision {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      gap: var(--ic-evidence-gap);
+    }
+  }
+
   .ic-enter {
     animation: ic-enter var(--ic-slow) var(--ic-ease) both;
     animation-delay: var(--ic-enter-delay, 0ms);
@@ -385,7 +592,7 @@
   @keyframes ic-enter {
     from {
       opacity: 0;
-      transform: translate3d(0, 10px, 0);
+      transform: translate3d(0, var(--ic-entrance-distance), 0);
     }
     to {
       opacity: 1;
@@ -404,14 +611,15 @@
    */
   .ic-reveal[data-animatable='true'] {
     opacity: 0;
-    transform: translate3d(0, 10px, 0);
+    transform: translate3d(0, var(--ic-entrance-distance), 0);
     transition:
       opacity var(--ic-slow) var(--ic-ease),
       transform var(--ic-slow) var(--ic-ease);
     transition-delay: var(--ic-reveal-delay, 0ms);
   }
 
-  .ic-reveal[data-animatable='true'][data-revealed='true'] {
+  .ic-reveal[data-animatable='true'][data-revealed='true'],
+  .ic-reveal:focus-within {
     opacity: 1;
     transform: none;
   }
@@ -460,7 +668,8 @@
     scroll-behavior: auto;
   }
 
-  .ic-enter {
+  .ic-enter,
+  .ic-hero-line > span {
     animation: none;
   }
 

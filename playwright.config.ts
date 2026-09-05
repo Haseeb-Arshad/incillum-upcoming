@@ -38,7 +38,14 @@ export default defineConfig({
       name: 'tablet',
       use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 } },
     },
-    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    {
+      name: 'laptop',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1024, height: 900 } },
+    },
+    {
+      name: 'mobile',
+      use: { ...devices['Pixel 7'], viewport: { width: 390, height: 844 } },
+    },
   ],
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined

@@ -165,8 +165,7 @@ export function WaitlistForm() {
       console.error('[waitlist] submission failed', error)
       setSubmitState({
         kind: 'error',
-        message:
-          'That did not send. Try again, or email us and we will add you by hand.',
+        message: 'That did not send. Try again, or email us and we will add you by hand.',
       })
     }
   }
@@ -186,9 +185,8 @@ export function WaitlistForm() {
         <p className="text-label uppercase text-ink-400">Request recorded</p>
         <p className="font-display text-heading text-ink">You’re on the list.</p>
         <p className="text-body text-ink-600">
-          If the workflow looks like a fit, we’ll reach out about running one real
-          case alongside the way your team works today. Nothing is sent before
-          then.
+          If the workflow looks like a fit, we’ll reach out about running one real case
+          alongside the way your team works today. Nothing is sent before then.
         </p>
         <p className="ic-tabular text-small text-ink-400">{submitState.reference}</p>
         {/*
@@ -229,28 +227,6 @@ export function WaitlistForm() {
             invalid={invalid}
             {...register('workEmail')}
           />
-        )}
-      </Field>
-
-      <Field
-        label="What kind of commercial work do you handle?"
-        error={errors.commercialWork?.message}
-      >
-        {({ id, describedBy, invalid }) => (
-          <Select
-            id={id}
-            aria-describedby={describedBy}
-            invalid={invalid}
-            defaultValue=""
-            {...register('commercialWork')}
-          >
-            <option value="">Skip this</option>
-            {commercialWork.map((kind) => (
-              <option key={kind} value={kind}>
-                {kind}
-              </option>
-            ))}
-          </Select>
         )}
       </Field>
 
@@ -300,6 +276,28 @@ export function WaitlistForm() {
           <p className="text-small text-ink-400">
             It is what tells us whether to start with your team.
           </p>
+
+          <Field
+            label="What kind of commercial work do you handle?"
+            error={errors.commercialWork?.message}
+          >
+            {({ id, describedBy, invalid }) => (
+              <Select
+                id={id}
+                aria-describedby={describedBy}
+                invalid={invalid}
+                defaultValue=""
+                {...register('commercialWork')}
+              >
+                <option value="">Skip this</option>
+                {commercialWork.map((kind) => (
+                  <option key={kind} value={kind}>
+                    {kind}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
 
           <Field label="Company" error={errors.company?.message}>
             {({ id, describedBy, invalid }) => (
@@ -389,7 +387,7 @@ export function WaitlistForm() {
         size="lg"
         arrow
         disabled={isSubmitting}
-        className="w-full sm:w-auto sm:self-start"
+        className="w-full"
       >
         {isSubmitting ? 'Sending…' : 'Join early access'}
       </Button>

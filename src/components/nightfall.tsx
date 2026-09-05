@@ -1,4 +1,3 @@
-import { Container } from '#/components/primitives.tsx'
 import { nightfall } from '#/content/site.ts'
 
 /**
@@ -78,15 +77,14 @@ const HEIGHT = 941
 
 export function Nightfall() {
   return (
-    <Container>
-      <figure className="m-0">
-        {/*
+    <figure className="m-0">
+      {/*
           Cropped by the same corner radius the evidence document uses, so the
           two plates on this page are cut the same way.
         */}
-        <div className="overflow-hidden rounded-panel border border-line">
-          <picture>
-            {/*
+      <div className="overflow-hidden rounded-panel border border-line">
+        <picture>
+          {/*
               `sizes` is the whole point of the set. The plate is the container
               measure minus its padding — never the full viewport — so without
               this a phone downloads the 1672px file to paint 342 of them.
@@ -94,53 +92,52 @@ export function Nightfall() {
               The widths track `Container`: 1360 max measure, less 80px of
               padding at `lg`, so 1280 is the largest it is ever painted at.
             */}
-            <source
-              type="image/avif"
-              sizes="(min-width: 1440px) 1280px, (min-width: 1024px) calc(100vw - 80px), calc(100vw - 48px)"
-              srcSet={[
-                '/night/night-640.avif 640w',
-                '/night/night-900.avif 900w',
-                '/night/night-1280.avif 1280w',
-                '/night/night-1672.avif 1672w',
-              ].join(', ')}
-            />
-            <source
-              type="image/webp"
-              sizes="(min-width: 1440px) 1280px, (min-width: 1024px) calc(100vw - 80px), calc(100vw - 48px)"
-              srcSet={[
-                '/night/night-640.webp 640w',
-                '/night/night-900.webp 900w',
-                '/night/night-1280.webp 1280w',
-                '/night/night-1672.webp 1672w',
-              ].join(', ')}
-            />
-            {/*
+          <source
+            type="image/avif"
+            sizes="(min-width: 1440px) 768px, (min-width: 1024px) 60vw, calc(100vw - 48px)"
+            srcSet={[
+              '/night/night-640.avif 640w',
+              '/night/night-900.avif 900w',
+              '/night/night-1280.avif 1280w',
+              '/night/night-1672.avif 1672w',
+            ].join(', ')}
+          />
+          <source
+            type="image/webp"
+            sizes="(min-width: 1440px) 768px, (min-width: 1024px) 60vw, calc(100vw - 48px)"
+            srcSet={[
+              '/night/night-640.webp 640w',
+              '/night/night-900.webp 900w',
+              '/night/night-1280.webp 1280w',
+              '/night/night-1672.webp 1672w',
+            ].join(', ')}
+          />
+          {/*
               `fetchPriority="high"` and no lazy loading: on a phone this is the
               second thing on the page and it is inside the fold within one
               scroll. Deferring it would trade a byte of bandwidth for the one
               image the page depends on arriving late.
             */}
-            <img
-              src="/night/night-1672.jpg"
-              alt={nightfall.alt}
-              width={WIDTH}
-              height={HEIGHT}
-              decoding="async"
-              fetchPriority="high"
-              className="block h-auto w-full"
-            />
-          </picture>
-        </div>
+          <img
+            src="/night/night-1672.jpg"
+            alt={nightfall.alt}
+            width={WIDTH}
+            height={HEIGHT}
+            decoding="async"
+            fetchPriority="high"
+            className="block h-auto w-full"
+          />
+        </picture>
+      </div>
 
-        {/*
+      {/*
           The caption is the picture's title, not an explanation of it — and it
           says something the `alt` deliberately does not. The alt reports what is
           in the frame; this states what it means.
         */}
-        <figcaption className="mt-5 text-lede text-ink sm:mt-6">
-          {nightfall.caption}
-        </figcaption>
-      </figure>
-    </Container>
+      <figcaption className="mt-5 text-lede text-ink sm:mt-6">
+        {nightfall.caption}
+      </figcaption>
+    </figure>
   )
 }

@@ -61,11 +61,9 @@ export function Thread() {
         </Reveal>
 
         <ol className="mt-12 sm:mt-16">
-          {thread.beats.map((beat, index) => (
-            <Reveal
-              as="li"
+          {thread.beats.map((beat) => (
+            <li
               key={beat.at}
-              delay={index * 45}
               className="grid gap-x-10 gap-y-4 border-t border-l-2 border-line border-l-line-strong py-8 pl-5 sm:grid-cols-12 sm:py-10 sm:pl-6"
             >
               {/*
@@ -121,7 +119,11 @@ export function Thread() {
                             : 'flex items-baseline justify-between gap-6 border-b border-line py-3'
                         }
                       >
-                        <dt className={figure.breaches ? 'text-body' : 'text-body text-ink-600'}>
+                        <dt
+                          className={
+                            figure.breaches ? 'text-body' : 'text-body text-ink-600'
+                          }
+                        >
                           {figure.term}
                         </dt>
                         <dd className="ic-tabular text-body">{figure.value}</dd>
@@ -130,7 +132,7 @@ export function Thread() {
                   </dl>
                 ) : null}
               </div>
-            </Reveal>
+            </li>
           ))}
         </ol>
       </Container>

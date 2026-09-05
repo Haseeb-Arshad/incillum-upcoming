@@ -62,7 +62,7 @@ test.describe('the page', () => {
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: /The work doesn’t leave when you do/,
+        name: /Intelligence for commercial work/,
       }),
     ).toBeVisible()
 
@@ -79,7 +79,10 @@ test.describe('the page', () => {
     await expect(page.getByRole('link', { name: /Skip to main content/ })).toHaveCount(1)
   })
 
-  test('uses the supplied logo for the visible mark and favicon', async ({ page, request }) => {
+  test('uses the supplied logo for the visible mark and favicon', async ({
+    page,
+    request,
+  }) => {
     await ready(page)
 
     const marks = page.locator('img[src="/logo.png"][aria-hidden="true"]')
@@ -110,7 +113,12 @@ test.describe('the page', () => {
     await ready(page)
 
     const body = (await page.locator('body').innerText()).toLowerCase()
-    for (const competing of ['book a demo', 'request a demo', 'see it in action', 'start free']) {
+    for (const competing of [
+      'book a demo',
+      'request a demo',
+      'see it in action',
+      'start free',
+    ]) {
       expect(body).not.toContain(competing)
     }
   })
@@ -169,9 +177,9 @@ test.describe('the page', () => {
    */
   test('prints the motto once, before anybody joins', async ({ page }) => {
     await ready(page)
-    const occurrences = (
-      await page.locator('body').innerText()
-    ).toLowerCase().split('stay with the work').length - 1
+    const occurrences =
+      (await page.locator('body').innerText()).toLowerCase().split('stay with the work')
+        .length - 1
     expect(occurrences).toBe(1)
   })
 
@@ -197,7 +205,10 @@ test.describe('the page', () => {
    * no cookie. This is the test that fails if somebody hard-codes a container
    * ID rather than configuring one.
    */
-  test('ships no analytics when no container is configured', async ({ page, request }) => {
+  test('ships no analytics when no container is configured', async ({
+    page,
+    request,
+  }) => {
     const thirdParty: Array<string> = []
     page.on('request', (req) => {
       if (new URL(req.url()).hostname.endsWith('googletagmanager.com')) {
@@ -219,7 +230,9 @@ test.describe('the page', () => {
    * load and, on a bad day, throw away the server's markup. A hydration
    * mismatch surfaces as a console error, which this catches.
    */
-  test('boots cleanly, with no console errors and no horizontal overflow', async ({ page }) => {
+  test('boots cleanly, with no console errors and no horizontal overflow', async ({
+    page,
+  }) => {
     const errors: Array<string> = []
     page.on('console', (message) => {
       if (message.type() === 'error') errors.push(message.text())
@@ -285,7 +298,9 @@ test.describe('the night', () => {
     await expect(band.locator('#boundary-heading')).toHaveCount(0)
 
     // And it is genuinely dark, rather than merely marked.
-    const background = await band.evaluate((node) => getComputedStyle(node).backgroundColor)
+    const background = await band.evaluate(
+      (node) => getComputedStyle(node).backgroundColor,
+    )
     expect(background).toBe('rgb(19, 19, 18)')
   })
 
@@ -356,7 +371,13 @@ test.describe('the night', () => {
       await expect(page.getByText(figure, { exact: false }).first()).toBeVisible()
     }
 
-    for (const figure of ['EUR 162,816.00', 'EUR 192,000.00', 'EUR 29,184.00', 'EUR 11,520.00']) {
+    await page.getByText('Trace the sources and the full calculation').click()
+    for (const figure of [
+      'EUR 162,816.00',
+      'EUR 192,000.00',
+      'EUR 29,184.00',
+      'EUR 11,520.00',
+    ]) {
       await expect(page.getByText(figure, { exact: false }).first()).toBeVisible()
     }
   })
@@ -367,7 +388,10 @@ test.describe('the night', () => {
    * sentence is the whole licence for material this specific, and it is the
    * first thing somebody trims when a section feels long.
    */
-  test('labels its illustrative material, in the server’s HTML', async ({ page, request }) => {
+  test('labels its illustrative material, in the server’s HTML', async ({
+    page,
+    request,
+  }) => {
     await ready(page)
 
     await expect(page.getByText(/Invented, and marked as invented/)).toBeVisible()
@@ -459,9 +483,11 @@ test.describe('the clock', () => {
    */
   test('renders its section on the server, clock or no clock', async ({ request }) => {
     const html = await (await request.get('/')).text()
-    expect(html).toContain('Most workdays end')
+    expect(html).toContain('A lot can change before morning')
     expect(html).toContain('Staffed')
-    expect(html).toContain('Fifteen of these twenty-four hours have nobody attached to the work')
+    expect(html).toContain(
+      'Fifteen of these twenty-four hours have nobody attached to the work',
+    )
   })
 })
 
@@ -520,11 +546,18 @@ test.describe('the waitlist form', () => {
     await emailField(page).blur()
     await expect(page.getByRole('textbox', { name: /^Company/ })).toHaveCount(0)
 
-    await page.getByText(/Tell us about the work/).first().click()
+    await page
+      .getByText(/Tell us about the work/)
+      .first()
+      .click()
 
     await expect(page.getByRole('textbox', { name: /^Company/ }).first()).toBeVisible()
-    await expect(page.getByRole('combobox', { name: /RFQs or quotes/ }).first()).toBeVisible()
-    await expect(page.getByRole('textbox', { name: /costs you the most/ }).first()).toBeVisible()
+    await expect(
+      page.getByRole('combobox', { name: /RFQs or quotes/ }).first(),
+    ).toBeVisible()
+    await expect(
+      page.getByRole('textbox', { name: /costs you the most/ }).first(),
+    ).toBeVisible()
   })
 
   /**
@@ -564,18 +597,30 @@ test.describe('the waitlist form', () => {
 
     await emailField(page).fill('director@northwind-trading.example')
     await page
+      .getByText(/Tell us about the work/)
+      .first()
+      .click()
+    await page
       .getByRole('combobox', { name: /kind of commercial work/i })
       .first()
       .selectOption('Industrial distribution')
 
-    await page.getByText(/Tell us about the work/).first().click()
-    await page.getByRole('textbox', { name: /^Company/ }).first().fill('Northwind Trading')
-    await page.getByRole('textbox', { name: /^Your role/ }).first().fill('Commercial Director')
+    await page
+      .getByRole('textbox', { name: /^Company/ })
+      .first()
+      .fill('Northwind Trading')
+    await page
+      .getByRole('textbox', { name: /^Your role/ })
+      .first()
+      .fill('Commercial Director')
     await page
       .getByRole('combobox', { name: /RFQs or quotes/ })
       .first()
       .selectOption('200 to 1,000 a month')
-    await page.getByRole('textbox', { name: /^Current ERP/ }).first().fill('Infor M3')
+    await page
+      .getByRole('textbox', { name: /^Current ERP/ })
+      .first()
+      .fill('Infor M3')
     await page
       .getByRole('textbox', { name: /costs you the most/ })
       .first()
@@ -620,7 +665,9 @@ test.describe('the waitlist form', () => {
    * sharing state would mean a reader who joined at the top finds their own
    * receipt waiting eight screens down, addressed to nobody.
    */
-  test('leaves the second form untouched when the first is submitted', async ({ page }) => {
+  test('leaves the second form untouched when the first is submitted', async ({
+    page,
+  }) => {
     await ready(page)
 
     await emailField(page).fill('director@northwind-trading.example')
@@ -631,8 +678,13 @@ test.describe('the waitlist form', () => {
     await expect(page.getByRole('textbox', { name: /^Work email/ })).toHaveCount(1)
   })
 
-  test('is reachable and operable with the keyboard alone', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile', 'No hardware keyboard on the phone project.')
+  test('is reachable and operable with the keyboard alone', async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === 'mobile',
+      'No hardware keyboard on the phone project.',
+    )
     await ready(page)
 
     await emailField(page).focus()
@@ -640,19 +692,15 @@ test.describe('the waitlist form', () => {
     await page.waitForTimeout(PAST_SPAM_GATE_MS)
 
     /**
-     * Address, the one visible select, the disclosure summary, the button.
+     * Address, the disclosure summary, the button.
      *
-     * A keyboard user reaching submit in three presses — rather than stepping
+     * A keyboard user reaching submit in two presses — rather than stepping
      * through six questions they did not ask for — is the point of the
      * disclosure being closed, and anything that traps focus in between fails
      * here.
      */
     await page.keyboard.press('Tab')
-    await expect(
-      page.getByRole('combobox', { name: /kind of commercial work/i }).first(),
-    ).toBeFocused()
-
-    await page.keyboard.press('Tab')
+    await expect(page.locator('#waitlist summary')).toBeFocused()
     await page.keyboard.press('Tab')
     await expect(submit(page)).toBeFocused()
     await page.keyboard.press('Enter')
@@ -666,11 +714,13 @@ test.describe('the waitlist form', () => {
    * from a keyboard — which is how this pattern usually ships broken.
    */
   test('opens the disclosure from the keyboard', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile', 'No hardware keyboard on the phone project.')
+    test.skip(
+      testInfo.project.name === 'mobile',
+      'No hardware keyboard on the phone project.',
+    )
     await ready(page)
 
     await emailField(page).focus()
-    await page.keyboard.press('Tab')
     await page.keyboard.press('Tab')
     await page.keyboard.press('Enter')
 

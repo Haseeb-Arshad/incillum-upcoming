@@ -95,7 +95,7 @@ export function Reveal({
       },
       // Fires a little before the element's top edge reaches the fold, so the
       // movement is finishing as it arrives rather than starting.
-      { rootMargin: '0px 0px -10% 0px' },
+      { rootMargin: '0px 0px 80px 0px' },
     )
 
     observer.observe(element)

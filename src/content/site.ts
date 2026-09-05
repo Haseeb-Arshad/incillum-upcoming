@@ -74,27 +74,13 @@ export const brand = {
 } as const
 
 export const hero = {
-  /**
-   * The eyebrow carries the stage.
-   *
-   * A visitor should know what state they have walked into before they scroll.
-   * The alternative — finding out eight screens down at `standing` — means
-   * everything above it is read as the copy of a shipped product and then
-   * retroactively discounted, which is the most expensive way to tell somebody
-   * the truth. "In build" is a state, not a calendar.
-   */
-  eyebrow: 'Commercial operations · In build',
-  /**
-   * The whole site in seven words.
-   *
-   * It is a sentence about a person, not about software, and it is the only
-   * headline tested here that a reader could repeat to a colleague from memory.
-   * The type scale in `styles.css` is derived from its break — after "leave",
-   * so that "when you do" lands on its own line — which is why editing this
-   * line means re-deriving that number rather than adjusting it by eye.
-   */
-  headline: 'The work doesn’t leave when you do.',
-  lede: 'Incillum is being built to stay with commercial work — from the first customer request through the decisions, follow-ups, documents and financial consequences that come after it.',
+  /** Two deliberate lines; the explanation keeps the full commercial arc. */
+  headline: 'Intelligence for commercial work.',
+  headlineStart: 'Intelligence for',
+  headlineEnd: 'commercial work.',
+  lede: 'From the first request to the decisions, follow-ups, documents and financial consequences that follow. Incillum is being built to carry the work forward — and bring you back where judgement matters.',
+  invitation: 'Bring your hardest quotation.',
+  storyLink: 'Follow one night of work',
   /**
    * The proof beat.
    *
@@ -124,7 +110,7 @@ export const hero = {
    * of these, and the industry itself is a question on the form.
    */
   qualifier:
-    'For teams who quote: complex RFQs, supplier inputs that move the cost, margin decisions with a floor under them, and an ERP the answer has to land in.',
+    'Complex RFQs. Moving supplier costs. A margin to protect. If this is your work, help shape what comes next.',
   /**
    * Sits under the button.
    *
@@ -134,7 +120,7 @@ export const hero = {
    * commits to further down — one promise stated twice, not two promises.
    */
   assurance:
-    'The first group gets a call, then one real case run alongside the way your team does it today — no commitment, no payment. No newsletter, no drip sequence.',
+    'A conversation, then one real case alongside your team. No payment. No newsletter.',
 } as const
 
 /**
@@ -213,7 +199,7 @@ export const nightfall = {
  */
 export const instrument = {
   label: 'The unattended hours',
-  headline: 'Most workdays end. Commercial obligations don’t.',
+  headline: 'A lot can change before morning.',
   lede: 'A request arrives. A supplier answers. A cost moves and a deadline closes in. None of it waits for the morning, and for fifteen hours a day there is nobody attached to any of it.',
 
   /** Local hours the office is treated as occupied. Inclusive of `from`, exclusive of `to`. */
@@ -370,7 +356,7 @@ const beats: ReadonlyArray<ThreadBeat> = [
 export const thread = {
   label: 'Illustrative · one request, one night',
   headline: 'What changed by morning.',
-  lede: 'Invented, and marked as invented: no customer, no supplier and no quotation below is real. It is one thread through one night, written to show what Incillum is being built to carry — and, at every hour, what it is being built to leave alone.',
+  lede: 'Invented, and marked as invented. Follow one quotation from arrival to review. The customer, supplier and figures are illustrative; the boundaries show where a person takes over.',
 
   beats,
 } as const
@@ -398,8 +384,8 @@ export const thread = {
  */
 export const boundary = {
   label: 'Where it stops',
-  headline: 'It is built to stop.',
-  lede: 'Four things it is being built to hand back rather than settle. These are not failure states and they are not a fallback path — they are the shape of the product, written down before it runs.',
+  headline: 'Your judgement. At the right moment.',
+  lede: 'Incillum is being built to move the work forward within the limits you set. Ambiguity, approvals, commercial policy and missing evidence bring the decision back to you.',
 
   points: [
     {
@@ -463,8 +449,39 @@ export const boundary = {
  */
 export const evidence = {
   label: 'Illustrative · one line of that quotation',
-  headline: 'Every figure carries the page it came from.',
-  lede: 'Invented, and not a screenshot — there is nothing shipped to screenshot. This is the shape of the record Incillum is being built to leave behind: one line of one quotation, with the source of every number still attached to it, and the arithmetic done where a person can check it.',
+  headline: 'The number changed. The reason comes with it.',
+  lede: 'Invented, and not a screenshot. One line from the quotation above: a supplier cost changes, the margin falls, and the decision comes back with the evidence attached.',
+
+  visual: {
+    unitCostBefore: 128,
+    unitCostAfter: 135.68,
+    unitPrice: 160,
+    units: 1200,
+    floorPercent: 20,
+    scaleMax: 25,
+    sourceLabel: 'The source',
+    sourceTitle: 'A supplier cost changes.',
+    sourceReference: 'Supplier confirmation SC-4471 · 03:39',
+    costLabel: 'Cost per unit',
+    beforeLabel: 'Previous',
+    afterLabel: 'Confirmed',
+    leadTime: 'Lead time moves from 21 to 42 days.',
+    quoteLabel: 'Quoted price holds at',
+    impactLabel: 'The consequence',
+    impactTitle: 'The margin crosses your floor.',
+    chartLabel:
+      'Margin before and after the supplier update, on a shared zero to twenty-five percent scale.',
+    beforeMarginLabel: 'Before the update',
+    afterMarginLabel: 'After the update',
+    floorLabel: 'Commercial floor',
+    shortfallLabel: 'Below the floor on this line',
+    shortfallExplanation:
+      'The additional revenue needed to restore the 20.0% margin. The quotation stays with a person for the commercial decision.',
+    decisionTitle: 'The arithmetic is settled. The decision is yours.',
+    decisionBody:
+      'Keep the price and accept the lower margin, revise the price to meet the floor, or reconsider the lead time. The sources and calculation are ready to review. Nothing is sent on your behalf.',
+    detailsLabel: 'Trace the sources and the full calculation',
+  },
 
   record: {
     reference: 'RFQ 8841 · Line 14',
@@ -477,12 +494,19 @@ export const evidence = {
       lede: 'What was read, and where each number came from.',
       items: [
         { term: 'Customer RFQ 8841', value: 'Line 14 — part, quantity, delivery week.' },
-        { term: 'Framework agreement', value: 'The terms this customer is quoted under, and the floor that applies to them.' },
+        {
+          term: 'Framework agreement',
+          value:
+            'The terms this customer is quoted under, and the floor that applies to them.',
+        },
         {
           term: 'Supplier confirmation SC-4471',
           value: 'Received 03:39. Unit cost and lead time, superseding the price list.',
         },
-        { term: 'Price list, February', value: 'The unit cost this line was carrying until 03:42.' },
+        {
+          term: 'Price list, February',
+          value: 'The unit cost this line was carrying until 03:42.',
+        },
       ],
     },
 
@@ -510,7 +534,11 @@ export const evidence = {
        * stopped the work, and it is the only thing in this document a person is
        * actually being asked to look at.
        */
-      shortfall: { basis: 'Short of the floor', working: 'EUR 9.60 a unit', amount: 'EUR 11,520.00' },
+      shortfall: {
+        basis: 'Short of the floor',
+        working: 'EUR 9.60 a unit',
+        amount: 'EUR 11,520.00',
+      },
     },
 
     decision: {
@@ -618,16 +646,16 @@ export const standing = {
  */
 export const access = {
   label: 'Data and access',
-  headline: 'What is decided, and what is not.',
+  headline: 'Your commercial data stays out of training.',
 
   decided: {
-    title: 'We will not train on your data',
-    body: 'Nothing a team sends — customer requests, supplier costs, price lists, margins, correspondence — is used to train or fine-tune a model. Your cost base is the most sensitive thing in a quoting business, and that was a decision rather than a roadmap item, which is why it can be written down before anything else here can.',
+    title: 'A clear commitment',
+    body: 'Your requests, supplier costs, price lists, margins and correspondence are not used to train or fine-tune a model. That commitment is part of how we are building Incillum.',
   },
 
   open: {
-    title: 'The rest is open, and we are not going to pretend otherwise',
-    body: 'Where the data sits, which region it sits in, who on our side can reach it and what an audit of that looks like are being settled alongside the product, with the first group of teams rather than in advance of them. Ask and you will get the answer as it stands today, not the one we would like to give.',
+    title: 'Before you share a case',
+    body: 'Data location, internal access and audit arrangements are being settled with the first group of teams. We will explain the current setup before you decide whether to share a case.',
   },
 } as const
 
