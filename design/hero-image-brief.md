@@ -176,6 +176,7 @@ Not for the hero, and none of them blocking:
 | **A second night frame, vertical** | Nothing yet — hold it | The page has no slot for it. Worth generating while the look is dialled in, because a matching 4:5 crop is what a launch post or an ad set needs later and re-deriving the look in six months is how a brand drifts. |
 | **Nothing else** | — | The page has one image on purpose. A second atmospheric shot lower down would be decoration, and this design has no budget for decoration. |
 
-The OG share card is **already generated** from the site's own type and tokens
-(`public/og-image.png`, 151 kB) and does not need a photograph — a share card is
-read at thumbnail size, where a headline beats an interior every time.
+The OG share card is generated from the site's own copy, mark and tokens
+(`design/generate-og.mjs` → `public/og-image-v<n>.png`) and does not need a
+photograph — a share card is read at thumbnail size, where a headline beats an
+interior every time.

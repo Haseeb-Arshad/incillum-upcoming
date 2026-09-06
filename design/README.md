@@ -1,4 +1,25 @@
-# Marks
+# Design tooling
+
+Two generators. Neither is imported by the site; both write assets it ships.
+
+## The share card
+
+```bash
+pnpm generate-og
+```
+
+Renders `public/og-image-v<n>.png` at 1200x630 in headless Chromium, from
+`src/content/site.ts`, `public/logo.png` and the real `src/fonts/` faces. The
+card therefore cannot say something the page does not — which is the failure it
+exists to prevent: the hand-made version it replaced kept a headline and a mark
+the site had already dropped, and went on serving them to everybody who pasted
+the link.
+
+Redesigning it means **renaming** it. Platforms cache a card against its URL, so
+new bytes at an old path are shown to nobody; bump the number in the script and
+in `src/lib/seo.ts`, and delete the file the old path pointed at.
+
+## Marks
 
 Logo candidates for Incillum, generated from their own mathematics.
 

@@ -105,6 +105,59 @@ test.describe('the page', () => {
   })
 
   /**
+   * The share card, which is the one thing on this site nobody who works on it
+   * ever sees.
+   *
+   * It renders in somebody else's feed, from a file a crawler fetches once and
+   * caches for days, so every way it can be wrong is silent: a stale image, a
+   * path that 404s after a rename, a declared size the file does not have. The
+   * page looks perfect throughout. `src/lib/seo.test.ts` checks the words; this
+   * checks that the file behind them is really there and is really that size.
+   */
+  test('serves the share card the head promises', async ({ page, request }) => {
+    await ready(page)
+
+    const content = (selector: string) =>
+      page.locator(selector).first().getAttribute('content')
+
+    const src = await content('meta[property="og:image"]')
+    expect(src, 'no og:image in the head').toBeTruthy()
+    expect(await content('meta[name="twitter:image"]')).toBe(src)
+
+    const card = await request.get(src!)
+    expect(card.status(), `og:image 404s at ${src}`).toBe(200)
+    expect(card.headers()['content-type']).toContain('image/png')
+
+    /**
+     * The PNG's own IHDR chunk, which is the only account of the file's size
+     * that cannot be out of date. Width and height are big-endian 32-bit
+     * integers at bytes 16 and 20 of every PNG ever written.
+     *
+     * A platform that trusts `og:image:width` and receives something else lays
+     * the card out at the wrong aspect before it finishes loading, and the
+     * reader watches it jump. Declaring a size is only useful while it is true.
+     */
+    const bytes = await card.body()
+    expect(bytes.subarray(1, 4).toString('latin1'), 'not a PNG').toBe('PNG')
+    expect(String(bytes.readUInt32BE(16))).toBe(
+      await content('meta[property="og:image:width"]'),
+    )
+    expect(String(bytes.readUInt32BE(20))).toBe(
+      await content('meta[property="og:image:height"]'),
+    )
+
+    /**
+     * The card is the page's argument, so it has to still be making it. The
+     * previous card kept a headline the page had dropped; this fails the moment
+     * the two separate again.
+     */
+    expect(await content('meta[property="og:image:alt"]')).toContain(
+      'Intelligence for commercial work',
+    )
+    await expect(page).toHaveTitle(/Intelligence for commercial work/i)
+  })
+
+  /**
    * One ask. A "book a demo" beside "join early access" is the change that
    * arrives when somebody reasonable decides the page should capture both kinds
    * of interest, and it is how a pre-launch page stops converting either.

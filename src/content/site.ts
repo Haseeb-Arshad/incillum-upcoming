@@ -714,8 +714,29 @@ export const close = {
   emailLabel: 'Write to us',
 } as const
 
+/**
+ * The head, and the one rule it lives under.
+ *
+ * ── The title is the headline ─────────────────────────────────────────────
+ *
+ * It said "the work doesn’t leave when you do" long after the page stopped
+ * saying it. That phrase was the previous positioning's headline, and when the
+ * page was rewritten around `hero.headline` it survived here, where nobody on
+ * the team ever reads it — a title and a share card are the two parts of a site
+ * that only ever render in somebody else's tab.
+ *
+ * So the rule is that this title carries the hero's headline, and
+ * `lib/seo.test.ts` fails if it stops doing so. A visitor who arrives from a
+ * search result or a pasted link should read the same sentence twice: once in
+ * the preview and once at the top of the page. Two different first sentences is
+ * not a richer pitch, it is a reader wondering whether they clicked the right
+ * link.
+ *
+ * Lower case after the dash, because the wordmark is the proper noun and the
+ * rest is a description of what the company does.
+ */
 export const seoCopy = {
-  title: 'Incillum — the work doesn’t leave when you do',
+  title: 'Incillum — intelligence for commercial work',
   description:
     'Incillum is being built to stay with commercial work: an RFQ that arrives at night, the supplier costs and margin decisions that follow it, and a quotation ready for a person by morning. Join early access.',
 } as const
