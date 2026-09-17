@@ -753,8 +753,6 @@ export const launch = {
   submit: 'Join the waitlist',
   success: 'You are on the list.',
   successNote: 'We have your address. We will write when we are ready.',
-  pause: 'Pause motion',
-  play: 'Resume motion',
   index: ['Artificial intelligence', 'Commercial instinct', 'A new perspective'],
   title: 'Incillum - A different kind of intelligence.',
   description:

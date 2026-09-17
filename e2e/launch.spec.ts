@@ -66,21 +66,32 @@ test('local server accepts email-only signup and shows truthful success', async 
   await expect(page.getByRole('status')).not.toContainText(/workflow|case|inbox/)
 })
 
-test('motion can be paused and reduced motion is static', async ({ page }) => {
-  const control = page.getByRole('button', { name: 'Pause motion' })
-  await control.click()
-  await expect(page.locator('.launch-contours')).toHaveCSS(
-    'animation-play-state',
-    'paused',
+test('particles flow without controls and reduced motion renders a still frame', async ({
+  page,
+}) => {
+  const field = page.locator('.intelligence-field')
+  const canvas = field.locator('canvas')
+  await expect(field).toHaveAttribute('data-ready', 'true')
+  await expect(field).toHaveAttribute('data-motion', 'flowing')
+  await expect(page.getByRole('button', { name: /pause|resume/i })).toHaveCount(0)
+  const movingFrame = await canvas.evaluate((element: HTMLCanvasElement) =>
+    element.toDataURL(),
   )
-  await page.getByRole('button', { name: 'Resume motion' }).click()
-  await expect(page.locator('.launch-contours')).toHaveCSS(
-    'animation-play-state',
-    'running',
-  )
+  await expect
+    .poll(() => canvas.evaluate((element: HTMLCanvasElement) => element.toDataURL()))
+    .not.toBe(movingFrame)
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await expect(page.locator('.launch-contours')).toHaveCSS('animation-name', 'none')
+  await expect(field).toHaveAttribute('data-motion', 'still')
+  const stillFrame = await canvas.evaluate((element: HTMLCanvasElement) =>
+    element.toDataURL(),
+  )
+  await page.waitForTimeout(250)
+  expect(await canvas.evaluate((element: HTMLCanvasElement) => element.toDataURL())).toBe(
+    stillFrame,
+  )
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await expect(field).toHaveAttribute('data-motion', 'flowing')
 })
 
 test('keyboard reaches form and server HTML contains the invitation', async ({
@@ -95,6 +106,7 @@ test('keyboard reaches form and server HTML contains the invitation', async ({
   await staticPage.goto('http://localhost:3210/')
   await expect(staticPage.getByRole('heading', { level: 1 })).toBeVisible()
   await expect(staticPage.getByRole('textbox', { name: /^Work email/ })).toBeVisible()
+  await expect(staticPage.locator('.intelligence-field-still')).toBeVisible()
   await context.close()
 })
 

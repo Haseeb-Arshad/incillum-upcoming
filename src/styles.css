@@ -712,8 +712,9 @@
   --launch-wordmark: 1.75rem;
   --launch-form: 25rem;
   --launch-rule: 1px;
-  --launch-orbit: 100s;
-  --launch-art-ink: #a9b7ac;
+  --launch-particle-ink: #bcb6a6;
+  --launch-particle-bright: #f2f2ee;
+  --launch-field-mobile-height: 19rem;
   min-height: 100svh;
   background-color: var(--ic-paper);
   background-image: var(--ic-grain);
@@ -806,28 +807,25 @@
   color: var(--ic-ink-400);
   margin-top: 1rem;
 }
-.launch-art {
+.intelligence-field {
   position: absolute;
-  width: min(66vw, 57rem);
-  right: -6%;
-  top: 50%;
-  transform: translateY(-50%);
+  inset: -3rem calc(-1 * var(--launch-gutter)) -1rem;
   pointer-events: none;
+  overflow: hidden;
+  contain: strict;
 }
-.launch-art svg {
+.intelligence-field canvas,
+.intelligence-field-still {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
-  overflow: visible;
+  height: 100%;
 }
-.launch-contours {
-  stroke: var(--launch-art-ink);
-  stroke-width: 0.65;
-  opacity: 0.48;
-  transform-origin: 350px 350px;
-  animation: launch-orbit var(--launch-orbit) linear infinite;
+.intelligence-field-still {
+  fill: var(--launch-particle-ink);
 }
-.launch[data-paused='true'] .launch-contours {
-  animation-play-state: paused;
+.intelligence-field[data-ready='true'] .intelligence-field-still {
+  visibility: hidden;
 }
 .launch-art-caption {
   position: absolute;
@@ -871,19 +869,10 @@
   font-size: 1.1rem;
   color: var(--ic-ink-900);
 }
-.launch-motion {
-  cursor: pointer;
-  min-height: 2.75rem;
-}
 .launch a:focus-visible,
 .launch button:focus-visible {
   outline: 2px solid var(--ic-ink-900);
   outline-offset: 5px;
-}
-@keyframes launch-orbit {
-  to {
-    transform: rotate(360deg);
-  }
 }
 @media (min-width: 1500px) {
   .launch-stage-area {
@@ -893,11 +882,6 @@
 @media (max-width: 1050px) {
   .launch {
     --launch-display: clamp(3.6rem, 8.7vw, 6rem);
-  }
-  .launch-art {
-    right: -20%;
-    width: 80vw;
-    opacity: 0.65;
   }
   .launch-index {
     gap: 2rem;
@@ -924,12 +908,10 @@
     font-size: 0.6rem;
     margin-bottom: 1.6rem;
   }
-  .launch-art {
-    width: 110%;
-    right: -28%;
-    top: 8rem;
-    transform: none;
-    opacity: 0.45;
+  .intelligence-field {
+    top: 9rem;
+    bottom: auto;
+    height: var(--launch-field-mobile-height);
   }
   .launch-invitation {
     margin-top: 15rem;
@@ -954,13 +936,5 @@
   }
   .launch-bottom > span {
     flex-basis: 100%;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .launch-contours {
-    animation: none;
-  }
-  .launch-motion {
-    display: none;
   }
 }
