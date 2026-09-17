@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 import { chromium } from '@playwright/test'
 
-import { brand, hero } from '../src/content/site.ts'
+import { brand, launch } from '../src/content/site.ts'
 
 /**
  * The share card, generated.
@@ -65,7 +65,7 @@ const HEIGHT = 630
  * card is redesigned again, bump the number here and in `lib/seo.ts` — the end-
  * to-end suite fails if the two disagree.
  */
-const OUTPUT = resolve(root, 'public/og-image-v2.png')
+const OUTPUT = resolve(root, 'public/og-image-v3.png')
 
 /** `url(data:…)` for a font or image, so the render needs no network at all. */
 async function dataUri(path, mime) {
@@ -256,10 +256,10 @@ const html = `<!doctype html>
       <span>${escape(brand.name)}</span>
     </div>
 
-    <h1>${escape(hero.headlineStart)}<br />${escape(hero.headlineEnd)}</h1>
+    <h1>${escape(launch.headlineStart)}<br />${escape(launch.headlineEnd)}</h1>
 
     <div class="close">
-      <p class="proof"><b>${escape(hero.proof)}</b> ${escape(hero.proofTail)}</p>
+      <p class="proof"><b>${escape(launch.category)}</b> ${escape(launch.note)}</p>
       <p class="stage">${escape(STAGE)}</p>
     </div>
   </body>

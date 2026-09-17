@@ -1,0 +1,705 @@
+@import 'tailwindcss';
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Incillum — the pre-launch surface.
+
+   One page, two typefaces, one colour. Everything below is either a token or a
+   pattern used more than twice; nothing here is a one-off.
+
+   The whole visual argument rests on four decisions:
+
+     1. A text serif set very large, at its single available weight, doing the
+        display work. No bold cut exists and none is synthesised — the size is
+        what carries the emphasis, which is why the hero can be quiet and still
+        be the loudest thing on the page.
+     2. A grotesk for everything a person operates: body, labels, controls.
+     3. No third voice and no gradient. Contrast is still the emphasis, and it
+        still has to be spent carefully.
+     4. One hue, and it is lamplight rather than a brand colour — see
+        `--ic-signal`. The page has a night in the middle of it now, and a night
+        with nothing lit in it is not a night, it is a blank.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Original self-hosted typefaces, retained by request. See AGENTS.md section 7. */
+@font-face {
+  font-family: 'Incillum Sans';
+  src: url('./fonts/HarveySansDiatypeVariable-s.p.3gw33igtr422g.woff2') format('woff2');
+  font-weight: 200 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Incillum Serif';
+  src: url('./fonts/subset_HarveySerif_Regular-s.p.3fyyxyg4mmi3v.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Incillum Serif';
+  src: url('./fonts/subset_HarveySerif_Italic-s.p.3vy99-_efieb4.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ── Raw values ───────────────────────────────────────────────────────────
+ *
+ * Declared on `:root` rather than inside `@theme` so the inverted scope below
+ * can reference the same values without redeclaring any of them.
+ *
+ * The paper is warm rather than neutral: #F7F7F5 against a pure-white browser
+ * chrome reads as paper, and against #FFFFFF content it gives the one step of
+ * elevation this palette can afford. The ink stops short of #000000 for the
+ * same reason a printer does — pure black on a light field vibrates at display
+ * sizes, and 8% off is invisible as a colour and calmer as a mass.
+ *
+ * Every text value is measured against the lightest surface it can land on:
+ *
+ *   ink-900 on paper       17.4:1     display and body
+ *   ink-600 on paper        9.1:1     secondary prose
+ *   ink-400 on paper        4.8:1     labels and captions — clears AA at 12px
+ *
+ * ink-400 is the floor. Anything quieter than this is a border, never type.
+ */
+:root {
+  --ic-paper: #f7f7f5;
+  --ic-paper-raised: #ffffff;
+  --ic-paper-sunken: #efefec;
+
+  --ic-ink-900: #111110;
+  --ic-ink-800: #1c1c1a;
+  --ic-ink-600: #45453f;
+  --ic-ink-400: #6e6e66;
+  --ic-ink-200: #a3a39a;
+
+  --ic-line: rgba(17, 17, 16, 0.11);
+  --ic-line-strong: rgba(17, 17, 16, 0.22);
+
+  /* ── The signal ─────────────────────────────────────────────────────────
+   *
+   * The one colour on the site, and it is lamplight.
+   *
+   * This palette had no colour at all, and the restraint was right: contrast
+   * was the only emphasis, so it could not be spent carelessly. What changed is
+   * that the page now has a night in the middle of it, and a night with no
+   * light in it is not a night, it is an absence. So there is exactly one hue,
+   * and it means one thing — *something is still lit*.
+   *
+   * It behaves like light rather than like a brand colour, which is why the two
+   * values are not the same colour at two lightnesses. On paper, in daylight,
+   * it is a burnt sienna that reads as ink with warmth in it. In the dark scope
+   * it opens up to lamp amber. A signal that glowed equally in both would be a
+   * logo colour; one that is dim by day and bright at night is the argument.
+   *
+   *   #9A5518 on paper        5.31:1     clears AA as text, and on the sunken
+   *                                      band too (4.94:1)
+   *   #E4A046 on the panel    7.73:1
+   *
+   * Four places use it, and that list is the whole licence: the lamp and the
+   * one lit window in the night plate, the reader's own hour on the instrument,
+   * the held state in the night thread, and the one figure in the evidence
+   * document that breaks the commercial floor. It is never a border for
+   * decoration, never a hover, and never a second brand colour.
+   *
+   * There is deliberately no separate red. A held line and a missed floor are
+   * the same event — work that stopped and is waiting for a person — and giving
+   * them two colours would say they are two things.
+   */
+  --ic-signal: #9a5518;
+  --ic-signal-soft: rgba(154, 85, 24, 0.1);
+
+  /* ── Grain ───────────────────────────────────────────────────────────────
+   *
+   * Fractal noise, generated by the browser's own filter, tiled at 140px. No
+   * request, no binary in the repository, and nothing to re-export when the
+   * tone changes.
+   *
+   * It is set at an opacity where it is felt rather than seen: the luminance
+   * shift is under one per cent, so no contrast ratio measured above moves. The
+   * point is not texture for its own sake — a flat #F7F7F5 reads as a screen,
+   * and the same tone with a grain in it reads as stock. This site's whole
+   * argument is about commercial paper, so the surface should be paper.
+   *
+   * The alpha is baked into the tile rather than applied to a layer on top of
+   * it, which is what keeps this to one line per surface. The obvious
+   * alternative — an absolutely positioned `::before` carrying its own opacity
+   * — needs `position: relative` on whatever it covers, and the first thing it
+   * would have covered is `body`, whose children include the sticky masthead.
+   * A grain that silently unsticks the header is an expensive texture.
+   */
+  --ic-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.038'/%3E%3C/svg%3E");
+
+  /* Motion. Two durations and one curve — a page this quiet needs no more. */
+  --ic-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --ic-fast: 160ms;
+  --ic-slow: 480ms;
+  --ic-stagger: 40ms;
+  --ic-title-duration: 640ms;
+  --ic-title-clearance: 0.12em;
+  --ic-entrance-distance: 12px;
+  --ic-hero-top: clamp(3.5rem, 7vw, 6.5rem);
+  --ic-hero-gap: clamp(2rem, 5vw, 5rem);
+  --ic-hero-copy-width: 43ch;
+  --ic-hero-copy-gap: clamp(1.75rem, 3vw, 2.75rem);
+  --ic-hero-panel-width: 24rem;
+  --ic-hero-panel-padding: clamp(1.25rem, 2vw, 1.75rem);
+  --ic-bridge-gap: clamp(2rem, 3vw, 2.5rem);
+  --ic-bridge-padding: 1.5rem;
+  --ic-night-gap: clamp(2.5rem, 5vw, 5rem);
+  --ic-evidence-padding: clamp(1.25rem, 3vw, 2.5rem);
+  --ic-evidence-gap: clamp(2rem, 4vw, 4rem);
+  --ic-chart-bar-height: 0.75rem;
+  --ic-chart-floor-height: 1.5rem;
+  --ic-chart-row-gap: 1.75rem;
+  --ic-shortfall-size: clamp(1.75rem, 3vw, 2.75rem);
+  --ic-anchor-offset: 7rem;
+}
+
+@theme inline {
+  --color-paper: var(--ic-paper);
+  --color-paper-raised: var(--ic-paper-raised);
+  --color-paper-sunken: var(--ic-paper-sunken);
+
+  --color-ink: var(--ic-ink-900);
+  --color-ink-800: var(--ic-ink-800);
+  --color-ink-600: var(--ic-ink-600);
+  --color-ink-400: var(--ic-ink-400);
+  --color-ink-200: var(--ic-ink-200);
+
+  --color-line: var(--ic-line);
+  --color-line-strong: var(--ic-line-strong);
+
+  --color-signal: var(--ic-signal);
+  --color-signal-soft: var(--ic-signal-soft);
+
+  --font-display:
+    'Incillum Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia,
+    'Times New Roman', serif;
+  --font-sans:
+    'Incillum Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
+
+  /* Two voices: a condensed display serif and a readable operational sans. */
+  --text-display: clamp(2.75rem, 6.3vw, 5.75rem);
+  --text-display--line-height: 0.98;
+  --text-display--font-weight: 400;
+  --text-display--letter-spacing: -0.021em;
+
+  --text-title: clamp(2.5rem, 4vw, 3.75rem);
+  --text-title--line-height: 1.04;
+  --text-title--font-weight: 400;
+  --text-title--letter-spacing: -0.018em;
+
+  --text-heading: clamp(1.5rem, 2vw, 1.875rem);
+  --text-heading--line-height: 1.2;
+  --text-heading--font-weight: 400;
+  --text-heading--letter-spacing: -0.012em;
+
+  --text-quote: clamp(1.125rem, 1.5vw, 1.375rem);
+  --text-quote--line-height: 1.42;
+  --text-quote--font-weight: 400;
+  --text-quote--letter-spacing: -0.008em;
+
+  --text-lede: 1.0625rem;
+  --text-lede--line-height: 1.6;
+  --text-lede--font-weight: 400;
+  --text-lede--letter-spacing: -0.004em;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.62;
+  --text-body--font-weight: 400;
+
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.5;
+  --text-small--font-weight: 400;
+
+  /* The only tracked-out style on the page. Reserved for section labels. */
+  --text-label: 0.75rem;
+  --text-label--line-height: 1rem;
+  --text-label--font-weight: 500;
+  --text-label--letter-spacing: 0.1em;
+
+  /* Controls and buttons — sans, slightly tighter than body, never smaller. */
+  --text-ui: 0.9375rem;
+  --text-ui--line-height: 1.25rem;
+  --text-ui--font-weight: 500;
+  --text-ui--letter-spacing: -0.006em;
+
+  --radius-control: 6px;
+  --radius-panel: 12px;
+
+  --container-measure: 1360px;
+}
+
+/* ── The inverted scope ───────────────────────────────────────────────────
+ *
+ * One dark region on the page, and it re-points the same tokens rather than
+ * introducing a parallel set — so a button, a border or a piece of muted text
+ * inside it rethemes without the component knowing where it landed.
+ *
+ * The values are not the light ones flipped. Ink at 89% lightness on a dark
+ * field glares; the paper tones step down, and the muted tone steps *up* to
+ * #9C9C93 (5.2:1 on the panel) because a grey that clears AA on paper does not
+ * clear it here.
+ */
+[data-inverted] {
+  --ic-paper: #131312;
+  --ic-paper-raised: #1b1b19;
+  --ic-paper-sunken: #0d0d0c;
+
+  --ic-ink-900: #f2f2ee;
+  --ic-ink-800: #e2e2dc;
+  --ic-ink-600: #b6b6ad;
+  --ic-ink-400: #9c9c93;
+  --ic-ink-200: #6a6a63;
+
+  --ic-line: rgba(242, 242, 238, 0.13);
+  --ic-line-strong: rgba(242, 242, 238, 0.26);
+
+  /*
+   * The signal opens up here. See the note on `--ic-signal` above: it is
+   * lamplight, so it is dim on paper and bright in the dark, and the two values
+   * are the same light at two times of day rather than one colour at two
+   * lightnesses.
+   */
+  --ic-signal: #e4a046;
+  --ic-signal-soft: rgba(228, 160, 70, 0.14);
+
+  /* The same noise, a little stronger: a dark field shows grain less. */
+  --ic-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+
+  background-color: var(--ic-paper);
+  background-image: var(--ic-grain);
+  background-repeat: repeat;
+  color: var(--ic-ink-900);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--ic-paper);
+    background-image: var(--ic-grain);
+    background-repeat: repeat;
+    color: var(--ic-ink-900);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    /* Diatype's default figures are proportional; the clock needs columns. */
+    font-feature-settings: 'ss01';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /**
+   * Every heading on this page is the serif. Set here rather than per-element
+   * so a heading added later cannot silently arrive in the grotesk.
+   */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+  }
+
+  [id] {
+    scroll-margin-top: var(--ic-anchor-offset);
+  }
+
+  /**
+   * One focus ring, everywhere, and it is never removed. `:focus-visible`
+   * keeps it off a mouse click and on for a keyboard tab, which is the only
+   * version of this that both designers and keyboard users accept.
+   */
+  :focus-visible {
+    outline: 2px solid var(--ic-ink-900);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: var(--ic-ink-900);
+    color: var(--ic-paper);
+  }
+}
+
+@layer components {
+  /**
+   * The grain, on any element that paints its own ground.
+   *
+   * `body` and the night band get it from their own rules below and above;
+   * this class is for the two sunken bands, whose background colour would
+   * otherwise cover the body's grain with a flat rectangle. It is one line
+   * because the alpha is baked into the tile rather than applied to a layer —
+   * see `--ic-grain`.
+   */
+  .ic-textured {
+    background-image: var(--ic-grain);
+    background-repeat: repeat;
+  }
+
+  /** Figures that have to line up in a column: the clock, the hour scale. */
+  .ic-tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  /**
+   * The page's one entrance.
+   *
+   * Runs once on load, staggered by `--ic-enter-delay`, and only ever touches
+   * opacity and a 10px translate — both composited, neither able to affect
+   * layout. It is applied to the hero only: the sections below it are already
+   * on the page by the time anybody scrolls to them, and animating those would
+   * be decorating rather than explaining.
+   */
+  .ic-hero {
+    padding-top: var(--ic-hero-top);
+  }
+
+  .ic-hero-line {
+    display: block;
+    text-wrap: nowrap;
+    overflow: clip;
+    padding-bottom: var(--ic-title-clearance);
+    margin-bottom: calc(var(--ic-title-clearance) * -1);
+  }
+
+  .ic-hero-line > span {
+    display: block;
+    animation: ic-title-enter var(--ic-title-duration) var(--ic-ease) both;
+  }
+
+  .ic-hero-line + .ic-hero-line > span {
+    animation-delay: var(--ic-stagger);
+  }
+
+  @keyframes ic-title-enter {
+    from {
+      transform: translateY(105%);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  .ic-hero-grid {
+    display: grid;
+    gap: var(--ic-hero-gap);
+    align-items: start;
+  }
+
+  .ic-hero-lede {
+    max-width: var(--ic-hero-copy-width);
+    margin-top: var(--ic-hero-copy-gap);
+    text-wrap: pretty;
+  }
+
+  .ic-hero-access {
+    min-width: 0;
+    padding: var(--ic-hero-panel-padding);
+    border: 1px solid var(--ic-line);
+    border-radius: var(--radius-panel);
+    background: var(--ic-paper-raised);
+  }
+
+  .ic-hero-access button[type='submit'] {
+    width: 100%;
+  }
+
+  .ic-hero-bridge {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ic-bridge-padding);
+    margin-top: var(--ic-bridge-gap);
+    padding-block: var(--ic-bridge-padding);
+    border-top: 1px solid var(--ic-line-strong);
+  }
+
+  .ic-story-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ic-bridge-padding);
+    min-height: 2.75rem;
+    color: var(--ic-ink-900);
+    text-underline-offset: 0.25em;
+  }
+
+  .ic-story-link:hover {
+    text-decoration: underline;
+  }
+
+  .ic-night-opening {
+    display: grid;
+    gap: var(--ic-night-gap);
+    align-items: center;
+    padding-bottom: var(--ic-night-gap);
+  }
+
+  .ic-evidence-intro {
+    display: grid;
+    align-items: end;
+    gap: var(--ic-evidence-gap);
+  }
+
+  .ic-evidence-panel {
+    overflow: clip;
+    border: 1px solid var(--ic-line-strong);
+    border-radius: var(--radius-panel);
+    background: var(--ic-paper-raised);
+  }
+
+  .ic-evidence-metadata {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--ic-bridge-padding);
+    padding: var(--ic-bridge-padding) var(--ic-evidence-padding);
+    border-bottom: 1px solid var(--ic-line);
+  }
+
+  .ic-evidence-flow,
+  .ic-evidence-detail-grid {
+    display: grid;
+    gap: var(--ic-evidence-gap);
+    padding: var(--ic-evidence-padding);
+  }
+
+  .ic-evidence-source {
+    min-width: 0;
+  }
+
+  .ic-source-sheet {
+    margin-top: var(--ic-chart-row-gap);
+    padding: var(--ic-bridge-padding);
+    border: 1px solid var(--ic-line-strong);
+    background-color: var(--ic-paper);
+    background-image: var(--ic-grain);
+  }
+
+  .ic-cost-comparison {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--ic-bridge-padding);
+  }
+
+  .ic-margin-chart {
+    margin-top: var(--ic-evidence-padding);
+  }
+
+  .ic-margin-row + .ic-margin-row {
+    margin-top: var(--ic-chart-row-gap);
+  }
+
+  .ic-margin-track {
+    position: relative;
+    height: var(--ic-chart-bar-height);
+    background: var(--ic-paper-sunken);
+  }
+
+  .ic-margin-bar {
+    height: 100%;
+    background: var(--ic-ink-900);
+  }
+
+  .ic-margin-floor {
+    position: absolute;
+    top: 50%;
+    height: var(--ic-chart-floor-height);
+    border-left: 1px solid var(--ic-ink-400);
+    transform: translateY(-50%);
+  }
+
+  .ic-shortfall {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ic-chart-bar-height);
+    margin-top: var(--ic-chart-row-gap);
+    padding-top: var(--ic-bridge-padding);
+    border-top: 1px solid var(--ic-line);
+  }
+
+  .ic-shortfall-number {
+    font-size: var(--ic-shortfall-size);
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+  }
+
+  .ic-evidence-decision {
+    display: grid;
+    gap: var(--ic-chart-row-gap);
+    padding: var(--ic-evidence-padding);
+    border-block: 1px solid var(--ic-line);
+    background: var(--ic-paper);
+  }
+
+  .ic-evidence-details summary {
+    list-style: none;
+    padding: var(--ic-bridge-padding) var(--ic-evidence-padding);
+  }
+
+  .ic-evidence-details summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .ic-evidence-details[open] summary {
+    border-bottom: 1px solid var(--ic-line);
+  }
+
+  .ic-enter-copy {
+    --ic-enter-delay: calc(var(--ic-stagger) * 2);
+  }
+  .ic-enter-form {
+    --ic-enter-delay: calc(var(--ic-stagger) * 3);
+  }
+
+  @media (min-width: 64rem) {
+    .ic-hero-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, var(--ic-hero-panel-width));
+    }
+
+    .ic-night-opening {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    }
+
+    .ic-evidence-intro,
+    .ic-evidence-flow,
+    .ic-evidence-detail-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .ic-evidence-decision {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      gap: var(--ic-evidence-gap);
+    }
+  }
+
+  .ic-enter {
+    animation: ic-enter var(--ic-slow) var(--ic-ease) both;
+    animation-delay: var(--ic-enter-delay, 0ms);
+  }
+
+  @keyframes ic-enter {
+    from {
+      opacity: 0;
+      transform: translate3d(0, var(--ic-entrance-distance), 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /**
+   * Scroll reveal — the CSS half of `components/reveal.tsx`.
+   *
+   * The default state is *visible*. An element only becomes hideable once React
+   * has mounted and set `data-animatable`, which is what stops a blocked or
+   * slow-hydrating page from serving a blank screen. Read the component's
+   * header before changing either selector; the order matters more than it
+   * looks.
+   */
+  .ic-reveal[data-animatable='true'] {
+    opacity: 0;
+    transform: translate3d(0, var(--ic-entrance-distance), 0);
+    transition:
+      opacity var(--ic-slow) var(--ic-ease),
+      transform var(--ic-slow) var(--ic-ease);
+    transition-delay: var(--ic-reveal-delay, 0ms);
+  }
+
+  .ic-reveal[data-animatable='true'][data-revealed='true'],
+  .ic-reveal:focus-within {
+    opacity: 1;
+    transform: none;
+  }
+
+  /**
+   * The arrow inside a primary button.
+   *
+   * Two pixels to the right on hover, on the same curve as everything else. It
+   * is the smallest possible acknowledgement that a control is live, and it is
+   * the only hover movement anywhere on the site — a page where every card
+   * lifts and every row slides is a page that is nervous.
+   *
+   * Guarded by `@media (hover: hover)` so a touch device, where `:hover` sticks
+   * after a tap, never leaves the arrow displaced.
+   */
+  @media (hover: hover) {
+    .ic-cta:hover .ic-cta-arrow {
+      transform: translateX(2px);
+    }
+  }
+
+  .ic-cta-arrow {
+    transition: transform var(--ic-fast) var(--ic-ease);
+  }
+
+  /**
+   * The press.
+   *
+   * One pixel down, and only while the pointer is held. Without it the button
+   * has no active state at all — the colour change on hover is already spent by
+   * the time somebody clicks — and a control that does not acknowledge a press
+   * is the single most common reason a person clicks it twice.
+   */
+  .ic-cta:active {
+    transform: translateY(1px);
+  }
+}
+
+/**
+ * Reduced motion is a hard stop, not a slower version. Content renders in its
+ * final state; nothing translates, nothing fades in, and the smooth scroll on
+ * `html` reverts to an instant jump.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .ic-enter,
+  .ic-hero-line > span {
+    animation: none;
+  }
+
+  /**
+   * The reveal renders in its final state, not a faster version of the
+   * transition.
+   *
+   * This rule has to exist even though the blanket `transition-duration`
+   * override below would make the fade instant: the element would still start
+   * at `opacity: 0` and depend on an IntersectionObserver firing to become
+   * visible. A reader who has asked for reduced motion would get a page whose
+   * content appears only if a script runs — which is a worse outcome than the
+   * animation they were trying to avoid.
+   */
+  .ic-reveal[data-animatable='true'] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .ic-cta:active,
+  .ic-cta:hover .ic-cta-arrow {
+    transform: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

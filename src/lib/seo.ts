@@ -1,5 +1,5 @@
 import { absoluteUrl, siteUrl } from '#/env.ts'
-import { brand, hero, seoCopy } from '#/content/site.ts'
+import { brand, launch } from '#/content/site.ts'
 
 /**
  * A page's own title, description and canonical path. Everything is optional
@@ -40,7 +40,7 @@ interface PageSeo {
  * this path and checks the PNG's own header against the two numbers below.
  */
 const shareCard = {
-  path: '/og-image-v2.png',
+  path: '/og-image-v3.png',
   width: '1200',
   height: '630',
 } as const
@@ -60,8 +60,8 @@ const shareCard = {
  */
 export function seoTags(page: PageSeo = {}) {
   const path = page.path ?? '/'
-  const title = page.title ?? seoCopy.title
-  const description = page.description ?? seoCopy.description
+  const title = page.title ?? launch.title
+  const description = page.description ?? launch.description
   const url = absoluteUrl(path)
   const image = absoluteUrl(shareCard.path)
 
@@ -89,7 +89,7 @@ export function seoTags(page: PageSeo = {}) {
        */
       {
         property: 'og:image:alt',
-        content: `${brand.name} — ${hero.headline}`,
+        content: `${brand.name} — ${launch.headline}`,
       },
 
       { name: 'twitter:card', content: 'summary_large_image' },
@@ -115,7 +115,7 @@ export function organizationJsonLd(): string {
     '@type': 'Organization',
     name: brand.name,
     url: siteUrl,
-    description: seoCopy.description,
+    description: launch.description,
     logo: absoluteUrl('/logo.png'),
     sameAs: [],
   })

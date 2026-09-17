@@ -740,3 +740,23 @@ export const seoCopy = {
   description:
     'Incillum is being built to stay with commercial work: an RFQ that arrives at night, the supplier costs and margin decisions that follow it, and a quotation ready for a person by morning. Join early access.',
 } as const
+
+/** The intentionally unrevealing public launch surface. Editorial copy above is archived. */
+export const launch = {
+  headline: 'A different kind of intelligence.',
+  headlineStart: 'A different kind',
+  headlineEnd: 'of intelligence.',
+  category: 'Commercial intelligence. Reimagined.',
+  stage: 'In formation',
+  invitation: 'Be there at the beginning.',
+  note: 'One email when we are ready. Nothing before.',
+  submit: 'Join the waitlist',
+  success: 'You are on the list.',
+  successNote: 'We have your address. We will write when we are ready.',
+  pause: 'Pause motion',
+  play: 'Resume motion',
+  index: ['Artificial intelligence', 'Commercial instinct', 'A new perspective'],
+  title: 'Incillum - A different kind of intelligence.',
+  description:
+    'Commercial intelligence. Reimagined. Incillum is in formation. Join the waitlist.',
+} as const

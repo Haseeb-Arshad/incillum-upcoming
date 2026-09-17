@@ -1,4 +1,10 @@
-import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
+import {
+  HeadContent,
+  Outlet,
+  Scripts,
+  createRootRoute,
+  useRouterState,
+} from '@tanstack/react-router'
 import { useEffect } from 'react'
 
 import appCss from '#/styles.css?url'
@@ -69,6 +75,7 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
+  const isLaunch = useRouterState({ select: (state) => state.location.pathname === '/' })
   useEffect(() => {
     /**
      * Hydration marker.
@@ -91,13 +98,13 @@ function RootComponent() {
         Skip to main content
       </a>
 
-      <Masthead />
+      {!isLaunch && <Masthead />}
 
       <main id="main" tabIndex={-1}>
         <Outlet />
       </main>
 
-      <Colophon />
+      {!isLaunch && <Colophon />}
     </>
   )
 }

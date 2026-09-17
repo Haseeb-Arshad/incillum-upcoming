@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { hero, seoCopy } from '#/content/site.ts'
+import { launch } from '#/content/site.ts'
 import { seoTags } from '#/lib/seo.ts'
 
 /**
@@ -49,12 +49,12 @@ describe('the title', () => {
    * from the one it opens.
    */
   it('carries the hero’s headline', () => {
-    const headline = hero.headline.replace(/\.$/, '').toLowerCase()
-    expect(seoCopy.title.toLowerCase()).toContain(headline)
+    const headline = launch.headline.replace(/\.$/, '').toLowerCase()
+    expect(launch.title.toLowerCase()).toContain(headline)
   })
 
   it('names the company before it describes it', () => {
-    expect(seoCopy.title.startsWith('Incillum')).toBe(true)
+    expect(launch.title.startsWith('Incillum')).toBe(true)
   })
 
   /**
@@ -63,13 +63,13 @@ describe('the title', () => {
    * written rather than discovered in a search result.
    */
   it('survives a search result without truncation', () => {
-    expect(seoCopy.title.length).toBeLessThanOrEqual(60)
+    expect(launch.title.length).toBeLessThanOrEqual(60)
   })
 
   it('does not carry the previous positioning', () => {
     const stale = /doesn’t leave when you do/i
-    expect(seoCopy.title).not.toMatch(stale)
-    expect(seoCopy.description).not.toMatch(stale)
+    expect(launch.title).not.toMatch(stale)
+    expect(launch.description).not.toMatch(stale)
   })
 })
 
@@ -93,7 +93,7 @@ describe('the share card’s tags', () => {
   it('describes what is actually printed on the card', () => {
     const alt = og(tags, 'og:image:alt')
     expect(alt).toContain('Incillum')
-    expect(alt).toContain(hero.headline)
+    expect(alt).toContain(launch.headline)
   })
 
   it('declares the dimensions the generator renders', () => {

@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import { Field, Honeypot, Input, Select, Textarea } from '#/components/field.tsx'
 import { Button } from '#/components/primitives.tsx'
-import { brand } from '#/content/site.ts'
+import { brand, launch } from '#/content/site.ts'
 import { trackEvent } from '#/lib/analytics.ts'
 import { commercialWork, quoteVolumes, waitlistSchema } from '#/lib/waitlist.ts'
 import { joinWaitlist } from '#/server/waitlist.ts'
@@ -81,7 +81,7 @@ type SubmitState =
   | { kind: 'success'; reference: string }
   | { kind: 'error'; message: string }
 
-export function WaitlistForm() {
+export function WaitlistForm({ compact = false }: { compact?: boolean }) {
   const [submitState, setSubmitState] = useState<SubmitState>({ kind: 'idle' })
 
   const {
@@ -185,8 +185,14 @@ export function WaitlistForm() {
         <p className="text-label uppercase text-ink-400">Request recorded</p>
         <p className="font-display text-heading text-ink">You’re on the list.</p>
         <p className="text-body text-ink-600">
-          If the workflow looks like a fit, we’ll reach out about running one real case
-          alongside the way your team works today. Nothing is sent before then.
+          {compact ? (
+            launch.successNote
+          ) : (
+            <>
+              If the workflow looks like a fit, we’ll reach out about running one real
+              case alongside the way your team works today. Nothing is sent before then.
+            </>
+          )}
         </p>
         <p className="ic-tabular text-small text-ink-400">{submitState.reference}</p>
         {/*
@@ -244,142 +250,144 @@ export function WaitlistForm() {
         one piece of motion here and it is a 160ms transform on an inline SVG,
         which is the same budget the button's arrow spends.
       */}
-      <details className="group border-t border-line pt-5">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-[2px] text-small font-medium text-ink [&::-webkit-details-marker]:hidden">
-          <span>
-            Tell us about the work
-            <span className="ml-1.5 font-normal text-ink-400">optional</span>
-          </span>
-          <svg
-            viewBox="0 0 16 16"
-            fill="none"
-            aria-hidden="true"
-            className="size-4 shrink-0 text-ink-400 transition-transform duration-[160ms] ease-[cubic-bezier(0.32,0.72,0,1)] group-open:rotate-180"
-          >
-            <path
-              d="M4 6l4 4 4-4"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </summary>
+      {!compact && (
+        <details className="group border-t border-line pt-5">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-[2px] text-small font-medium text-ink [&::-webkit-details-marker]:hidden">
+            <span>
+              Tell us about the work
+              <span className="ml-1.5 font-normal text-ink-400">optional</span>
+            </span>
+            <svg
+              viewBox="0 0 16 16"
+              fill="none"
+              aria-hidden="true"
+              className="size-4 shrink-0 text-ink-400 transition-transform duration-[160ms] ease-[cubic-bezier(0.32,0.72,0,1)] group-open:rotate-180"
+            >
+              <path
+                d="M4 6l4 4 4-4"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </summary>
 
-        <div className="mt-5 flex flex-col gap-5">
-          {/*
+          <div className="mt-5 flex flex-col gap-5">
+            {/*
             Why, not whether. The summary above already says optional and every
             field below carries its own marker — a third statement of the same
             fact is noise, and the one thing none of them says is what answering
             actually buys.
           */}
-          <p className="text-small text-ink-400">
-            It is what tells us whether to start with your team.
-          </p>
+            <p className="text-small text-ink-400">
+              It is what tells us whether to start with your team.
+            </p>
 
-          <Field
-            label="What kind of commercial work do you handle?"
-            error={errors.commercialWork?.message}
-          >
-            {({ id, describedBy, invalid }) => (
-              <Select
-                id={id}
-                aria-describedby={describedBy}
-                invalid={invalid}
-                defaultValue=""
-                {...register('commercialWork')}
-              >
-                <option value="">Skip this</option>
-                {commercialWork.map((kind) => (
-                  <option key={kind} value={kind}>
-                    {kind}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
+            <Field
+              label="What kind of commercial work do you handle?"
+              error={errors.commercialWork?.message}
+            >
+              {({ id, describedBy, invalid }) => (
+                <Select
+                  id={id}
+                  aria-describedby={describedBy}
+                  invalid={invalid}
+                  defaultValue=""
+                  {...register('commercialWork')}
+                >
+                  <option value="">Skip this</option>
+                  {commercialWork.map((kind) => (
+                    <option key={kind} value={kind}>
+                      {kind}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
 
-          <Field label="Company" error={errors.company?.message}>
-            {({ id, describedBy, invalid }) => (
-              <Input
-                id={id}
-                type="text"
-                autoComplete="organization"
-                aria-describedby={describedBy}
-                invalid={invalid}
-                {...register('company')}
-              />
-            )}
-          </Field>
+            <Field label="Company" error={errors.company?.message}>
+              {({ id, describedBy, invalid }) => (
+                <Input
+                  id={id}
+                  type="text"
+                  autoComplete="organization"
+                  aria-describedby={describedBy}
+                  invalid={invalid}
+                  {...register('company')}
+                />
+              )}
+            </Field>
 
-          <Field label="Your role" error={errors.role?.message}>
-            {({ id, describedBy, invalid }) => (
-              <Input
-                id={id}
-                type="text"
-                autoComplete="organization-title"
-                aria-describedby={describedBy}
-                invalid={invalid}
-                {...register('role')}
-              />
-            )}
-          </Field>
+            <Field label="Your role" error={errors.role?.message}>
+              {({ id, describedBy, invalid }) => (
+                <Input
+                  id={id}
+                  type="text"
+                  autoComplete="organization-title"
+                  aria-describedby={describedBy}
+                  invalid={invalid}
+                  {...register('role')}
+                />
+              )}
+            </Field>
 
-          <Field
-            label="Roughly how many RFQs or quotes a month?"
-            error={errors.quoteVolume?.message}
-          >
-            {({ id, describedBy, invalid }) => (
-              <Select
-                id={id}
-                aria-describedby={describedBy}
-                invalid={invalid}
-                defaultValue=""
-                {...register('quoteVolume')}
-              >
-                <option value="">Skip this</option>
-                {quoteVolumes.map((band) => (
-                  <option key={band} value={band}>
-                    {band}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
+            <Field
+              label="Roughly how many RFQs or quotes a month?"
+              error={errors.quoteVolume?.message}
+            >
+              {({ id, describedBy, invalid }) => (
+                <Select
+                  id={id}
+                  aria-describedby={describedBy}
+                  invalid={invalid}
+                  defaultValue=""
+                  {...register('quoteVolume')}
+                >
+                  <option value="">Skip this</option>
+                  {quoteVolumes.map((band) => (
+                    <option key={band} value={band}>
+                      {band}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
 
-          <Field
-            label="Current ERP"
-            hint="Or whatever the quotation has to end up in."
-            error={errors.erp?.message}
-          >
-            {({ id, describedBy, invalid }) => (
-              <Input
-                id={id}
-                type="text"
-                autoComplete="off"
-                aria-describedby={describedBy}
-                invalid={invalid}
-                {...register('erp')}
-              />
-            )}
-          </Field>
+            <Field
+              label="Current ERP"
+              hint="Or whatever the quotation has to end up in."
+              error={errors.erp?.message}
+            >
+              {({ id, describedBy, invalid }) => (
+                <Input
+                  id={id}
+                  type="text"
+                  autoComplete="off"
+                  aria-describedby={describedBy}
+                  invalid={invalid}
+                  {...register('erp')}
+                />
+              )}
+            </Field>
 
-          <Field
-            label="What part of quoting costs you the most?"
-            error={errors.pain?.message}
-          >
-            {({ id, describedBy, invalid }) => (
-              <Textarea
-                id={id}
-                rows={3}
-                aria-describedby={describedBy}
-                invalid={invalid}
-                {...register('pain')}
-              />
-            )}
-          </Field>
-        </div>
-      </details>
+            <Field
+              label="What part of quoting costs you the most?"
+              error={errors.pain?.message}
+            >
+              {({ id, describedBy, invalid }) => (
+                <Textarea
+                  id={id}
+                  rows={3}
+                  aria-describedby={describedBy}
+                  invalid={invalid}
+                  {...register('pain')}
+                />
+              )}
+            </Field>
+          </div>
+        </details>
+      )}
 
       <Button
         type="submit"
@@ -389,7 +397,7 @@ export function WaitlistForm() {
         disabled={isSubmitting}
         className="w-full"
       >
-        {isSubmitting ? 'Sending…' : 'Join early access'}
+        {isSubmitting ? 'Sending…' : compact ? launch.submit : 'Join early access'}
       </Button>
 
       {submitState.kind === 'error' ? (

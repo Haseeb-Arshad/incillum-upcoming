@@ -16,6 +16,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 export default tseslint.config(
   {
     ignores: [
+      'archive/**',
       'src/routeTree.gen.ts',
       'dist/**',
       '.output/**',
