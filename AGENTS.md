@@ -261,7 +261,7 @@ changes.
 
 ## 8. Definition of done
 
-A change is complete only when it:
+For changed product behavior, apply the relevant criteria below:
 
 - behaves correctly, with loading, empty, error and success states,
 - works with the keyboard, and at 390px, 768px, 1024px and 1440px,
@@ -272,8 +272,11 @@ A change is complete only when it:
 - has tests for anything with a rule in it,
 - has no TypeScript, lint or build failure,
 - exposes no secret,
-- claims nothing from §5,
-- **is committed and pushed.**
+- claims nothing from §5.
+
+A prose-only instruction edit needs a focused diff and reference review. Apply UI
+state, viewport, motion and form checks when those behaviors change. Preserve the
+complete release checks when preparing a release; commit/push follows §10.
 
 ---
 
@@ -290,13 +293,18 @@ pnpm generate-routes     # after adding or renaming a route file
 pnpm generate-og         # re-render the share card from content/site.ts
 ```
 
-Run typecheck, lint, test and build for anything you touch — **before**
-committing, not after. A commit that has not been run is a guess.
+Run checks that exercise the affected behavior. UI changes need the relevant viewport
+and interaction checks; form or commercial-content changes need their relevant tests.
+Run the full required suite for a release or when the impact warrants it. Once checks
+pass, repeat them only for new edits, failures or unresolved concerns. Continue fixing
+in-scope failures while a safe next step exists; report concrete blockers accurately.
 
 ---
 
 ## 10. Version control
 
-**Uncommitted work does not exist.** One commit per functional unit; if the
-subject line needs an "and", it is probably two commits. Never end a task with a
-dirty tree — either commit it or say in your summary what you left and why.
+Follow the user's authorized delivery mode: local edits, draft, commit, PR or push.
+Readiness does not require publication for a local edit or read-only review. When
+commits are requested, keep each commit cohesive, validate affected behavior and stage
+only task-owned paths. Preserve unrelated dirty work. State what remains uncommitted
+and do not push unless that delivery is in scope.

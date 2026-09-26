@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import { Field, Honeypot, Input, Select, Textarea } from '#/components/field.tsx'
 import { Button } from '#/components/primitives.tsx'
-import { brand, launch } from '#/content/site.ts'
+import { cn } from '#/lib/cn.ts'
+import { brand, home, launch } from '#/content/site.ts'
 import { trackEvent } from '#/lib/analytics.ts'
 import { commercialWork, quoteVolumes, waitlistSchema } from '#/lib/waitlist.ts'
 import { joinWaitlist } from '#/server/waitlist.ts'
@@ -57,6 +58,11 @@ import type { WaitlistFormValues } from '#/lib/waitlist.ts'
  * inside the field as placeholder text, where it disappears the moment somebody
  * types and takes the field's accessible name with it. The label stays visible.
  *
+ * The one exception is `inline`, the harbour hero's single row, whose design is
+ * exactly that pattern. There the label is visually hidden rather than absent,
+ * so the field keeps its name for a screen reader and for the test suite, and
+ * the placeholder only restates it.
+ *
  * ── The success state ──────────────────────────────────────────────────────
  *
  * It says we have the address and names what the one email will be for — a
@@ -81,7 +87,15 @@ type SubmitState =
   | { kind: 'success'; reference: string }
   | { kind: 'error'; message: string }
 
-export function WaitlistForm({ compact = false }: { compact?: boolean }) {
+export function WaitlistForm({
+  compact = false,
+  inline = false,
+}: {
+  compact?: boolean
+  /** One row: field and button side by side, label visually hidden. Implies `compact`. */
+  inline?: boolean
+}) {
+  const brief = compact || inline
   const [submitState, setSubmitState] = useState<SubmitState>({ kind: 'idle' })
 
   const {
@@ -185,7 +199,7 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
         <p className="text-label uppercase text-ink-400">Request recorded</p>
         <p className="font-display text-heading text-ink">You’re on the list.</p>
         <p className="text-body text-ink-600">
-          {compact ? (
+          {brief ? (
             launch.successNote
           ) : (
             <>
@@ -213,7 +227,10 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
       onSubmit={(event) => {
         void handleSubmit(onSubmit)(event)
       }}
-      className="relative flex flex-col gap-5"
+      className={cn(
+        'relative flex gap-5',
+        inline ? 'waitlist-inline flex-col sm:flex-row sm:flex-wrap sm:items-start sm:gap-3' : 'flex-col',
+      )}
     >
       {/*
         `renderedAt` rides in form state from `defaultValues` rather than in a
@@ -222,13 +239,20 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
       */}
       <Honeypot {...register('companyWebsite')} name="companyWebsite" />
 
-      <Field label="Work email" required error={errors.workEmail?.message}>
+      <Field
+        label="Work email"
+        required
+        labelHidden={inline}
+        className={inline ? 'min-w-0 flex-1' : undefined}
+        error={errors.workEmail?.message}
+      >
         {({ id, describedBy, invalid }) => (
           <Input
             id={id}
             type="email"
             autoComplete="email"
-            placeholder="you@company.com"
+            placeholder={inline ? home.emailPlaceholder : 'you@company.com'}
+            className={inline ? 'waitlist-inline-input' : undefined}
             aria-describedby={describedBy}
             invalid={invalid}
             {...register('workEmail')}
@@ -250,7 +274,7 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
         one piece of motion here and it is a 160ms transform on an inline SVG,
         which is the same budget the button's arrow spends.
       */}
-      {!compact && (
+      {!brief && (
         <details className="group border-t border-line pt-5">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-[2px] text-small font-medium text-ink [&::-webkit-details-marker]:hidden">
             <span>
@@ -395,13 +419,19 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
         size="lg"
         arrow
         disabled={isSubmitting}
-        className="w-full"
+        className={inline ? 'waitlist-inline-submit' : 'w-full'}
       >
-        {isSubmitting ? 'Sending…' : compact ? launch.submit : 'Join early access'}
+        {isSubmitting
+          ? 'Sending…'
+          : inline
+            ? home.cta
+            : compact
+              ? launch.submit
+              : 'Join early access'}
       </Button>
 
       {submitState.kind === 'error' ? (
-        <p role="alert" className="text-small text-ink">
+        <p role="alert" className={cn('text-small text-ink', inline && 'basis-full')}>
           {submitState.message}
         </p>
       ) : null}

@@ -712,9 +712,8 @@
   --launch-wordmark: 1.75rem;
   --launch-form: 25rem;
   --launch-rule: 1px;
-  --launch-particle-ink: #bcb6a6;
-  --launch-particle-bright: #f2f2ee;
-  --launch-field-mobile-height: 19rem;
+  --launch-particle-color: #eee5d5;
+  --launch-particle-size: min(63vw, 54rem);
   min-height: 100svh;
   background-color: var(--ic-paper);
   background-image: var(--ic-grain);
@@ -807,24 +806,25 @@
   color: var(--ic-ink-400);
   margin-top: 1rem;
 }
-.intelligence-field {
+.particle-core {
   position: absolute;
-  inset: -3rem calc(-1 * var(--launch-gutter)) -1rem;
+  width: var(--launch-particle-size);
+  aspect-ratio: 1;
+  right: -9%;
+  top: 50%;
+  transform: translateY(-50%);
   pointer-events: none;
   overflow: hidden;
   contain: strict;
 }
-.intelligence-field canvas,
-.intelligence-field-still {
+.particle-core canvas,
+.particle-core-still {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
 }
-.intelligence-field-still {
-  fill: var(--launch-particle-ink);
-}
-.intelligence-field[data-ready='true'] .intelligence-field-still {
+.particle-core[data-ready='true'] .particle-core-still {
   visibility: hidden;
 }
 .launch-art-caption {
@@ -908,10 +908,11 @@
     font-size: 0.6rem;
     margin-bottom: 1.6rem;
   }
-  .intelligence-field {
-    top: 9rem;
-    bottom: auto;
-    height: var(--launch-field-mobile-height);
+  .particle-core {
+    --launch-particle-size: 21rem;
+    top: 7.4rem;
+    right: 50%;
+    transform: translateX(50%);
   }
   .launch-invitation {
     margin-top: 15rem;
@@ -936,5 +937,599 @@
   }
   .launch-bottom > span {
     flex-basis: 100%;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Harbour edition — the public home page (`components/home-page.tsx`).
+
+   Warm paper, engraved harbour, one bronze. The scope re-points the shared
+   `--ic-*` tokens the way `[data-inverted]` does, so the form's field, its
+   errors and its success panel warm up without knowing where they landed.
+
+   Contrast on --ic-paper (#f6f2ec):
+     ink-900 #1d1916   15.7:1     headline and controls
+     ink-600 #5b534b    6.8:1     lede and body
+     ink-400 #736a61    4.8:1     labels, status, captions
+     bronze  #7e5a3e    5.5:1     the mark and the status bead
+   ══════════════════════════════════════════════════════════════════════════ */
+.home {
+  --ic-paper: #f6f2ec;
+  --ic-paper-raised: #fbf9f5;
+  --ic-paper-sunken: #eee8df;
+  --ic-ink-900: #1d1916;
+  --ic-ink-800: #36302a;
+  --ic-ink-600: #5b534b;
+  --ic-ink-400: #736a61;
+  --ic-ink-200: #a39a90;
+  --ic-line: rgba(29, 25, 22, 0.12);
+  --ic-line-strong: rgba(29, 25, 22, 0.24);
+
+  --home-bronze: #7e5a3e;
+  --home-bead-light: #d9b48e;
+  --home-bead-ring: rgba(126, 90, 62, 0.35);
+  --home-field: rgba(251, 249, 245, 0.55);
+  --home-field-focus: rgba(251, 249, 245, 0.9);
+
+  --home-gutter: clamp(1.25rem, 3.6vw, 3.5rem);
+  --home-display: clamp(2.5rem, 4.8vw, 5.25rem);
+  --home-lede: clamp(1rem, 1.15vw, 1.25rem);
+  --home-nav: clamp(0.875rem, 0.9vw, 0.9375rem);
+  --home-wordmark: clamp(1.375rem, 1.9vw, 2rem);
+  --home-mark-size: clamp(2rem, 2.7vw, 2.75rem);
+  --home-caps: 0.6875rem;
+  --home-control: 2.875rem;
+  --home-control-text: 0.9375rem;
+  --home-pill: 999px;
+  --home-copy-width: 40rem;
+  --home-form-width: 30rem;
+
+  /* The picture's own proportions, 1672 × 941. */
+  --home-art-ratio: 1.7768;
+  --home-art-height: 0.5628;
+
+  /* Motion: one long curve for arrivals, the shared one for hovers. */
+  --home-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --home-arrive: 900ms;
+  --home-settle: 1800ms;
+  --home-drift: 1400ms;
+  --home-breathe: 2800ms;
+
+  background-color: var(--ic-paper);
+  background-image: var(--ic-grain);
+  color: var(--ic-ink-900);
+  overflow: clip;
+}
+
+/* ── First screen ──────────────────────────────────────────────────────── */
+.home-stage {
+  position: relative;
+  min-height: max(100svh, 38rem);
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--home-gutter);
+}
+.home-art {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  container-type: size;
+}
+/*
+ * The plate: the picture at its own aspect ratio, always covering the art box,
+ * anchored right. Where the screen is wider than the picture it crops
+ * from the top more than the bottom, because the orbit is nearer the top —
+ * but only up to 2:1. Past that, cropping more would push the orbit under the
+ * masthead, so the plate stops growing and the page's paper carries on to
+ * its left.
+ */
+.home-plate {
+  --plate-w: calc(
+    min(max(100cqw, calc(100cqh * var(--home-art-ratio))), calc(100cqh * 2))
+  );
+  position: absolute;
+  right: 0;
+  top: calc((100cqh - var(--plate-w) * var(--home-art-height)) * 0.7);
+  width: var(--plate-w);
+  aspect-ratio: 1672 / 941;
+}
+.home-plate img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  animation: home-settle var(--home-settle) var(--home-ease-out) both;
+  /* Only the foot fades, so the water meets the next section without a seam. */
+  -webkit-mask-image: linear-gradient(to top, transparent, black 5%);
+  mask-image: linear-gradient(to top, transparent, black 5%);
+}
+/*
+ * Ultra-wide only: the plate no longer reaches the left edge, and a hard
+ * vertical cut through the harbour's mountains would read as a mistake. Every
+ * narrower screen shows the picture edge to edge, unfaded.
+ */
+@media (min-aspect-ratio: 2 / 1) and (min-width: 1024px) {
+  .home-plate img {
+    -webkit-mask-image:
+      linear-gradient(to right, transparent, black 7%), linear-gradient(to top, transparent, black 5%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(to right, transparent, black 7%), linear-gradient(to top, transparent, black 5%);
+    mask-composite: intersect;
+  }
+}
+@keyframes home-settle {
+  from {
+    opacity: 0;
+    transform: scale(1.035);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Pinned in the picture's own coordinates, beside the cards, never on one. */
+.home-caption {
+  position: absolute;
+  right: 5.1%;
+  bottom: 15.3%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45em;
+  font-family: var(--font-display);
+  font-size: max(0.5625rem, calc(var(--plate-w) * 0.0056));
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+  animation: home-fade var(--home-arrive) var(--home-ease-out) 700ms both;
+}
+.home-caption::after {
+  content: '';
+  width: 3.6em;
+  height: 1px;
+  margin-top: 1.6em;
+  background-color: var(--ic-line-strong);
+  transform-origin: center;
+  animation: home-draw var(--home-arrive) var(--home-ease-out) 1000ms both;
+}
+
+.home-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: clamp(1.125rem, 2.8vh, 1.75rem) 0;
+}
+.home-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(0.625rem, 0.9vw, 0.875rem);
+  font-family: var(--font-display);
+  font-size: var(--home-wordmark);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ic-ink-900);
+  text-decoration: none;
+  border-radius: var(--radius-control);
+}
+.home-mark {
+  width: var(--home-mark-size);
+  height: var(--home-mark-size);
+  flex-shrink: 0;
+  color: var(--home-bronze);
+  transition: transform var(--home-drift) var(--home-ease-out);
+}
+.home-brand:hover .home-mark {
+  transform: rotate(45deg);
+}
+.home-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.25rem, 2.2vw, 2.25rem);
+  font-family: var(--font-display);
+  font-size: var(--home-nav);
+}
+.home-nav-link {
+  position: relative;
+  color: var(--ic-ink-900);
+  text-decoration: none;
+  border-radius: 2px;
+}
+.home-nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.3em;
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--ic-slow) var(--home-ease-out);
+}
+.home-nav-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* The one shape every call to action on this page takes. */
+.home-pill,
+.waitlist-inline-submit {
+  border-radius: var(--home-pill);
+  font-family: var(--font-display);
+  font-size: var(--home-control-text);
+  font-weight: 400;
+  letter-spacing: 0;
+  gap: 0.625rem;
+  transition:
+    background-color var(--ic-fast) var(--ic-ease),
+    transform var(--ic-slow) var(--home-ease-out);
+}
+.home-pill:hover,
+.waitlist-inline-submit:hover {
+  transform: translateY(-1px);
+}
+.home-pill:active,
+.waitlist-inline-submit:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: var(--ic-fast);
+}
+.home-pill:hover .ic-cta-arrow,
+.waitlist-inline-submit:hover .ic-cta-arrow {
+  transform: translateX(3px);
+}
+.home-pill .ic-cta-arrow,
+.waitlist-inline-submit .ic-cta-arrow {
+  transition: transform var(--ic-slow) var(--home-ease-out);
+}
+.home-nav-cta {
+  height: 2.625rem;
+  padding: 0 1.25rem 0 1.375rem;
+}
+
+.home-hero {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: clamp(1rem, 4vh, 3rem) 0 clamp(6rem, 18vh, 12rem);
+}
+.home-copy {
+  max-width: var(--home-copy-width);
+  padding-left: clamp(0rem, 0.5vw, 0.5rem);
+}
+.home-title {
+  font-size: var(--home-display);
+  line-height: 0.98;
+  letter-spacing: -0.032em;
+  color: var(--ic-ink-900);
+}
+/*
+ * Each headline line rises out of its own line box. The clip is padded below
+ * so the descenders of "Intelligence" are never cut at rest.
+ */
+.home-line {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: clip;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+.home-line > span {
+  display: inline-block;
+  animation: home-line-rise var(--home-arrive) var(--home-ease-out) both;
+  animation-delay: 150ms;
+}
+.home-line + .home-line > span {
+  animation-delay: 240ms;
+}
+@keyframes home-line-rise {
+  from {
+    transform: translate3d(0, 108%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+.home-lede {
+  margin-top: clamp(1rem, 2.2vh, 1.5rem);
+  font-family: var(--font-display);
+  font-size: var(--home-lede);
+  line-height: 1.45;
+  color: var(--ic-ink-600);
+}
+.home-lede > span {
+  display: block;
+}
+.home-form {
+  margin-top: clamp(1.25rem, 3vh, 2rem);
+  max-width: var(--home-form-width);
+}
+.home-status {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  margin-top: clamp(1rem, 2.6vh, 1.75rem);
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  letter-spacing: 0.3em;
+  color: var(--ic-ink-400);
+}
+.home-rise {
+  animation: home-rise var(--home-arrive) var(--home-ease-out) both;
+}
+.home-lede.home-rise {
+  animation-delay: 380ms;
+}
+.home-form.home-rise {
+  animation-delay: 470ms;
+}
+.home-status.home-rise {
+  animation-delay: 560ms;
+}
+.home-drop {
+  animation: home-drop var(--home-arrive) var(--home-ease-out) both;
+}
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes home-drop {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes home-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes home-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* A bronze bead, lit from the upper left like the beads on the orbit, breathing. */
+.home-bead {
+  position: relative;
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, var(--home-bead-light), var(--home-bronze) 62%);
+}
+.home-bead::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid var(--home-bead-ring);
+  animation: home-breathe var(--home-breathe) var(--home-ease-out) 1200ms infinite;
+}
+@keyframes home-breathe {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+/* ── The inline form ───────────────────────────────────────────────────── */
+.waitlist-inline-input {
+  height: var(--home-control);
+  padding: 0 1.375rem;
+  border-radius: var(--home-pill);
+  background-color: var(--home-field);
+  font-family: var(--font-display);
+  font-size: var(--home-control-text);
+  font-weight: 400;
+  transition:
+    border-color var(--ic-slow) var(--home-ease-out),
+    background-color var(--ic-slow) var(--home-ease-out);
+}
+.waitlist-inline-input:focus {
+  background-color: var(--home-field-focus);
+  border-color: var(--ic-ink-400);
+}
+.waitlist-inline-submit {
+  height: var(--home-control);
+  padding: 0 1.375rem 0 1.5rem;
+}
+
+/* ── Below the fold ────────────────────────────────────────────────────── */
+.home-approach {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) minmax(0, 2.4fr);
+  gap: 1.5rem var(--home-gutter);
+  padding: clamp(4rem, 9vw, 7rem) var(--home-gutter);
+}
+.home-kicker {
+  font-family: var(--font-display);
+  font-size: var(--home-caps);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+  padding-top: 0.75rem;
+}
+.home-approach-body {
+  max-width: 44rem;
+}
+.home-approach h2 {
+  font-size: clamp(1.75rem, 2.8vw, 2.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+}
+.home-approach-body p {
+  margin-top: 1.5rem;
+  max-width: 58ch;
+  font-size: var(--text-body);
+  line-height: 1.65;
+  color: var(--ic-ink-600);
+}
+.home-approach-body .home-approach-qualifier {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ic-line);
+  font-family: var(--font-display);
+  font-size: clamp(1.0625rem, 1.3vw, 1.3125rem);
+  line-height: 1.4;
+  color: var(--ic-ink-900);
+}
+.home-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin: 0 var(--home-gutter);
+  padding: 1.5rem 0 2rem;
+  border-top: 1px solid var(--ic-line);
+  font-size: var(--text-small);
+  color: var(--ic-ink-400);
+}
+.home-footer a {
+  color: var(--ic-ink-900);
+  text-underline-offset: 0.3em;
+  text-decoration-color: var(--ic-line-strong);
+  transition: text-decoration-color var(--ic-fast) var(--ic-ease);
+}
+.home-footer a:hover {
+  text-decoration-color: currentColor;
+}
+.home-motto {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  color: var(--ic-ink-900);
+}
+.home a:focus-visible,
+.home button:focus-visible,
+.home input:focus-visible {
+  outline: 2px solid var(--ic-ink-900);
+  outline-offset: 3px;
+}
+.home .home-pill:focus-visible,
+.home .waitlist-inline-input:focus-visible,
+.home .waitlist-inline-submit:focus-visible {
+  border-radius: var(--home-pill);
+}
+
+/*
+ * Stacked: the picture only sits beside the copy while the screen is wide in
+ * both senses. Below that the orbit would slide under the headline, so the
+ * plate moves under the copy, cropped to the orbit, still unfaded at the sides.
+ */
+@media (max-width: 1023px), (max-aspect-ratio: 7 / 5) {
+  .home {
+    --home-display: clamp(2.25rem, 8.4vw, 4.25rem);
+    --home-lede: clamp(1rem, 2.2vw, 1.1875rem);
+  }
+  .home-stage {
+    min-height: 0;
+  }
+  .home-hero {
+    display: block;
+    padding: clamp(2rem, 6vw, 3.5rem) 0 0;
+  }
+  .home-art {
+    position: relative;
+    inset: auto;
+    order: 3;
+    /* The picture's top tenth is empty paper; tuck it under the copy. */
+    margin: clamp(-4rem, -6vw, -1rem) calc(-1 * var(--home-gutter)) 0;
+    aspect-ratio: 4 / 3;
+  }
+  .home-plate {
+    top: calc(100cqh - var(--plate-w) * var(--home-art-height));
+  }
+  /*
+   * Stacked, the plate's top edge lands mid-page. That edge is blank paper in
+   * the drawing, a shade off the page's own, so it fades — paper into paper —
+   * rather than printing a line across the screen. The drawing is untouched.
+   */
+  .home-plate img {
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 14%, black 92%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, black 14%, black 92%, transparent);
+  }
+  .home-caption {
+    display: none;
+  }
+}
+@media (max-width: 720px) {
+  .home-nav-link {
+    display: none;
+  }
+  .home-nav-cta {
+    height: 2.5rem;
+    padding: 0 1rem;
+    font-size: 0.875rem;
+  }
+  .home-art {
+    aspect-ratio: 1;
+  }
+  .home-status {
+    letter-spacing: 0.2em;
+  }
+  .home-approach {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .home-kicker {
+    padding-top: 0;
+  }
+}
+@media (max-width: 440px) {
+  .home-nav-cta .ic-cta-arrow {
+    display: none;
+  }
+}
+
+/*
+ * Reduced motion renders the final frame. The global rule shortens durations
+ * but keeps delays, and an entrance with `both` fill would sit invisible for
+ * its delay — so every home animation is removed outright.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .home-plate img,
+  .home-caption,
+  .home-caption::after,
+  .home-line > span,
+  .home-rise,
+  .home-drop,
+  .home-bead::after {
+    animation: none;
+  }
+  .home-bead::after {
+    display: none;
+  }
+  .home-mark {
+    transform: none;
+    transition: none;
   }
 }

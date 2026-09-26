@@ -1,8 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { LaunchPage } from '#/components/launch-page.tsx'
+import { HomePage } from '#/components/home-page.tsx'
+import { home } from '#/content/site.ts'
 import { seoTags } from '#/lib/seo.ts'
 
 export const Route = createFileRoute('/')({
-  head: () => ({ links: seoTags().links }),
-  component: LaunchPage,
+  head: () => {
+    const base = seoTags({ title: home.title, description: home.description })
+
+    return {
+      meta: base.meta,
+      links: [
+        ...base.links,
+        // The picture is the largest thing in the first screen; fetch it with the CSS.
+        { rel: 'preload', href: '/harbour.webp', as: 'image', type: 'image/webp' },
+      ],
+    }
+  },
+  component: HomePage,
 })

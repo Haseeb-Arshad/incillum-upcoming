@@ -758,3 +758,34 @@ export const launch = {
   description:
     'Commercial intelligence. Reimagined. Incillum is in formation. Join the waitlist.',
 } as const
+
+/**
+ * The harbour edition — the public home page.
+ *
+ * The picture carries the atmosphere, so the words stay few. The headline is
+ * `hero.headline`, which is also what `seoCopy.title` already says: one first
+ * sentence, in the tab and on the page.
+ *
+ * The cards drawn into the picture are decoration, not data. They are baked
+ * into the raster, marked `aria-hidden`, and none of their figures appear in
+ * the page's text — the page itself states no metric, customer or date.
+ */
+export const home = {
+  headlineStart: hero.headlineStart,
+  headlineEnd: hero.headlineEnd,
+  lede: ['A more disciplined commercial system is taking shape.', 'Early access opens soon.'],
+  status: 'In progress. Carefully built.',
+  caption: ['A more connected', 'commercial world'],
+  nav: { approach: 'Approach', contact: 'Contact' },
+  cta: 'Request early access',
+  emailPlaceholder: 'Your work email',
+  approach: {
+    label: 'Approach',
+    headline: 'Commercial work keeps mattering after the people carrying it step away.',
+    body: hero.lede,
+    qualifier: hero.qualifier,
+  },
+  title: seoCopy.title,
+  description:
+    'A more disciplined commercial system is taking shape. Incillum is being built to carry commercial work forward and bring people back where judgement matters. Request early access.',
+} as const

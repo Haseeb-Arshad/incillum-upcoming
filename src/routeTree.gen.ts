@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as LabParticlesRouteImport } from './routes/lab.particles'
 import { Route as WorkJanusRouteImport } from './routes/work.janus'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LabParticlesRoute = LabParticlesRouteImport.update({
+  id: '/lab/particles',
+  path: '/lab/particles',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WorkJanusRoute = WorkJanusRouteImport.update({
   id: '/work/janus',
   path: '/work/janus',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/lab/particles': typeof LabParticlesRoute
   '/work/janus': typeof WorkJanusRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/lab/particles': typeof LabParticlesRoute
   '/work/janus': typeof WorkJanusRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,29 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/lab/particles': typeof LabParticlesRoute
   '/work/janus': typeof WorkJanusRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/robots.txt' | '/sitemap.xml' | '/work/janus'
+  fullPaths:
+    '/' | '/robots.txt' | '/sitemap.xml' | '/lab/particles' | '/work/janus'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/robots.txt' | '/sitemap.xml' | '/work/janus'
-  id: '__root__' | '/' | '/robots.txt' | '/sitemap.xml' | '/work/janus'
+  to: '/' | '/robots.txt' | '/sitemap.xml' | '/lab/particles' | '/work/janus'
+  id:
+    | '__root__'
+    | '/'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/lab/particles'
+    | '/work/janus'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  LabParticlesRoute: typeof LabParticlesRoute
   WorkJanusRoute: typeof WorkJanusRoute
 }
 
@@ -92,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lab/particles': {
+      id: '/lab/particles'
+      path: '/lab/particles'
+      fullPath: '/lab/particles'
+      preLoaderRoute: typeof LabParticlesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/work/janus': {
       id: '/work/janus'
       path: '/work/janus'
@@ -106,6 +130,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  LabParticlesRoute: LabParticlesRoute,
   WorkJanusRoute: WorkJanusRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,4 +1,4 @@
-import { IntelligenceField } from '#/components/intelligence-field.tsx'
+import { ParticleCore } from '#/components/particle-core.tsx'
 import { Mark } from '#/components/mark.tsx'
 import { WaitlistForm } from '#/components/waitlist-form.tsx'
 import { brand, launch } from '#/content/site.ts'
@@ -14,7 +14,7 @@ export function LaunchPage() {
         <span className="launch-stage">{launch.stage}</span>
       </header>
       <section className="launch-stage-area" aria-labelledby="launch-title">
-        <IntelligenceField />
+        <ParticleCore />
         <div className="launch-copy">
           <p className="launch-eyebrow">{launch.category}</p>
           <h1 id="launch-title">
