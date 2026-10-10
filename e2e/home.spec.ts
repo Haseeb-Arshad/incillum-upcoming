@@ -70,7 +70,7 @@ test('nothing is claimed that cannot be backed', async ({ page }) => {
 
 test('the inline field keeps its name and validates', async ({ page }) => {
   const email = page.getByRole('textbox', { name: /^Work email/ })
-  await expect(email).toHaveAttribute('placeholder', 'Your work email')
+  await expect(email).toHaveAttribute('placeholder', 'Work email')
   await page.getByRole('button', { name: 'Request early access' }).click()
   await expect(email).toHaveAttribute('aria-invalid', 'true')
   await email.fill('person@gmail.com')

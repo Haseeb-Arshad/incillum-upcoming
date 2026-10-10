@@ -102,7 +102,6 @@ export function HomePage() {
               <h2 id="matrix-heading" className="text-title text-ink">
                 {home.matrix.heading}
               </h2>
-              <p className="max-w-[52ch] text-lede text-ink-600">{home.matrix.lede}</p>
             </Reveal>
             <Reveal delay={80}>
               <Matrix />
@@ -120,7 +119,6 @@ export function HomePage() {
           <Container>
             <Reveal className="grid gap-10 lg:grid-cols-12 lg:gap-16">
               <div className="flex flex-col gap-5 lg:col-span-7">
-                <Label>{home.closing.label}</Label>
                 <h2 id="closing-title" className="max-w-[18ch] text-title text-ink">
                   {home.closing.headline}
                 </h2>
@@ -227,7 +225,6 @@ function Matrix() {
   const ledger = thread.beats.find((beat) => beat.figures)?.figures ?? []
   const figure = (term: string) => ledger.find((entry) => entry.term === term)?.value ?? ''
   const shortfall = ledger.find((entry) => entry.breaches)
-  const morning = thread.beats[thread.beats.length - 1]
   const { matrix } = home
 
   return (
@@ -316,7 +313,7 @@ function Matrix() {
             <span>{shortfall.term}</span>
             <strong>{shortfall.value}</strong>
           </p>
-          {morning ? <p className="matrix-decision">{morning.title}</p> : null}
+          <p className="matrix-decision">{matrix.decision}</p>
         </div>
       ) : null}
     </div>

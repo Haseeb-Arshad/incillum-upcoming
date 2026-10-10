@@ -78,7 +78,14 @@ export const hero = {
   headline: 'Intelligence for commercial work.',
   headlineStart: 'Intelligence for',
   headlineEnd: 'commercial work.',
-  lede: 'From the first request to the decisions, follow-ups, documents and financial consequences that follow. Incillum is being built to carry the work forward — and bring you back where judgement matters.',
+  /**
+   * Twenty-five words, down from thirty-three. The long form named the whole
+   * arc — decisions, follow-ups, documents, financial consequences — and a
+   * reader skimmed all four. The arc is now shown rather than listed: the night
+   * below carries one request through it. "Is being built" stays, and a test
+   * holds it.
+   */
+  lede: 'Commercial work keeps moving after you leave. Incillum is being built to carry it through the night, and bring the judgement calls back to you.',
   invitation: 'Bring your hardest quotation.',
   storyLink: 'Follow one night of work',
   /**
@@ -119,8 +126,7 @@ export const hero = {
    * the first group actually gets, which is the same thing `earlyAccess`
    * commits to further down — one promise stated twice, not two promises.
    */
-  assurance:
-    'A conversation, then one real case alongside your team. No payment. No newsletter.',
+  assurance: 'One conversation, then one real case beside your team. No payment, no newsletter.',
 } as const
 
 /**
@@ -300,38 +306,51 @@ export interface ThreadBeat {
   figures?: ReadonlyArray<ThreadFigure>
 }
 
+/**
+ * The hours are written to a budget, and `site.test.ts` holds it: a title of six
+ * words or fewer, a line of fifteen or fewer. The first version of each beat ran
+ * to fifty words and explained the mechanism — *it is filed against the line it
+ * belongs to and the quotation is recalculated on the spot* — which is good
+ * writing in the wrong place. A stranger needs the event, not the method, and
+ * the one thing each hour has to survive is being read in a glance while the
+ * photograph is still on screen.
+ *
+ * What is kept word for word is what the tests and the argument hold: *twenty
+ * line items*, the two held lines and why, the supplier answer that *arrives*,
+ * *six per cent* and *three weeks*, and the call that is a person's to make.
+ */
 const beats: ReadonlyArray<ThreadBeat> = [
   {
     at: '23:47',
-    title: 'A customer request arrives.',
-    body: 'An RFQ against a framework agreement: twenty line items, a drawing pack, and a response expected on Thursday. It lands in the shared mailbox at the hour the building is emptiest, and until somebody opens it, it is a PDF.',
+    title: 'A request arrives.',
+    body: 'An RFQ with twenty line items, due Thursday. Until opened, it is a PDF.',
   },
   {
     at: '00:06',
     title: 'The request has structure.',
-    body: 'Customer, parts, quantities, delivery dates, the terms it is being quoted under. What the document does not say is listed as missing rather than filled in: two lines carry no drawing revision, and one delivery date is a range rather than a date.',
+    body: 'Parts, quantities, dates and terms. What it doesn’t say is flagged, not filled in.',
   },
   {
     at: '01:18',
-    title: 'Two lines cannot be resolved safely.',
+    title: 'Two lines are held.',
     /**
      * The restraint beat, and the reason the section exists at this length.
      * A demonstration where everything resolves is a demonstration of a
      * product nobody who has quoted for a living believes in.
      */
-    body: 'One part number matches three catalogue entries and only the tolerance separates them; the other is a customer drawing with no revision on it. Neither is guessed. Both are set aside as held, with the question narrowed to the one thing each needs, and the remaining eighteen carry on without them.',
+    body: 'One part matches three catalogue entries. One drawing has no revision. Neither is guessed.',
     /** Rendered as the state on the held lines. The one place the signal appears in this section. */
     state: 'Needs review',
   },
   {
     at: '03:42',
-    title: 'A supplier answer changes the economics.',
-    body: 'A confirmation lands against the largest line: lead time out by three weeks, unit cost up six per cent. It is filed against the line it belongs to and the quotation is recalculated on the spot — so the change is a number by morning rather than a discovery on Thursday.',
+    title: 'A supplier answer arrives.',
+    body: 'Unit cost up six per cent, lead time out three weeks. The quote is recalculated.',
   },
   {
     at: '06:50',
-    title: 'The commercial decision is ready for a person.',
-    body: 'Eighteen lines priced, every figure still attached to the document it came from. The recalculated quotation now sits under the commercial floor, and that is not something software gets to resolve.',
+    title: 'The margin falls below the floor.',
+    body: 'Every figure still carries the document it came from.',
     /**
      * The figures. Rendered as a small ledger rather than as prose, because
      * this is the moment the section stops being a story and becomes a
@@ -348,15 +367,25 @@ const beats: ReadonlyArray<ThreadBeat> = [
   },
   {
     at: '08:04',
-    title: 'A person returns to a decision, not an investigation.',
-    body: 'Eighteen lines priced with their evidence attached, two lines held with the question already narrowed, and one commercial call to make: quote under the floor, or go back to the supplier on the three-week lead time. Neither happens without you.',
+    title: 'A decision, not an investigation.',
+    body: 'Eighteen lines priced, two lines held, and one call that’s yours to make.',
   },
 ]
 
 export const thread = {
-  label: 'Illustrative · one request, one night',
-  headline: 'What changed by morning.',
-  lede: 'Invented, and marked as invented. Follow one quotation from arrival to review. The customer, supplier and figures are illustrative; the boundaries show where a person takes over.',
+  label: 'Illustrative · one night',
+  headline: 'Between 23:47 and 08:04.',
+  /** The licence, as the section's first sentence: invented, at reading size. */
+  lede: 'One invented quotation, followed from arrival to decision.',
+
+  /**
+   * The whole quotation's margin at 01:18, before the supplier answer, which the
+   * quotation card shows sliding to the ledger's 16.4% at 03:42. It is derived,
+   * not chosen: line 14 costs 1,200 × EUR 128.00 before the answer and
+   * 1,200 × EUR 135.68 after, so the quotation carries EUR 9,216.00 more margin
+   * before it — 47,985.60 on 236,400.00. `site.test.ts` recomputes it.
+   */
+  marginBefore: '20.3%',
 
   beats,
 } as const
@@ -790,13 +819,14 @@ export type MatrixStatus = 'priced' | 'changed' | 'held'
 export const home = {
   headlineStart: hero.headlineStart,
   headlineEnd: hero.headlineEnd,
-  kicker: 'For the unattended hours',
+  /** The stage first, then the argument: a visitor learns what state they have walked into before they scroll. */
+  kicker: 'In build · for the unattended hours',
   lede: hero.lede,
   nav: { night: 'How it works', contact: 'Contact' },
   /** The masthead button. It shares a row with the wordmark, so it is the short form. */
   navCta: 'Early access',
   cta: 'Request early access',
-  emailPlaceholder: 'Your work email',
+  emailPlaceholder: 'Work email',
   /** The note under the field: what a first email is for, and what it is not. */
   assurance: hero.assurance,
   status: 'In progress. Carefully built.',
@@ -804,10 +834,9 @@ export const home = {
   night: { anchor: 'night' },
 
   matrix: {
-    heading: 'What is waiting at 08:04.',
-    lede: 'One request, carried through the night: every line priced or held, every figure still attached to where it came from, and the one call that is not software’s to make.',
-    title: 'Request for quotation · framework agreement',
-    due: 'Response expected Thursday',
+    heading: 'What’s waiting at 08:04.',
+    title: 'RFQ 8841 · framework agreement',
+    due: 'Due Thursday',
     lines: { total: 20, priced: 18, held: 2 },
     summary: {
       priced: 'Lines priced',
@@ -822,22 +851,29 @@ export const home = {
       changed: 'Cost moved',
       held: 'Needs review',
     } satisfies Record<MatrixStatus, string>,
+    /**
+     * Line 14 is the line the evidence document takes apart — RFQ 8841, the
+     * flanged housing, 1,200 units — and it is where the cost moved. The table
+     * used to move it on line 03, which a commercial reader comparing the two
+     * would have caught. Evidence is twelve words or fewer, and a test holds it.
+     */
     rows: [
       { line: '01', item: 'Machined bracket, 6061-T6', status: 'priced', evidence: 'Framework agreement, schedule B' },
       { line: '02', item: 'Cast housing, A380', status: 'priced', evidence: 'Supplier price list, page 4' },
-      { line: '03', item: 'Stepped shaft, Ø20 h6', status: 'changed', evidence: 'Supplier confirmation at 03:42 — unit cost up six per cent, lead time out three weeks' },
-      { line: '04', item: 'Bearing seat, catalogue part', status: 'held', evidence: 'Part number matches three catalogue entries; only the tolerance separates them' },
+      { line: '04', item: 'Bearing seat, catalogue part', status: 'held', evidence: 'Matches three catalogue entries' },
       { line: '05', item: 'Gasket set', status: 'priced', evidence: 'Framework agreement, schedule B' },
       { line: '06', item: 'Cover plate, laser cut', status: 'priced', evidence: 'Supplier price list, page 9' },
-      { line: '11', item: 'Sensor mount, customer drawing', status: 'held', evidence: 'Drawing carries no revision' },
+      { line: '11', item: 'Sensor mount, customer drawing', status: 'held', evidence: 'Drawing has no revision' },
+      { line: '14', item: 'Flanged housing, machined', status: 'changed', evidence: '03:42 answer: cost up six per cent, lead time out three weeks' },
     ] satisfies ReadonlyArray<{ line: string; item: string; status: MatrixStatus; evidence: string }>,
     more: { count: 13, text: 'more lines priced, each with its source attached' },
+    /** What the foot says is left: the person's two options, and no more. */
+    decision: 'Quote under the floor, or go back on the lead time.',
   },
 
   closing: {
-    label: hero.invitation,
-    headline: close.headline,
-    body: 'If there is an RFQ that lands on a Friday evening, or a quotation that is always waiting on one number from one supplier, that is the conversation we want to have.',
+    headline: 'Bring us the quotation that keeps you late.',
+    body: 'The Friday-evening RFQ. The quote waiting on one supplier’s number. That’s where we’d like to start.',
     action: 'Tell us about the work',
     emailLabel: 'Or write to us',
   },

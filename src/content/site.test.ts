@@ -547,3 +547,83 @@ describe('the home matrix', () => {
     expect(everything.toLowerCase()).not.toContain('stay with the work')
   })
 })
+
+/**
+ * The table moves the cost on the line the evidence document takes apart. They
+ * were different lines once (03 and 14), which a commercial reader comparing
+ * the two would have caught.
+ */
+describe('the matrix and the evidence document are about the same line', () => {
+  it('moves the cost on the line the document names', () => {
+    const lineNumber = /Line (\d+)/.exec(evidence.record.reference)?.[1]
+    expect(lineNumber).toBeTruthy()
+    const moved = home.matrix.rows.find((row) => row.status === 'changed')
+    expect(moved?.line).toBe(lineNumber)
+    expect(moved?.item.toLowerCase()).toContain('flanged housing')
+    expect(evidence.record.part.toLowerCase()).toContain('flanged housing')
+    expect(home.matrix.title).toContain(/RFQ (\d+)/.exec(evidence.record.reference)![1]!)
+  })
+})
+
+/**
+ * What the night shows before the supplier answer.
+ *
+ * At 01:18 the quotation sits just above its floor, and at 03:42 the answer
+ * moves one line and takes it under. The 20.3% is not a number anybody chose:
+ * it is what the ledger's 16.4% becomes if line 14 still costs what it did
+ * before the answer.
+ */
+describe('the margin before the supplier answer', () => {
+  const ledger = thread.beats.find((beat) => beat.figures)!.figures!
+  const get = (term: string) => ledger.find((entry) => entry.term === term)!.value
+  const quote = money(get('Quote value'))
+  const after = quote * (percent(get('Expected margin')) / 100)
+
+  it('is derived from the line that moved, and rounds to the figure the page shows', () => {
+    const { units, unitCostBefore, unitCostAfter } = evidence.visual
+    const before = after + units * (unitCostAfter - unitCostBefore)
+    expect(((before / quote) * 100).toFixed(1)).toBe(percent(thread.marginBefore).toFixed(1))
+  })
+
+  it('sits above the floor, so the answer is what takes it under', () => {
+    expect(percent(thread.marginBefore)).toBeGreaterThan(percent(get('Commercial floor')))
+    expect(percent(get('Expected margin'))).toBeLessThan(percent(get('Commercial floor')))
+  })
+})
+
+/**
+ * Words are a budget here, because the first version of every hour ran to fifty
+ * and explained the mechanism. A stranger needs the event, and needs to read it
+ * while the photograph is still on screen.
+ */
+describe('the home page is short', () => {
+  const words = (text: string) => text.trim().split(/\s+/).filter(Boolean).length
+
+  it('keeps every hour to a title of six words and a line of fifteen', () => {
+    for (const beat of thread.beats) {
+      expect(words(beat.title), beat.title).toBeLessThanOrEqual(6)
+      expect(words(beat.body), beat.body).toBeLessThanOrEqual(15)
+    }
+  })
+
+  it('keeps the hero, the table and the close to a glance', () => {
+    expect(words(hero.lede)).toBeLessThanOrEqual(30)
+    expect(words(hero.assurance)).toBeLessThanOrEqual(15)
+    for (const row of home.matrix.rows) {
+      expect(words(row.evidence), row.evidence).toBeLessThanOrEqual(12)
+    }
+    expect(words(home.closing.headline)).toBeLessThanOrEqual(8)
+    expect(words(home.closing.body)).toBeLessThanOrEqual(20)
+  })
+
+  it('reads at about a hundred and forty words of sentences', () => {
+    const sentences = [
+      hero.lede,
+      hero.assurance,
+      thread.lede,
+      ...thread.beats.map((beat) => beat.body),
+      home.closing.body,
+    ].join(' ')
+    expect(words(sentences)).toBeLessThanOrEqual(160)
+  })
+})
