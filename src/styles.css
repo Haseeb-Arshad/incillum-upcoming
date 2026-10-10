@@ -990,7 +990,7 @@
                               pointed below to #5c5b55) 5.2:1
    ══════════════════════════════════════════════════════════════════════════ */
 .home {
-  --home-display: clamp(2.5rem, 4.6vw, 5.25rem);
+  --home-display: clamp(2.75rem, 5.6vw, 5.75rem);
   --home-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
   --home-form: 30rem;
   --home-control: 3rem;
@@ -1035,8 +1035,10 @@
   display: flex;
   align-items: center;
   gap: clamp(1.25rem, 2.2vw, 2.25rem);
-  font-family: var(--font-display);
-  font-size: 0.9375rem;
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  font-weight: 500;
+  letter-spacing: -0.006em;
 }
 .desk-nav-link {
   position: relative;
@@ -1061,12 +1063,13 @@
   transform-origin: left;
 }
 .home .desk-cta {
-  min-height: 2.5rem;
+  min-height: 2.75rem;
   padding: 0.5rem 1.125rem 0.5rem 1.25rem;
 }
 .home .desk-cta--large {
-  min-height: 3.25rem;
+  min-height: 3rem;
   padding: 0.75rem 1.5rem 0.75rem 1.75rem;
+  font-size: 1rem;
 }
 
 /* ── Act one: the plate ───────────────────────────────────────────────── */
@@ -1132,11 +1135,16 @@
   text-transform: uppercase;
   color: var(--ic-ink-600);
 }
+/*
+ * Sentence case, same words. The capitals were wide enough that the size had to
+ * stay modest; in lower case the face carries a larger size on the same column,
+ * and the tracking can sit at the token's own value. The two lines are explicit
+ * (see `HomePage`), so the break after "for" does not depend on the width.
+ */
 .home-title {
   font-size: var(--home-display);
-  line-height: 0.96;
-  letter-spacing: -0.006em;
-  text-transform: uppercase;
+  line-height: 1;
+  letter-spacing: var(--text-display--letter-spacing);
   color: var(--ic-ink-900);
 }
 /* Each headline line rises out of its own line box; the clip is padded so nothing is cut at rest. */
@@ -1267,16 +1275,6 @@
 .home .waitlist-inline-submit {
   min-height: var(--home-control);
   padding: 0.625rem 1.25rem 0.625rem 1.5rem;
-}
-
-/*
- * Clean fills in the dark. The pressed-ink speckle is ink on paper; on a light
- * button over a black ground its holes show the night through and read as dust.
- */
-[data-inverted] .desk-cta::before,
-[data-inverted] .waitlist-inline-submit::before {
-  -webkit-mask: none;
-  mask: none;
 }
 
 /* ── Act two: the matrix, lit ─────────────────────────────────────────── */
@@ -1584,18 +1582,8 @@
     padding-inline: 1.125rem;
   }
 }
-@media (max-width: 440px) {
-  /* The masthead button has to share a 342px row with the wordmark; drop the arrow and tighten the tracking. */
-  .home .hero-header .desk-cta {
-    padding-inline: 0.875rem;
-    font-size: 0.6875rem;
-    letter-spacing: 0.07em;
-  }
-  .desk-cta .ic-cta-arrow {
-    display: none;
-  }
-}
 @media (max-width: 380px) {
+  /* The masthead button keeps its full size; below this the wordmark gives up a little instead. */
   .hero-header {
     flex-wrap: wrap;
     gap: 0.75rem;
@@ -1607,11 +1595,6 @@
   .hero-header .site-brand-mark {
     width: 2rem;
     height: 2rem;
-  }
-  .home .hero-header .desk-cta {
-    padding-inline: 0.625rem;
-    font-size: 0.65625rem;
-    letter-spacing: 0.04em;
   }
 }
 
@@ -1672,10 +1655,6 @@
   --memo-column: 26rem;
   --memo-sheet-width: 50rem;
   --memo-reading: max(44rem, calc(100svh - 6rem));
-
-  /* Speckled ink: alpha is thinned where the noise runs high, so a fill reads as pressed, not printed. */
-  --memo-ink-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='m' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -9 7.6'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23m)'/%3E%3C/svg%3E");
-
 }
 
 .memo-page {
@@ -1776,10 +1755,7 @@
   margin-top: 0.5rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--ic-line-strong);
-  font-family: var(--font-display);
-  font-size: var(--memo-label);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
+  font-size: var(--text-small);
   color: var(--ic-ink-400);
 }
 .memo-alt {
@@ -2222,14 +2198,23 @@
   text-underline-offset: 0.25em;
 }
 
-/* ── Buttons: pressed ink ─────────────────────────────────────────────── */
+/* ── Buttons ───────────────────────────────────────────────────────────────
+ *
+ * The grotesk, in sentence case, on a solid ink fill. These were the heading
+ * serif in tracked capitals at 12.5px over a speckled mask, which broke the
+ * rule that the sans does everything a person operates — and shrank to 10.5px
+ * on a phone. `e2e/controls.spec.ts` now reads the computed style of every
+ * control, so it cannot happen quietly again.
+ *
+ * Ink is a token that flips in the night band, so the same rule gives a light
+ * button on the dark ground and a dark one on paper.
+ */
 .memo-submit,
 .memo-action,
 .desk-cta,
 .waitlist-inline-submit {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2240,13 +2225,15 @@
   border-radius: var(--radius-control);
   background: transparent;
   color: var(--ic-paper);
-  font-family: var(--font-display);
-  font-size: var(--memo-label);
-  line-height: 1.25;
-  letter-spacing: 0.12em;
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  font-weight: 500;
+  line-height: 1.25rem;
+  letter-spacing: -0.006em;
   text-align: center;
   text-decoration: none;
-  text-transform: uppercase;
+  text-transform: none;
+  white-space: nowrap;
   cursor: pointer;
   transition: transform var(--ic-fast) var(--ic-ease);
 }
@@ -2264,9 +2251,7 @@
   z-index: -1;
   border-radius: inherit;
   background-color: var(--ic-ink-900);
-  -webkit-mask: var(--memo-ink-mask) 0 0 / 256px 256px repeat;
-  mask: var(--memo-ink-mask) 0 0 / 256px 256px repeat;
-  transition: background-color 150ms;
+  transition: background-color var(--ic-fast) var(--ic-ease);
   pointer-events: none;
 }
 .memo-submit-label {
@@ -2308,7 +2293,7 @@
   .memo-submit:hover:not(:disabled) .memo-arrow,
   .desk-cta:hover .ic-cta-arrow,
   .waitlist-inline-submit:hover:not(:disabled) .ic-cta-arrow {
-    transform: translateX(3px);
+    transform: translateX(2px);
   }
   .memo-action:not(.memo-action--primary):hover {
     background-color: var(--ic-line);

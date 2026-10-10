@@ -92,7 +92,7 @@ test('network error keeps the entered address', async ({ page }) => {
 })
 
 test('the masthead call to action puts the cursor in the field', async ({ page }) => {
-  await page.getByRole('link', { name: 'Request early access' }).click()
+  await page.getByRole('link', { name: 'Early access', exact: true }).click()
   await expect(page.getByRole('textbox', { name: /^Work email/ })).toBeFocused()
 })
 

@@ -792,7 +792,9 @@ export const home = {
   headlineEnd: hero.headlineEnd,
   kicker: 'For the unattended hours',
   lede: hero.lede,
-  nav: { night: 'One night', contact: 'Contact' },
+  nav: { night: 'How it works', contact: 'Contact' },
+  /** The masthead button. It shares a row with the wordmark, so it is the short form. */
+  navCta: 'Early access',
   cta: 'Request early access',
   emailPlaceholder: 'Your work email',
   /** The note under the field: what a first email is for, and what it is not. */

@@ -63,7 +63,7 @@ export function HomePage() {
                   {home.nav.contact}
                 </a>
                 <ButtonLink href="#early-access" arrow className="desk-cta" onClick={focusEmail}>
-                  {home.cta}
+                  {home.navCta}
                 </ButtonLink>
               </nav>
             </header>
