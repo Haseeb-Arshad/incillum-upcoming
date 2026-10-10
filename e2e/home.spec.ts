@@ -70,7 +70,7 @@ test('nothing is claimed that cannot be backed', async ({ page }) => {
 
 test('the inline field keeps its name and validates', async ({ page }) => {
   const email = page.getByRole('textbox', { name: /^Work email/ })
-  await expect(email).toHaveAttribute('placeholder', 'Work email')
+  await expect(email).toHaveAttribute('placeholder', 'Your work email')
   await page.getByRole('button', { name: 'Request early access' }).click()
   await expect(email).toHaveAttribute('aria-invalid', 'true')
   await email.fill('person@gmail.com')
@@ -92,7 +92,7 @@ test('network error keeps the entered address', async ({ page }) => {
 })
 
 test('the masthead call to action puts the cursor in the field', async ({ page }) => {
-  await page.getByRole('link', { name: 'Early access', exact: true }).click()
+  await page.getByRole('link', { name: 'Request early access' }).click()
   await expect(page.getByRole('textbox', { name: /^Work email/ })).toBeFocused()
 })
 
