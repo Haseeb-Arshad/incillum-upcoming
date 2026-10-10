@@ -760,32 +760,162 @@ export const launch = {
 } as const
 
 /**
- * The harbour edition — the public home page.
+ * The home page: night first, then morning.
  *
- * The picture carries the atmosphere, so the words stay few. The headline is
- * `hero.headline`, which is also what `seoCopy.title` already says: one first
- * sentence, in the tab and on the page.
+ * The page opens on the commissioned photograph — an empty office, one lamp,
+ * a quotation still lying under it — because that frame is the argument with
+ * the words taken away, and it was sitting below the fold. Then the product's
+ * own object, lit: one request's twenty lines with their status and their
+ * evidence. Then the thread of the night that produced it. The page ends on
+ * paper, at the hour a person picks the work back up, with one invitation.
  *
- * The cards drawn into the picture are decoration, not data. They are baked
- * into the raster, marked `aria-hidden`, and none of their figures appear in
- * the page's text — the page itself states no metric, customer or date.
+ * ── The matrix is illustrative, and reconciles ─────────────────────────────
+ *
+ * It is the same quotation the thread follows, at a different magnification:
+ * twenty lines, eighteen priced, two held — one because a part number matches
+ * three catalogue entries, one because a customer drawing carries no revision —
+ * and one line whose cost moved when a supplier confirmation arrived at 03:42.
+ * Its money is not written here. It is read off the thread's 06:50 ledger, so
+ * the two cannot disagree. `content/site.test.ts` counts the rows below against
+ * the totals and the totals against the thread's own prose.
+ *
+ * It says it is invented in its first line, at reading size, in the server's
+ * HTML, with the same words the thread uses.
+ *
+ * No price per line. A line price would be twenty more figures to keep true and
+ * would not tell a stranger anything the status and the evidence do not.
  */
+export type MatrixStatus = 'priced' | 'changed' | 'held'
+
 export const home = {
   headlineStart: hero.headlineStart,
   headlineEnd: hero.headlineEnd,
-  lede: ['A more disciplined commercial system is taking shape.', 'Early access opens soon.'],
-  status: 'In progress. Carefully built.',
-  caption: ['A more connected', 'commercial world'],
-  nav: { approach: 'Approach', contact: 'Contact' },
+  kicker: 'For the unattended hours',
+  lede: hero.lede,
+  nav: { night: 'One night', contact: 'Contact' },
   cta: 'Request early access',
   emailPlaceholder: 'Your work email',
-  approach: {
-    label: 'Approach',
-    headline: 'Commercial work keeps mattering after the people carrying it step away.',
-    body: hero.lede,
-    qualifier: hero.qualifier,
+  /** The note under the field: what a first email is for, and what it is not. */
+  assurance: hero.assurance,
+  status: 'In progress. Carefully built.',
+
+  night: { anchor: 'night' },
+
+  matrix: {
+    heading: 'What is waiting at 08:04.',
+    lede: 'One request, carried through the night: every line priced or held, every figure still attached to where it came from, and the one call that is not software’s to make.',
+    title: 'Request for quotation · framework agreement',
+    due: 'Response expected Thursday',
+    lines: { total: 20, priced: 18, held: 2 },
+    summary: {
+      priced: 'Lines priced',
+      held: 'Held for review',
+      value: 'Quote value',
+      margin: 'Expected margin',
+      floor: 'floor',
+    },
+    columns: { line: 'Line', item: 'Item', status: 'Status', evidence: 'Evidence' },
+    statusLabels: {
+      priced: 'Priced',
+      changed: 'Cost moved',
+      held: 'Needs review',
+    } satisfies Record<MatrixStatus, string>,
+    rows: [
+      { line: '01', item: 'Machined bracket, 6061-T6', status: 'priced', evidence: 'Framework agreement, schedule B' },
+      { line: '02', item: 'Cast housing, A380', status: 'priced', evidence: 'Supplier price list, page 4' },
+      { line: '03', item: 'Stepped shaft, Ø20 h6', status: 'changed', evidence: 'Supplier confirmation at 03:42 — unit cost up six per cent, lead time out three weeks' },
+      { line: '04', item: 'Bearing seat, catalogue part', status: 'held', evidence: 'Part number matches three catalogue entries; only the tolerance separates them' },
+      { line: '05', item: 'Gasket set', status: 'priced', evidence: 'Framework agreement, schedule B' },
+      { line: '06', item: 'Cover plate, laser cut', status: 'priced', evidence: 'Supplier price list, page 9' },
+      { line: '11', item: 'Sensor mount, customer drawing', status: 'held', evidence: 'Drawing carries no revision' },
+    ] satisfies ReadonlyArray<{ line: string; item: string; status: MatrixStatus; evidence: string }>,
+    more: { count: 13, text: 'more lines priced, each with its source attached' },
   },
+
+  closing: {
+    label: hero.invitation,
+    headline: close.headline,
+    body: 'If there is an RFQ that lands on a Friday evening, or a quotation that is always waiting on one number from one supplier, that is the conversation we want to have.',
+    action: 'Tell us about the work',
+    emailLabel: 'Or write to us',
+  },
+
   title: seoCopy.title,
   description:
-    'A more disciplined commercial system is taking shape. Incillum is being built to carry commercial work forward and bring people back where judgement matters. Request early access.',
+    'Incillum is being built to carry commercial work forward and bring people back where judgement matters: an RFQ that arrives at night, and a decision ready for a person by morning. Request early access.',
+} as const
+
+/**
+ * The contact page — a memo, not a form.
+ *
+ * `/contact` is where somebody who has decided to say more goes, so it can ask
+ * for more than the address the home page asks for. It posts to the same
+ * waitlist function and keeps the same promise: only the address is required,
+ * nothing is sent to the person who wrote, and the success state says we have
+ * it and will write once.
+ *
+ * It carries no logos, no quotations from customers and no figures, because
+ * there are none. Where the page it is modelled on spends a column on proof,
+ * this one spends it on what happens next — which is the only thing a stranger
+ * needs before deciding to write.
+ *
+ * The motto is deliberately absent from this object. The success state renders
+ * `brand.motto` itself, which is one of its two permitted placements.
+ */
+export const contact = {
+  title: 'Contact — Incillum',
+  description:
+    'Tell us about the commercial work you carry. If it looks like a fit, we will write to arrange a call. Incillum is being built; early access is not open yet.',
+  heading: 'Tell us about the work that outlasts the day.',
+  steps: [
+    {
+      icon: 'quotation',
+      text: 'We start with one job: a request for quotation, carried to a commercial decision.',
+    },
+    {
+      icon: 'call',
+      text: 'If it looks like a fit, we write once to arrange a call.',
+    },
+    {
+      icon: 'case',
+      text: 'Then one real case, run beside the way your team works today.',
+    },
+  ],
+  status: 'In progress. Carefully built.',
+  alternative: 'Prefer email?',
+  back: 'Incillum',
+  memo: {
+    formLabel: 'Contact Incillum',
+    description: 'Tell us about the work you quote. If it looks like a fit, we’ll write to set up a call.',
+    requiredNote: 'Only your email is required.',
+    fields: {
+      email: 'Work email',
+      company: 'Company',
+      role: 'Your role',
+      commercialWork: 'Kind of commercial work',
+      quoteVolume: 'RFQs a month',
+      erp: 'Current ERP',
+      pain: 'What costs you most in quoting?',
+    },
+    skip: 'Skip this',
+    submit: 'Send to Incillum',
+    sending: 'Sending',
+    stillSending: 'Still sending. Thanks for your patience.',
+    privacy: 'Nothing is sent to you until we write. We will write once.',
+    failure: {
+      title: 'We couldn’t confirm delivery.',
+      body: 'Your note may have arrived. Your details are still here if you need to retry or email us.',
+      action: 'Email us',
+    },
+  },
+  receipt: {
+    kicker: 'Copy for your records',
+    heading: 'Received.',
+    body: 'We have your note. If the work looks like a fit, we’ll write once to arrange a call, and then one real case run beside the way your team works today. Nothing is sent before then.',
+    reference: 'Reference',
+    stamp: 'Received',
+    another: 'Write another',
+    home: 'Back to home',
+    lead: 'Until then:',
+  },
 } as const

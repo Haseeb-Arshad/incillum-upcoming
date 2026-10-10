@@ -277,6 +277,34 @@
   color: var(--ic-ink-900);
 }
 
+/* ── The lit scope ────────────────────────────────────────────────────────
+ *
+ * The inverted scope's opposite, for one thing on the page: the product panel
+ * inside the night band, which is paper because the one lit object in the
+ * photograph above it is paper. It re-points the same tokens back to their
+ * daylight values, so the panel is written against `text-ink` and
+ * `border-line` like everything else and does not know where it landed.
+ */
+[data-lit] {
+  --ic-paper: #f7f7f5;
+  --ic-paper-raised: #ffffff;
+  --ic-paper-sunken: #efefec;
+
+  --ic-ink-900: #111110;
+  --ic-ink-800: #1c1c1a;
+  --ic-ink-600: #45453f;
+  --ic-ink-400: #6e6e66;
+  --ic-ink-200: #a3a39a;
+
+  --ic-line: rgba(17, 17, 16, 0.11);
+  --ic-line-strong: rgba(17, 17, 16, 0.22);
+
+  --ic-signal: #9a5518;
+  --ic-signal-soft: rgba(154, 85, 24, 0.1);
+
+  color: var(--ic-ink-900);
+}
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
@@ -941,206 +969,82 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   Harbour edition — the public home page (`components/home-page.tsx`).
+   Home — night first, then morning (`components/home-page.tsx`).
 
-   Warm paper, engraved harbour, one bronze. The scope re-points the shared
-   `--ic-*` tokens the way `[data-inverted]` does, so the form's field, its
-   errors and its success panel warm up without knowing where they landed.
+   The first screen is the commissioned photograph, full-bleed: an empty
+   office, one lamp, a quotation under it. The headline sits over the dark side
+   of the frame. Below it the product's object is *lit* — a paper-toned panel
+   in the dark, the way the quotation is the one lit thing in the photograph.
+   Then the thread, then the page returns to the desk the contact memo is laid
+   on, which is where the two pages meet.
 
-   Contrast on --ic-paper (#f6f2ec):
-     ink-900 #1d1916   15.7:1     headline and controls
-     ink-600 #5b534b    6.8:1     lede and body
-     ink-400 #736a61    4.8:1     labels, status, captions
-     bronze  #7e5a3e    5.5:1     the mark and the status bead
+   One dark region (`.home-night`, carrying `[data-inverted]`), one lit panel
+   inside it (`[data-lit]`), one desk after it. Every colour below is a token
+   or a scrim built from one.
+
+   Contrast:
+     on the night (#0d0d0c)   ink-900 18.6:1 · ink-600 10.3:1 · ink-400 6.9:1
+     over the scrim           the headline column sits on ≥ 86% night, so the
+                              same figures hold within a few tenths
+     on the desk (#e0ddd5)    ink-900 14.2:1 · ink-600 7.6:1 · ink-400 (re-
+                              pointed below to #5c5b55) 5.2:1
    ══════════════════════════════════════════════════════════════════════════ */
 .home {
-  --ic-paper: #f6f2ec;
-  --ic-paper-raised: #fbf9f5;
-  --ic-paper-sunken: #eee8df;
-  --ic-ink-900: #1d1916;
-  --ic-ink-800: #36302a;
-  --ic-ink-600: #5b534b;
-  --ic-ink-400: #736a61;
-  --ic-ink-200: #a39a90;
-  --ic-line: rgba(29, 25, 22, 0.12);
-  --ic-line-strong: rgba(29, 25, 22, 0.24);
-
-  --home-bronze: #7e5a3e;
-  --home-bead-light: #d9b48e;
-  --home-bead-ring: rgba(126, 90, 62, 0.35);
-  --home-field: rgba(251, 249, 245, 0.55);
-  --home-field-focus: rgba(251, 249, 245, 0.9);
-
-  --home-gutter: clamp(1.25rem, 3.6vw, 3.5rem);
-  --home-display: clamp(2.5rem, 4.8vw, 5.25rem);
-  --home-lede: clamp(1rem, 1.15vw, 1.25rem);
-  --home-nav: clamp(0.875rem, 0.9vw, 0.9375rem);
-  --home-wordmark: clamp(1.375rem, 1.9vw, 2rem);
-  --home-mark-size: clamp(2rem, 2.7vw, 2.75rem);
-  --home-caps: 0.6875rem;
-  --home-control: 2.875rem;
-  --home-control-text: 0.9375rem;
-  --home-pill: 999px;
-  --home-copy-width: 40rem;
-  --home-form-width: 30rem;
-
-  /* The picture's own proportions, 1672 × 941. */
-  --home-art-ratio: 1.7768;
-  --home-art-height: 0.5628;
-
-  /* Motion: one long curve for arrivals, the shared one for hovers. */
-  --home-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --home-display: clamp(2.5rem, 4.6vw, 5.25rem);
+  --home-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
+  --home-form: 30rem;
+  --home-control: 3rem;
+  --home-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --home-arrive: 900ms;
-  --home-settle: 1800ms;
-  --home-drift: 1400ms;
-  --home-breathe: 2800ms;
+  --hero-scrim-strong: rgba(13, 13, 12, 0.94);
+  --hero-scrim: rgba(13, 13, 12, 0.7);
 
-  background-color: var(--ic-paper);
-  background-image: var(--ic-grain);
   color: var(--ic-ink-900);
   overflow: clip;
 }
 
-/* ── First screen ──────────────────────────────────────────────────────── */
-.home-stage {
-  position: relative;
-  min-height: max(100svh, 38rem);
-  display: flex;
-  flex-direction: column;
-  padding: 0 var(--home-gutter);
-}
-.home-art {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  container-type: size;
-}
-/*
- * The plate: the picture at its own aspect ratio, always covering the art box,
- * anchored right. Where the screen is wider than the picture it crops
- * from the top more than the bottom, because the orbit is nearer the top —
- * but only up to 2:1. Past that, cropping more would push the orbit under the
- * masthead, so the plate stops growing and the page's paper carries on to
- * its left.
- */
-.home-plate {
-  --plate-w: calc(
-    min(max(100cqw, calc(100cqh * var(--home-art-ratio))), calc(100cqh * 2))
-  );
-  position: absolute;
-  right: 0;
-  top: calc((100cqh - var(--plate-w) * var(--home-art-height)) * 0.7);
-  width: var(--plate-w);
-  aspect-ratio: 1672 / 941;
-}
-.home-plate img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  user-select: none;
-  animation: home-settle var(--home-settle) var(--home-ease-out) both;
-  /* Only the foot fades, so the water meets the next section without a seam. */
-  -webkit-mask-image: linear-gradient(to top, transparent, black 5%);
-  mask-image: linear-gradient(to top, transparent, black 5%);
-}
-/*
- * Ultra-wide only: the plate no longer reaches the left edge, and a hard
- * vertical cut through the harbour's mountains would read as a mistake. Every
- * narrower screen shows the picture edge to edge, unfaded.
- */
-@media (min-aspect-ratio: 2 / 1) and (min-width: 1024px) {
-  .home-plate img {
-    -webkit-mask-image:
-      linear-gradient(to right, transparent, black 7%), linear-gradient(to top, transparent, black 5%);
-    -webkit-mask-composite: source-in;
-    mask-image:
-      linear-gradient(to right, transparent, black 7%), linear-gradient(to top, transparent, black 5%);
-    mask-composite: intersect;
-  }
-}
-@keyframes home-settle {
-  from {
-    opacity: 0;
-    transform: scale(1.035);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+/* The page's one dark region. Deeper than the default night: a photograph on black reads as a print. */
+.home-night {
+  background-color: var(--ic-paper-sunken);
 }
 
-/* Pinned in the picture's own coordinates, beside the cards, never on one. */
-.home-caption {
-  position: absolute;
-  right: 5.1%;
-  bottom: 15.3%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.45em;
-  font-family: var(--font-display);
-  font-size: max(0.5625rem, calc(var(--plate-w) * 0.0056));
-  letter-spacing: 0.34em;
-  text-transform: uppercase;
-  color: var(--ic-ink-400);
-  animation: home-fade var(--home-arrive) var(--home-ease-out) 700ms both;
-}
-.home-caption::after {
-  content: '';
-  width: 3.6em;
-  height: 1px;
-  margin-top: 1.6em;
-  background-color: var(--ic-line-strong);
-  transform-origin: center;
-  animation: home-draw var(--home-arrive) var(--home-ease-out) 1000ms both;
-}
-
-.home-header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: clamp(1.125rem, 2.8vh, 1.75rem) 0;
-}
-.home-brand {
+/* ── The brand and the navigation, shared with /contact ───────────────── */
+.site-brand {
   display: inline-flex;
   align-items: center;
-  gap: clamp(0.625rem, 0.9vw, 0.875rem);
+  gap: 0.75rem;
   font-family: var(--font-display);
-  font-size: var(--home-wordmark);
-  letter-spacing: -0.02em;
+  font-size: 1.5rem;
   line-height: 1;
+  letter-spacing: -0.02em;
   color: var(--ic-ink-900);
   text-decoration: none;
   border-radius: var(--radius-control);
 }
-.home-mark {
-  width: var(--home-mark-size);
-  height: var(--home-mark-size);
+.site-brand-mark {
+  width: 2.25rem;
+  height: 2.25rem;
   flex-shrink: 0;
-  color: var(--home-bronze);
-  transition: transform var(--home-drift) var(--home-ease-out);
+  transition: transform 1400ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.home-brand:hover .home-mark {
+.site-brand:hover .site-brand-mark {
   transform: rotate(45deg);
 }
-.home-nav {
+
+.desk-nav {
   display: flex;
   align-items: center;
   gap: clamp(1.25rem, 2.2vw, 2.25rem);
   font-family: var(--font-display);
-  font-size: var(--home-nav);
+  font-size: 0.9375rem;
 }
-.home-nav-link {
+.desk-nav-link {
   position: relative;
   color: var(--ic-ink-900);
   text-decoration: none;
   border-radius: 2px;
 }
-.home-nav-link::after {
+.desk-nav-link::after {
   content: '';
   position: absolute;
   left: 0;
@@ -1150,84 +1054,154 @@
   background-color: currentColor;
   transform: scaleX(0);
   transform-origin: right;
-  transition: transform var(--ic-slow) var(--home-ease-out);
+  transition: transform var(--ic-slow) var(--home-ease);
 }
-.home-nav-link:hover::after {
+.desk-nav-link:hover::after {
   transform: scaleX(1);
   transform-origin: left;
 }
-
-/* The one shape every call to action on this page takes. */
-.home-pill,
-.waitlist-inline-submit {
-  border-radius: var(--home-pill);
-  font-family: var(--font-display);
-  font-size: var(--home-control-text);
-  font-weight: 400;
-  letter-spacing: 0;
-  gap: 0.625rem;
-  transition:
-    background-color var(--ic-fast) var(--ic-ease),
-    transform var(--ic-slow) var(--home-ease-out);
+.home .desk-cta {
+  min-height: 2.5rem;
+  padding: 0.5rem 1.125rem 0.5rem 1.25rem;
 }
-.home-pill:hover,
-.waitlist-inline-submit:hover {
-  transform: translateY(-1px);
-}
-.home-pill:active,
-.waitlist-inline-submit:active {
-  transform: translateY(0) scale(0.98);
-  transition-duration: var(--ic-fast);
-}
-.home-pill:hover .ic-cta-arrow,
-.waitlist-inline-submit:hover .ic-cta-arrow {
-  transform: translateX(3px);
-}
-.home-pill .ic-cta-arrow,
-.waitlist-inline-submit .ic-cta-arrow {
-  transition: transform var(--ic-slow) var(--home-ease-out);
-}
-.home-nav-cta {
-  height: 2.625rem;
-  padding: 0 1.25rem 0 1.375rem;
+.home .desk-cta--large {
+  min-height: 3.25rem;
+  padding: 0.75rem 1.5rem 0.75rem 1.75rem;
 }
 
-.home-hero {
+/* ── Act one: the plate ───────────────────────────────────────────────── */
+.hero {
   position: relative;
-  z-index: 1;
-  flex: 1;
+  isolation: isolate;
+  display: flex;
+  min-height: max(40rem, min(100svh, 64rem));
+  overflow: hidden;
+}
+.hero-plate {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.hero-plate img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Crop from the original's left, where the lamp and the quotation are; the flip then puts them on the right. */
+  object-position: 12% 62%;
+  transform: scaleX(-1);
+  user-select: none;
+}
+.hero-plate::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, var(--hero-scrim-strong) 0%, var(--hero-scrim) 36%, transparent 68%),
+    linear-gradient(0deg, var(--ic-paper-sunken) 0%, transparent 30%),
+    linear-gradient(180deg, var(--hero-scrim) 0%, transparent 20%);
+}
+.hero-inner {
+  display: flex;
+  flex-direction: column;
+}
+.hero-header {
   display: flex;
   align-items: center;
-  padding: clamp(1rem, 4vh, 3rem) 0 clamp(6rem, 18vh, 12rem);
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 2rem;
 }
-.home-copy {
-  max-width: var(--home-copy-width);
-  padding-left: clamp(0rem, 0.5vw, 0.5rem);
+.hero-body {
+  display: grid;
+  gap: 2rem;
+  align-items: end;
+  margin-top: auto;
+  padding-block: clamp(4rem, 10vh, 8rem) clamp(3rem, 8vh, 5.5rem);
+}
+.hero-copy {
+  min-width: 0;
+  max-width: 46rem;
+}
+.hero-kicker {
+  margin-bottom: 1.5rem;
+  font-size: var(--text-label);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ic-ink-600);
 }
 .home-title {
   font-size: var(--home-display);
-  line-height: 0.98;
-  letter-spacing: -0.032em;
+  line-height: 0.96;
+  letter-spacing: -0.006em;
+  text-transform: uppercase;
   color: var(--ic-ink-900);
 }
-/*
- * Each headline line rises out of its own line box. The clip is padded below
- * so the descenders of "Intelligence" are never cut at rest.
- */
+/* Each headline line rises out of its own line box; the clip is padded so nothing is cut at rest. */
 .home-line {
   display: inline-block;
   white-space: nowrap;
   overflow: clip;
-  padding-bottom: 0.14em;
-  margin-bottom: -0.14em;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
 }
 .home-line > span {
   display: inline-block;
-  animation: home-line-rise var(--home-arrive) var(--home-ease-out) both;
+  animation: home-line-rise var(--home-arrive) var(--home-ease) both;
   animation-delay: 150ms;
 }
 .home-line + .home-line > span {
   animation-delay: 240ms;
+}
+.home-lede {
+  max-width: 36rem;
+  margin-top: clamp(1.5rem, 3vh, 2rem);
+  font-size: var(--home-lede);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.home-form {
+  max-width: var(--home-form);
+  margin-top: 2.25rem;
+}
+.home-note {
+  max-width: var(--home-form);
+  margin-top: 1rem;
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ic-ink-400);
+}
+.hero-caption {
+  max-width: 17rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--ic-ink-600);
+}
+
+.home-rise {
+  animation: home-rise var(--home-arrive) var(--home-ease) both;
+}
+.hero-kicker.home-rise {
+  animation-delay: 80ms;
+}
+.home-lede.home-rise {
+  animation-delay: 380ms;
+}
+.home-form.home-rise {
+  animation-delay: 470ms;
+}
+.home-note.home-rise {
+  animation-delay: 560ms;
+}
+.hero-caption.home-rise {
+  animation-delay: 900ms;
+}
+.home-drop {
+  animation: home-drop var(--home-arrive) var(--home-ease) both;
 }
 @keyframes home-line-rise {
   from {
@@ -1236,45 +1210,6 @@
   to {
     transform: none;
   }
-}
-.home-lede {
-  margin-top: clamp(1rem, 2.2vh, 1.5rem);
-  font-family: var(--font-display);
-  font-size: var(--home-lede);
-  line-height: 1.45;
-  color: var(--ic-ink-600);
-}
-.home-lede > span {
-  display: block;
-}
-.home-form {
-  margin-top: clamp(1.25rem, 3vh, 2rem);
-  max-width: var(--home-form-width);
-}
-.home-status {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  margin-top: clamp(1rem, 2.6vh, 1.75rem);
-  font-family: var(--font-display);
-  font-size: 0.6875rem;
-  letter-spacing: 0.3em;
-  color: var(--ic-ink-400);
-}
-.home-rise {
-  animation: home-rise var(--home-arrive) var(--home-ease-out) both;
-}
-.home-lede.home-rise {
-  animation-delay: 380ms;
-}
-.home-form.home-rise {
-  animation-delay: 470ms;
-}
-.home-status.home-rise {
-  animation-delay: 560ms;
-}
-.home-drop {
-  animation: home-drop var(--home-arrive) var(--home-ease-out) both;
 }
 @keyframes home-rise {
   from {
@@ -1296,217 +1231,387 @@
     transform: none;
   }
 }
-@keyframes home-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes home-draw {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: none;
-  }
-}
 
-/* A bronze bead, lit from the upper left like the beads on the orbit, breathing. */
-.home-bead {
-  position: relative;
-  width: 0.5rem;
-  height: 0.5rem;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 30%, var(--home-bead-light), var(--home-bronze) 62%);
-}
-.home-bead::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1px solid var(--home-bead-ring);
-  animation: home-breathe var(--home-breathe) var(--home-ease-out) 1200ms infinite;
-}
-@keyframes home-breathe {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  70%,
-  100% {
-    opacity: 0;
-    transform: scale(2.6);
-  }
-}
-
-/* ── The inline form ───────────────────────────────────────────────────── */
+/*
+ * The field: a rule, not a box — the same underline the contact memo uses.
+ * The label is visually hidden, not absent, so the placeholder can be a
+ * plain readable tone rather than carry the field's name.
+ */
 .waitlist-inline-input {
   height: var(--home-control);
-  padding: 0 1.375rem;
-  border-radius: var(--home-pill);
-  background-color: var(--home-field);
-  font-family: var(--font-display);
-  font-size: var(--home-control-text);
-  font-weight: 400;
-  transition:
-    border-color var(--ic-slow) var(--home-ease-out),
-    background-color var(--ic-slow) var(--home-ease-out);
+  padding: 0 0.125rem;
+  border: 0;
+  border-bottom: 1px solid var(--ic-line-strong);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ic-ink-900);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  transition: border-color 150ms;
 }
-.waitlist-inline-input:focus {
-  background-color: var(--home-field-focus);
-  border-color: var(--ic-ink-400);
+.waitlist-inline-input::placeholder {
+  color: var(--ic-ink-400);
+  opacity: 1;
 }
-.waitlist-inline-submit {
-  height: var(--home-control);
-  padding: 0 1.375rem 0 1.5rem;
+@media (hover: hover) {
+  .waitlist-inline-input:hover:not(:focus, [aria-invalid='true']) {
+    border-bottom-color: var(--ic-ink-400);
+  }
+}
+.waitlist-inline-input:focus,
+.waitlist-inline-input[aria-invalid='true'] {
+  outline: none;
+  border-bottom-color: var(--ic-ink-900);
+  box-shadow: 0 1px 0 var(--ic-ink-900);
+}
+.home .waitlist-inline-submit {
+  min-height: var(--home-control);
+  padding: 0.625rem 1.25rem 0.625rem 1.5rem;
 }
 
-/* ── Below the fold ────────────────────────────────────────────────────── */
-.home-approach {
-  display: grid;
-  grid-template-columns: minmax(10rem, 1fr) minmax(0, 2.4fr);
-  gap: 1.5rem var(--home-gutter);
-  padding: clamp(4rem, 9vw, 7rem) var(--home-gutter);
+/*
+ * Clean fills in the dark. The pressed-ink speckle is ink on paper; on a light
+ * button over a black ground its holes show the night through and read as dust.
+ */
+[data-inverted] .desk-cta::before,
+[data-inverted] .waitlist-inline-submit::before {
+  -webkit-mask: none;
+  mask: none;
 }
-.home-kicker {
-  font-family: var(--font-display);
-  font-size: var(--home-caps);
-  letter-spacing: 0.34em;
-  text-transform: uppercase;
-  color: var(--ic-ink-400);
-  padding-top: 0.75rem;
+
+/* ── Act two: the matrix, lit ─────────────────────────────────────────── */
+.home-matrix {
+  padding-block: clamp(5rem, 10vw, 9rem) clamp(4rem, 8vw, 7rem);
 }
-.home-approach-body {
-  max-width: 44rem;
+.matrix-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 46rem;
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
 }
-.home-approach h2 {
-  font-size: clamp(1.75rem, 2.8vw, 2.75rem);
-  line-height: 1.08;
-  letter-spacing: -0.022em;
+.matrix {
+  overflow: hidden;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  color: var(--ic-ink-900);
+  background-image: none;
 }
-.home-approach-body p {
-  margin-top: 1.5rem;
-  max-width: 58ch;
-  font-size: var(--text-body);
-  line-height: 1.65;
-  color: var(--ic-ink-600);
+.matrix-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding: 0.875rem 1.5rem;
+  border-bottom: 1px solid var(--ic-line);
+  background-color: var(--ic-paper);
+  font-size: 0.8125rem;
 }
-.home-approach-body .home-approach-qualifier {
-  margin-top: 1.75rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--ic-line);
-  font-family: var(--font-display);
-  font-size: clamp(1.0625rem, 1.3vw, 1.3125rem);
-  line-height: 1.4;
+.matrix-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-weight: 500;
   color: var(--ic-ink-900);
 }
-.home-footer {
+.matrix-mark {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 2px;
+  background-color: var(--ic-ink-900);
+}
+.matrix-due {
+  color: var(--ic-ink-400);
+}
+.matrix-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  border-bottom: 1px solid var(--ic-line);
+}
+.matrix-summary > div {
+  min-width: 0;
+  padding: 1.25rem 1.5rem 1.375rem;
+}
+.matrix-summary > div + div {
+  border-left: 1px solid var(--ic-line);
+}
+.matrix-summary dt {
+  font-size: var(--text-label);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+}
+.matrix-summary dd {
+  margin: 0.75rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.75vw, 1.625rem);
+  white-space: nowrap;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+.matrix-summary dd span {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  letter-spacing: 0;
+  color: var(--ic-ink-400);
+}
+.matrix-summary .matrix-held {
+  color: var(--ic-signal);
+}
+.matrix-scroll {
+  overflow-x: auto;
+}
+.matrix-table {
+  width: 100%;
+  min-width: 46rem;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+.matrix-table caption {
+  caption-side: top;
+  padding: 1.125rem 1.5rem 0.5rem;
+  text-align: left;
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+}
+.matrix-table th,
+.matrix-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--ic-line);
+  text-align: left;
+  vertical-align: top;
+}
+.matrix-table th:first-child,
+.matrix-table td:first-child {
+  padding-left: 1.5rem;
+}
+.matrix-table th:last-child,
+.matrix-table td:last-child {
+  padding-right: 1.5rem;
+}
+.matrix-table thead th {
+  padding-block: 0.625rem;
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+}
+.matrix-table tbody th {
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+.matrix-table tbody td:first-child {
+  width: 4.5rem;
+  color: var(--ic-ink-400);
+}
+.matrix-table tbody td:last-child {
+  color: var(--ic-ink-600);
+}
+.matrix-table tbody td:nth-child(3) {
+  width: 9rem;
+}
+.matrix-table .matrix-more td {
+  border-bottom: 0;
+  color: var(--ic-ink-400);
+}
+.matrix-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  color: var(--ic-ink-600);
+}
+.matrix-status::before {
+  content: '';
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+.matrix-status--changed {
+  border-color: var(--ic-ink-900);
+  color: var(--ic-ink-900);
+}
+.matrix-status--held {
+  border-color: transparent;
+  background-color: var(--ic-signal-soft);
+  color: var(--ic-signal);
+}
+.matrix-foot {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 1rem 2rem;
-  margin: 0 var(--home-gutter);
-  padding: 1.5rem 0 2rem;
-  border-top: 1px solid var(--ic-line);
-  font-size: var(--text-small);
-  color: var(--ic-ink-400);
+  gap: 1rem 2.5rem;
+  padding: 1.25rem 1.5rem 1.375rem;
+  border-top: 1px solid var(--ic-line-strong);
+  background-color: var(--ic-paper);
 }
-.home-footer a {
-  color: var(--ic-ink-900);
-  text-underline-offset: 0.3em;
-  text-decoration-color: var(--ic-line-strong);
-  transition: text-decoration-color var(--ic-fast) var(--ic-ease);
+.matrix-shortfall {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1rem;
+  color: var(--ic-signal);
 }
-.home-footer a:hover {
-  text-decoration-color: currentColor;
+.matrix-shortfall span {
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
-.home-motto {
+.matrix-shortfall strong {
   font-family: var(--font-display);
-  font-size: 1.125rem;
+  font-size: clamp(1.375rem, 2vw, 1.75rem);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+.matrix-decision {
+  font-family: var(--font-display);
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  line-height: 1.35;
+}
+
+/* ── Act three: the thread ────────────────────────────────────────────── */
+.home-thread {
+  padding-top: clamp(2rem, 4vw, 3rem);
+}
+
+/* ── Act four: the morning, on the desk ───────────────────────────────── */
+.desk {
+  /* ink-400 is re-pointed here so muted text clears AA on the darker paper. */
+  --ic-ink-400: #5c5b55;
+  background-color: var(--memo-desk);
+  background-image: var(--ic-grain);
   color: var(--ic-ink-900);
+}
+.home-closing {
+  padding-block: clamp(4.5rem, 9vw, 8rem);
+}
+.home-footer {
+  padding-bottom: 2rem;
 }
 .home a:focus-visible,
-.home button:focus-visible,
-.home input:focus-visible {
+.home button:focus-visible {
   outline: 2px solid var(--ic-ink-900);
   outline-offset: 3px;
 }
-.home .home-pill:focus-visible,
-.home .waitlist-inline-input:focus-visible,
-.home .waitlist-inline-submit:focus-visible {
-  border-radius: var(--home-pill);
-}
 
-/*
- * Stacked: the picture only sits beside the copy while the screen is wide in
- * both senses. Below that the orbit would slide under the headline, so the
- * plate moves under the copy, cropped to the orbit, still unfaded at the sides.
- */
-@media (max-width: 1023px), (max-aspect-ratio: 7 / 5) {
-  .home {
-    --home-display: clamp(2.25rem, 8.4vw, 4.25rem);
-    --home-lede: clamp(1rem, 2.2vw, 1.1875rem);
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (min-width: 64rem) {
+  .hero-body {
+    grid-template-columns: minmax(0, 46rem) minmax(0, 1fr);
   }
-  .home-stage {
-    min-height: 0;
+  .hero-caption {
+    justify-self: end;
+    text-align: right;
   }
-  .home-hero {
-    display: block;
-    padding: clamp(2rem, 6vw, 3.5rem) 0 0;
-  }
-  .home-art {
-    position: relative;
-    inset: auto;
-    order: 3;
-    /* The picture's top tenth is empty paper; tuck it under the copy. */
-    margin: clamp(-4rem, -6vw, -1rem) calc(-1 * var(--home-gutter)) 0;
-    aspect-ratio: 4 / 3;
-  }
-  .home-plate {
-    top: calc(100cqh - var(--plate-w) * var(--home-art-height));
-  }
-  /*
-   * Stacked, the plate's top edge lands mid-page. That edge is blank paper in
-   * the drawing, a shade off the page's own, so it fades — paper into paper —
-   * rather than printing a line across the screen. The drawing is untouched.
-   */
-  .home-plate img {
-    -webkit-mask-image: linear-gradient(to bottom, transparent, black 14%, black 92%, transparent);
-    mask-image: linear-gradient(to bottom, transparent, black 14%, black 92%, transparent);
-  }
-  .home-caption {
+}
+@media (max-width: 63.99rem) {
+  .hero-caption {
     display: none;
+  }
+}
+@media (max-width: 52rem) {
+  .matrix-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .matrix-summary > div:nth-child(3) {
+    border-left: 0;
+  }
+  .matrix-summary > div:nth-child(n + 3) {
+    border-top: 1px solid var(--ic-line);
   }
 }
 @media (max-width: 720px) {
-  .home-nav-link {
+  .desk-nav-link {
     display: none;
   }
-  .home-nav-cta {
-    height: 2.5rem;
-    padding: 0 1rem;
-    font-size: 0.875rem;
+}
+@media (max-width: 639px) {
+  .home {
+    --home-display: clamp(2.125rem, 10.4vw, 3.25rem);
   }
-  .home-art {
-    aspect-ratio: 1;
+  /* A phone cannot hold "COMMERCIAL WORK." on one line at a readable size, so the lines may wrap. */
+  .home-line {
+    white-space: normal;
   }
-  .home-status {
-    letter-spacing: 0.2em;
+  .hero {
+    min-height: 100svh;
   }
-  .home-approach {
-    grid-template-columns: minmax(0, 1fr);
+  /*
+   * On a phone the photograph cannot sit behind the words without being
+   * scrimmed to nothing, so it takes the top half of the screen on its own —
+   * lamp and quotation in view — and the words sit under it on the night.
+   */
+  .hero-plate {
+    bottom: auto;
+    height: 56svh;
   }
-  .home-kicker {
-    padding-top: 0;
+  .hero-plate img {
+    object-position: 0% 60%;
+  }
+  .hero-plate::after {
+    background:
+      linear-gradient(0deg, var(--ic-paper-sunken) 0%, transparent 42%),
+      linear-gradient(180deg, var(--hero-scrim) 0%, transparent 26%);
+  }
+  .hero-body {
+    padding-top: 42svh;
+  }
+  .home .waitlist-inline-submit {
+    width: 100%;
+  }
+  .matrix-bar,
+  .matrix-summary > div,
+  .matrix-foot {
+    padding-inline: 1.125rem;
   }
 }
 @media (max-width: 440px) {
-  .home-nav-cta .ic-cta-arrow {
+  /* The masthead button has to share a 342px row with the wordmark; drop the arrow and tighten the tracking. */
+  .home .hero-header .desk-cta {
+    padding-inline: 0.875rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.07em;
+  }
+  .desk-cta .ic-cta-arrow {
     display: none;
+  }
+}
+@media (max-width: 380px) {
+  .hero-header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .hero-header .site-brand {
+    gap: 0.5rem;
+    font-size: 1.25rem;
+  }
+  .hero-header .site-brand-mark {
+    width: 2rem;
+    height: 2rem;
+  }
+  .home .hero-header .desk-cta {
+    padding-inline: 0.625rem;
+    font-size: 0.65625rem;
+    letter-spacing: 0.04em;
   }
 }
 
@@ -1516,20 +1621,931 @@
  * its delay — so every home animation is removed outright.
  */
 @media (prefers-reduced-motion: reduce) {
-  .home-plate img,
-  .home-caption,
-  .home-caption::after,
   .home-line > span,
   .home-rise,
-  .home-drop,
-  .home-bead::after {
+  .home-drop {
     animation: none;
   }
-  .home-bead::after {
+  .site-brand-mark {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Contact memo — `/contact` (`components/contact-page.tsx`, `memo-form.tsx`).
+
+   A sheet of continuous-feed paper on a desk. Two voices, as everywhere else
+   on this site, and they keep their jobs: the *printed* form is the serif in
+   capitals, whatever a person *enters* is the grotesk. No mono, because a
+   third face for a form would be the third voice this site does not have.
+
+   One hue still, which is none: the page is ink on paper on a darker paper.
+   There is no red for an error and no green for a success — a field that needs
+   attention takes the heavier rule and says so in words, which is how a
+   monochrome page has to do it and is why it was built that way first.
+
+   Depth is hairlines. The sheet is lifted off the desk by its own edge and by
+   the desk being darker, never by a shadow.
+
+   Contrast (ink on the sheet, #ffffff):
+     ink-900 #111110    17.9:1    entered values, the rule when focused
+     ink-600 #45453f     9.6:1    printed labels — worn by the filter, so they
+                                   start here rather than at ink-400
+     ink-400 #6e6e66     5.1:1    the optional note and the privacy line
+   ══════════════════════════════════════════════════════════════════════════ */
+.memo-page,
+.home {
+  --memo-desk: #e0ddd5;
+  --memo-sheet: var(--ic-paper-raised);
+  --memo-copy: #eeebe2;
+  --memo-rule: #8e8c85;
+  --memo-rule-hover: #5c5b56;
+
+  --memo-label: 0.78125rem;
+  --memo-value: 0.875rem;
+  --memo-tracking: 0.07em;
+  --memo-row: 0.75rem;
+  --memo-button: 2.75rem;
+  --memo-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --memo-arrive: 640ms;
+  --memo-column: 26rem;
+  --memo-sheet-width: 50rem;
+  --memo-reading: max(44rem, calc(100svh - 6rem));
+
+  /* Speckled ink: alpha is thinned where the noise runs high, so a fill reads as pressed, not printed. */
+  --memo-ink-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='m' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -9 7.6'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23m)'/%3E%3C/svg%3E");
+
+}
+
+.memo-page {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-height: 100svh;
+  background-color: var(--memo-desk);
+  background-image: var(--ic-grain);
+  color: var(--ic-ink-900);
+}
+
+.memo-filters {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* The printed voice is worn very slightly; entered text never is. */
+.memo-worn {
+  filter: url(#memo-worn);
+}
+
+/* ── Layout ───────────────────────────────────────────────────────────── */
+.memo-shell {
+  display: grid;
+  grid-template-columns: minmax(0, var(--memo-column)) minmax(0, var(--memo-sheet-width));
+  align-items: start;
+  justify-content: space-between;
+  column-gap: clamp(2.5rem, 5vw, 5.5rem);
+  max-width: var(--container-measure);
+  margin: 0 auto;
+  /* The same side padding as `Container`, so the brand lands where it does on the home page. */
+  padding: 2rem 1.5rem 3rem;
+}
+@media (min-width: 40rem) {
+  .memo-shell {
+    padding-inline: 2rem;
+  }
+}
+@media (min-width: 64rem) {
+  .memo-shell {
+    padding-inline: 2.5rem;
+  }
+}
+
+.memo-brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-self: stretch;
+  gap: 2.5rem;
+  min-width: 0;
+  min-height: var(--memo-reading);
+  animation: memo-arrive var(--memo-arrive) var(--ic-ease) both;
+}
+
+/* The brand link keeps its own width; stretched by the column, its hit area would span the whole pane. */
+.memo-brand > .site-brand {
+  align-self: flex-start;
+}
+
+.memo-intro {
+  display: grid;
+  gap: 1.75rem;
+}
+.memo-title {
+  font-size: clamp(2rem, 3vw, 2.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.memo-steps {
+  display: grid;
+  gap: 0.875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.memo-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+.memo-steps li > span {
+  text-wrap: pretty;
+}
+.memo-step-icon {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.25rem;
+  color: var(--ic-ink-900);
+}
+.memo-state {
+  margin-top: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ic-line-strong);
+  font-family: var(--font-display);
+  font-size: var(--memo-label);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+}
+.memo-alt {
+  font-size: var(--text-small);
+  color: var(--ic-ink-400);
+}
+.memo-alt a {
+  color: var(--ic-ink-900);
+  text-underline-offset: 0.3em;
+  text-decoration-color: var(--ic-line-strong);
+  transition: text-decoration-color var(--ic-fast) var(--ic-ease);
+}
+.memo-alt a:hover {
+  text-decoration-color: currentColor;
+}
+
+.memo-stage {
+  container-type: inline-size;
+  min-width: 0;
+  width: 100%;
+  max-width: var(--memo-sheet-width);
+  justify-self: end;
+}
+
+/* ── The sheet ────────────────────────────────────────────────────────── */
+/*
+ * Tractor-feed holes down both edges, punched out of the sheet with a mask so
+ * the desk shows through them. All of it is in `cqw`, units of the stage's own
+ * width, so the holes scale with the sheet and never crowd the copy.
+ *
+ * The mask is four layers. Reading them as composited, last to first: the two
+ * hole tiles are united, punched out of a solid sheet (`exclude`), and then the
+ * tail — everything below the last complete hole — is added back solid (`add`).
+ * Without that last layer the repeating tiles would cut a half hole in the
+ * bottom edge. `round()` snaps the end of the feed to a whole number of holes.
+ */
+.memo-paper {
+  --hole-pitch: 5cqw;
+  --hole-radius: 1.17cqw;
+  --hole-offset: 0.16cqw;
+  --perforation-inset: 5.3cqw;
+  --tail: calc(var(--hole-pitch) * 2.5);
+  --feed-end: round(down, calc(100% - var(--tail)), var(--hole-pitch));
+  --paper-mask:
+    linear-gradient(to bottom, #0000 var(--feed-end), #000 var(--feed-end)),
+    linear-gradient(#000 0 0),
+    radial-gradient(circle, #000 calc(var(--hole-radius) - 0.25px), #0000 calc(var(--hole-radius) + 0.25px)),
+    radial-gradient(circle, #000 calc(var(--hole-radius) - 0.25px), #0000 calc(var(--hole-radius) + 0.25px));
+
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: var(--memo-reading);
+  overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
+  background-color: var(--memo-sheet);
+  color: var(--ic-ink-900);
+  -webkit-mask-image: var(--paper-mask);
+  mask-image: var(--paper-mask);
+  -webkit-mask-size: 100% 100%, 100% 100%, var(--hole-pitch) var(--hole-pitch), var(--hole-pitch) var(--hole-pitch);
+  mask-size: 100% 100%, 100% 100%, var(--hole-pitch) var(--hole-pitch), var(--hole-pitch) var(--hole-pitch);
+  -webkit-mask-position: 0 0, 0 0, var(--hole-offset) 0, calc(100% - var(--hole-offset)) 0;
+  mask-position: 0 0, 0 0, var(--hole-offset) 0, calc(100% - var(--hole-offset)) 0;
+  -webkit-mask-repeat: no-repeat, no-repeat, repeat-y, repeat-y;
+  mask-repeat: no-repeat, no-repeat, repeat-y, repeat-y;
+  -webkit-mask-composite: source-over, xor, xor;
+  mask-composite: add, exclude, exclude;
+}
+.memo-paper--copy {
+  background-color: var(--memo-copy);
+}
+.memo-enter {
+  animation: memo-arrive var(--memo-arrive) var(--ic-ease) 120ms both;
+}
+
+.memo-texture {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--ic-grain);
+  background-repeat: repeat;
+  mix-blend-mode: multiply;
+}
+.memo-perforations {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.memo-perforations::before,
+.memo-perforations::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: repeating-linear-gradient(180deg, var(--ic-line-strong) 0 2.5px, transparent 2.5px 5px);
+}
+.memo-perforations::before {
+  left: var(--perforation-inset);
+}
+.memo-perforations::after {
+  right: var(--perforation-inset);
+}
+
+.memo-header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 1.75rem 4rem 0;
+}
+.memo-mark {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--ic-ink-900);
+  border-radius: var(--radius-control);
+}
+.memo-mark svg {
+  width: 100%;
+  height: 100%;
+}
+
+.memo-body {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 5rem 2rem;
+}
+.memo-content {
+  width: 100%;
+  max-width: 24rem;
+}
+
+.memo-description {
+  margin-bottom: 1.75rem;
+  font-family: var(--font-display);
+  font-size: var(--memo-label);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: var(--ic-ink-900);
+  text-wrap: pretty;
+}
+
+/* ── Fields ───────────────────────────────────────────────────────────── */
+.memo-form {
+  width: 100%;
+}
+.memo-fieldset {
+  display: grid;
+  gap: var(--memo-row);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.memo-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--memo-row) 1.25rem;
+}
+.memo-field {
+  min-width: 0;
+}
+
+.floating-field {
+  position: relative;
+  min-width: 0;
+  padding-top: 2px;
+}
+.floating-label {
+  display: block;
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: var(--memo-label);
+  line-height: 14px;
+  letter-spacing: var(--memo-tracking);
+  text-transform: uppercase;
+  color: var(--ic-ink-600);
+  transform-origin: left top;
+  transform: translateY(19px);
+  transition: transform 160ms var(--memo-ease);
+  /*
+   * The label rests on top of its own field, so it must let the pointer through:
+   * a click on it then lands on the input or the select's trigger itself, rather
+   * than on a label that forwards it — which works for a person and is exactly
+   * the sort of indirection that fails for a switch-control or a test.
+   */
+  pointer-events: none;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/*
+ * `input` and `textarea` are named, not `.input-field`: the select's trigger is
+ * a button, and a button is never `:placeholder-shown`, so the bare class would
+ * match it while empty and lift its label off a field with nothing in it. Each
+ * `:has()` is its own argument because the list inside `:is()` is forgiving and
+ * the one inside `:has()` is not — one browser not knowing `:-webkit-autofill`
+ * must not take the placeholder test down with it.
+ */
+.floating-field:is(
+    :focus-within,
+    [data-filled],
+    [data-open],
+    :has(input.input-field:not(:placeholder-shown)),
+    :has(textarea.input-field:not(:placeholder-shown)),
+    :has(.input-field:-webkit-autofill)
+  )
+  .floating-label {
+  transform: translateY(0) scale(0.82);
+  max-width: 122%;
+}
+
+.input-field {
+  display: block;
+  width: 100%;
+  min-height: 24px;
+  padding: 3px 0;
+  appearance: none;
+  border: 0;
+  border-bottom: 1px solid var(--memo-rule);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ic-ink-900);
+  font-family: var(--font-sans);
+  font-size: var(--memo-value);
+  font-weight: 400;
+  line-height: 17px;
+  transition: border-color 150ms;
+}
+.input-field::placeholder {
+  color: transparent;
+}
+/* One pixel heavier under the pointer's hand: a rule thickening, not a shadow. */
+.input-field:focus,
+.input-field:focus-visible,
+.select-trigger[aria-expanded='true'] {
+  outline: none;
+  border-bottom-color: var(--ic-ink-900);
+  box-shadow: 0 1px 0 var(--ic-ink-900);
+}
+.input-field[aria-invalid='true'] {
+  border-bottom-color: var(--ic-ink-900);
+  box-shadow: 0 1px 0 var(--ic-ink-900);
+}
+.input-field:-webkit-autofill {
+  -webkit-text-fill-color: var(--ic-ink-900);
+  transition: background-color 9999s ease-out;
+  box-shadow: inset 0 0 0 100px var(--memo-sheet);
+}
+@media (hover: hover) {
+  .input-field:hover:not(:focus, [aria-invalid='true']) {
+    border-bottom-color: var(--memo-rule-hover);
+  }
+}
+
+/* The one multi-line field grows with its text, up to a ceiling, by mirroring it. */
+.grow {
+  display: grid;
+}
+.grow::after,
+.grow > .needs-field {
+  grid-area: 1 / 1;
+  min-width: 0;
+  max-height: 15rem;
+  padding: 3px 0;
+  border-bottom: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-size: var(--memo-value);
+  line-height: 17px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+.grow::after {
+  content: attr(data-mirror);
+  visibility: hidden;
+  overflow: hidden;
+  pointer-events: none;
+}
+.grow > .needs-field {
+  resize: none;
+  overflow-y: auto;
+  border-bottom-color: var(--memo-rule);
+}
+
+/* ── The select ───────────────────────────────────────────────────────── */
+.select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+  text-align: left;
+}
+.select-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.select-chevron {
+  flex: none;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--ic-ink-600);
+  transition: transform 160ms var(--memo-ease);
+}
+.select-trigger[aria-expanded='true'] .select-chevron {
+  transform: rotate(180deg);
+}
+.select-trigger:focus-visible .select-chevron {
+  color: var(--ic-ink-900);
+}
+.select-popup {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  max-height: min(18rem, 50svh);
+  margin: 0;
+  padding: 0.25rem 0;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper-raised);
+  animation: memo-pop 140ms var(--memo-ease) both;
+}
+.select-option {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--font-sans);
+  font-size: var(--memo-value);
+  line-height: 1.3;
+  color: var(--ic-ink-900);
+}
+.select-option[data-active] {
+  background-color: var(--ic-paper-sunken);
+}
+.select-option[aria-selected='true'] {
+  font-weight: 600;
+}
+.select-option[data-skip] {
+  color: var(--ic-ink-400);
+  font-weight: 400;
+}
+
+/* ── Errors and notes ─────────────────────────────────────────────────── */
+.form-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 220ms var(--memo-ease),
+    opacity 160ms ease-out;
+}
+.form-reveal[data-open='true'] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.form-reveal-content {
+  min-height: 0;
+  overflow: hidden;
+}
+.field-error {
+  margin-top: 0.5rem;
+  font-size: var(--memo-label);
+  line-height: 1.3;
+  color: var(--ic-ink-900);
+}
+
+.memo-note,
+.memo-privacy {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  color: var(--ic-ink-400);
+}
+.memo-note {
+  margin-top: 1rem;
+  font-size: var(--memo-label);
+  line-height: 1.4;
+}
+.memo-privacy {
+  margin-top: 1rem;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+}
+.memo-progress {
+  min-height: 0;
+  margin-top: 0.75rem;
+  font-family: var(--font-display);
+  font-size: var(--memo-label);
+  color: var(--ic-ink-900);
+}
+.memo-progress:empty {
+  display: none;
+}
+
+.memo-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  margin-top: 1rem;
+  padding: 0.875rem 0;
+  border-block: 1px solid var(--ic-line-strong);
+  font-size: var(--memo-label);
+  line-height: 1.4;
+}
+.memo-notice:focus {
+  outline: 1px dashed var(--ic-ink-400);
+  outline-offset: 6px;
+}
+.memo-notice-icon {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.0625rem;
+}
+.memo-notice-title {
+  font-weight: 600;
+}
+.memo-notice-body {
+  margin-top: 0.25rem;
+  color: var(--ic-ink-600);
+}
+.memo-notice-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+/* ── Buttons: pressed ink ─────────────────────────────────────────────── */
+.memo-submit,
+.memo-action,
+.desk-cta,
+.waitlist-inline-submit {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--memo-button);
+  padding: 0.625rem 1.5rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ic-paper);
+  font-family: var(--font-display);
+  font-size: var(--memo-label);
+  line-height: 1.25;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform var(--ic-fast) var(--ic-ease);
+}
+.memo-submit {
+  width: 100%;
+  margin-top: 1.25rem;
+}
+.memo-submit::before,
+.memo-action--primary::before,
+.desk-cta::before,
+.waitlist-inline-submit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-color: var(--ic-ink-900);
+  -webkit-mask: var(--memo-ink-mask) 0 0 / 256px 256px repeat;
+  mask: var(--memo-ink-mask) 0 0 / 256px 256px repeat;
+  transition: background-color 150ms;
+  pointer-events: none;
+}
+.memo-submit-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+.memo-arrow,
+.desk-cta .ic-cta-arrow,
+.waitlist-inline-submit .ic-cta-arrow {
+  width: 0.875em;
+  height: 0.875em;
+  flex: none;
+  transition: transform var(--ic-fast) var(--ic-ease);
+}
+.memo-submit:active,
+.memo-action:active,
+.desk-cta:active,
+.waitlist-inline-submit:active {
+  transform: translateY(1px);
+}
+.memo-submit:disabled {
+  cursor: wait;
+}
+.memo-submit:focus-visible,
+.memo-action:focus-visible,
+.desk-cta:focus-visible,
+.waitlist-inline-submit:focus-visible {
+  outline: 2px solid var(--ic-ink-900);
+  outline-offset: 3px;
+}
+@media (hover: hover) {
+  .memo-submit:hover:not(:disabled)::before,
+  .memo-action--primary:hover::before,
+  .desk-cta:hover::before,
+  .waitlist-inline-submit:hover:not(:disabled)::before {
+    background-color: var(--ic-ink-800);
+  }
+  .memo-submit:hover:not(:disabled) .memo-arrow,
+  .desk-cta:hover .ic-cta-arrow,
+  .waitlist-inline-submit:hover:not(:disabled) .ic-cta-arrow {
+    transform: translateX(3px);
+  }
+  .memo-action:not(.memo-action--primary):hover {
+    background-color: var(--ic-line);
+  }
+}
+.memo-spinner {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: memo-spin 900ms linear infinite;
+}
+
+/* ── The receipt: the carbon ──────────────────────────────────────────── */
+.memo-receipt {
+  display: flex;
+  flex-direction: column;
+}
+.memo-kicker {
+  font-family: var(--font-display);
+  font-size: var(--memo-label);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ic-ink-600);
+}
+.memo-receipt-title {
+  margin-top: 1rem;
+  font-size: clamp(2.5rem, 7cqw, 3.5rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.memo-receipt-title:focus {
+  outline: none;
+}
+.memo-receipt-body {
+  margin-top: 1rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.memo-record {
+  margin: 1.75rem 0 0;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.memo-record > div {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px dotted var(--ic-line-strong);
+}
+.memo-record dt {
+  padding-top: 0.125rem;
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ic-ink-600);
+}
+.memo-record dd {
+  margin: 0;
+  min-width: 0;
+  font-size: var(--memo-value);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.memo-lead {
+  margin-top: 1.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 1.6cqw + 0.6rem, 1.375rem);
+  line-height: 1.3;
+}
+.memo-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+.memo-action {
+  padding-inline: 0.75rem;
+  border: 1px solid var(--ic-line-strong);
+  color: var(--ic-ink-900);
+}
+.memo-action--primary {
+  border-color: transparent;
+  color: var(--ic-paper);
+}
+
+.memo-stamp {
+  position: absolute;
+  z-index: 2;
+  top: 0.5rem;
+  right: 6.5cqw;
+  width: min(13.5rem, 32cqw);
+  color: var(--ic-ink-900);
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  transform: rotate(-7deg);
+}
+.memo-stamp-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: memo-stamp 190ms cubic-bezier(0.16, 1, 0.3, 1) 420ms both;
+}
+.memo-stamp-word {
+  font-family: var(--font-display);
+}
+.memo-stamp-small {
+  font-family: var(--font-sans);
+  font-weight: 500;
+}
+
+/* ── Motion ───────────────────────────────────────────────────────────── */
+@keyframes memo-arrive {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes memo-pop {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -4px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes memo-stamp {
+  0% {
+    opacity: 0.3;
+    transform: scale(1.14);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes memo-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .memo-shell {
+    --memo-column: 19rem;
+    column-gap: 2rem;
+  }
+  .memo-body {
+    padding-inline: 3rem;
+  }
+}
+@media (max-width: 859px) {
+  .memo-page {
+    --memo-reading: 0px;
+  }
+  .memo-shell {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2.5rem;
+    padding-block: 1.5rem 2.5rem;
+  }
+  .memo-brand {
+    min-height: 0;
+    gap: 2rem;
+  }
+  .memo-alt {
     display: none;
   }
-  .home-mark {
-    transform: none;
+  .memo-stage {
+    justify-self: center;
+    max-width: 44rem;
+  }
+  .memo-body {
+    padding: 2.5rem 3.5rem 4rem;
+  }
+}
+@container (max-width: 540px) {
+  .memo-header {
+    padding: 1.5rem 2.25rem 0;
+  }
+  .memo-body {
+    padding: 2rem 2.25rem 3rem;
+  }
+  .memo-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .memo-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .memo-stamp {
+    top: 0.75rem;
+    right: 4cqw;
+    width: 11rem;
+  }
+  .memo-record > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.memo-page a:focus-visible {
+  outline: 2px solid var(--ic-ink-900);
+  outline-offset: 3px;
+}
+
+/*
+ * Reduced motion renders the final frame: no arrival, no pop, no stamp
+ * press. The global rule shortens durations but keeps delays, and an entrance
+ * with `both` fill would sit invisible for its delay — so these are removed.
+ * The spinner is the exception that stays, and it stops being an animation and
+ * becomes a still ring, which is still a signal that something is in progress.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .memo-brand,
+  .memo-enter,
+  .select-popup,
+  .memo-stamp-art {
+    animation: none;
+  }
+  .floating-label,
+  .select-chevron,
+  .form-reveal {
     transition: none;
   }
 }

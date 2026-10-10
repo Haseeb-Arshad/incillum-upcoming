@@ -4,8 +4,10 @@ import {
   access,
   boundary,
   brand,
+  contact,
   earlyAccess,
   evidence,
+  home,
   firstBuild,
   hero,
   instrument,
@@ -282,6 +284,7 @@ describe('no system is named on the page', () => {
     standing,
     access,
     earlyAccess,
+    contact,
   ])
 
   it('names no ERP, CRM or mail client', () => {
@@ -325,6 +328,7 @@ describe('the motto', () => {
       standing,
       access,
       earlyAccess,
+      contact,
     ])
     expect(everywhereElse.toLowerCase()).not.toContain('stay with the work')
   })
@@ -410,5 +414,136 @@ describe('where this stands', () => {
     ]) {
       expect(text).not.toContain(calendar)
     }
+  })
+})
+
+/**
+ * The contact memo.
+ *
+ * It spends the column a proof page would spend on logos and quotations on what
+ * happens next, because the site has no customers and must never imply
+ * otherwise. These hold it to the same rules as the page it links from.
+ */
+describe('the contact page', () => {
+  const everything = JSON.stringify(contact)
+
+  it('claims no customers, no metrics, no certification and no date', () => {
+    for (const forbidden of [
+      'trusted by',
+      'customers',
+      'testimonial',
+      'SOC 2',
+      'GDPR',
+      'HIPAA',
+      'certified',
+      'compliant',
+      '2026',
+      '2027',
+      'Q1',
+      'Q2',
+      'Q3',
+      'Q4',
+    ]) {
+      expect(everything.toLowerCase()).not.toContain(forbidden.toLowerCase())
+    }
+    expect(everything).not.toMatch(/\d+\s?%|\d+\s?x\b/i)
+  })
+
+  it('never says magic, autonomous or replaces your team', () => {
+    for (const forbidden of ['magic', 'revolutionary', 'fully autonomous', 'replaces your team', 'AGI']) {
+      expect(everything).not.toContain(forbidden)
+    }
+  })
+
+  it('keeps the promise the form makes', () => {
+    expect(everything.toLowerCase()).not.toContain('check your inbox')
+    expect(contact.receipt.body).toMatch(/we.ll write once/i)
+    expect(contact.receipt.body).toMatch(/nothing is sent before then/i)
+  })
+
+  it('keeps the wedge narrow and contacts nobody on anyone’s behalf', () => {
+    expect(contact.steps[0].text).toMatch(/request for quotation/i)
+    for (const forbidden of ['asks the supplier', 'chases the supplier', 'contacts the supplier']) {
+      expect(everything.toLowerCase()).not.toContain(forbidden)
+    }
+  })
+
+  it('does not spend the motto, which the receipt renders from `brand.motto`', () => {
+    expect(everything.toLowerCase()).not.toContain('stay with the work')
+  })
+
+  it('describes the stage as a state, never as an opening', () => {
+    expect(contact.description.toLowerCase()).toContain('early access is not open yet')
+    expect(contact.status).toMatch(/in progress/i)
+  })
+})
+
+/**
+ * The home page's matrix.
+ *
+ * It is the thread's quotation at another magnification, so its counts are
+ * held to the rows and its totals to the thread's own prose. The money is not
+ * in the content at all — the component reads it off the 06:50 ledger — which
+ * is why there is no figure to reconcile here.
+ */
+describe('the home matrix', () => {
+  const { matrix } = home
+
+  it('counts its rows into the totals it prints', () => {
+    const priced = matrix.rows.filter((row) => row.status !== 'held').length + matrix.more.count
+    const held = matrix.rows.filter((row) => row.status === 'held').length
+    expect(priced).toBe(matrix.lines.priced)
+    expect(held).toBe(matrix.lines.held)
+    expect(priced + held).toBe(matrix.lines.total)
+    // Line numbers are unique and inside the request.
+    const numbers = matrix.rows.map((row) => Number(row.line))
+    expect(new Set(numbers).size).toBe(numbers.length)
+    for (const n of numbers) expect(n).toBeGreaterThanOrEqual(1)
+    for (const n of numbers) expect(n).toBeLessThanOrEqual(matrix.lines.total)
+  })
+
+  it('agrees with what the thread says in words', () => {
+    const prose = thread.beats.map((beat) => `${beat.title} ${beat.body}`).join(' ').toLowerCase()
+    expect(prose).toContain('twenty line items')
+    expect(prose).toContain('eighteen lines priced')
+    expect(prose).toContain('two lines held')
+    expect(matrix.lines).toEqual({ total: 20, priced: 18, held: 2 })
+  })
+
+  it('holds the same two lines the thread holds, and moves the cost the thread moves', () => {
+    const held = matrix.rows.filter((row) => row.status === 'held').map((row) => row.evidence)
+    expect(held.some((text) => /three catalogue entries/i.test(text))).toBe(true)
+    expect(held.some((text) => /no revision/i.test(text))).toBe(true)
+    const moved = matrix.rows.filter((row) => row.status === 'changed')
+    expect(moved).toHaveLength(1)
+    expect(moved[0]!.evidence).toMatch(/03:42/)
+    expect(moved[0]!.evidence).toMatch(/six per cent/)
+    expect(moved[0]!.evidence).toMatch(/three weeks/)
+    expect(thread.beats.some((beat) => beat.at === '03:42')).toBe(true)
+  })
+
+  it('carries no money of its own', () => {
+    expect(JSON.stringify(matrix)).not.toMatch(/EUR|\d+(\.\d+)?%/)
+  })
+
+  it('claims nothing a pre-launch site cannot back, and names no system', () => {
+    const everything = JSON.stringify(home)
+    for (const forbidden of [
+      'trusted by',
+      'customers include',
+      'testimonial',
+      'SOC 2',
+      'certified',
+      'magic',
+      'fully autonomous',
+      'replaces your team',
+      'NetSuite',
+      'SAP',
+      'Salesforce',
+      'check your inbox',
+    ]) {
+      expect(everything.toLowerCase()).not.toContain(forbidden.toLowerCase())
+    }
+    expect(everything.toLowerCase()).not.toContain('stay with the work')
   })
 })

@@ -54,7 +54,7 @@ incillum/
 │   ├── components/            one file per section, used once each
 │   ├── lib/                   schema, spam heuristic, seo, analytics, cn
 │   ├── server/                the one server function, its env, its notifier
-│   ├── routes/                __root, index, robots, sitemap
+│   ├── routes/                __root, index, contact, robots, sitemap
 │   ├── fonts/                 self-hosted woff2
 │   └── styles.css             tokens, type scale, the two scopes
 ├── design/                    generators for the mark and the share card
@@ -87,8 +87,10 @@ written into the file that needs it.
 
 **Two typefaces, one colour.** A text serif at its single weight does every
 heading; a grotesk does everything a person reads at length or operates. There
-is no third voice, no gradient and no shadow. Contrast is still most of the
-emphasis, which is exactly why spending it carelessly ruins this page.
+is no third voice, no shadow, and one gradient: the scrim over the hero
+photograph, which exists to hold the headline at AA and is built from the night
+token. Contrast is still most of the emphasis, which is exactly why spending it
+carelessly ruins this page.
 
 - Every colour, size, radius and duration is a token in `styles.css`. A literal
   hex in a component is a bug. The one exception is `theme-color` in
@@ -103,10 +105,14 @@ of one light, not one colour at two lightnesses.
 It means one thing — *something is still lit* — and it appears in **four**
 places, which is the whole licence:
 
-1. the lamp and the lit windows in the night plate,
-2. the reader's own hour on the instrument,
-3. the held state in the night thread,
-4. the figure in the evidence document that breaks the commercial floor.
+1. the lamp and the lit windows in the night photograph,
+2. the reader's own hour on the instrument, where it is on the page,
+3. the held state — in the night thread and on the matrix's held lines,
+4. the figure that breaks the commercial floor — in the thread's ledger and
+   the matrix's foot.
+
+The matrix uses 3 and 4 because it is the same quotation as the thread at
+another magnification, not a new place for the colour.
 
 There is deliberately no red. A held line and a missed floor are the same event
 — work that stopped and is waiting for a person — and two colours would say they
@@ -114,22 +120,43 @@ are two things. Anything that is not one of the four above uses ink.
 
 ### The night
 
-The page is paper while somebody is at their desk, goes dark when the office
-empties, and returns to paper at 08:04, where a person picks the work back up. A
-reader scrolls through a night.
+The home page opens in the night and ends at 08:04, back on paper, where a
+person picks the work back up. A reader scrolls out of a night.
 
-That is the one thing a visitor will still be able to describe a week later, and
-the order inside the band is load-bearing: the plate says where we are, the
-instrument says how long it lasts, the thread is what happens during it.
+It used to open on paper and go dark further down. It opens dark now because
+the commissioned photograph — an empty office, one lamp, a quotation under it —
+is the argument with the words taken away, and below the fold it was doing
+none of that work. The photograph is mirrored so the lamp and the quotation sit
+on the right and the headline sits over the switched-off monitor; nothing in the
+frame is legible, so nothing reads backwards. On a phone it takes the top half of
+the screen by itself rather than being scrimmed to nothing behind the words.
+
+The order inside the band is load-bearing: the photograph says where we are,
+the matrix says what is waiting in the morning, the thread says how the night
+produced it.
+
+- **The matrix** is the product's own object — one request's twenty lines with
+  status and evidence — set as a real table on a *lit* panel: `[data-lit]`
+  re-points the tokens back to paper inside the band, because the one lit thing
+  in the photograph is paper. It is illustrative and says so first, its counts
+  are tested against its rows and against the thread's prose, and it carries no
+  money of its own: it reads the thread's 06:50 ledger. It is the honest
+  substitute for the logo wall and the volume figures enterprise pages lead
+  with, which §5 forbids.
+- **The desk.** After the band the page returns to the desk tone the contact memo
+  is laid on (`--memo-desk`). The two pages share the brand at the same
+  coordinates (`components/site-brand.tsx`), the pressed-ink button, and the
+  two typefaces; the pressed-ink speckle is for paper only and is dropped in the
+  dark, where its holes would read as dust.
 
 - The dark region is `[data-inverted]`, which re-points the same tokens. It is
   not a second palette, and there is **exactly one** on the page — it simply
-  contains three sections now rather than one panel. `e2e/site.spec.ts` counts
+  contains three sections now rather than one panel. `e2e/home.spec.ts` counts
   it. Nothing inside it knows it is dark: every child is written against
   `text-ink` and `border-line` and would render correctly on paper.
 - No hairline at either seam. The colour change is the strongest edge on the
   page already, and a rule drawn on it reads as a mistake.
-- The masthead stays `bg-paper` and opaque while the band scrolls under it.
+- The home page draws its own masthead over the photograph; it is not sticky.
 - Radii are 6px on controls and 12px on panels. Nothing else is rounded.
 - Depth comes from hairlines, never from shadows.
 - **Texture:** a fractal-noise tile at ~4% (light) and ~6% (dark), generated by
@@ -148,6 +175,29 @@ instrument says how long it lasts, the thread is what happens during it.
   rendering the final state, not a faster transition. A reveal that starts at
   `opacity: 0` and depends on a script is worse for that reader than the
   animation they were avoiding.
+
+### The contact memo
+
+`/contact` is the waitlist form on a sheet of continuous-feed paper: a perforated
+page on a darker desk, floating labels, a pressed-ink button, and on success a
+paler carbon copy that repeats what was typed and is stamped. It posts to the
+same `joinWaitlist` function as the home page and keeps the same promise — only
+the address is required, nothing is sent to the joiner, and the receipt says we
+have it and will write once.
+
+- **Two voices, no third.** The printed form is the serif in capitals; whatever a
+  person enters is the grotesk. No mono, however natural a typewritten form makes
+  one look.
+- **No proof column.** The page it is modelled on spends a column on customer
+  logos and quotations. This site has none and §5 forbids implying any, so the
+  column says what happens after somebody writes.
+- **No colour, including for errors.** A field that needs attention takes the
+  heavier rule and says so in words. The stamp is ink, not red.
+- **The desk and the carbon are neutrals** (`--memo-desk`, `--memo-copy`), scoped
+  to `.memo-page` the way the harbour scope is. They are not a palette.
+- **Static text only takes the worn-ink filter.** Never on what somebody is typing.
+- The motto appears in the receipt through `brand.motto`, which is one of its two
+  placements — it is not spent a third time.
 
 ### The mark
 

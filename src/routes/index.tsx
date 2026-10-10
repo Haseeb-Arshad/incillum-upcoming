@@ -9,11 +9,7 @@ export const Route = createFileRoute('/')({
 
     return {
       meta: base.meta,
-      links: [
-        ...base.links,
-        // The picture is the largest thing in the first screen; fetch it with the CSS.
-        { rel: 'preload', href: '/harbour.webp', as: 'image', type: 'image/webp' },
-      ],
+      links: base.links,
     }
   },
   component: HomePage,
