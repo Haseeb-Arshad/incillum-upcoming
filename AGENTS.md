@@ -54,7 +54,7 @@ incillum/
 │   ├── components/            one file per section, used once each
 │   ├── lib/                   schema, spam heuristic, seo, analytics, cn
 │   ├── server/                the one server function, its env, its notifier
-│   ├── routes/                __root, index, contact, robots, sitemap
+│   ├── routes/                __root, index, contact, glass, robots, sitemap
 │   ├── fonts/                 self-hosted woff2
 │   └── styles.css             tokens, type scale, the two scopes
 ├── design/                    generators for the mark and the share card
@@ -198,6 +198,27 @@ have it and will write once.
 - **Static text only takes the worn-ink filter.** Never on what somebody is typing.
 - The motto appears in the receipt through `brand.motto`, which is one of its two
   placements — it is not spent a third time.
+
+### The presentation
+
+`/glass` is the same night told as a film, for somebody who wants to be shown
+rather than read to. Two beats of type over a field of hour rules, a centred
+hero with the home page's form, then the quotation played hour by hour in a
+frame; after it, six sources gather into one thread, the night's rules are drawn
+as a flowchart, and the night is laid out on one scale. It is off the spine:
+`noindex`, not in the sitemap, linked from nowhere.
+
+- **One story still.** Every hour, line and figure on it is the thread's or the
+  matrix's, read by the components rather than written again; `glass` in
+  `content/site.ts` carries no money and no percentage, and a test holds it so.
+- **Its own motion budget**, larger than the home page's because a presentation
+  tells by moving, and listed in `styles.css` above the block that spends it:
+  the opening, the film, the gathering, one reveal per section, the nudge and
+  the press. Nothing loops — the film plays once and stops at 08:04 — nothing
+  pulses, and reduced motion gets the final frame of all of it.
+- **The same licence for the signal**: the held state and the figure that breaks
+  the floor. `e2e/glass.spec.ts` fails on any other text in it.
+- **No motto.** Its placements are the home page's close and the success state.
 
 ### The mark
 

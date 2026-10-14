@@ -7,6 +7,7 @@ import {
   contact,
   earlyAccess,
   evidence,
+  glass,
   home,
   firstBuild,
   hero,
@@ -545,5 +546,148 @@ describe('the home matrix', () => {
       expect(everything.toLowerCase()).not.toContain(forbidden.toLowerCase())
     }
     expect(everything.toLowerCase()).not.toContain('stay with the work')
+  })
+})
+
+/**
+ * The presentation at /glass.
+ *
+ * It is the same night told as a film, so it is held to everything the home
+ * page is held to — and to one more rule, which is the reason it exists at all:
+ * it is short. The figures are not here to reconcile, because the components
+ * read them off the 06:50 ledger; what is here is held to the thread's hours
+ * and the matrix's lines.
+ */
+describe('the presentation', () => {
+  const everything = JSON.stringify(glass)
+  const words = (text: string) => text.split(/\s+/).filter((word) => /\w/.test(word)).length
+
+  it('tells the thread’s night, hour for hour', () => {
+    const hours = thread.beats.map((beat) => beat.at)
+    expect(glass.film.frames.map((frame) => frame.at)).toEqual(hours)
+    expect(glass.morning.marks.map((mark) => mark.at)).toEqual(hours)
+  })
+
+  it('leaves the office at the hour the instrument says it empties', () => {
+    expect(glass.morning.leave.at).toBe(`${instrument.officeHours.to}:00`)
+  })
+
+  it('carries no money and no percentage of its own', () => {
+    expect(everything).not.toMatch(/EUR|\d+(\.\d+)?\s?%/)
+  })
+
+  it('says it is invented, in the first line of every invented block', () => {
+    for (const label of [glass.film.label, glass.sources.label, glass.morning.label]) {
+      expect(label).toMatch(/^Illustrative/)
+    }
+    expect(glass.film.lede).toMatch(/invented/i)
+  })
+
+  it('lands every source on a target the sheet has', () => {
+    const targets = new Set(['head', 'floor', ...home.matrix.rows.map((row) => row.line)])
+    for (const frame of glass.film.frames) {
+      for (const chip of frame.chips) expect(targets.has(chip.target), chip.target).toBe(true)
+    }
+  })
+
+  it('holds and moves the lines the matrix holds and moves, for the matrix’s reasons', () => {
+    const lines = (rows: ReadonlyArray<{ line?: string; status?: string }>, status: string) =>
+      rows
+        .filter((row) => row.status === status)
+        .map((row) => row.line)
+        .sort()
+    expect(lines(glass.sources.thread, 'held')).toEqual(lines(home.matrix.rows, 'held'))
+    expect(lines(glass.sources.thread, 'changed')).toEqual(lines(home.matrix.rows, 'changed'))
+
+    const evidenceFor = (key: string) => {
+      const line = glass.sources.thread.find((row) => row.key === key)?.line
+      return home.matrix.rows.find((row) => row.line === line)?.evidence ?? ''
+    }
+    expect(evidenceFor('catalogue')).toMatch(/catalogue/i)
+    expect(evidenceFor('drawing')).toMatch(/revision/i)
+    expect(evidenceFor('supplier')).toMatch(/03:42/)
+  })
+
+  it('counts its sources in the headline, and threads every one of them', () => {
+    expect(glass.sources.pieces).toHaveLength(6)
+    expect(glass.sources.scattered.headline).toMatch(/^Six /)
+    expect(glass.sources.thread.map((row) => row.key)).toEqual(
+      glass.sources.pieces.map((piece) => piece.key),
+    )
+  })
+
+  it('is short: titles of six words, lines of sixteen, ledes of thirty', () => {
+    const titles = [
+      ...glass.opening,
+      glass.sources.scattered.headline,
+      glass.sources.gathered.headline,
+      glass.rules.headline,
+      glass.rules.headlineTail,
+      glass.morning.headline,
+      glass.morning.headlineTail,
+    ]
+    for (const title of titles) expect(words(title), title).toBeLessThanOrEqual(6)
+    for (const frame of glass.film.frames) expect(words(frame.line), frame.line).toBeLessThanOrEqual(16)
+    for (const lede of [
+      glass.film.lede,
+      glass.sources.scattered.lede,
+      glass.sources.gathered.lede,
+      glass.rules.lede,
+    ]) {
+      expect(words(lede), lede).toBeLessThanOrEqual(30)
+    }
+  })
+
+  it('keeps what the product will do in the future tense', () => {
+    expect(glass.sources.gathered.lede).toMatch(/being built/i)
+    expect(glass.rules.lede).toMatch(/being built/i)
+    expect(glass.hero.kicker).toMatch(/^In build/)
+  })
+
+  it('leaves the call to a person', () => {
+    expect(glass.rules.never).toMatch(/without a person/i)
+    expect(glass.film.frames.at(-1)?.line).toMatch(/without you/i)
+  })
+
+  it('claims nothing, names no system, contacts no supplier, and spends no motto', () => {
+    for (const forbidden of [
+      'trusted by',
+      'customers',
+      'testimonial',
+      'SOC 2',
+      'GDPR',
+      'HIPAA',
+      'certified',
+      'compliant',
+      'magic',
+      'revolutionary',
+      'autonomous',
+      'replaces your team',
+      'seamless',
+      'effortless',
+      'supercharge',
+      'unlock',
+      'next-generation',
+      'cutting-edge',
+      'NetSuite',
+      'SAP',
+      'Salesforce',
+      'Dynamics',
+      'Outlook',
+      'Gmail',
+      'HubSpot',
+      'asks the supplier',
+      'chases the supplier',
+      'contacts the supplier',
+      'emails the supplier',
+      'reaches out to the supplier',
+      'check your inbox',
+      'stay with the work',
+    ]) {
+      expect(everything.toLowerCase()).not.toContain(forbidden.toLowerCase())
+    }
+    for (const calendar of ['2026', '2027', 'Q1', 'Q2', 'Q3', 'Q4', 'January', 'September']) {
+      expect(everything).not.toContain(calendar)
+    }
   })
 })

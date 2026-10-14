@@ -1655,7 +1655,8 @@
      ink-400 #6e6e66     5.1:1    the optional note and the privacy line
    ══════════════════════════════════════════════════════════════════════════ */
 .memo-page,
-.home {
+.home,
+.glass {
   --memo-desk: #e0ddd5;
   --memo-sheet: var(--ic-paper-raised);
   --memo-copy: #eeebe2;
@@ -2547,5 +2548,1848 @@
   .select-chevron,
   .form-reveal {
     transition: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Glass — the presentation at /glass (`components/glass-page.tsx`,
+   `glass-film.tsx`, `glass-sources.tsx`).
+
+   The same night as the home page, told as a film. It opens in the dark with
+   two beats of type over a field of hour rules, assembles a centred hero, and
+   plays the quotation hour by hour in a frame under it. Then the page turns to
+   paper: six sources gather into one thread, the night's rules are drawn as a
+   flowchart, the night is laid out as a timeline, and the close is on the desk.
+
+   One dark region (`.glass-night`, carrying `[data-inverted]`); lit panels in
+   it and after it (`[data-lit]`); the desk at each end of the daylight. Every
+   colour is a token, and the signal is spent only where it is licensed: the
+   held state, and the figure that breaks the floor.
+
+   ── Its motion budget ─────────────────────────────────────────────────────
+   Larger than the home page's, because a presentation tells by moving — and
+   written down here so that it only grows on purpose:
+
+     1. the opening: hour rules drawing down, two beats of type, the page
+        assembling. Once, ended early by any input, absent under reduced motion;
+     2. the film: one hour per `--glass-frame` while it is on screen, once
+        through, paused by the reader, never looped;
+     3. the gathering: one change of state, tied to where the reader is;
+     4. one reveal per section below the film;
+     5. the arrow nudge and the press, as everywhere.
+
+   Nothing pulses and nothing loops. Under reduced motion every one of these
+   renders its final frame, and the film becomes six chapters to step through.
+   ══════════════════════════════════════════════════════════════════════════ */
+.glass {
+  --glass-display: clamp(2.75rem, 6vw, 5.5rem);
+  --glass-heading: clamp(2.125rem, 4vw, 3.5rem);
+  --glass-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
+  --glass-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --glass-arrive: 900ms;
+  /* The opening: two beats, then the page. */
+  --glass-beat: 1900ms;
+  --glass-opening: calc(var(--glass-beat) * 2);
+  /* One hour of the film, timed by its chapter's hairline. */
+  --glass-frame: 5200ms;
+  /* Six sources gathering into one thread. */
+  --glass-gather: 1100ms;
+  /* The scroll length the gathering pins for: one screen of stage, and the rest to scroll through. */
+  --glass-pin: 230vh;
+  --glass-film-width: 76rem;
+  --glass-form: 30rem;
+  --glass-control: 2.75rem;
+
+  color: var(--ic-ink-900);
+  overflow: clip;
+}
+
+.glass a:focus-visible,
+.glass button:focus-visible {
+  outline: 2px solid var(--ic-ink-900);
+  outline-offset: 3px;
+}
+
+/* Controls in the grotesk, in sentence case, on a clean fill — as the brand's own button is. */
+.glass .desk-nav {
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  font-weight: 500;
+}
+.glass .desk-cta,
+.glass .waitlist-inline-submit {
+  min-height: 3rem;
+  padding: 0.625rem 1.25rem 0.625rem 1.5rem;
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  font-weight: 500;
+  letter-spacing: -0.006em;
+  text-transform: none;
+}
+.glass .desk-cta::before,
+.glass .waitlist-inline-submit::before {
+  -webkit-mask: none;
+  mask: none;
+}
+
+/* ── The night: hour rules, the opening, the hero ─────────────────────── */
+.glass-night {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--ic-paper-sunken);
+}
+
+/*
+ * One hairline for every hour from the moment the office empties to the
+ * morning — the night the film below plays across, drawn as a field rather
+ * than labelled as a chart. They draw down once, and then they hold still.
+ */
+.glass-hours {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: flex;
+  justify-content: space-between;
+  max-width: var(--container-measure);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+  pointer-events: none;
+}
+.glass-hours > span {
+  width: 1px;
+  background-color: var(--ic-line);
+  transform-origin: top;
+  animation: glass-rule 1400ms var(--glass-ease) both;
+  animation-delay: calc(var(--i) * 45ms);
+}
+
+.glass-opening {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  animation: glass-opening-end 1ms linear var(--glass-opening) forwards;
+}
+.glass-opening p {
+  grid-area: 1 / 1;
+  max-width: 20ch;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.2vw, 3.5rem);
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--ic-ink-900);
+  animation: glass-beat var(--glass-beat) var(--glass-ease) both;
+}
+.glass-opening p + p {
+  animation-delay: var(--glass-beat);
+}
+
+/* The page assembles as the second beat leaves; ended early, it assembles at once. */
+.glass-enter {
+  animation: glass-enter var(--glass-arrive) var(--glass-ease) both;
+  animation-delay: calc(var(--glass-opening) - 250ms + var(--glass-enter-delay, 0ms));
+}
+.glass-kicker.glass-enter {
+  --glass-enter-delay: 60ms;
+}
+.glass-title.glass-enter {
+  --glass-enter-delay: 120ms;
+}
+.glass-lede.glass-enter {
+  --glass-enter-delay: 200ms;
+}
+.glass-form.glass-enter {
+  --glass-enter-delay: 260ms;
+}
+.glass-note.glass-enter {
+  --glass-enter-delay: 300ms;
+}
+.glass-watch.glass-enter {
+  --glass-enter-delay: 340ms;
+}
+.glass-film-enter.glass-enter {
+  --glass-enter-delay: 440ms;
+}
+.glass[data-opening='skipped'] .glass-opening {
+  display: none;
+}
+.glass[data-opening='skipped'] .glass-enter {
+  animation-name: glass-enter-now;
+  animation-delay: var(--glass-enter-delay, 0ms);
+}
+
+.glass-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 2rem;
+}
+
+.glass-hero-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-block: clamp(4.5rem, 13vh, 8.5rem) clamp(2.5rem, 6vh, 4rem);
+}
+.glass-kicker {
+  font-size: var(--text-label);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ic-ink-600);
+}
+.glass-title {
+  margin-top: 1.5rem;
+  font-size: var(--glass-display);
+  line-height: 0.98;
+  letter-spacing: -0.021em;
+  color: var(--ic-ink-900);
+}
+.glass-title > span {
+  display: block;
+}
+.glass-lede {
+  max-width: 40rem;
+  margin-top: clamp(1.5rem, 3vh, 2rem);
+  font-size: var(--glass-lede);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.glass-form {
+  width: 100%;
+  max-width: var(--glass-form);
+  margin-top: 2.25rem;
+  text-align: left;
+}
+.glass-note {
+  max-width: var(--glass-form);
+  margin-top: 1rem;
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ic-ink-400);
+  text-wrap: balance;
+}
+.glass-watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--glass-control);
+  margin-top: 1.5rem;
+  border-radius: 2px;
+  font-size: var(--text-ui);
+  font-weight: 500;
+  color: var(--ic-ink-900);
+  text-decoration: underline;
+  text-decoration-color: var(--ic-line-strong);
+  text-underline-offset: 0.3em;
+  transition: text-decoration-color var(--ic-fast) var(--ic-ease);
+}
+.glass-watch:hover {
+  text-decoration-color: currentColor;
+}
+.glass-watch-arrow {
+  width: 0.875em;
+  height: 0.875em;
+}
+
+/* ── The film ─────────────────────────────────────────────────────────── */
+.glass-film-section {
+  padding-bottom: clamp(4.5rem, 10vw, 8rem);
+}
+.glass-film {
+  max-width: var(--glass-film-width);
+  margin-inline: auto;
+  overflow: clip;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper);
+  background-image: var(--ic-grain);
+}
+.glass-film-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.375rem 2rem;
+  padding: 1.125rem clamp(1.25rem, 3vw, 2.25rem);
+  border-bottom: 1px solid var(--ic-line);
+}
+.glass-film-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-label);
+  line-height: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+}
+.glass-film-lede {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.glass-film-body {
+  display: grid;
+  gap: clamp(1.75rem, 4vw, 4rem);
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1.25rem, 3vw, 2.25rem);
+}
+
+/* The hours. Listed without a script; one at a time, in one cell, with one. */
+.glass-beats {
+  display: grid;
+  align-content: start;
+}
+.glass-beat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.glass-film:not([data-enhanced='true']) .glass-beat + .glass-beat {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--ic-line);
+}
+.glass-film[data-enhanced='true'] .glass-beat {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(0, 10px, 0);
+  transition:
+    opacity var(--ic-slow) var(--glass-ease),
+    transform var(--ic-slow) var(--glass-ease),
+    visibility 0s linear var(--ic-slow);
+}
+.glass-film[data-enhanced='true'] .glass-beat[data-active='true'] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 120ms, 120ms, 0s;
+}
+.glass-beat-hour {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6vw, 5.25rem);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--ic-ink-900);
+}
+.glass-beat-title {
+  max-width: 22ch;
+  margin-top: 0.75rem;
+  font-size: var(--text-heading);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.glass-beat-line {
+  max-width: 36ch;
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+
+/* The sheet: the matrix's rows, on paper, at one hour of the night. */
+.glass-sheet {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  color: var(--ic-ink-900);
+}
+.glass-sheet-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  min-height: 3rem;
+  padding: 0.625rem 1.25rem;
+  border-bottom: 1px solid var(--ic-line);
+  background-color: var(--ic-paper);
+  font-size: 0.8125rem;
+}
+.glass-sheet-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-weight: 500;
+}
+.glass-sheet-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.glass-sheet-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) auto 7.5rem;
+  align-items: center;
+  column-gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.375rem 1.25rem;
+  border-bottom: 1px solid var(--ic-line);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+/* The row a source has just landed on, picked out the way a finger runs down a page. */
+.glass-sheet-row::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--ic-paper-sunken);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ic-slow) var(--glass-ease);
+}
+.glass-sheet-row[data-fresh='true']::before {
+  opacity: 1;
+}
+.glass-sheet-row > * {
+  position: relative;
+}
+.glass-sheet-line {
+  color: var(--ic-ink-400);
+}
+.glass-sheet-item {
+  min-width: 0;
+  font-weight: 500;
+}
+.glass-sheet-text {
+  transition: opacity var(--ic-slow) var(--glass-ease);
+}
+.glass-sheet-item .glass-skeleton {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 68%;
+  transform: translateY(-50%);
+  transition: opacity var(--ic-slow) var(--glass-ease);
+}
+.glass-sheet-row:nth-child(even) .glass-sheet-item .glass-skeleton {
+  width: 52%;
+}
+/* 23:47: until somebody opens it, it is a PDF. */
+.glass-sheet[data-stage='0'] .glass-sheet-text {
+  opacity: 0;
+}
+.glass-sheet:not([data-stage='0']) .glass-sheet-item .glass-skeleton {
+  opacity: 0;
+}
+.glass-sheet-source {
+  justify-self: end;
+}
+.glass-sheet-status {
+  justify-self: start;
+}
+.glass-sheet-more {
+  min-height: 2.5rem;
+  border-bottom: 0;
+  color: var(--ic-ink-400);
+}
+.glass-sheet-more .glass-sheet-item {
+  grid-column: 2 / -1;
+  font-weight: 400;
+}
+
+/* Bars standing in for text not yet read: the shape of a line, never its words. */
+.glass-skeleton {
+  display: block;
+  height: 0.5rem;
+  background-color: var(--ic-line);
+}
+.glass-skeleton--status {
+  width: 4.5rem;
+  height: 1.375rem;
+  border: 1px dashed var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  background-color: transparent;
+}
+
+.matrix-status--read {
+  border-color: var(--ic-line);
+  color: var(--ic-ink-400);
+}
+.matrix-status--read::before {
+  border: 1px solid currentColor;
+  background-color: transparent;
+}
+.glass-status {
+  animation: glass-pop var(--ic-slow) var(--glass-ease) both;
+}
+
+/* A source, landed. The newest is in ink; the older ones step back but stay. */
+.glass-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper-raised);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  color: var(--ic-ink-600);
+  animation: glass-dock var(--ic-slow) var(--glass-ease) both;
+  transition:
+    border-color var(--ic-slow) var(--glass-ease),
+    color var(--ic-slow) var(--glass-ease);
+}
+.glass-chip::before {
+  content: '';
+  width: 0.4375rem;
+  height: 0.5625rem;
+  border: 1px solid currentColor;
+}
+.glass-chip[data-fresh='true'] {
+  border-color: var(--ic-ink-900);
+  color: var(--ic-ink-900);
+}
+
+/* The foot: a line about the night until 06:50, the ledger after. Both always laid out, one shown. */
+.glass-sheet-foot {
+  display: grid;
+  padding: 1rem 1.25rem 1.125rem;
+  border-top: 1px solid var(--ic-line-strong);
+  background-color: var(--ic-paper);
+}
+.glass-sheet-notes,
+.glass-sheet-ledger {
+  grid-area: 1 / 1;
+  transition:
+    opacity var(--ic-slow) var(--glass-ease),
+    visibility 0s linear var(--ic-slow);
+}
+.glass-sheet-foot[data-ledger='true'] .glass-sheet-notes,
+.glass-sheet-foot[data-ledger='false'] .glass-sheet-ledger {
+  opacity: 0;
+  visibility: hidden;
+}
+.glass-sheet-foot[data-ledger='true'] .glass-sheet-ledger,
+.glass-sheet-foot[data-ledger='false'] .glass-sheet-notes {
+  transition-delay: 0s;
+}
+.glass-sheet-notes {
+  display: grid;
+  align-content: start;
+  gap: 0.875rem;
+}
+.glass-sheet-notes > p {
+  grid-area: 1 / 1;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--ic-ink-600);
+  opacity: 0;
+  transition: opacity var(--ic-slow) var(--glass-ease);
+}
+.glass-sheet-notes > p[data-active='true'] {
+  opacity: 1;
+}
+.glass-sheet-notes > .glass-skeleton {
+  grid-column: 1;
+  width: 38%;
+}
+.glass-sheet-notes > .glass-skeleton--wide {
+  width: 62%;
+}
+.glass-sheet-ledger {
+  display: grid;
+  gap: 1rem;
+}
+.glass-sheet-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+.glass-sheet-figures dd span {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  letter-spacing: 0;
+  color: var(--ic-ink-400);
+}
+.glass-sheet-figures dt {
+  font-size: var(--text-label);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+}
+.glass-sheet-figures dd {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.0625rem, 1.5vw, 1.375rem);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+.glass-margin-label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  margin-bottom: 0.625rem;
+  padding-right: calc((1 - var(--glass-floor)) * 100% + 0.625rem);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: var(--ic-ink-600);
+}
+.glass-margin-track {
+  position: relative;
+  display: block;
+  height: 0.5rem;
+  background-color: var(--ic-paper-sunken);
+}
+.glass-margin-bar {
+  display: block;
+  height: 100%;
+  background-color: var(--ic-ink-900);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 900ms var(--glass-ease) 200ms;
+}
+.glass-sheet-foot[data-ledger='true'] .glass-margin-bar {
+  transform: scaleX(var(--glass-margin));
+}
+.glass-margin-floor {
+  position: absolute;
+  top: -0.875rem;
+  bottom: -0.375rem;
+  left: calc(var(--glass-floor) * 100%);
+  width: 1px;
+  background-color: var(--ic-ink-900);
+}
+.glass-sheet-short {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--ic-line);
+  color: var(--ic-signal);
+}
+.glass-sheet-short span {
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.glass-sheet-short strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2vw, 1.625rem);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+/* The rail: pause, and the six hours as chapters. Each hairline is the film's clock. */
+.glass-rail {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  padding: 0.75rem clamp(1.25rem, 3vw, 2.25rem) 1rem;
+  border-top: 1px solid var(--ic-line);
+}
+.glass-play {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--glass-control);
+  height: var(--glass-control);
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  background-color: transparent;
+  color: var(--ic-ink-900);
+  cursor: pointer;
+  transition:
+    background-color var(--ic-fast) var(--ic-ease),
+    transform var(--ic-fast) var(--ic-ease);
+}
+.glass-play:active {
+  transform: translateY(1px);
+}
+.glass-chapters {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(0.375rem, 1.2vw, 1rem);
+  min-width: 0;
+}
+.glass-chapter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  min-height: var(--glass-control);
+  padding: 0.625rem 0 0.25rem;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ic-ink-400);
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--ic-fast) var(--ic-ease);
+}
+.glass-chapter[aria-current='step'] {
+  color: var(--ic-ink-900);
+}
+.glass-chapter-track {
+  position: relative;
+  display: block;
+  height: 2px;
+  overflow: hidden;
+  background-color: var(--ic-line-strong);
+}
+.glass-chapter-fill {
+  position: absolute;
+  inset: 0;
+  background-color: var(--ic-ink-900);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.glass-chapter[data-done='true'] .glass-chapter-fill,
+.glass-chapter[aria-current='step'] .glass-chapter-fill:not(.glass-chapter-fill--live) {
+  transform: none;
+}
+.glass-chapter-fill--live {
+  animation: glass-progress var(--glass-frame) linear both;
+  animation-play-state: paused;
+}
+.glass-film[data-running='true'] .glass-chapter-fill--live {
+  animation-play-state: running;
+}
+.glass-chapter-hour {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+}
+@media (hover: hover) {
+  .glass-play:hover {
+    background-color: var(--ic-line);
+  }
+  .glass-chapter:hover {
+    color: var(--ic-ink-900);
+  }
+}
+
+/* ── Six sources, then one thread ─────────────────────────────────────── */
+.glass-sources {
+  position: relative;
+}
+.glass-sources-sentinel {
+  position: absolute;
+  top: 38%;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+.glass-sources-stage {
+  padding-block: clamp(5rem, 10vw, 8rem);
+}
+/* Stacked: headline, desk, headline, thread — the arrangement everywhere the stage cannot pin. */
+.glass-sources-grid {
+  display: grid;
+  grid-template-areas: 'label' 'scattered' 'desk' 'gathered' 'thread';
+  justify-items: center;
+  text-align: center;
+}
+.glass-sources-label {
+  grid-area: label;
+}
+.glass-sources-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.glass-sources-title[data-for='scattered'] {
+  grid-area: scattered;
+}
+.glass-sources-title[data-for='gathered'] {
+  grid-area: gathered;
+  margin-top: clamp(3.5rem, 8vw, 6rem);
+}
+.glass-sources-lede {
+  max-width: 44rem;
+  font-size: var(--glass-lede);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+  text-wrap: balance;
+}
+.glass-heading {
+  font-size: var(--glass-heading);
+  line-height: 1.04;
+  letter-spacing: -0.018em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+
+.glass-desk-figure {
+  position: relative;
+  grid-area: desk;
+  width: 100%;
+  height: clamp(26rem, 62vw, 34rem);
+  margin-top: clamp(2rem, 5vw, 3rem);
+  container-type: size;
+}
+.glass-tangle {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: var(--ic-ink-400);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+  transition: opacity var(--ic-slow) var(--glass-ease);
+}
+.glass-tangle--narrow {
+  display: none;
+}
+.glass-pieces {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.glass-piece {
+  --x: var(--x-wide);
+  --y: var(--y-wide);
+  --turn: var(--turn-wide);
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: clamp(10.5rem, 19cqw, 14.5rem);
+  padding: 0.875rem 0.875rem 0.75rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper-raised);
+  text-align: left;
+  transform: translate(calc(var(--x) * 1cqw - 50%), calc(var(--y) * 1cqh - 50%))
+    rotate(calc(var(--turn) * 1deg));
+  transition:
+    transform var(--glass-gather) var(--glass-ease),
+    opacity calc(var(--glass-gather) * 0.6) var(--glass-ease);
+  transition-delay: calc(var(--i) * 45ms);
+}
+.glass-piece-title {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ic-ink-900);
+}
+.glass-piece-detail {
+  margin-top: -0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--ic-ink-600);
+}
+.glass-piece-art {
+  display: block;
+}
+.glass-piece-lines,
+.glass-piece-entries {
+  display: grid;
+  gap: 0.375rem;
+}
+.glass-piece-lines .glass-skeleton:nth-child(2) {
+  width: 72%;
+}
+.glass-piece-lines .glass-skeleton:nth-child(3) {
+  width: 46%;
+}
+.glass-piece-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.25rem;
+}
+.glass-piece-grid .glass-skeleton {
+  height: 0.625rem;
+}
+.glass-piece-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.glass-piece-entry-mark {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid var(--ic-ink-400);
+}
+.glass-piece-entry .glass-skeleton {
+  flex: 1;
+}
+.glass-piece-drawing {
+  width: 100%;
+  height: auto;
+  fill: none;
+  stroke: var(--ic-ink-400);
+}
+.glass-piece-drawing * {
+  vector-effect: non-scaling-stroke;
+}
+.glass-piece-flag {
+  align-self: flex-start;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--ic-ink-900);
+  border-radius: var(--radius-control);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  color: var(--ic-ink-900);
+}
+
+/*
+ * The thread. One grid with named columns — source, wire, quotation — that the
+ * rows inherit as subgrids, so the six wires land on six cells of one panel
+ * without anything being measured.
+ */
+.glass-thread {
+  display: grid;
+  grid-area: thread;
+  grid-template-columns: [source] minmax(7.5rem, 12rem) [wire] minmax(2.5rem, 1fr) [cell] minmax(0, 2.75fr);
+  align-content: center;
+  width: 100%;
+  max-width: 62rem;
+  margin-top: clamp(2rem, 5vw, 3rem);
+  color: var(--ic-ink-900);
+  text-align: left;
+}
+.glass-thread-title {
+  --i: 0;
+
+  display: flex;
+  grid-column: cell;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  background-color: var(--ic-paper);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+.glass-thread-rows,
+.glass-thread-row {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.glass-thread-row {
+  align-items: stretch;
+}
+.glass-thread-source {
+  grid-column: source;
+  align-self: center;
+  justify-self: end;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: right;
+  color: var(--ic-ink-900);
+}
+.glass-thread-wire {
+  position: relative;
+  grid-column: wire;
+  align-self: center;
+  height: 1px;
+  margin-left: 0.875rem;
+}
+.glass-thread-wire::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--ic-ink-900);
+  transform-origin: left;
+}
+/* Where the wire meets the quotation: a small square socket on the panel's edge. */
+.glass-thread-wire::after {
+  content: '';
+  position: absolute;
+  top: -0.21875rem;
+  right: -0.25rem;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border: 1px solid var(--ic-ink-900);
+  background-color: var(--ic-paper-raised);
+}
+.glass-thread-cell {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: cell;
+  align-items: center;
+  gap: 0.375rem 0.75rem;
+  min-height: 3rem;
+  padding: 0.5rem 1.25rem;
+  border-inline: 1px solid var(--ic-line);
+  border-top: 1px solid var(--ic-line);
+  background-color: var(--ic-paper-raised);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+.glass-thread-line {
+  font-size: 0.8125rem;
+  color: var(--ic-ink-400);
+}
+.glass-thread-text {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+}
+.glass-thread-foot {
+  --i: 6;
+
+  display: grid;
+  grid-column: cell;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem 1rem;
+  border: 1px solid var(--ic-line);
+  border-top-color: var(--ic-line-strong);
+  border-radius: 0 0 var(--radius-panel) var(--radius-panel);
+  background-color: var(--ic-paper);
+}
+.glass-thread-count {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.glass-thread-short {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  color: var(--ic-signal);
+}
+.glass-thread-short span {
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.glass-thread-short strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+/*
+ * Pinned: only where the whole stage fits on one screen. Both headlines share
+ * a row, the desk and the thread share another, and the phase decides which of
+ * each is showing. The pieces drift toward the column the sources will occupy
+ * as they fade, so the gathering reads as one movement rather than a cut.
+ */
+@media (min-width: 48rem) and (min-height: 46rem) {
+  .glass-sources[data-enhanced='true'] {
+    height: var(--glass-pin);
+  }
+  .glass-sources[data-enhanced='true'] .glass-sources-stage {
+    position: sticky;
+    top: 0;
+    display: flex;
+    height: 100svh;
+    padding-block: clamp(3.5rem, 9vh, 6rem) clamp(1.5rem, 5vh, 3rem);
+  }
+  .glass-sources[data-enhanced='true'] .glass-sources-grid {
+    flex: 1;
+    min-height: 0;
+    grid-template-areas: 'label' 'copy' 'figure';
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+  .glass-sources[data-enhanced='true'] .glass-sources-title {
+    grid-area: copy;
+    margin-top: 1.25rem;
+    transition:
+      opacity var(--ic-slow) var(--glass-ease),
+      transform var(--ic-slow) var(--glass-ease);
+  }
+  .glass-sources[data-enhanced='true'] .glass-desk-figure,
+  .glass-sources[data-enhanced='true'] .glass-thread {
+    grid-area: figure;
+    margin-top: clamp(1.5rem, 4vh, 2.75rem);
+  }
+  .glass-sources[data-enhanced='true'] .glass-desk-figure {
+    height: auto;
+  }
+  .glass-sources[data-enhanced='true'] .glass-thread {
+    align-self: center;
+  }
+  .glass-sources[data-enhanced='true'] .glass-thread-title,
+  .glass-sources[data-enhanced='true'] .glass-thread-row,
+  .glass-sources[data-enhanced='true'] .glass-thread-foot {
+    transition:
+      opacity var(--ic-slow) var(--glass-ease),
+      transform var(--ic-slow) var(--glass-ease);
+    transition-delay: calc(var(--glass-gather) * 0.4 + var(--i, 0) * 60ms);
+  }
+  .glass-sources[data-enhanced='true'] .glass-thread-wire::before {
+    transition: transform 700ms var(--glass-ease);
+    transition-delay: calc(var(--glass-gather) * 0.55 + var(--i, 0) * 60ms);
+  }
+
+  .glass-sources[data-phase='scattered'] [data-for='gathered'],
+  .glass-sources[data-enhanced='true'][data-phase='gathered'] [data-for='scattered'] {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  .glass-sources[data-phase='gathered'] .glass-tangle {
+    opacity: 0;
+  }
+  .glass-sources[data-phase='gathered'] .glass-piece {
+    opacity: 0;
+    transform: translate(calc(16cqw - 50%), calc((16 + var(--i) * 12) * 1cqh - 50%)) scale(0.5);
+  }
+  .glass-sources[data-phase='scattered'] .glass-thread {
+    pointer-events: none;
+  }
+  .glass-sources[data-phase='scattered'] .glass-thread-title,
+  .glass-sources[data-phase='scattered'] .glass-thread-row,
+  .glass-sources[data-phase='scattered'] .glass-thread-foot {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+    transition-delay: 0s;
+  }
+  .glass-sources[data-phase='scattered'] .glass-thread-wire::before {
+    transform: scaleX(0);
+    transition-delay: 0s;
+  }
+}
+
+/* ── Rules, and the morning ───────────────────────────────────────────── */
+.glass-rules {
+  padding-block: clamp(5rem, 10vw, 8rem) clamp(3rem, 6vw, 5rem);
+}
+.glass-morning {
+  padding-block: clamp(3rem, 6vw, 5rem) clamp(5rem, 10vw, 8rem);
+}
+.glass-section-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  max-width: 48rem;
+  margin: 0 auto clamp(2.5rem, 5vw, 4rem);
+  text-align: center;
+}
+.glass-two-tone > span {
+  display: block;
+}
+.glass-two-tone > span + span {
+  color: var(--ic-ink-400);
+}
+.glass-section-lede {
+  max-width: 40rem;
+  font-size: var(--glass-lede);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+
+.glass-flow {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 3.5vw, 2.75rem);
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  color: var(--ic-ink-900);
+}
+.glass-flow-caption,
+.glass-day-caption,
+.glass-day-waiting-label {
+  font-size: var(--text-label);
+  line-height: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+}
+.glass-flow-caption {
+  margin-bottom: 1.75rem;
+}
+/* The spine: one hairline from the trigger to the last branch, a square where each one leaves it. */
+.glass-flow-trigger {
+  position: relative;
+  padding: 0 0 1.25rem 2rem;
+  font-family: var(--font-display);
+  font-size: var(--text-heading);
+  line-height: 1.2;
+}
+.glass-flow-trigger::after,
+.glass-flow-step::before {
+  content: '';
+  position: absolute;
+  left: calc(0.3125rem - 0.5px);
+  width: 1px;
+  background-color: var(--ic-line-strong);
+}
+.glass-flow-trigger::after {
+  top: 1.25rem;
+  bottom: 0;
+}
+.glass-flow-node {
+  position: absolute;
+  left: 0;
+  width: 0.625rem;
+  height: 0.625rem;
+  border: 1px solid var(--ic-ink-900);
+  background-color: var(--ic-paper-raised);
+}
+.glass-flow-trigger .glass-flow-node {
+  top: 0.45em;
+  background-color: var(--ic-ink-900);
+}
+.glass-flow-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.glass-flow-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1.25rem minmax(0, 1fr) 7.5rem;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.875rem 0 0.875rem 2rem;
+}
+.glass-flow-step::before {
+  top: 0;
+  bottom: 0;
+}
+.glass-flow-step:last-child::before {
+  bottom: 50%;
+}
+.glass-flow-step .glass-flow-node {
+  top: calc(50% - 0.3125rem);
+}
+.glass-flow-when {
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--ic-ink-600);
+}
+.glass-flow-arrow {
+  width: 1rem;
+  height: 1rem;
+  color: var(--ic-ink-400);
+}
+.glass-flow-then {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+.glass-flow-step .matrix-status {
+  justify-self: end;
+}
+.glass-flow-never {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ic-line);
+  font-family: var(--font-display);
+  font-size: var(--text-quote);
+  line-height: 1.4;
+}
+/* The branches arrive with the section's one reveal, a beat apart. */
+.ic-reveal[data-animatable='true'] .glass-flow-step {
+  opacity: 0;
+  transform: translate3d(-8px, 0, 0);
+  transition:
+    opacity var(--ic-slow) var(--glass-ease),
+    transform var(--ic-slow) var(--glass-ease);
+  transition-delay: calc(200ms + var(--i) * 70ms);
+}
+.ic-reveal[data-animatable='true'][data-revealed='true'] .glass-flow-step,
+.ic-reveal:focus-within .glass-flow-step {
+  opacity: 1;
+  transform: none;
+}
+
+/* The night on one scale: the axis, an hour tick for every hour, a node at every beat. */
+.glass-day {
+  max-width: 68rem;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  color: var(--ic-ink-900);
+}
+.glass-day-caption {
+  padding: 1.125rem clamp(1.25rem, 3vw, 2.25rem) 0;
+}
+.glass-day-scale {
+  position: relative;
+  height: 13rem;
+  margin-inline: clamp(1.75rem, 4vw, 3.5rem);
+}
+.glass-day-scale::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background-color: var(--ic-ink-900);
+}
+.glass-day-ticks {
+  position: absolute;
+  top: calc(50% - 0.5rem);
+  right: 0;
+  left: 0;
+  height: 1rem;
+}
+.glass-day-ticks > span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--at) * 100%);
+  width: 1px;
+  background-color: var(--ic-line-strong);
+}
+.glass-day-marks {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.glass-day-mark {
+  position: absolute;
+  left: calc(var(--at) * 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: max-content;
+  /* Narrow enough that 23:47 and 01:18, on the same side and 10.8% of the night apart, clear each other at 1024px. */
+  max-width: 5.5rem;
+  padding-left: 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+}
+.glass-day-mark[data-side='above'] {
+  bottom: calc(50% + 1rem);
+}
+.glass-day-mark[data-side='below'] {
+  top: calc(50% + 1rem);
+}
+.glass-day-mark::before {
+  content: '';
+  position: absolute;
+  left: -0.3125rem;
+  width: 0.625rem;
+  height: 0.625rem;
+  border: 1px solid var(--ic-ink-900);
+  background-color: var(--ic-paper-raised);
+}
+.glass-day-mark[data-side='above']::before {
+  bottom: calc(-1rem - 0.3125rem);
+}
+.glass-day-mark[data-side='below']::before {
+  top: calc(-1rem - 0.3125rem);
+}
+.glass-day-mark[data-person='true']::before {
+  background-color: var(--ic-ink-900);
+}
+.glass-day-mark[data-align='end'] {
+  align-items: flex-end;
+  padding-right: 0.75rem;
+  padding-left: 0;
+  text-align: right;
+  transform: translateX(-100%);
+}
+.glass-day-mark[data-align='end']::before {
+  right: -0.3125rem;
+  left: auto;
+}
+.glass-day-time {
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+.glass-day-text {
+  color: var(--ic-ink-600);
+}
+.glass-day-mark[data-person='true'] .glass-day-text {
+  color: var(--ic-ink-900);
+}
+.glass-day-waiting {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem clamp(1.25rem, 3vw, 2.25rem) 1.5rem;
+  border-top: 1px solid var(--ic-line);
+  background-color: var(--ic-paper);
+}
+.glass-day-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  border-block: 1px solid var(--ic-line);
+}
+.glass-day-summary > div {
+  min-width: 0;
+  padding: 1rem 1.25rem 1.125rem 0;
+}
+.glass-day-summary > div + div {
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--ic-line);
+}
+.glass-day-summary dt {
+  font-size: var(--text-label);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+}
+.glass-day-summary dd {
+  margin: 0.625rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.75vw, 1.625rem);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+.glass-day-summary dd span {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  letter-spacing: 0;
+  color: var(--ic-ink-400);
+}
+.glass-day-held,
+.glass-day-short,
+.glass-day-short dt {
+  color: var(--ic-signal);
+}
+.glass-day-call {
+  font-family: var(--font-display);
+  font-size: var(--text-quote);
+  line-height: 1.4;
+}
+
+/* ── The close, on the desk ───────────────────────────────────────────── */
+.glass-close {
+  padding-block: clamp(5rem, 10vw, 8rem) clamp(4rem, 8vw, 6rem);
+}
+.glass-standing-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: clamp(3.5rem, 7vw, 5.5rem);
+}
+.glass-standing {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block: 1px solid var(--ic-line-strong);
+}
+.glass-standing li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 1.25rem 1.5rem 1.375rem 0;
+}
+.glass-standing li + li {
+  padding-left: 1.5rem;
+  border-left: 1px solid var(--ic-line);
+}
+.glass-standing-state {
+  font-size: var(--text-label);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+}
+.glass-standing-title {
+  font-family: var(--font-display);
+  font-size: var(--text-heading);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+}
+.glass-close-grid {
+  display: grid;
+  gap: 2.5rem;
+}
+.glass-close-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+.glass-footer {
+  padding-bottom: 2rem;
+}
+.glass-footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--ic-line-strong);
+}
+
+/* ── Keyframes ────────────────────────────────────────────────────────── */
+@keyframes glass-rule {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes glass-beat {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0.5em, 0);
+  }
+  24%,
+  76% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -0.25em, 0);
+  }
+}
+/*
+ * Hidden at both ends, and filled forwards only. A lone `to` keyframe would
+ * leave the layer up for good: a delay computed in `calc()` finishes at a
+ * progress of 0.9999…, not 1, and `visibility` reads as visible anywhere short
+ * of 1 — so a transparent sheet would sit over the page catching every click.
+ */
+@keyframes glass-opening-end {
+  from,
+  to {
+    visibility: hidden;
+  }
+}
+@keyframes glass-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* The same entrance under another name, so ending the opening early restarts it without a delay. */
+@keyframes glass-enter-now {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes glass-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes glass-pop {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes glass-dock {
+  from {
+    opacity: 0;
+    transform: translate3d(12px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (min-width: 40rem) {
+  .glass-hours {
+    padding-inline: 2rem;
+  }
+}
+@media (min-width: 60rem) {
+  .glass-film-body {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: start;
+  }
+}
+@media (min-width: 64rem) {
+  .glass-hours {
+    padding-inline: 2.5rem;
+  }
+  .glass-close-grid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 4rem;
+  }
+  .glass-close-actions {
+    padding-top: 2.25rem;
+  }
+}
+/* Below 1024px the night's minutes crowd each other on one line, so the scale becomes a list down a rule. */
+@media (max-width: 63.99rem) {
+  .glass-day-scale {
+    height: auto;
+    margin: 1.5rem clamp(1.25rem, 3vw, 2.25rem) 1.75rem;
+  }
+  .glass-day-scale::before {
+    top: 0.375rem;
+    right: auto;
+    bottom: 0.375rem;
+    left: calc(0.3125rem - 0.5px);
+    width: 1px;
+    height: auto;
+  }
+  .glass-day-ticks {
+    display: none;
+  }
+  .glass-day-marks {
+    position: static;
+    display: grid;
+    gap: 1.125rem;
+  }
+  .glass-day-mark,
+  .glass-day-mark[data-side],
+  .glass-day-mark[data-align='end'] {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.875rem;
+    width: auto;
+    max-width: none;
+    padding: 0 0 0 1.75rem;
+    text-align: left;
+    transform: none;
+  }
+  .glass-day-mark::before,
+  .glass-day-mark[data-side]::before,
+  .glass-day-mark[data-align='end']::before {
+    top: 0.3125rem;
+    right: auto;
+    bottom: auto;
+    left: 0;
+  }
+  .glass-day-time {
+    min-width: 3rem;
+  }
+  .glass-day-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .glass-day-summary > div:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .glass-day-summary > div:nth-child(n + 3) {
+    border-top: 1px solid var(--ic-line);
+  }
+}
+@media (max-width: 47.99rem) {
+  .glass-piece {
+    --x: var(--x-narrow);
+    --y: var(--y-narrow);
+    --turn: var(--turn-narrow);
+
+    gap: 0.375rem;
+    width: clamp(9rem, 43cqw, 12rem);
+    padding: 0.625rem 0.625rem 0.5rem;
+  }
+  .glass-piece-detail {
+    display: none;
+  }
+  /* Two columns of three on a phone: tall enough that the documents lie apart and the tangle shows. */
+  .glass-desk-figure {
+    height: 35rem;
+  }
+  .glass-tangle--wide {
+    display: none;
+  }
+  .glass-tangle--narrow {
+    display: block;
+  }
+
+  .glass-thread {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 30rem;
+  }
+  .glass-thread-title,
+  .glass-thread-foot {
+    grid-column: 1;
+  }
+  .glass-thread-source {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: stretch;
+    padding: 0.625rem 1rem 0;
+    border-inline: 1px solid var(--ic-line);
+    border-top: 1px solid var(--ic-line);
+    background-color: var(--ic-paper-raised);
+    font-size: var(--text-label);
+    letter-spacing: 0.08em;
+    text-align: left;
+    text-transform: uppercase;
+    color: var(--ic-ink-400);
+  }
+  .glass-thread-wire {
+    display: none;
+  }
+  .glass-thread-cell {
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 0;
+    padding: 0.25rem 1rem 0.75rem;
+    border-top: 0;
+  }
+
+  .glass-sheet-row {
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    row-gap: 0.375rem;
+    padding-inline: 1rem;
+  }
+  .glass-sheet-source {
+    grid-row: 2;
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+  .glass-sheet-source:empty {
+    display: none;
+  }
+  .glass-sheet-status {
+    grid-row: 1;
+    grid-column: 3;
+  }
+  .glass-sheet-bar,
+  .glass-sheet-foot {
+    padding-inline: 1rem;
+  }
+
+  .glass-flow-step {
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+    gap: 0.375rem 0.5rem;
+  }
+  .glass-flow-when {
+    grid-column: 1 / -1;
+  }
+  .glass-flow-step .matrix-status {
+    grid-column: 2;
+    justify-self: start;
+  }
+  /* Three rows to a branch here, so the node sits by the condition it belongs to, not mid-branch. */
+  .glass-flow-step .glass-flow-node {
+    top: 1.25rem;
+  }
+  .glass-flow-step:last-child::before {
+    bottom: calc(100% - 1.5625rem);
+  }
+
+  .glass-standing {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .glass-standing li,
+  .glass-standing li + li {
+    padding: 1rem 0;
+    border-left: 0;
+  }
+  .glass-standing li + li {
+    border-top: 1px solid var(--ic-line);
+  }
+}
+@media (max-width: 39.99rem) {
+  .glass {
+    --glass-display: clamp(2.375rem, 10.5vw, 3.25rem);
+  }
+  .glass-hours > span:nth-child(even) {
+    display: none;
+  }
+  .glass-hero-inner {
+    padding-top: 3.5rem;
+  }
+  .glass .waitlist-inline-submit {
+    width: 100%;
+  }
+  .glass-chapter-hour {
+    font-size: 0.75rem;
+  }
+}
+
+/*
+ * Reduced motion renders the final frame of everything: no opening, no
+ * entrance, no gathering, no wires drawing, and a film that does not play. The
+ * global rule shortens durations but keeps delays, and several of these wait on
+ * one — so each is removed outright rather than merely made quick.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .glass-opening {
+    display: none;
+  }
+  .glass-enter,
+  .glass-hours > span,
+  .glass-status,
+  .glass-chip {
+    animation: none;
+  }
+  .glass-beat,
+  .glass-sheet-text,
+  .glass-sheet-item .glass-skeleton,
+  .glass-sheet-row::before,
+  .glass-sheet-notes,
+  .glass-sheet-notes > p,
+  .glass-sheet-ledger,
+  .glass-margin-bar,
+  .glass-chip,
+  .glass-tangle,
+  .glass-piece,
+  .glass-sources-title,
+  .glass-thread-title,
+  .glass-thread-row,
+  .glass-thread-foot,
+  .glass-thread-wire::before {
+    transition: none !important;
+  }
+  .ic-reveal[data-animatable='true'] .glass-flow-step {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }
