@@ -204,13 +204,23 @@ have it and will write once.
 `/glass` is the same night told as a film, for somebody who wants to be shown
 rather than read to. Two beats of type over a field of hour rules, a centred
 hero with the home page's form, then the quotation played hour by hour in a
-frame; after it, six sources gather into one thread, the night's rules are drawn
-as a flowchart, and the night is laid out on one scale. It is off the spine:
-`noindex`, not in the sitemap, linked from nowhere.
+frame; after it, the six documents a quotation is assembled from lie on a desk
+with the part itself among them, and gather onto one sheet; then one invitation.
+It is off the spine: `noindex`, not in the sitemap, linked from nowhere.
 
+- **No labels over headings.** No tracked capitals anywhere on it — not over a
+  title, not inside a document — and no title in two tones. The first version
+  had both and read as assembled. The licence for invented material is a
+  sentence at reading size; `e2e/glass.spec.ts` fails on any uppercase text.
+- **The documents are built, not pictured** (`components/glass-documents.tsx`):
+  real contents from the same quotation, in the site's own type, because a
+  generated document's text is nonsense and the reader zooms in. The one
+  photograph is the part (`design/encode-glass.sh`), shown with `multiply` —
+  so nothing may lie under it, and a test checks that nothing does.
 - **One story still.** Every hour, line and figure on it is the thread's or the
   matrix's, read by the components rather than written again; `glass` in
-  `content/site.ts` carries no money and no percentage, and a test holds it so.
+  `content/site.ts` writes none of the quotation's own figures, and the one cost
+  that moves, moves by the thread's six per cent and three weeks. Tests hold it.
 - **Its own motion budget**, larger than the home page's because a presentation
   tells by moving, and listed in `styles.css` above the block that spends it:
   the opening, the film, the gathering, one reveal per section, the nudge and

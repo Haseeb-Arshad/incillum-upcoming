@@ -1,23 +1,30 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { Container, Label } from '#/components/primitives.tsx'
+import {
+  DocumentQuestion,
+  PartPhoto,
+  SourceDocument,
+} from '#/components/glass-documents.tsx'
+import { Container } from '#/components/primitives.tsx'
 import { glass, home, thread } from '#/content/site.ts'
 import { useObservable } from '#/lib/motion.ts'
 
-import type { GlassPieceKey } from '#/content/site.ts'
+import type { GlassSource } from '#/content/site.ts'
 
 /**
- * Six sources, then one thread.
+ * Six sources, then one sheet.
  *
  * ── The scene ──────────────────────────────────────────────────────────────
  *
- * The section pins while the reader scrolls through it, and changes once. First
- * the six documents one quotation is assembled from, lying where they lie — a
- * mailbox, a drawing pack, a catalogue, a price list, an agreement and a
- * supplier's reply — with the dashed lines a person draws between them by hand.
- * Then they gather into one thread: each source on its own line, a wire into the
- * quotation, and what it became there. The second picture is the structure of
- * the product, stated as a diagram rather than a feature list.
+ * The section pins while the reader scrolls through it, and changes once.
+ * First the six documents one quotation is assembled from, lying on a desk as
+ * they arrive — the request, the drawing pack, a catalogue page, the price
+ * list, the agreement and the supplier's reply, with the part itself among
+ * them — each carrying the question a person would have to answer by hand, and
+ * the dashed lines a person draws between them. Then they gather: each
+ * document shrinks to a thumbnail on its own line, wired into the one sheet and
+ * what it became there. The second picture is the structure of the product,
+ * stated as a diagram rather than a feature list.
  *
  * It is the matrix again, at a third magnification, so every line number,
  * state and figure on it is the matrix's or the 06:50 ledger's, read here and
@@ -32,39 +39,73 @@ import type { GlassPieceKey } from '#/content/site.ts'
  * back up undoes it.
  *
  * It only pins where the whole stage fits on screen — wide enough for the
- * thread's three columns and tall enough for it to sit under both headlines.
+ * sheet's three columns and tall enough for it to sit under the headline.
  * Everywhere else (a phone, whose visible height with the browser's bars is
  * nearer 660px than 844px; a short laptop window; a page with no script or no
- * observer) the same two pictures are stacked and read downwards: the problem,
- * then the thread. Under reduced motion the pinned swap is instant.
+ * observer) the same two pictures are stacked and read downwards: the desk,
+ * then the sheet. Under reduced motion the pinned swap is instant.
  */
 
 const { sources } = glass
 
 /** Where a piece lies on the desk: centre x and y in percent of the figure, and a turn in degrees. */
 type Placement = readonly [x: number, y: number, turn: number]
+type Piece = GlassSource | 'part'
 
-const desk: Record<GlassPieceKey, { wide: Placement; narrow: Placement }> = {
-  request: { wide: [16, 25, -4], narrow: [28, 11, -3] },
-  drawing: { wide: [44, 19, 3], narrow: [72, 25, 3] },
-  catalogue: { wide: [81, 26, -2], narrow: [29, 40, -2] },
-  prices: { wide: [21, 73, 2], narrow: [71, 55, 2] },
-  agreement: { wide: [54, 67, -3], narrow: [29, 70, -2] },
-  supplier: { wide: [84, 75, 4], narrow: [70, 86, 3] },
+/**
+ * The part lies on bare desk, in the gap between the price list and the
+ * agreement, and no line of the tangle crosses it. That is not tidiness: the
+ * photograph is blended with `multiply`, which lets its slot show the desk
+ * through it, and also lets anything drawn beneath it show through the metal —
+ * so the one thing it may lie on is the desk itself.
+ */
+const desk: Record<Piece, { wide: Placement; narrow: Placement }> = {
+  request: { wide: [15, 24, -2.5], narrow: [32, 9, -2] },
+  drawing: { wide: [44, 20, 1.5], narrow: [70, 23, 2] },
+  catalogue: { wide: [76, 28, -2], narrow: [26, 38, -2] },
+  part: { wide: [42, 75, -8], narrow: [71, 47, -8] },
+  prices: { wide: [21, 76, 1.5], narrow: [40, 65, 1.5] },
+  agreement: { wide: [62, 73, -1.5], narrow: [70, 79, -1.5] },
+  supplier: { wide: [87, 74, 2.5], narrow: [32, 90, 2.5] },
 }
 
-/** The lines a person draws between them. Deliberately a tangle. */
-const tangle: ReadonlyArray<readonly [GlassPieceKey, GlassPieceKey]> = [
-  ['request', 'drawing'],
-  ['request', 'prices'],
-  ['drawing', 'catalogue'],
-  ['catalogue', 'agreement'],
-  ['prices', 'agreement'],
-  ['supplier', 'prices'],
-  ['agreement', 'supplier'],
-  ['request', 'agreement'],
-  ['drawing', 'supplier'],
+/** The order the pieces are laid down in, which is also their order on the gathered sheet. */
+const pieces: ReadonlyArray<Piece> = [
+  'request',
+  'drawing',
+  'catalogue',
+  'part',
+  'prices',
+  'agreement',
+  'supplier',
 ]
+
+/**
+ * The lines a person draws between them: deliberately a tangle, and kept clear
+ * of the part — so each arrangement has its own, because a line that misses the
+ * part on a wide desk runs straight through it on a narrow one.
+ */
+const tangle: Record<'wide' | 'narrow', ReadonlyArray<readonly [Piece, Piece]>> = {
+  wide: [
+    ['request', 'drawing'],
+    ['drawing', 'catalogue'],
+    ['catalogue', 'supplier'],
+    ['request', 'prices'],
+    ['drawing', 'agreement'],
+    ['agreement', 'supplier'],
+    ['request', 'catalogue'],
+    ['catalogue', 'agreement'],
+  ],
+  narrow: [
+    ['request', 'drawing'],
+    ['drawing', 'catalogue'],
+    ['catalogue', 'prices'],
+    ['request', 'catalogue'],
+    ['prices', 'supplier'],
+    ['agreement', 'supplier'],
+    ['prices', 'agreement'],
+  ],
+}
 
 /** A loose arc between two pieces, bowed alternately either side. */
 function arc(from: Placement, to: Placement, bow: number) {
@@ -77,10 +118,8 @@ function arc(from: Placement, to: Placement, bow: number) {
 
 const ledger = thread.beats.find((beat) => beat.figures)?.figures ?? []
 const figure = (term: string) => ledger.find((entry) => entry.term === term)?.value ?? ''
+const floor = figure('Commercial floor')
 const short = ledger.find((entry) => entry.breaches)
-const titleOf = Object.fromEntries(
-  sources.pieces.map((piece) => [piece.key, piece.title]),
-) as Record<GlassPieceKey, string>
 
 export function GlassSources() {
   const observable = useObservable()
@@ -124,14 +163,13 @@ export function GlassSources() {
 
       {/*
         One grid, two arrangements. Pinned (wide and tall enough to hold it):
-        both headlines share a row, the desk and the thread share another, and
+        both headlines share a row, the desk and the sheet share another, and
         the phase decides which of each is showing. Stacked (a phone, a short
-        laptop, no script): headline, desk, headline, thread — the same before
+        laptop, no script): headline, desk, headline, sheet — the same before
         and after, read downwards instead of changing in place.
       */}
       <div className="glass-sources-stage">
         <Container className="glass-sources-grid">
-          <Label className="glass-sources-label">{sources.label}</Label>
           <div className="glass-sources-title" data-for="scattered">
             <h2 id="sources-title" className="glass-heading">
               {sources.scattered.headline}
@@ -145,8 +183,8 @@ export function GlassSources() {
 
           {/*
             A picture of the problem rather than information — every source it
-            shows is named again, with what it became, in the thread below —
-            so it is hidden from a screen reader, which hears the thread.
+            shows is named again, with what it became, on the sheet below — so
+            it is hidden from a screen reader, which hears the sheet.
           */}
           <div className="glass-desk-figure" aria-hidden="true">
             {(['wide', 'narrow'] as const).map((size) => (
@@ -157,7 +195,7 @@ export function GlassSources() {
                 preserveAspectRatio="none"
                 focusable="false"
               >
-                {tangle.map(([from, to], index) => (
+                {tangle[size].map(([from, to], index) => (
                   <path
                     key={`${from}-${to}`}
                     d={arc(desk[from][size], desk[to][size], index % 2 === 0 ? 7 : -6)}
@@ -168,13 +206,13 @@ export function GlassSources() {
             ))}
 
             <ul className="glass-pieces">
-              {sources.pieces.map((piece, index) => {
-                const { wide, narrow } = desk[piece.key]
+              {pieces.map((piece, index) => {
+                const { wide, narrow } = desk[piece]
                 return (
                   <li
-                    key={piece.key}
+                    key={piece}
                     className="glass-piece"
-                    data-kind={piece.key}
+                    data-kind={piece}
                     style={{
                       ['--i' as string]: index,
                       ['--x-wide' as string]: wide[0],
@@ -185,17 +223,21 @@ export function GlassSources() {
                       ['--turn-narrow' as string]: narrow[2],
                     }}
                   >
-                    <p className="glass-piece-title">{piece.title}</p>
-                    <p className="glass-piece-detail">{piece.detail}</p>
-                    <PieceArt kind={piece.key} />
-                    <span className="glass-piece-flag">{piece.flag}</span>
+                    {piece === 'part' ? (
+                      <PartPhoto />
+                    ) : (
+                      <>
+                        <SourceDocument source={piece} floor={floor} />
+                        <DocumentQuestion source={piece} />
+                      </>
+                    )}
                   </li>
                 )
               })}
             </ul>
           </div>
 
-          <Thread />
+          <Sheet />
         </Container>
       </div>
     </section>
@@ -203,12 +245,13 @@ export function GlassSources() {
 }
 
 /**
- * The gathered picture: each source on its own line, a wire into the
- * quotation, and what it became there. A list of rows on a shared grid, so the
- * sources, the wires and the quotation's cells line up without being measured.
+ * The gathered picture: each document on its own line as a thumbnail, a wire
+ * into the quotation, and what it became there. A list of rows on a shared
+ * grid, so the thumbnails, the wires and the sheet's cells line up without
+ * being measured.
  */
-function Thread() {
-  const { lines } = home.matrix
+function Sheet() {
+  const { lines, summary } = home.matrix
 
   return (
     <div data-lit="" className="glass-thread">
@@ -224,15 +267,23 @@ function Thread() {
             className="glass-thread-row"
             style={{ ['--i' as string]: index }}
           >
-            <span className="glass-thread-source">{titleOf[row.key]}</span>
+            <span className="glass-thread-source">
+              <span className="glass-thumb" aria-hidden="true">
+                <SourceDocument source={row.key} floor={floor} />
+              </span>
+              <span className="glass-thread-name">{row.title}</span>
+            </span>
             <span className="glass-thread-wire" aria-hidden="true" />
             <span className="glass-thread-cell">
               {row.line ? (
                 <span className="glass-thread-line ic-tabular">
-                  {sources.lines} {row.line}
+                  {sources.line} {row.line}
                 </span>
               ) : null}
-              <span className="glass-thread-text">{row.text}</span>
+              <span className="glass-thread-text">
+                {row.text}
+                {row.floor ? <strong> {floor}</strong> : null}
+              </span>
               {row.status ? (
                 <span className={`matrix-status matrix-status--${row.status}`}>
                   {home.matrix.statusLabels[row.status]}
@@ -246,8 +297,7 @@ function Thread() {
       <div className="glass-thread-foot">
         <p className="glass-thread-count">
           {lines.priced}/{lines.total} {sources.priced} · {lines.held} {sources.held} ·{' '}
-          {home.matrix.summary.margin} {figure('Expected margin')},{' '}
-          {home.matrix.summary.floor} {figure('Commercial floor')}
+          {summary.margin} {figure('Expected margin')} {sources.against} {floor}
         </p>
         {short ? (
           <p className="glass-thread-short">
@@ -257,58 +307,5 @@ function Thread() {
         ) : null}
       </div>
     </div>
-  )
-}
-
-/**
- * What each document looks like from across the desk: the shape of the page,
- * never its words. Bars stand in for text, so nothing here is legible enough to
- * be read as a claim — the same rule the night plate's photograph was shot to.
- */
-function PieceArt({ kind }: { kind: GlassPieceKey }) {
-  if (kind === 'drawing') {
-    return (
-      <svg
-        className="glass-piece-art glass-piece-drawing"
-        viewBox="0 0 120 56"
-        aria-hidden="true"
-        focusable="false"
-      >
-        <rect x="14" y="10" width="54" height="30" />
-        <circle cx="30" cy="25" r="6" />
-        <circle cx="52" cy="25" r="6" />
-        <path d="M14 48h54M14 45v6M68 45v6" />
-        <rect className="glass-piece-titleblock" x="80" y="30" width="34" height="20" />
-        <path d="M80 40h34M97 30v20" />
-      </svg>
-    )
-  }
-  if (kind === 'prices') {
-    return (
-      <span className="glass-piece-art glass-piece-grid">
-        {Array.from({ length: 12 }, (_, cell) => (
-          <span key={cell} className="glass-skeleton" />
-        ))}
-      </span>
-    )
-  }
-  if (kind === 'catalogue') {
-    return (
-      <span className="glass-piece-art glass-piece-entries">
-        {[0, 1, 2].map((entry) => (
-          <span key={entry} className="glass-piece-entry">
-            <span className="glass-piece-entry-mark" />
-            <span className="glass-skeleton" />
-          </span>
-        ))}
-      </span>
-    )
-  }
-  return (
-    <span className="glass-piece-art glass-piece-lines">
-      <span className="glass-skeleton" />
-      <span className="glass-skeleton" />
-      {kind === 'agreement' ? <span className="glass-skeleton" /> : null}
-    </span>
   )
 }

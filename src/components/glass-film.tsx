@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react'
 
+import { SourceIcon } from '#/components/glass-documents.tsx'
 import { Container } from '#/components/primitives.tsx'
 import { evidence, glass, home, thread } from '#/content/site.ts'
 import { useHydrated, useInView, useReducedMotion } from '#/lib/motion.ts'
 
-import type { GlassStatus, MatrixStatus } from '#/content/site.ts'
+import type { GlassSource, GlassStatus, MatrixStatus } from '#/content/site.ts'
 import type { AnimationEvent } from 'react'
 
 /**
@@ -38,8 +39,9 @@ import type { AnimationEvent } from 'react'
  * Under reduced motion it never plays; the hours are chapters to step through.
  *
  * Without JavaScript every hour is listed and the sheet shows the morning,
- * which is the whole story in the server's HTML. The licence — `Illustrative`
- * and `invented` — is the frame's first two lines either way.
+ * which is the whole story in the server's HTML. The licence is the frame's
+ * first line either way, and it is a sentence rather than a label: the
+ * quotation is invented for this page.
  */
 
 const { film } = glass
@@ -76,7 +78,7 @@ function statusAt(final: MatrixStatus, stage: number): GlassStatus | null {
 function chipAt(target: string, stage: number) {
   for (let hour = stage; hour >= 0; hour -= 1) {
     const chip = film.frames[hour]?.chips.find((entry) => entry.target === target)
-    if (chip) return { text: chip.text, fresh: hour === stage }
+    if (chip) return { text: chip.text, source: chip.source, fresh: hour === stage }
   }
   return null
 }
@@ -141,35 +143,35 @@ export function GlassFilm({ ready }: { ready: boolean }) {
           data-running={running ? 'true' : 'false'}
           data-stage={stage}
         >
-          {/*
-            The licence, first, in the server's HTML: the label names it and the
-            line under it says it is invented, at reading size.
-          */}
-          <div className="glass-film-head">
-            <h2 id="film-label" className="glass-film-label">
-              {film.label}
-            </h2>
-            <p className="glass-film-lede">{film.lede}</p>
-          </div>
-
           <div className="glass-film-body">
-            {/*
-              Polite while the reader is driving, silent while it plays itself —
-              an announcement every few seconds would talk over everything else.
-            */}
-            <ol className="glass-beats" aria-live={running ? 'off' : 'polite'}>
-              {thread.beats.map((beat, hour) => (
-                <li
-                  key={beat.at}
-                  className="glass-beat"
-                  data-active={hour === index ? 'true' : 'false'}
-                >
-                  <p className="glass-beat-hour">{beat.at}</p>
-                  <h3 className="glass-beat-title">{beat.title}</h3>
-                  <p className="glass-beat-line">{film.frames[hour]?.line}</p>
-                </li>
-              ))}
-            </ol>
+            <div className="glass-film-story">
+              {/*
+                The licence, first, in the server's HTML, at reading size — and
+                the section's name, because it is the truest one-line
+                description of what the frame holds.
+              */}
+              <h2 id="film-label" className="glass-film-licence">
+                {film.licence}
+              </h2>
+
+              {/*
+                Polite while the reader is driving, silent while it plays itself
+                — an announcement every few seconds would talk over everything.
+              */}
+              <ol className="glass-beats" aria-live={running ? 'off' : 'polite'}>
+                {thread.beats.map((beat, hour) => (
+                  <li
+                    key={beat.at}
+                    className="glass-beat"
+                    data-active={hour === index ? 'true' : 'false'}
+                  >
+                    <p className="glass-beat-hour">{beat.at}</p>
+                    <h3 className="glass-beat-title">{beat.title}</h3>
+                    <p className="glass-beat-line">{film.frames[hour]?.line}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
 
             <Sheet stage={stage} />
           </div>
@@ -248,7 +250,7 @@ function Sheet({ stage }: { stage: number }) {
           <span className="matrix-mark" aria-hidden="true" />
           {film.title}
         </p>
-        {head ? <Chip key={head.text} text={head.text} fresh={head.fresh} /> : null}
+        {head ? <Chip key={head.text} {...head} /> : null}
       </div>
 
       <ol className="glass-sheet-rows">
@@ -268,9 +270,7 @@ function Sheet({ stage }: { stage: number }) {
                 <span className="glass-skeleton" aria-hidden="true" />
               </span>
               <span className="glass-sheet-source">
-                {chip ? (
-                  <Chip key={chip.text} text={chip.text} fresh={chip.fresh} />
-                ) : null}
+                {chip ? <Chip key={chip.text} {...chip} /> : null}
               </span>
               <span className="glass-sheet-status">
                 {status ? (
@@ -368,7 +368,7 @@ function Foot({ stage }: { stage: number }) {
           }}
         >
           <span className="glass-margin-label">
-            {floorChip ? <Chip text={floorChip.text} fresh={floorChip.fresh} /> : null}
+            {floorChip ? <Chip {...floorChip} /> : null}
             <span>
               {film.floor} {floor?.value}
             </span>
@@ -390,10 +390,27 @@ function Foot({ stage }: { stage: number }) {
   )
 }
 
-/** A source, landed on the sheet. The newest one is drawn in ink; older ones step back. */
-function Chip({ text, fresh }: { text: string; fresh: boolean }) {
+/**
+ * A source, landed on the sheet, with the icon of the kind of document it is.
+ * The newest one is drawn in ink; older ones step back. The one with no source
+ * is the person the night ends with.
+ */
+function Chip({
+  text,
+  source,
+  fresh,
+}: {
+  text: string
+  source?: GlassSource
+  fresh: boolean
+}) {
   return (
     <span className="glass-chip" data-fresh={fresh ? 'true' : 'false'}>
+      {source ? (
+        <SourceIcon source={source} />
+      ) : (
+        <span className="glass-chip-person" aria-hidden="true" />
+      )}
       {text}
     </span>
   )

@@ -2553,18 +2553,25 @@
 
 /* ══════════════════════════════════════════════════════════════════════════
    Glass — the presentation at /glass (`components/glass-page.tsx`,
-   `glass-film.tsx`, `glass-sources.tsx`).
+   `glass-film.tsx`, `glass-sources.tsx`, `glass-documents.tsx`).
 
    The same night as the home page, told as a film. It opens in the dark with
    two beats of type over a field of hour rules, assembles a centred hero, and
    plays the quotation hour by hour in a frame under it. Then the page turns to
-   paper: six sources gather into one thread, the night's rules are drawn as a
-   flowchart, the night is laid out as a timeline, and the close is on the desk.
+   the desk: the six documents a quotation is assembled from lie on it with the
+   part itself among them, gather onto one sheet, and the page closes with one
+   invitation.
 
-   One dark region (`.glass-night`, carrying `[data-inverted]`); lit panels in
-   it and after it (`[data-lit]`); the desk at each end of the daylight. Every
-   colour is a token, and the signal is spent only where it is licensed: the
-   held state, and the figure that breaks the floor.
+   Two grounds, the night and the desk, and nothing between them. Every colour
+   is a token, and the signal is spent only where it is licensed: the held
+   state, and the figure that breaks the floor.
+
+   ── What it does not do ───────────────────────────────────────────────────
+   No tracked capital labels over headings, no title in two tones, no row of
+   bordered cards, no centred heading-and-paragraph on every section. Those
+   were the marks of a page assembled rather than made, and the first version
+   had all of them. Labels inside the documents and the sheet are sentence
+   case, the way the documents themselves would set them.
 
    ── Its motion budget ─────────────────────────────────────────────────────
    Larger than the home page's, because a presentation tells by moving — and
@@ -2575,7 +2582,7 @@
      2. the film: one hour per `--glass-frame` while it is on screen, once
         through, paused by the reader, never looped;
      3. the gathering: one change of state, tied to where the reader is;
-     4. one reveal per section below the film;
+     4. one reveal for the close;
      5. the arrow nudge and the press, as everywhere.
 
    Nothing pulses and nothing loops. Under reduced motion every one of these
@@ -2583,7 +2590,7 @@
    ══════════════════════════════════════════════════════════════════════════ */
 .glass {
   --glass-display: clamp(2.75rem, 6vw, 5.5rem);
-  --glass-heading: clamp(2.125rem, 4vw, 3.5rem);
+  --glass-heading: clamp(2.25rem, 4.4vw, 4.25rem);
   --glass-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
   --glass-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --glass-arrive: 900ms;
@@ -2592,7 +2599,7 @@
   --glass-opening: calc(var(--glass-beat) * 2);
   /* One hour of the film, timed by its chapter's hairline. */
   --glass-frame: 5200ms;
-  /* Six sources gathering into one thread. */
+  /* The documents gathering onto one sheet. */
   --glass-gather: 1100ms;
   /* The scroll length the gathering pins for: one screen of stage, and the rest to scroll through. */
   --glass-pin: 230vh;
@@ -2693,23 +2700,20 @@
   animation: glass-enter var(--glass-arrive) var(--glass-ease) both;
   animation-delay: calc(var(--glass-opening) - 250ms + var(--glass-enter-delay, 0ms));
 }
-.glass-kicker.glass-enter {
-  --glass-enter-delay: 60ms;
-}
 .glass-title.glass-enter {
-  --glass-enter-delay: 120ms;
+  --glass-enter-delay: 80ms;
 }
 .glass-lede.glass-enter {
-  --glass-enter-delay: 200ms;
+  --glass-enter-delay: 180ms;
 }
 .glass-form.glass-enter {
-  --glass-enter-delay: 260ms;
+  --glass-enter-delay: 240ms;
 }
 .glass-note.glass-enter {
-  --glass-enter-delay: 300ms;
+  --glass-enter-delay: 290ms;
 }
 .glass-watch.glass-enter {
-  --glass-enter-delay: 340ms;
+  --glass-enter-delay: 330ms;
 }
 .glass-film-enter.glass-enter {
   --glass-enter-delay: 440ms;
@@ -2735,18 +2739,9 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding-block: clamp(4.5rem, 13vh, 8.5rem) clamp(2.5rem, 6vh, 4rem);
-}
-.glass-kicker {
-  font-size: var(--text-label);
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ic-ink-600);
+  padding-block: clamp(5rem, 15vh, 9.5rem) clamp(2.5rem, 6vh, 4rem);
 }
 .glass-title {
-  margin-top: 1.5rem;
   font-size: var(--glass-display);
   line-height: 0.98;
   letter-spacing: -0.021em;
@@ -2813,33 +2808,24 @@
   background-color: var(--ic-paper);
   background-image: var(--ic-grain);
 }
-.glass-film-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.375rem 2rem;
-  padding: 1.125rem clamp(1.25rem, 3vw, 2.25rem);
-  border-bottom: 1px solid var(--ic-line);
-}
-.glass-film-label {
-  font-family: var(--font-sans);
-  font-size: var(--text-label);
-  line-height: 1rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ic-ink-400);
-}
-.glass-film-lede {
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: var(--ic-ink-600);
-}
 .glass-film-body {
   display: grid;
   gap: clamp(1.75rem, 4vw, 4rem);
-  padding: clamp(1.5rem, 4vw, 3rem) clamp(1.25rem, 3vw, 2.25rem);
+  padding: clamp(1.75rem, 4vw, 3.25rem) clamp(1.25rem, 3vw, 2.5rem);
+}
+.glass-film-story {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.75rem, 3.5vw, 2.75rem);
+}
+/* The licence, as a sentence: the serif's italic, the one place it is used on this page. */
+.glass-film-licence {
+  max-width: 28ch;
+  font-size: 1.0625rem;
+  font-style: italic;
+  line-height: 1.45;
+  letter-spacing: 0;
+  color: var(--ic-ink-600);
 }
 
 /* The hours. Listed without a script; one at a time, in one cell, with one. */
@@ -3027,18 +3013,18 @@
   animation: glass-pop var(--ic-slow) var(--glass-ease) both;
 }
 
-/* A source, landed. The newest is in ink; the older ones step back but stay. */
+/* A source, landed, with the icon of the kind of document it is. The newest is in ink; the older ones step back but stay. */
 .glass-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.125rem 0.5rem;
+  padding: 0.1875rem 0.5rem 0.1875rem 0.4375rem;
   border: 1px solid var(--ic-line-strong);
   border-radius: var(--radius-control);
   background-color: var(--ic-paper-raised);
   font-size: 0.75rem;
   font-weight: 500;
-  line-height: 1.5;
+  line-height: 1.4;
   white-space: nowrap;
   color: var(--ic-ink-600);
   animation: glass-dock var(--ic-slow) var(--glass-ease) both;
@@ -3046,11 +3032,17 @@
     border-color var(--ic-slow) var(--glass-ease),
     color var(--ic-slow) var(--glass-ease);
 }
-.glass-chip::before {
-  content: '';
+.glass-chip .gd-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: currentColor;
+}
+.glass-chip-person {
+  flex: none;
   width: 0.4375rem;
-  height: 0.5625rem;
-  border: 1px solid currentColor;
+  height: 0.4375rem;
+  border-radius: 1px;
+  background-color: currentColor;
 }
 .glass-chip[data-fresh='true'] {
   border-color: var(--ic-ink-900);
@@ -3113,27 +3105,24 @@
   gap: 1rem;
   margin: 0;
 }
+.glass-sheet-figures dt {
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  color: var(--ic-ink-400);
+}
+.glass-sheet-figures dd {
+  margin: 0.375rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 1.6vw, 1.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
 .glass-sheet-figures dd span {
   font-family: var(--font-sans);
   font-size: 0.8125rem;
   letter-spacing: 0;
   color: var(--ic-ink-400);
-}
-.glass-sheet-figures dt {
-  font-size: var(--text-label);
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ic-ink-400);
-}
-.glass-sheet-figures dd {
-  margin: 0.5rem 0 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.0625rem, 1.5vw, 1.375rem);
-  line-height: 1.1;
-  letter-spacing: -0.015em;
-  white-space: nowrap;
 }
 .glass-margin-label {
   display: flex;
@@ -3171,23 +3160,26 @@
   width: 1px;
   background-color: var(--ic-ink-900);
 }
-.glass-sheet-short {
+.glass-sheet-short,
+.glass-thread-short {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: 0.25rem 1rem;
-  padding-top: 0.875rem;
-  border-top: 1px solid var(--ic-line);
   color: var(--ic-signal);
 }
-.glass-sheet-short span {
-  font-size: var(--text-label);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.glass-sheet-short {
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--ic-line);
 }
-.glass-sheet-short strong {
+.glass-sheet-short span,
+.glass-thread-short span {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.glass-sheet-short strong,
+.glass-thread-short strong {
   font-family: var(--font-display);
   font-size: clamp(1.25rem, 2vw, 1.625rem);
   font-weight: 400;
@@ -3199,7 +3191,7 @@
   display: flex;
   align-items: center;
   gap: clamp(0.75rem, 2vw, 1.5rem);
-  padding: 0.75rem clamp(1.25rem, 3vw, 2.25rem) 1rem;
+  padding: 0.75rem clamp(1.25rem, 3vw, 2.5rem) 1rem;
   border-top: 1px solid var(--ic-line);
 }
 .glass-play {
@@ -3284,7 +3276,7 @@
   }
 }
 
-/* ── Six sources, then one thread ─────────────────────────────────────── */
+/* ── Six sources, then one sheet ──────────────────────────────────────── */
 .glass-sources {
   position: relative;
 }
@@ -3299,52 +3291,56 @@
 .glass-sources-stage {
   padding-block: clamp(5rem, 10vw, 8rem);
 }
-/* Stacked: headline, desk, headline, thread — the arrangement everywhere the stage cannot pin. */
+/* Stacked: headline, desk, headline, sheet — the arrangement everywhere the stage cannot pin. */
 .glass-sources-grid {
   display: grid;
-  grid-template-areas: 'label' 'scattered' 'desk' 'gathered' 'thread';
-  justify-items: center;
-  text-align: center;
+  grid-template-areas: 'scattered' 'desk' 'gathered' 'sheet';
 }
-.glass-sources-label {
-  grid-area: label;
-}
+/* The headline left and its paragraph beside it, on one baseline: a page, not a slide. */
 .glass-sources-title {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1.25rem;
+  display: grid;
+  align-items: end;
+  gap: 1.25rem 4rem;
 }
 .glass-sources-title[data-for='scattered'] {
   grid-area: scattered;
 }
 .glass-sources-title[data-for='gathered'] {
   grid-area: gathered;
-  margin-top: clamp(3.5rem, 8vw, 6rem);
-}
-.glass-sources-lede {
-  max-width: 44rem;
-  font-size: var(--glass-lede);
-  line-height: 1.55;
-  color: var(--ic-ink-600);
-  text-wrap: balance;
+  margin-top: clamp(4.5rem, 10vw, 7rem);
 }
 .glass-heading {
+  max-width: 13ch;
   font-size: var(--glass-heading);
-  line-height: 1.04;
-  letter-spacing: -0.018em;
+  line-height: 1;
+  letter-spacing: -0.022em;
   color: var(--ic-ink-900);
   text-wrap: balance;
 }
+.glass-sources-lede {
+  max-width: 34rem;
+  padding-bottom: 0.25rem;
+  font-size: var(--glass-lede);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
 
+/*
+ * The desk. Its own ground is the desk's, because the photograph on it is
+ * blended with `multiply` and has to have the desk behind it to blend with —
+ * the figure is a stacking context, and a transparent one would leave the
+ * photograph's white sweep showing.
+ */
 .glass-desk-figure {
   position: relative;
   grid-area: desk;
   width: 100%;
-  height: clamp(26rem, 62vw, 34rem);
-  margin-top: clamp(2rem, 5vw, 3rem);
+  height: clamp(30rem, 46vw, 38rem);
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
   container-type: size;
+  background-color: var(--memo-desk);
+  background-image: var(--ic-grain);
 }
 .glass-tangle {
   position: absolute;
@@ -3361,6 +3357,12 @@
 .glass-tangle--narrow {
   display: none;
 }
+/* The wide tangle is drawn in the same centred band the pieces are laid out in. */
+.glass-tangle--wide {
+  top: 50%;
+  height: min(100%, 45cqw);
+  transform: translateY(-50%);
+}
 .glass-pieces {
   position: absolute;
   inset: 0;
@@ -3368,114 +3370,501 @@
   padding: 0;
   list-style: none;
 }
+/*
+ * One piece of paper. Its size is one `font-size`, read off the width of the
+ * desk, and everything inside it is in `em` — so the whole composition scales
+ * as one drawing, the way a photograph of a desk would.
+ */
 .glass-piece {
   --x: var(--x-wide);
   --y: var(--y-wide);
   --turn: var(--turn-wide);
+  /*
+   * The composition is drawn for a wide desk. On a taller one — a tablet,
+   * pinned — it keeps to a centred band no taller than 45% of the width
+   * rather than drifting apart, and the paper is sized by whichever of the
+   * desk's two dimensions is tighter.
+   */
+  --band: min(1cqh, 0.45cqw);
 
   position: absolute;
   top: 0;
   left: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  width: clamp(10.5rem, 19cqw, 14.5rem);
-  padding: 0.875rem 0.875rem 0.75rem;
-  border: 1px solid var(--ic-line-strong);
-  border-radius: var(--radius-control);
-  background-color: var(--ic-paper-raised);
-  text-align: left;
-  transform: translate(calc(var(--x) * 1cqw - 50%), calc(var(--y) * 1cqh - 50%))
+  font-size: clamp(5px, min(0.72cqw, 1.6cqh), 9.75px);
+  transform: translate(
+      calc(var(--x) * 1cqw - 50%),
+      calc(50cqh + (var(--y) - 50) * var(--band) - 50%)
+    )
     rotate(calc(var(--turn) * 1deg));
   transition:
     transform var(--glass-gather) var(--glass-ease),
     opacity calc(var(--glass-gather) * 0.6) var(--glass-ease);
-  transition-delay: calc(var(--i) * 45ms);
+  transition-delay: calc(var(--i) * 40ms);
 }
-.glass-piece-title {
-  font-size: 0.8125rem;
+.glass-piece[data-kind='request'] {
+  width: 34em;
+}
+.glass-piece[data-kind='drawing'] {
+  width: 36em;
+}
+.glass-piece[data-kind='catalogue'] {
+  width: 25em;
+}
+.glass-piece[data-kind='prices'] {
+  width: 40em;
+}
+.glass-piece[data-kind='agreement'] {
+  width: 27em;
+}
+.glass-piece[data-kind='supplier'] {
+  width: 31em;
+}
+/* The part lies on top of the paper it is about, and its white sweep drops out against the desk. */
+.glass-piece[data-kind='part'] {
+  z-index: 2;
+  width: 21em;
+  mix-blend-mode: multiply;
+}
+
+/* The question a person would ask of each document, pinned where it is asked. */
+.gd-question-anchor {
+  position: absolute;
+  z-index: 3;
+}
+/* Scaled with the desk, within a readable range, so a note never outgrows the paper it is pinned to. */
+.gd-question {
+  display: inline-block;
+  padding: 0.55em 0.85em;
+  border-radius: var(--radius-control);
+  background-color: var(--ic-ink-900);
+  font-family: var(--font-sans);
+  font-size: clamp(10px, 1.02cqw, 13px);
   font-weight: 500;
-  line-height: 1.3;
-  color: var(--ic-ink-900);
+  line-height: 1.25;
+  white-space: nowrap;
+  color: var(--ic-paper-raised);
 }
-.glass-piece-detail {
-  margin-top: -0.25rem;
-  font-size: 0.75rem;
+/* Each just outside its document, beside the thing it asks about, so nothing it asks about is covered. */
+.gd-question-anchor[data-source='request'] {
+  bottom: calc(100% + 0.7em);
+  left: 3em;
+}
+.gd-question-anchor[data-source='drawing'] {
+  top: calc(100% + 0.9em);
+  right: 2em;
+}
+.gd-question-anchor[data-source='catalogue'] {
+  bottom: calc(100% + 0.9em);
+  right: 2em;
+}
+.gd-question-anchor[data-source='prices'] {
+  top: calc(100% + 0.9em);
+  left: 2em;
+}
+.gd-question-anchor[data-source='agreement'] {
+  top: calc(100% + 0.9em);
+  left: 3em;
+}
+.gd-question-anchor[data-source='supplier'] {
+  top: calc(100% + 0.9em);
+  right: 2em;
+}
+
+/* ── The documents (`glass-documents.tsx`) — all in em, so one size sets the sheet ── */
+.gd {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: 0.6em;
+  background-color: var(--ic-paper-raised);
+  color: var(--ic-ink-900);
+  font-family: var(--font-sans);
+  font-size: 1em;
   line-height: 1.35;
+  text-align: left;
+}
+.gd-icon {
+  flex: none;
+  width: 1.5em;
+  height: 1.5em;
   color: var(--ic-ink-600);
 }
-.glass-piece-art {
-  display: block;
+.gd-quiet {
+  color: var(--ic-ink-400);
 }
-.glass-piece-lines,
-.glass-piece-entries {
-  display: grid;
-  gap: 0.375rem;
-}
-.glass-piece-lines .glass-skeleton:nth-child(2) {
-  width: 72%;
-}
-.glass-piece-lines .glass-skeleton:nth-child(3) {
-  width: 46%;
-}
-.glass-piece-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.25rem;
-}
-.glass-piece-grid .glass-skeleton {
-  height: 0.625rem;
-}
-.glass-piece-entry {
+.gd-bar {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.7em;
+  height: 3em;
+  padding-inline: 1.2em;
+  border-bottom: 1px solid var(--ic-line);
+  background-color: var(--ic-paper);
 }
-.glass-piece-entry-mark {
-  flex: none;
-  width: 0.5rem;
-  height: 0.5rem;
-  border: 1px solid var(--ic-ink-400);
-}
-.glass-piece-entry .glass-skeleton {
+.gd-bar-title {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
-.glass-piece-drawing {
+.gd-bar-meta {
+  color: var(--ic-ink-400);
+}
+
+/* A message: subject, sender, body, attachments. */
+.gd-mail {
+  display: grid;
+  gap: 0.9em;
+  padding: 1.4em 1.5em 1.5em;
+}
+.gd-mail-subject {
+  font-size: 1.4em;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+}
+.gd-mail-from {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35em 0.6em;
+}
+.gd-initial {
+  display: grid;
+  place-items: center;
+  width: 2.1em;
+  height: 2.1em;
+  border-radius: 0.35em;
+  background-color: var(--ic-paper-sunken);
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--ic-ink-600);
+}
+.gd-mail-body {
+  font-size: 1.05em;
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.gd-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em;
+}
+.gd-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.55em 0.9em 0.55em 0.65em;
+  border: 1px solid var(--ic-line);
+  border-radius: 0.45em;
+  font-size: 0.95em;
+}
+.gd-file {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 1.7em;
+  height: 2.1em;
+  color: var(--ic-ink-600);
+}
+.gd-file svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.gd-file-format {
+  position: absolute;
+  bottom: 0.3em;
+  left: -0.25em;
+  padding: 0.1em 0.3em;
+  border-radius: 0.2em;
+  background-color: var(--ic-ink-900);
+  font-size: 0.55em;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  color: var(--ic-paper-raised);
+}
+
+/* A drawing: the frame, the part in two views, its dimensions, and the title block. */
+.gd-drawing-svg {
+  display: block;
   width: 100%;
   height: auto;
+}
+.gd-d-frame,
+.gd-d-border,
+.gd-d-part,
+.gd-d-centre,
+.gd-d-hidden,
+.gd-d-dim,
+.gd-d-ring {
   fill: none;
+}
+.gd-d-frame {
+  stroke: var(--ic-ink-600);
+  stroke-width: 1;
+}
+.gd-d-border {
   stroke: var(--ic-ink-400);
+  stroke-width: 0.75;
 }
-.glass-piece-drawing * {
-  vector-effect: non-scaling-stroke;
+.gd-d-part {
+  stroke: var(--ic-ink-900);
+  stroke-width: 1.15;
 }
-.glass-piece-flag {
-  align-self: flex-start;
-  padding: 0.125rem 0.5rem;
-  border: 1px solid var(--ic-ink-900);
-  border-radius: var(--radius-control);
-  font-size: 0.6875rem;
+.gd-d-centre {
+  stroke: var(--ic-ink-400);
+  stroke-width: 0.6;
+  stroke-dasharray: 9 2 2 2;
+}
+.gd-d-hidden {
+  stroke: var(--ic-ink-600);
+  stroke-width: 0.7;
+  stroke-dasharray: 3 2;
+}
+.gd-d-dim {
+  stroke: var(--ic-ink-600);
+  stroke-width: 0.6;
+}
+.gd-d-arrow {
+  fill: var(--ic-ink-600);
+}
+.gd-d-text {
+  fill: var(--ic-ink-900);
+  font-family: var(--font-sans);
+  font-size: 8px;
+}
+.gd-d-title {
+  fill: var(--ic-ink-900);
+  font-family: var(--font-display);
+  font-size: 11px;
+}
+.gd-d-ring {
+  stroke: var(--ic-ink-900);
+  stroke-width: 1.25;
+}
+
+/* A page: the catalogue's and the agreement's. */
+.gd-page {
+  padding: 1.5em 1.6em 1.7em;
+}
+.gd-page-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 0.9em;
+  border-bottom: 1px solid var(--ic-line-strong);
+}
+.gd-page-title {
+  font-family: var(--font-display);
+  font-size: 1.7em;
+  line-height: 1.1;
+  letter-spacing: -0.012em;
+}
+.gd-entries {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gd-entry {
+  display: grid;
+  grid-template-columns: 5em minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1em;
+  padding-block: 1em;
+  border-bottom: 1px solid var(--ic-line);
+}
+.gd-entry:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.gd-entry-art {
+  display: block;
+  width: 5em;
+  height: auto;
+  fill: var(--ic-paper-raised);
+  stroke: var(--ic-ink-600);
+  stroke-width: 1;
+}
+.gd-entry-text {
+  display: grid;
+  gap: 0.2em;
+  min-width: 0;
+}
+.gd-entry-part {
   font-weight: 500;
-  line-height: 1.5;
+}
+.gd-entry-fit {
+  font-family: var(--font-display);
+  font-size: 1.7em;
+  line-height: 1;
+}
+
+/* A workbook: column letters, row numbers, the row about to change, and its tabs. */
+.gd-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+.gd-grid th,
+.gd-grid td {
+  padding: 0.5em 0.65em;
+  border: 1px solid var(--ic-line);
+  text-align: left;
   white-space: nowrap;
+}
+.gd-grid thead th,
+.gd-grid tbody th {
+  padding: 0.3em 0.4em;
+  background-color: var(--ic-paper);
+  font-size: 0.85em;
+  font-weight: 500;
+  text-align: center;
+  color: var(--ic-ink-400);
+}
+.gd-grid tbody th {
+  width: 2.4em;
+}
+.gd-grid-head td {
+  font-weight: 600;
+}
+.gd-num {
+  text-align: right;
+}
+.gd-grid tr[data-moving] td {
+  background-color: var(--ic-paper);
+}
+.gd-grid tr[data-moving] td:nth-of-type(3) {
+  outline: 0.15em solid var(--ic-ink-900);
+  outline-offset: -0.15em;
+  font-weight: 600;
+}
+.gd-tabs {
+  display: flex;
+  background-color: var(--ic-paper);
+  font-size: 0.85em;
+}
+.gd-tabs span {
+  padding: 0.5em 1.1em;
+  border-right: 1px solid var(--ic-line);
+  color: var(--ic-ink-400);
+}
+.gd-tabs span[data-active] {
+  background-color: var(--ic-paper-raised);
+  font-weight: 500;
   color: var(--ic-ink-900);
 }
 
+/* A schedule of terms, with the floor clause marked. */
+.gd-contract {
+  padding: 1.9em 1.9em 2.1em;
+}
+.gd-contract-title {
+  font-family: var(--font-display);
+  font-size: 2em;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+.gd-contract > .gd-quiet {
+  margin-top: 0.4em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid var(--ic-line-strong);
+}
+.gd-clauses {
+  display: grid;
+  gap: 0.8em;
+  margin: 1.1em 0 0;
+  padding: 0;
+  font-size: 0.95em;
+  line-height: 1.45;
+  list-style: none;
+  color: var(--ic-ink-600);
+}
+.gd-clauses li {
+  display: grid;
+  grid-template-columns: 2.6em minmax(0, 1fr);
+}
+.gd-clause-number {
+  color: var(--ic-ink-400);
+}
+.gd-clauses li[data-floor] {
+  margin-inline: -0.65em;
+  padding: 0.55em 0.65em;
+  border: 0.15em solid var(--ic-ink-900);
+  border-radius: 0.35em;
+  color: var(--ic-ink-900);
+}
+.gd-signatures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.6em;
+  margin-top: 2.4em;
+  font-size: 0.85em;
+  color: var(--ic-ink-400);
+}
+.gd-signatures span {
+  padding-top: 0.5em;
+  border-top: 1px solid var(--ic-ink-600);
+}
+
+/* A confirmation: what changed, struck through and replaced. */
+.gd-changes {
+  display: grid;
+  gap: 0.55em;
+  margin: 0;
+}
+.gd-changes div {
+  display: grid;
+  grid-template-columns: 7em minmax(0, 1fr);
+  align-items: baseline;
+}
+.gd-changes dt {
+  color: var(--ic-ink-400);
+}
+.gd-changes dd {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  margin: 0;
+}
+.gd-changes s {
+  color: var(--ic-ink-400);
+}
+.gd-changes strong {
+  font-weight: 600;
+}
+
+.gd-photo,
+.gd-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+
 /*
- * The thread. One grid with named columns — source, wire, quotation — that the
- * rows inherit as subgrids, so the six wires land on six cells of one panel
- * without anything being measured.
+ * The sheet the documents gather onto. One grid with named columns — source,
+ * wire, sheet — that the rows inherit as subgrids, so the thumbnails, the wires
+ * and the sheet's cells line up without anything being measured.
+ */
+/*
+ * Positioned, and above the desk: where the two share a cell, the desk is
+ * positioned and opaque, and anything in normal flow paints underneath it.
  */
 .glass-thread {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-area: thread;
-  grid-template-columns: [source] minmax(7.5rem, 12rem) [wire] minmax(2.5rem, 1fr) [cell] minmax(0, 2.75fr);
+  grid-area: sheet;
+  grid-template-columns: [source] minmax(12rem, 16rem) [wire] minmax(2rem, 1fr) [cell] minmax(0, 2.6fr);
   align-content: center;
   width: 100%;
-  max-width: 62rem;
-  margin-top: clamp(2rem, 5vw, 3rem);
+  max-width: 68rem;
+  margin: clamp(2.5rem, 5vw, 3.5rem) auto 0;
   color: var(--ic-ink-900);
-  text-align: left;
 }
 .glass-thread-title {
   --i: 0;
@@ -3504,14 +3893,35 @@
   align-items: stretch;
 }
 .glass-thread-source {
+  display: flex;
+  flex-direction: row-reverse;
   grid-column: source;
+  align-items: center;
   align-self: center;
   justify-self: end;
+  gap: 0.875rem;
+  padding-block: 0.25rem;
+}
+.glass-thread-name {
   font-size: 0.8125rem;
   font-weight: 500;
   line-height: 1.3;
   text-align: right;
-  color: var(--ic-ink-900);
+}
+/* A document at thumbnail size: the same drawing, cropped to its top edge. */
+.glass-thumb {
+  display: block;
+  flex: none;
+  width: 5.75rem;
+  height: 3.5rem;
+  overflow: hidden;
+  border-radius: var(--radius-control);
+  font-size: 2.5px;
+  pointer-events: none;
+}
+.glass-thumb > .gd {
+  width: 38em;
+  border-radius: 0;
 }
 .glass-thread-wire {
   position: relative;
@@ -3527,7 +3937,7 @@
   background-color: var(--ic-ink-900);
   transform-origin: left;
 }
-/* Where the wire meets the quotation: a small square socket on the panel's edge. */
+/* Where the wire meets the sheet: a small square socket on the panel's edge. */
 .glass-thread-wire::after {
   content: '';
   position: absolute;
@@ -3544,7 +3954,7 @@
   grid-column: cell;
   align-items: center;
   gap: 0.375rem 0.75rem;
-  min-height: 3rem;
+  min-height: 3.25rem;
   padding: 0.5rem 1.25rem;
   border-inline: 1px solid var(--ic-line);
   border-top: 1px solid var(--ic-line);
@@ -3560,6 +3970,9 @@
   flex: 1;
   min-width: 0;
   font-weight: 500;
+}
+.glass-thread-text strong {
+  font-weight: 600;
 }
 .glass-thread-foot {
   --i: 6;
@@ -3578,32 +3991,12 @@
   line-height: 1.5;
   color: var(--ic-ink-600);
 }
-.glass-thread-short {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.25rem 1rem;
-  color: var(--ic-signal);
-}
-.glass-thread-short span {
-  font-size: var(--text-label);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.glass-thread-short strong {
-  font-family: var(--font-display);
-  font-size: clamp(1.25rem, 2vw, 1.5rem);
-  font-weight: 400;
-  letter-spacing: -0.015em;
-}
 
 /*
- * Pinned: only where the whole stage fits on one screen. Both headlines share
- * a row, the desk and the thread share another, and the phase decides which of
- * each is showing. The pieces drift toward the column the sources will occupy
- * as they fade, so the gathering reads as one movement rather than a cut.
+ * Pinned: only where the whole stage fits on one screen. The headlines share a
+ * row, the desk and the sheet share another, and the phase decides which of
+ * each is showing. The documents drift toward the column their thumbnails will
+ * occupy as they fade, so the gathering reads as one movement rather than a cut.
  */
 @media (min-width: 48rem) and (min-height: 46rem) {
   .glass-sources[data-enhanced='true'] {
@@ -3614,17 +4007,19 @@
     top: 0;
     display: flex;
     height: 100svh;
-    padding-block: clamp(3.5rem, 9vh, 6rem) clamp(1.5rem, 5vh, 3rem);
+    padding-block: clamp(3rem, 8vh, 5.5rem) clamp(1.25rem, 4vh, 2.5rem);
+    background-color: var(--memo-desk);
+    background-image: var(--ic-grain);
   }
   .glass-sources[data-enhanced='true'] .glass-sources-grid {
     flex: 1;
     min-height: 0;
-    grid-template-areas: 'label' 'copy' 'figure';
-    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas: 'copy' 'figure';
+    grid-template-rows: auto minmax(0, 1fr);
   }
   .glass-sources[data-enhanced='true'] .glass-sources-title {
     grid-area: copy;
-    margin-top: 1.25rem;
+    margin-top: 0;
     transition:
       opacity var(--ic-slow) var(--glass-ease),
       transform var(--ic-slow) var(--glass-ease);
@@ -3632,7 +4027,7 @@
   .glass-sources[data-enhanced='true'] .glass-desk-figure,
   .glass-sources[data-enhanced='true'] .glass-thread {
     grid-area: figure;
-    margin-top: clamp(1.5rem, 4vh, 2.75rem);
+    margin-top: clamp(1.75rem, 4.5vh, 3rem);
   }
   .glass-sources[data-enhanced='true'] .glass-desk-figure {
     height: auto;
@@ -3663,7 +4058,7 @@
   }
   .glass-sources[data-phase='gathered'] .glass-piece {
     opacity: 0;
-    transform: translate(calc(16cqw - 50%), calc((16 + var(--i) * 12) * 1cqh - 50%)) scale(0.5);
+    transform: translate(calc(22cqw - 50%), calc((20 + var(--i) * 10.5) * 1cqh - 50%)) scale(0.22);
   }
   .glass-sources[data-phase='scattered'] .glass-thread {
     pointer-events: none;
@@ -3681,378 +4076,62 @@
   }
 }
 
-/* ── Rules, and the morning ───────────────────────────────────────────── */
-.glass-rules {
-  padding-block: clamp(5rem, 10vw, 8rem) clamp(3rem, 6vw, 5rem);
+/* ── The close, on the same desk ──────────────────────────────────────── */
+.glass-close {
+  padding-block: clamp(5.5rem, 11vw, 9rem) clamp(4.5rem, 9vw, 7rem);
 }
-.glass-morning {
-  padding-block: clamp(3rem, 6vw, 5rem) clamp(5rem, 10vw, 8rem);
+.glass-close-grid {
+  display: grid;
+  gap: 2rem 4rem;
 }
-.glass-section-head {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.25rem;
-  max-width: 48rem;
-  margin: 0 auto clamp(2.5rem, 5vw, 4rem);
-  text-align: center;
+.glass-close-title {
+  max-width: 14ch;
+  font-size: clamp(2.5rem, 5.4vw, 4.75rem);
+  line-height: 1;
+  letter-spacing: -0.022em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
 }
-.glass-two-tone > span {
-  display: block;
+.glass-close-side {
+  display: grid;
+  gap: 2rem;
+  max-width: 30rem;
 }
-.glass-two-tone > span + span {
-  color: var(--ic-ink-400);
-}
-.glass-section-lede {
-  max-width: 40rem;
+.glass-close-body {
   font-size: var(--glass-lede);
   line-height: 1.6;
   color: var(--ic-ink-600);
   text-wrap: pretty;
 }
-
-.glass-flow {
-  max-width: 62rem;
-  margin: 0 auto;
-  padding: clamp(1.5rem, 3.5vw, 2.75rem);
-  border: 1px solid var(--ic-line);
-  border-radius: var(--radius-panel);
-  background-color: var(--ic-paper-raised);
-  color: var(--ic-ink-900);
-}
-.glass-flow-caption,
-.glass-day-caption,
-.glass-day-waiting-label {
-  font-size: var(--text-label);
-  line-height: 1rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ic-ink-400);
-}
-.glass-flow-caption {
-  margin-bottom: 1.75rem;
-}
-/* The spine: one hairline from the trigger to the last branch, a square where each one leaves it. */
-.glass-flow-trigger {
-  position: relative;
-  padding: 0 0 1.25rem 2rem;
-  font-family: var(--font-display);
-  font-size: var(--text-heading);
-  line-height: 1.2;
-}
-.glass-flow-trigger::after,
-.glass-flow-step::before {
-  content: '';
-  position: absolute;
-  left: calc(0.3125rem - 0.5px);
-  width: 1px;
-  background-color: var(--ic-line-strong);
-}
-.glass-flow-trigger::after {
-  top: 1.25rem;
-  bottom: 0;
-}
-.glass-flow-node {
-  position: absolute;
-  left: 0;
-  width: 0.625rem;
-  height: 0.625rem;
-  border: 1px solid var(--ic-ink-900);
-  background-color: var(--ic-paper-raised);
-}
-.glass-flow-trigger .glass-flow-node {
-  top: 0.45em;
-  background-color: var(--ic-ink-900);
-}
-.glass-flow-steps {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.glass-flow-step {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 1.25rem minmax(0, 1fr) 7.5rem;
-  align-items: center;
-  gap: 0.5rem 1rem;
-  padding: 0.875rem 0 0.875rem 2rem;
-}
-.glass-flow-step::before {
-  top: 0;
-  bottom: 0;
-}
-.glass-flow-step:last-child::before {
-  bottom: 50%;
-}
-.glass-flow-step .glass-flow-node {
-  top: calc(50% - 0.3125rem);
-}
-.glass-flow-when {
-  font-size: 0.9375rem;
-  line-height: 1.45;
-  color: var(--ic-ink-600);
-}
-.glass-flow-arrow {
-  width: 1rem;
-  height: 1rem;
-  color: var(--ic-ink-400);
-}
-.glass-flow-then {
-  font-size: 0.9375rem;
-  font-weight: 500;
-  line-height: 1.45;
-}
-.glass-flow-step .matrix-status {
-  justify-self: end;
-}
-.glass-flow-never {
-  margin-top: 1.25rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--ic-line);
-  font-family: var(--font-display);
-  font-size: var(--text-quote);
-  line-height: 1.4;
-}
-/* The branches arrive with the section's one reveal, a beat apart. */
-.ic-reveal[data-animatable='true'] .glass-flow-step {
-  opacity: 0;
-  transform: translate3d(-8px, 0, 0);
-  transition:
-    opacity var(--ic-slow) var(--glass-ease),
-    transform var(--ic-slow) var(--glass-ease);
-  transition-delay: calc(200ms + var(--i) * 70ms);
-}
-.ic-reveal[data-animatable='true'][data-revealed='true'] .glass-flow-step,
-.ic-reveal:focus-within .glass-flow-step {
-  opacity: 1;
-  transform: none;
-}
-
-/* The night on one scale: the axis, an hour tick for every hour, a node at every beat. */
-.glass-day {
-  max-width: 68rem;
-  margin: 0 auto;
-  overflow: hidden;
-  border: 1px solid var(--ic-line);
-  border-radius: var(--radius-panel);
-  background-color: var(--ic-paper-raised);
-  color: var(--ic-ink-900);
-}
-.glass-day-caption {
-  padding: 1.125rem clamp(1.25rem, 3vw, 2.25rem) 0;
-}
-.glass-day-scale {
-  position: relative;
-  height: 13rem;
-  margin-inline: clamp(1.75rem, 4vw, 3.5rem);
-}
-.glass-day-scale::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: 0;
-  left: 0;
-  height: 1px;
-  background-color: var(--ic-ink-900);
-}
-.glass-day-ticks {
-  position: absolute;
-  top: calc(50% - 0.5rem);
-  right: 0;
-  left: 0;
-  height: 1rem;
-}
-.glass-day-ticks > span {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: calc(var(--at) * 100%);
-  width: 1px;
-  background-color: var(--ic-line-strong);
-}
-.glass-day-marks {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.glass-day-mark {
-  position: absolute;
-  left: calc(var(--at) * 100%);
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  width: max-content;
-  /* Narrow enough that 23:47 and 01:18, on the same side and 10.8% of the night apart, clear each other at 1024px. */
-  max-width: 5.5rem;
-  padding-left: 0.75rem;
-  font-size: 0.8125rem;
-  line-height: 1.3;
-}
-.glass-day-mark[data-side='above'] {
-  bottom: calc(50% + 1rem);
-}
-.glass-day-mark[data-side='below'] {
-  top: calc(50% + 1rem);
-}
-.glass-day-mark::before {
-  content: '';
-  position: absolute;
-  left: -0.3125rem;
-  width: 0.625rem;
-  height: 0.625rem;
-  border: 1px solid var(--ic-ink-900);
-  background-color: var(--ic-paper-raised);
-}
-.glass-day-mark[data-side='above']::before {
-  bottom: calc(-1rem - 0.3125rem);
-}
-.glass-day-mark[data-side='below']::before {
-  top: calc(-1rem - 0.3125rem);
-}
-.glass-day-mark[data-person='true']::before {
-  background-color: var(--ic-ink-900);
-}
-.glass-day-mark[data-align='end'] {
-  align-items: flex-end;
-  padding-right: 0.75rem;
-  padding-left: 0;
-  text-align: right;
-  transform: translateX(-100%);
-}
-.glass-day-mark[data-align='end']::before {
-  right: -0.3125rem;
-  left: auto;
-}
-.glass-day-time {
-  font-weight: 500;
-  color: var(--ic-ink-900);
-}
-.glass-day-text {
-  color: var(--ic-ink-600);
-}
-.glass-day-mark[data-person='true'] .glass-day-text {
-  color: var(--ic-ink-900);
-}
-.glass-day-waiting {
-  display: grid;
-  gap: 1rem;
-  padding: 1.25rem clamp(1.25rem, 3vw, 2.25rem) 1.5rem;
-  border-top: 1px solid var(--ic-line);
-  background-color: var(--ic-paper);
-}
-.glass-day-summary {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: 0;
-  border-block: 1px solid var(--ic-line);
-}
-.glass-day-summary > div {
-  min-width: 0;
-  padding: 1rem 1.25rem 1.125rem 0;
-}
-.glass-day-summary > div + div {
-  padding-left: 1.25rem;
-  border-left: 1px solid var(--ic-line);
-}
-.glass-day-summary dt {
-  font-size: var(--text-label);
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ic-ink-400);
-}
-.glass-day-summary dd {
-  margin: 0.625rem 0 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.25rem, 1.75vw, 1.625rem);
-  line-height: 1.1;
-  letter-spacing: -0.015em;
-  white-space: nowrap;
-}
-.glass-day-summary dd span {
-  font-family: var(--font-sans);
-  font-size: 0.875rem;
-  letter-spacing: 0;
-  color: var(--ic-ink-400);
-}
-.glass-day-held,
-.glass-day-short,
-.glass-day-short dt {
-  color: var(--ic-signal);
-}
-.glass-day-call {
-  font-family: var(--font-display);
-  font-size: var(--text-quote);
-  line-height: 1.4;
-}
-
-/* ── The close, on the desk ───────────────────────────────────────────── */
-.glass-close {
-  padding-block: clamp(5rem, 10vw, 8rem) clamp(4rem, 8vw, 6rem);
-}
-.glass-standing-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  margin-bottom: clamp(3.5rem, 7vw, 5.5rem);
-}
-.glass-standing {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-block: 1px solid var(--ic-line-strong);
-}
-.glass-standing li {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-  padding: 1.25rem 1.5rem 1.375rem 0;
-}
-.glass-standing li + li {
-  padding-left: 1.5rem;
-  border-left: 1px solid var(--ic-line);
-}
-.glass-standing-state {
-  font-size: var(--text-label);
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ic-ink-400);
-}
-.glass-standing-title {
-  font-family: var(--font-display);
-  font-size: var(--text-heading);
-  line-height: 1.2;
-  letter-spacing: -0.012em;
-}
-.glass-close-grid {
-  display: grid;
-  gap: 2.5rem;
-}
 .glass-close-actions {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+}
+.glass-close-write {
+  font-size: var(--text-small);
+  color: var(--ic-ink-600);
 }
 .glass-footer {
   padding-bottom: 2rem;
 }
 .glass-footer-inner {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem 2rem;
+  gap: 1rem 2.5rem;
   padding-top: 2rem;
   border-top: 1px solid var(--ic-line-strong);
+}
+.glass-standing,
+.glass-copyright {
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.glass-standing {
+  max-width: 44rem;
 }
 
 /* ── Keyframes ────────────────────────────────────────────────────────── */
@@ -4147,6 +4226,11 @@
     padding-inline: 2rem;
   }
 }
+@media (min-width: 48rem) {
+  .glass-sources-title {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+}
 @media (min-width: 60rem) {
   .glass-film-body {
     grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
@@ -4159,88 +4243,20 @@
   }
   .glass-close-grid {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-    gap: 4rem;
-  }
-  .glass-close-actions {
-    padding-top: 2.25rem;
-  }
-}
-/* Below 1024px the night's minutes crowd each other on one line, so the scale becomes a list down a rule. */
-@media (max-width: 63.99rem) {
-  .glass-day-scale {
-    height: auto;
-    margin: 1.5rem clamp(1.25rem, 3vw, 2.25rem) 1.75rem;
-  }
-  .glass-day-scale::before {
-    top: 0.375rem;
-    right: auto;
-    bottom: 0.375rem;
-    left: calc(0.3125rem - 0.5px);
-    width: 1px;
-    height: auto;
-  }
-  .glass-day-ticks {
-    display: none;
-  }
-  .glass-day-marks {
-    position: static;
-    display: grid;
-    gap: 1.125rem;
-  }
-  .glass-day-mark,
-  .glass-day-mark[data-side],
-  .glass-day-mark[data-align='end'] {
-    position: relative;
-    top: auto;
-    bottom: auto;
-    left: auto;
-    flex-direction: row;
-    align-items: baseline;
-    gap: 0.875rem;
-    width: auto;
-    max-width: none;
-    padding: 0 0 0 1.75rem;
-    text-align: left;
-    transform: none;
-  }
-  .glass-day-mark::before,
-  .glass-day-mark[data-side]::before,
-  .glass-day-mark[data-align='end']::before {
-    top: 0.3125rem;
-    right: auto;
-    bottom: auto;
-    left: 0;
-  }
-  .glass-day-time {
-    min-width: 3rem;
-  }
-  .glass-day-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .glass-day-summary > div:nth-child(3) {
-    padding-left: 0;
-    border-left: 0;
-  }
-  .glass-day-summary > div:nth-child(n + 3) {
-    border-top: 1px solid var(--ic-line);
+    align-items: end;
   }
 }
 @media (max-width: 47.99rem) {
+  .glass-desk-figure {
+    height: 35rem;
+  }
   .glass-piece {
     --x: var(--x-narrow);
     --y: var(--y-narrow);
     --turn: var(--turn-narrow);
+    --band: 1cqh;
 
-    gap: 0.375rem;
-    width: clamp(9rem, 43cqw, 12rem);
-    padding: 0.625rem 0.625rem 0.5rem;
-  }
-  .glass-piece-detail {
-    display: none;
-  }
-  /* Two columns of three on a phone: tall enough that the documents lie apart and the tangle shows. */
-  .glass-desk-figure {
-    height: 35rem;
+    font-size: clamp(4px, 1.45cqw, 6.5px);
   }
   .glass-tangle--wide {
     display: none;
@@ -4248,28 +4264,38 @@
   .glass-tangle--narrow {
     display: block;
   }
+  .gd-question {
+    font-size: 0.6875rem;
+  }
 
   .glass-thread {
     grid-template-columns: minmax(0, 1fr);
-    max-width: 30rem;
+    max-width: 32rem;
   }
   .glass-thread-title,
   .glass-thread-foot {
     grid-column: 1;
   }
   .glass-thread-source {
+    flex-direction: row;
     grid-column: 1;
     grid-row: 1;
+    justify-content: flex-start;
     justify-self: stretch;
-    padding: 0.625rem 1rem 0;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem 0.25rem;
     border-inline: 1px solid var(--ic-line);
     border-top: 1px solid var(--ic-line);
     background-color: var(--ic-paper-raised);
-    font-size: var(--text-label);
-    letter-spacing: 0.08em;
+  }
+  .glass-thread-name {
     text-align: left;
-    text-transform: uppercase;
-    color: var(--ic-ink-400);
+    color: var(--ic-ink-600);
+  }
+  .glass-thumb {
+    width: 3.75rem;
+    height: 2.5rem;
+    font-size: 1.6px;
   }
   .glass-thread-wire {
     display: none;
@@ -4278,7 +4304,7 @@
     grid-column: 1;
     grid-row: 2;
     min-height: 0;
-    padding: 0.25rem 1rem 0.75rem;
+    padding: 0.375rem 1rem 0.875rem;
     border-top: 0;
   }
 
@@ -4304,35 +4330,8 @@
     padding-inline: 1rem;
   }
 
-  .glass-flow-step {
-    grid-template-columns: 1.25rem minmax(0, 1fr);
-    gap: 0.375rem 0.5rem;
-  }
-  .glass-flow-when {
-    grid-column: 1 / -1;
-  }
-  .glass-flow-step .matrix-status {
-    grid-column: 2;
-    justify-self: start;
-  }
-  /* Three rows to a branch here, so the node sits by the condition it belongs to, not mid-branch. */
-  .glass-flow-step .glass-flow-node {
-    top: 1.25rem;
-  }
-  .glass-flow-step:last-child::before {
-    bottom: calc(100% - 1.5625rem);
-  }
-
-  .glass-standing {
+  .glass-footer-inner {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .glass-standing li,
-  .glass-standing li + li {
-    padding: 1rem 0;
-    border-left: 0;
-  }
-  .glass-standing li + li {
-    border-top: 1px solid var(--ic-line);
   }
 }
 @media (max-width: 39.99rem) {
@@ -4385,11 +4384,6 @@
   .glass-thread-row,
   .glass-thread-foot,
   .glass-thread-wire::before {
-    transition: none !important;
-  }
-  .ic-reveal[data-animatable='true'] .glass-flow-step {
-    opacity: 1 !important;
-    transform: none !important;
     transition: none !important;
   }
 }

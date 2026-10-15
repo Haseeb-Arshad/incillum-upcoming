@@ -849,19 +849,29 @@ export const home = {
  * /glass — the presentation.
  *
  * The same company and the same night as the home page, told the way a launch
- * film tells it: two beats of type in the dark, one line of argument, then the
- * work shown rather than described. The shape is borrowed from pages it was
- * measured against — an opening sequence, a framed film under the hero,
- * scattered sources that gather into one thread, titles in two tones. None of
- * their proof is, because there is none to borrow (AGENTS.md §5).
+ * film tells it: two beats of type in the dark, one line of argument, the night
+ * played in a frame, and the documents the work is assembled from — scattered,
+ * then gathered onto one sheet. The shape is borrowed from pages it was
+ * measured against. None of their proof is, because there is none to borrow
+ * (AGENTS.md §5).
+ *
+ * ── No labels over headings ────────────────────────────────────────────────
+ *
+ * The first version put a tracked capital label over every block. That is the
+ * most recognisable mark of a page assembled rather than written, and it was
+ * read as one. So the licence for invented material is a sentence, at reading
+ * size, inside the block's own first lines — which is what AGENTS.md asks for
+ * anyway, and says more plainly than a label did.
  *
  * ── One story, again ───────────────────────────────────────────────────────
  *
  * Nothing here is a second example. The film is the night thread at another
- * magnification, its sheet is the matrix's rows, and every figure is read off
- * the thread's 06:50 ledger by the components — so this object carries no money
- * and no percentage of its own, and a test keeps it that way. The hours are the
- * thread's hours, and the line numbers are the matrix's; tests hold both.
+ * magnification, its sheet is the matrix's rows, and the quotation's figures —
+ * the value, the margin, the floor, the shortfall — are read off the thread's
+ * 06:50 ledger by the components, so none of them is written here and a test
+ * keeps it that way. The hours are the thread's, the line numbers are the
+ * matrix's, and the one cost that moves, moves by the thread's six per cent and
+ * three weeks: tests hold all of it.
  *
  * ── Shorter than the home page, on purpose ─────────────────────────────────
  *
@@ -876,14 +886,21 @@ export const home = {
  */
 export type GlassStatus = MatrixStatus | 'read'
 
+/** The six places one quotation's facts are kept. Also the icon a source carries. */
+export type GlassSource = 'request' | 'drawing' | 'catalogue' | 'prices' | 'agreement' | 'supplier'
+
 export interface GlassFrame {
   /** An hour of the thread. A test holds every frame to a beat. */
   at: string
   line: string
   /** The sheet's foot until the ledger exists, which is 06:50. */
   note?: string
-  /** Where a source lands on the sheet: `head`, `floor`, or a line number from the matrix. */
-  chips: ReadonlyArray<{ target: string; text: string }>
+  /**
+   * Where a source lands on the sheet — `head`, `floor`, or a line number from
+   * the matrix — and which source it is, for its icon. A chip with no source is
+   * the person the night ends with.
+   */
+  chips: ReadonlyArray<{ target: string; source?: GlassSource; text: string }>
 }
 
 const glassFrames: ReadonlyArray<GlassFrame> = [
@@ -891,7 +908,7 @@ const glassFrames: ReadonlyArray<GlassFrame> = [
     at: '23:47',
     line: 'Twenty line items and a drawing pack, due Thursday. The office is empty.',
     note: 'Twenty lines, unread.',
-    chips: [{ target: 'head', text: 'Shared mailbox · 23:47' }],
+    chips: [{ target: 'head', source: 'request', text: 'Shared mailbox · 23:47' }],
   },
   {
     at: '00:06',
@@ -904,20 +921,20 @@ const glassFrames: ReadonlyArray<GlassFrame> = [
     line: 'One part matches three catalogue entries. One drawing has no revision. Neither is guessed.',
     note: 'Two lines held. Eighteen carry on.',
     chips: [
-      { target: '04', text: 'Catalogue · three entries match' },
-      { target: '11', text: 'Drawing · no revision' },
+      { target: '04', source: 'catalogue', text: 'Catalogue · three entries match' },
+      { target: '11', source: 'drawing', text: 'Drawing · no revision' },
     ],
   },
   {
     at: '03:42',
     line: 'A confirmation arrives: unit cost up six per cent, lead time out three weeks.',
     note: 'Recalculated when the answer arrived.',
-    chips: [{ target: '03', text: 'Supplier confirmation · 03:42' }],
+    chips: [{ target: '03', source: 'supplier', text: 'Supplier confirmation · 03:42' }],
   },
   {
     at: '06:50',
     line: 'Eighteen lines priced, each figure still attached to the page it came from.',
-    chips: [{ target: 'floor', text: 'Framework agreement' }],
+    chips: [{ target: 'floor', source: 'agreement', text: 'Framework agreement' }],
   },
   {
     at: '08:04',
@@ -926,41 +943,122 @@ const glassFrames: ReadonlyArray<GlassFrame> = [
   },
 ]
 
-/** The six documents one quotation is assembled from, as they lie before anything reads them. */
-const glassPieces = [
-  { key: 'request', title: 'Shared mailbox', detail: 'RFQ · framework agreement', flag: 'Arrives 23:47' },
-  { key: 'drawing', title: 'Drawing pack', detail: 'Sensor mount, customer drawing', flag: 'No revision' },
-  { key: 'catalogue', title: 'Catalogue', detail: 'Bearing seat', flag: 'Three entries match' },
-  { key: 'prices', title: 'Supplier price list', detail: 'Pages 4 and 9', flag: 'Unit costs' },
-  { key: 'agreement', title: 'Framework agreement', detail: 'Schedule B', flag: 'Commercial floor' },
-  { key: 'supplier', title: 'Supplier confirmation', detail: 'Unit cost up six per cent', flag: 'Arrives 03:42' },
-] as const
-
-export type GlassPieceKey = (typeof glassPieces)[number]['key']
+/**
+ * The six documents, as they lie on the desk before anything reads them.
+ *
+ * Drawn from their own contents rather than from grey bars: a reader who leans
+ * in finds a real subject line, a title block with the revision cell empty, the
+ * three catalogue entries a tolerance apart, the cost the supplier is about to
+ * change. All of it is the same invented quotation, and it reconciles — the
+ * held lines are held for the reasons the matrix gives, and the confirmation
+ * moves line 03's cost by exactly six per cent and its lead time by exactly
+ * three weeks. The floor in the agreement is not written here: the component
+ * reads it off the ledger, so the clause and the figure cannot disagree.
+ *
+ * Each carries the one question a person would ask of it at 23:47. They are the
+ * same questions the held lines are narrowed to, asked by hand.
+ */
+const glassDocuments = {
+  request: {
+    title: 'Shared mailbox',
+    at: '23:47',
+    subject: 'RFQ 8841 — framework agreement',
+    from: 'Purchasing',
+    address: 'rfq@customer.example',
+    body: 'Please quote the twenty lines attached, against our framework agreement. We need your response by Thursday.',
+    attachments: [
+      { name: 'RFQ-8841.pdf', format: 'PDF' },
+      { name: 'Drawings-8841.zip', format: 'ZIP' },
+    ],
+    question: 'Due Thursday. Who has it?',
+  },
+  drawing: {
+    title: 'Sensor mount',
+    number: 'DWG 8841-11',
+    revision: 'Rev',
+    blank: '—',
+    scale: 'Scale 1:1',
+    material: '6061-T6',
+    dimensions: { width: '120', height: '70', hole: 'Ø8', count: '2×' },
+    question: 'Which revision?',
+  },
+  catalogue: {
+    title: 'Bearing seats',
+    page: 'p. 112',
+    entries: [
+      { part: 'BS-2210-H6', name: 'Bearing seat, Ø20', fit: 'h6' },
+      { part: 'BS-2210-H7', name: 'Bearing seat, Ø20', fit: 'h7' },
+      { part: 'BS-2210-K6', name: 'Bearing seat, Ø20', fit: 'k6' },
+    ],
+    question: 'Which of the three?',
+  },
+  prices: {
+    file: 'supplier-prices.xlsx',
+    columns: ['Part', 'Description', 'Unit cost', 'Lead time'],
+    rows: [
+      { part: 'CH-A380', description: 'Cast housing, A380', cost: '18.40', lead: '21 d' },
+      { part: 'SS-20H6', description: 'Stepped shaft, Ø20 h6', cost: '46.50', lead: '21 d' },
+      { part: 'CP-LC3', description: 'Cover plate, laser cut', cost: '6.90', lead: '10 d' },
+      { part: 'SR-20', description: 'Spacer ring', cost: '1.85', lead: '7 d' },
+      { part: 'LP-6', description: 'Locating pin', cost: '0.62', lead: '7 d' },
+    ],
+    /** The row the supplier is about to change. A test holds it to the confirmation. */
+    moving: 'SS-20H6',
+    tabs: ['Housings', 'Shafts', 'Plates'],
+    question: 'Still this price?',
+  },
+  agreement: {
+    title: 'Framework agreement',
+    schedule: 'Schedule B · Commercial terms',
+    clauses: [
+      { number: 'B.1', text: 'Prices hold for twelve months from signature.' },
+      { number: 'B.2', text: 'Quotations stay open for thirty days.' },
+      { number: 'B.3', text: 'Payment falls due sixty days after invoice.' },
+      { number: 'B.4', text: 'No quotation is issued below a margin of', floor: true },
+      { number: 'B.5', text: 'Lead times are confirmed in writing.' },
+    ],
+    signatures: ['For the customer', 'For the supplier'],
+    question: 'What is their floor?',
+  },
+  supplier: {
+    title: 'Supplier confirmation SC-4471',
+    at: '03:42',
+    item: 'Stepped shaft, Ø20 h6',
+    changes: [
+      { term: 'Unit cost', was: '46.50', now: '49.29' },
+      { term: 'Lead time', was: '21 days', now: '42 days' },
+    ],
+    note: 'Supersedes the price list for this part.',
+    question: 'Who saw this at 03:42?',
+  },
+} as const satisfies Record<GlassSource, unknown>
 
 /**
- * What each source becomes on the thread.
+ * What each source becomes on the sheet.
  *
  * The line numbers and states are the matrix's, and a test holds them to it:
  * the catalogue and the drawing hold lines 04 and 11, and the supplier answer
  * moves line 03. Declared rather than inferred, for the reason `ThreadBeat`
- * is: only three rows carry a line, and reading `row.line` should type-check
+ * is: only some rows carry a line, and reading `row.line` should type-check
  * against the shape of a row, not against six literals.
  */
 export interface GlassThreadRow {
-  key: GlassPieceKey
+  key: GlassSource
+  title: string
   line?: string
   text: string
   status?: MatrixStatus
+  /** Set on the agreement's row, which ends on the floor read from the ledger. */
+  floor?: boolean
 }
 
 const glassThread: ReadonlyArray<GlassThreadRow> = [
-  { key: 'request', text: 'Twenty line items, due Thursday' },
-  { key: 'drawing', line: '11', text: 'Drawing carries no revision', status: 'held' },
-  { key: 'catalogue', line: '04', text: 'Matches three catalogue entries', status: 'held' },
-  { key: 'prices', text: 'Unit costs for the priced lines', status: 'priced' },
-  { key: 'agreement', text: 'Terms, and the floor they set' },
-  { key: 'supplier', line: '03', text: 'Unit cost up, lead time out', status: 'changed' },
+  { key: 'request', title: 'Shared mailbox', text: 'Twenty line items, due Thursday' },
+  { key: 'drawing', title: 'Drawing pack', line: '11', text: 'No revision on the drawing', status: 'held' },
+  { key: 'catalogue', title: 'Catalogue', line: '04', text: 'Three entries match the part', status: 'held' },
+  { key: 'prices', title: 'Supplier price list', text: 'Unit costs for the priced lines', status: 'priced' },
+  { key: 'agreement', title: 'Framework agreement', text: 'Margin floor', floor: true },
+  { key: 'supplier', title: 'Supplier confirmation', line: '03', text: 'Six per cent up, three weeks later', status: 'changed' },
 ]
 
 export const glass = {
@@ -981,8 +1079,6 @@ export const glass = {
   nav: { contact: home.nav.contact },
 
   hero: {
-    /** The eyebrow carries the stage, so a visitor knows what they have walked into. */
-    kicker: 'In build · for the unattended hours',
     headlineStart: hero.headlineStart,
     headlineEnd: hero.headlineEnd,
     lede: hero.lede,
@@ -991,10 +1087,9 @@ export const glass = {
   },
 
   film: {
-    label: thread.label,
-    lede: 'Invented, and marked as invented: one quotation, from arrival to decision.',
+    /** The licence, as the frame's first line: a sentence, not a label. */
+    licence: 'One quotation, invented for this page, followed through one night.',
     title: home.matrix.title,
-    due: home.matrix.due,
     statusLabels: { ...home.matrix.statusLabels, read: 'Read' } satisfies Record<GlassStatus, string>,
     more: 'more lines',
     controls: {
@@ -1005,70 +1100,39 @@ export const glass = {
     },
     frames: glassFrames,
     floor: 'Floor',
-    decision: {
-      label: 'One call for a person',
-      options: ['Quote under the floor', 'Go back to the supplier on the three-week lead time'],
-    },
   },
 
   sources: {
-    label: thread.label,
     scattered: {
       headline: 'Six sources that never meet.',
-      lede: 'Everything one quotation needs is already written down — in a request, a drawing pack, a catalogue, a price list, an agreement and a supplier’s reply.',
+      /** Ends on the licence for everything drawn below it. */
+      lede: 'Everything one quotation needs is already written down, in six places that do not talk to each other. The six on this page are invented.',
     },
     gathered: {
-      headline: 'One thread, every source attached.',
-      lede: 'Incillum is being built to read them into the same twenty lines, and keep each figure tied to the page it came from.',
+      headline: 'Now they meet.',
+      lede: 'Incillum is being built to read all six onto one sheet, with every figure still tied to the page it came from.',
     },
-    pieces: glassPieces,
+    documents: glassDocuments,
     thread: glassThread,
-    lines: 'Line',
+    line: 'Line',
     priced: 'priced',
     held: 'held',
+    against: 'against a floor of',
   },
 
-  rules: {
-    headline: 'Rules you set in daylight.',
-    headlineTail: 'Kept all night.',
-    lede: 'Floors, approvals and what counts as evidence are your team’s to set. Incillum is being built to hold every line to them, and to stop where they say stop.',
-    caption: 'How the night is meant to run',
-    trigger: 'When a request arrives',
-    steps: [
-      { when: 'Read it into lines', then: 'Every figure keeps its source', status: 'read' },
-      { when: 'If a part matches more than one entry', then: 'Hold the line. Narrow the question.', status: 'held' },
-      { when: 'If a drawing carries no revision', then: 'Hold the line. Narrow the question.', status: 'held' },
-      { when: 'If a supplier answer arrives', then: 'Recalculate the line it belongs to', status: 'changed' },
-      { when: 'If the margin falls under the floor', then: 'Bring the decision back to a person', status: 'held' },
-    ] satisfies ReadonlyArray<{ when: string; then: string; status: GlassStatus }>,
-    never: 'Nothing is sent, and no price is committed, without a person.',
+  closing: {
+    headline: home.closing.headline,
+    body: home.closing.body,
+    action: home.closing.action,
+    writeTo: 'Or write to',
   },
 
-  morning: {
-    label: 'Illustrative · the same night',
-    headline: 'Leave at six.',
-    headlineTail: 'Decide at eight.',
-    caption: 'One night, from the moment the office empties',
-    leave: { at: '18:00', text: 'The office empties' },
-    marks: [
-      { at: '23:47', text: 'A request arrives' },
-      { at: '00:06', text: 'Read into lines' },
-      { at: '01:18', text: 'Two lines held' },
-      { at: '03:42', text: 'A supplier answer' },
-      { at: '06:50', text: 'Under the floor' },
-      { at: '08:04', text: 'A decision waits' },
-    ],
-    waiting: 'Waiting at 08:04',
-    call: 'One call: quote under the floor, or go back to the supplier on the three-week lead time.',
-  },
-
-  standing: {
-    label: standing.label,
-    stages: standing.stages.map(({ state, title }) => ({ state, title })),
-  },
-
-  closing: home.closing,
-  status: home.status,
+  /**
+   * Where the build stands, as one plain paragraph rather than three labelled
+   * columns: each stage's title and its state, read off `standing` so the two
+   * pages cannot disagree about what exists.
+   */
+  standing: standing.stages.map(({ state, title }) => `${title} is ${state.toLowerCase()}.`).join(' '),
 } as const
 
 /**

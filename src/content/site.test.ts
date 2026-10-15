@@ -554,39 +554,43 @@ describe('the home matrix', () => {
  *
  * It is the same night told as a film, so it is held to everything the home
  * page is held to — and to one more rule, which is the reason it exists at all:
- * it is short. The figures are not here to reconcile, because the components
- * read them off the 06:50 ledger; what is here is held to the thread's hours
- * and the matrix's lines.
+ * it is short. The quotation's own figures are not here to reconcile, because
+ * the components read them off the 06:50 ledger; what is here is held to the
+ * thread's hours, the matrix's lines, and the one cost that moves.
  */
 describe('the presentation', () => {
   const everything = JSON.stringify(glass)
+  const { documents } = glass.sources
   const words = (text: string) => text.split(/\s+/).filter((word) => /\w/.test(word)).length
+  const amount = (value: string) => Number(value.replaceAll(',', ''))
 
   it('tells the thread’s night, hour for hour', () => {
-    const hours = thread.beats.map((beat) => beat.at)
-    expect(glass.film.frames.map((frame) => frame.at)).toEqual(hours)
-    expect(glass.morning.marks.map((mark) => mark.at)).toEqual(hours)
+    expect(glass.film.frames.map((frame) => frame.at)).toEqual(
+      thread.beats.map((beat) => beat.at),
+    )
   })
 
-  it('leaves the office at the hour the instrument says it empties', () => {
-    expect(glass.morning.leave.at).toBe(`${instrument.officeHours.to}:00`)
-  })
-
-  it('carries no money and no percentage of its own', () => {
+  it('writes none of the quotation’s own figures, which belong to the ledger', () => {
     expect(everything).not.toMatch(/EUR|\d+(\.\d+)?\s?%/)
+    // The floor clause in the agreement is completed by the component, from the ledger.
+    const clause = documents.agreement.clauses.find((entry) => 'floor' in entry)
+    expect(clause?.text).not.toMatch(/\d/)
   })
 
-  it('says it is invented, in the first line of every invented block', () => {
-    for (const label of [glass.film.label, glass.sources.label, glass.morning.label]) {
-      expect(label).toMatch(/^Illustrative/)
-    }
-    expect(glass.film.lede).toMatch(/invented/i)
+  it('says it is invented, in a sentence, before anything invented is shown', () => {
+    expect(glass.film.licence).toMatch(/invented/i)
+    expect(glass.sources.scattered.lede).toMatch(/invented/i)
+    // And never as a tracked label: the labels were what read as assembled.
+    expect(everything).not.toMatch(/Illustrative ·/)
   })
 
-  it('lands every source on a target the sheet has', () => {
+  it('lands every source on a target the sheet has, with the icon of a real source', () => {
     const targets = new Set(['head', 'floor', ...home.matrix.rows.map((row) => row.line)])
     for (const frame of glass.film.frames) {
-      for (const chip of frame.chips) expect(targets.has(chip.target), chip.target).toBe(true)
+      for (const chip of frame.chips) {
+        expect(targets.has(chip.target), chip.target).toBe(true)
+        if (chip.source) expect(Object.keys(documents)).toContain(chip.source)
+      }
     }
   })
 
@@ -603,17 +607,42 @@ describe('the presentation', () => {
       const line = glass.sources.thread.find((row) => row.key === key)?.line
       return home.matrix.rows.find((row) => row.line === line)?.evidence ?? ''
     }
-    expect(evidenceFor('catalogue')).toMatch(/catalogue/i)
-    expect(evidenceFor('drawing')).toMatch(/revision/i)
+    expect(evidenceFor('catalogue')).toMatch(/three catalogue entries/i)
+    expect(evidenceFor('drawing')).toMatch(/no revision/i)
     expect(evidenceFor('supplier')).toMatch(/03:42/)
   })
 
-  it('counts its sources in the headline, and threads every one of them', () => {
-    expect(glass.sources.pieces).toHaveLength(6)
+  it('threads every document, once, in the order they lie on the desk', () => {
+    const keys = Object.keys(documents)
+    expect(keys).toHaveLength(6)
     expect(glass.sources.scattered.headline).toMatch(/^Six /)
-    expect(glass.sources.thread.map((row) => row.key)).toEqual(
-      glass.sources.pieces.map((piece) => piece.key),
-    )
+    expect(glass.sources.thread.map((row) => row.key)).toEqual(keys)
+  })
+
+  it('moves the supplier’s cost by exactly the thread’s six per cent and three weeks', () => {
+    const moving = documents.prices.rows.find((row) => row.part === documents.prices.moving)
+    expect(moving, 'the price list carries the row the supplier changes').toBeTruthy()
+
+    const [cost, lead] = documents.supplier.changes
+    expect(amount(cost.was)).toBe(amount(moving!.cost))
+    expect(amount(cost.now)).toBeCloseTo(amount(cost.was) * 1.06, 2)
+
+    const days = (value: string) => Number(/(\d+)/.exec(value)?.[1])
+    expect(days(lead.was)).toBe(days(moving!.lead))
+    expect(days(lead.now) - days(lead.was)).toBe(21)
+
+    // The thread says the same thing in words, at the same hour, about the same part.
+    const beat = thread.beats.find((entry) => entry.at === documents.supplier.at)
+    expect(beat?.body).toMatch(/six per cent/)
+    expect(beat?.body).toMatch(/three weeks/)
+    expect(documents.supplier.item).toBe(moving!.description)
+  })
+
+  it('holds the drawing and the catalogue for the reasons the thread gives', () => {
+    expect(documents.drawing.blank).toBe('—')
+    expect(new Set(documents.catalogue.entries.map((entry) => entry.name)).size).toBe(1)
+    expect(new Set(documents.catalogue.entries.map((entry) => entry.fit)).size).toBe(3)
+    expect(documents.request.at).toBe(thread.beats[0]!.at)
   })
 
   it('is short: titles of six words, lines of sixteen, ledes of thirty', () => {
@@ -621,31 +650,28 @@ describe('the presentation', () => {
       ...glass.opening,
       glass.sources.scattered.headline,
       glass.sources.gathered.headline,
-      glass.rules.headline,
-      glass.rules.headlineTail,
-      glass.morning.headline,
-      glass.morning.headlineTail,
     ]
     for (const title of titles) expect(words(title), title).toBeLessThanOrEqual(6)
-    for (const frame of glass.film.frames) expect(words(frame.line), frame.line).toBeLessThanOrEqual(16)
+    for (const frame of glass.film.frames) {
+      expect(words(frame.line), frame.line).toBeLessThanOrEqual(16)
+    }
     for (const lede of [
-      glass.film.lede,
+      glass.film.licence,
       glass.sources.scattered.lede,
       glass.sources.gathered.lede,
-      glass.rules.lede,
     ]) {
       expect(words(lede), lede).toBeLessThanOrEqual(30)
     }
   })
 
-  it('keeps what the product will do in the future tense', () => {
+  it('keeps what the product will do in the future tense, and the stage as states', () => {
     expect(glass.sources.gathered.lede).toMatch(/being built/i)
-    expect(glass.rules.lede).toMatch(/being built/i)
-    expect(glass.hero.kicker).toMatch(/^In build/)
+    for (const stage of standing.stages) {
+      expect(glass.standing).toContain(`${stage.title} is ${stage.state.toLowerCase()}.`)
+    }
   })
 
   it('leaves the call to a person', () => {
-    expect(glass.rules.never).toMatch(/without a person/i)
     expect(glass.film.frames.at(-1)?.line).toMatch(/without you/i)
   })
 
@@ -676,6 +702,7 @@ describe('the presentation', () => {
       'Outlook',
       'Gmail',
       'HubSpot',
+      'Excel',
       'asks the supplier',
       'chases the supplier',
       'contacts the supplier',
@@ -686,8 +713,20 @@ describe('the presentation', () => {
     ]) {
       expect(everything.toLowerCase()).not.toContain(forbidden.toLowerCase())
     }
-    for (const calendar of ['2026', '2027', 'Q1', 'Q2', 'Q3', 'Q4', 'January', 'September']) {
+    for (const calendar of [
+      '2026',
+      '2027',
+      'Q1',
+      'Q2',
+      'Q3',
+      'Q4',
+      'January',
+      'February',
+      'September',
+    ]) {
       expect(everything).not.toContain(calendar)
     }
+    // An address in an invented document uses the domain reserved for examples.
+    expect(documents.request.address).toMatch(/\.example$/)
   })
 })

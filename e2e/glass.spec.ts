@@ -6,12 +6,13 @@ import type { Page } from '@playwright/test'
  * The presentation at /glass.
  *
  * The rules under test are the home page's, carried onto a page that moves
- * more: one dark region; the invented material says so first; the money is the
- * thread's; nothing is claimed, nothing pulses, and the motto is not spent; one
- * form, which is never submitted here. And the presentation's own: the opening
- * gets out of the way, the film plays once and stops at 08:04, the reader can
- * pause it, the sources gather and come apart with the scroll, and reduced
- * motion gets the final frame of all of it.
+ * more: one dark region; the invented material says so first, in a sentence;
+ * the money is the thread's; nothing is claimed, nothing pulses, and the motto
+ * is not spent; one form, which is never submitted here. And the
+ * presentation's own: no tracked capitals anywhere, the opening gets out of the
+ * way, the film plays once and stops at 08:04, the reader can pause it, the
+ * documents gather and come apart with the scroll, nothing lies under the
+ * photographed part, and reduced motion gets the final frame of all of it.
  *
  * Most tests read the page under reduced motion, which is its final frame and
  * the quickest way to the content. The ones about motion turn it back on.
@@ -84,8 +85,9 @@ test('the film says it is invented first, and its chapters are the thread’s ho
   page,
 }) => {
   const film = page.locator('#film')
-  await expect(film.getByRole('heading', { level: 2 })).toHaveText(/^Illustrative/)
-  await expect(film.locator('.glass-film-lede')).toContainText(/invented/i)
+  // The licence is the frame's first line and its name: a sentence, not a label.
+  await expect(film.getByRole('heading', { level: 2 })).toHaveText(/invented/i)
+  await expect(film).toHaveAccessibleName(/invented/i)
 
   const chapters = film
     .getByRole('group', { name: 'Hours of the night' })
@@ -124,6 +126,9 @@ test('the film’s money is the thread’s money', async ({ page }) => {
 })
 
 test('the film plays once, in order, and stops at 08:04', async ({ page }) => {
+  // Six hours of animation-timed playback, then a replay: on a loaded machine a
+  // headless browser draws frames slowly enough to need more than the default budget.
+  test.slow()
   await watchTheFilm(page, '400ms')
   const film = page.locator('.glass-film')
   const seen: string[] = []
@@ -191,7 +196,12 @@ test('any key ends the opening early, and the page arrives at once', async ({ pa
   await page.keyboard.press('Shift')
   await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'skipped')
   await expect(opening).toBeHidden()
-  await expect(page.getByRole('heading', { level: 1 })).toHaveCSS('opacity', '1')
+  // At once: the entrance restarts under its no-delay name instead of waiting out the opening.
+  // Asserted on the mechanism, not on an opacity sampled mid-frame.
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCSS(
+    'animation-name',
+    'glass-enter-now',
+  )
 })
 
 test('six sources gather into one thread as the reader scrolls, and come apart again', async ({
@@ -201,8 +211,11 @@ test('six sources gather into one thread as the reader scrolls, and come apart a
   await expect(sources.getByRole('heading', { level: 2 }).first()).toHaveText(
     'Six sources that never meet.',
   )
-  await expect(sources.locator('.glass-piece')).toHaveCount(6)
+  // Six documents and the part itself on the desk; six rows on the sheet, each with its document.
+  await expect(sources.locator('.glass-piece .gd')).toHaveCount(6)
+  await expect(sources.locator('.glass-piece[data-kind="part"] img')).toHaveCount(1)
   await expect(sources.locator('.glass-thread-row')).toHaveCount(6)
+  await expect(sources.locator('.glass-thread-row .glass-thumb .gd')).toHaveCount(6)
   // The thread holds the matrix's two lines, in the one colour, and nothing else does.
   await expect(sources.locator('.glass-thread .matrix-status--held')).toHaveCount(2)
 
@@ -246,8 +259,7 @@ test('nothing is claimed, nothing pulses, and the signal stays where it is licen
   // The one hue is set on held lines and on the figure that breaks the floor. Anything else in it is a fifth use.
   const strays = await page.evaluate(() => {
     const signal = new Set(['rgb(154, 85, 24)', 'rgb(228, 160, 70)'])
-    const licensed =
-      '.matrix-status--held, .glass-sheet-short, .glass-thread-short, .glass-day-held, .glass-day-short'
+    const licensed = '.matrix-status--held, .glass-sheet-short, .glass-thread-short'
     return [...document.querySelectorAll('body *')]
       .filter((element) => element.childElementCount === 0 && element.textContent?.trim())
       .filter((element) => signal.has(getComputedStyle(element).color))
@@ -255,6 +267,75 @@ test('nothing is claimed, nothing pulses, and the signal stays where it is licen
       .map((element) => element.textContent?.trim())
   })
   expect(strays).toEqual([])
+})
+
+test('no tracked capitals: no label over a heading, and none inside the documents', async ({
+  page,
+}) => {
+  const capitals = await page.evaluate(() =>
+    [...document.querySelectorAll('body *')]
+      .filter((element) => element.childElementCount === 0 && element.textContent?.trim())
+      .filter((element) => getComputedStyle(element).textTransform === 'uppercase')
+      .map((element) => element.textContent?.trim()),
+  )
+  expect(capitals).toEqual([])
+})
+
+test('the documents carry their own contents, and the part lies on bare desk', async ({
+  page,
+}) => {
+  const desk = page.locator('.glass-desk-figure')
+  // Real contents, from the same quotation: the empty revision, the moving cost, the floor clause.
+  await expect(desk.locator('.gd-drawing')).toContainText('Rev —')
+  await expect(desk.locator('.gd-grid tr[data-moving]')).toContainText('46.50')
+  await expect(desk.locator('.gd-changes')).toContainText('49.29')
+  await expect(desk.locator('.gd-clauses li[data-floor]')).toContainText('20.0%')
+  await expect(desk.locator('.gd-question')).toHaveCount(6)
+
+  // `multiply` shows whatever is under the photograph through the metal, so nothing may be.
+  await desk.scrollIntoViewIfNeeded()
+  const crossings = await page.evaluate(() => {
+    for (const piece of document.querySelectorAll<HTMLElement>('.glass-piece')) {
+      piece.style.setProperty('--turn-wide', '0')
+      piece.style.setProperty('--turn-narrow', '0')
+    }
+    const box = (element: Element) => element.getBoundingClientRect()
+    const meets = (
+      a: DOMRect,
+      b: { left: number; right: number; top: number; bottom: number },
+    ) =>
+      !(a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top)
+    const part = box(document.querySelector('.glass-piece[data-kind="part"]')!)
+    const inset = part.width * 0.2
+    const metal = {
+      left: part.left + inset,
+      right: part.right - inset,
+      top: part.top + inset,
+      bottom: part.bottom - inset,
+    }
+    const found: string[] = []
+    for (const document_ of document.querySelectorAll('.glass-piece .gd, .gd-question')) {
+      if (meets(box(document_), metal)) found.push(document_.className)
+    }
+    const tangle = [...document.querySelectorAll<SVGSVGElement>('.glass-tangle')].find(
+      (svg) => getComputedStyle(svg).display !== 'none',
+    )!
+    for (const path of tangle.querySelectorAll('path')) {
+      const length = path.getTotalLength()
+      const matrix = path.getScreenCTM()!
+      for (let step = 0; step <= 60; step += 1) {
+        const point = path.getPointAtLength((length * step) / 60)
+        const x = matrix.a * point.x + matrix.c * point.y + matrix.e
+        const y = matrix.b * point.x + matrix.d * point.y + matrix.f
+        if (x > metal.left && x < metal.right && y > metal.top && y < metal.bottom) {
+          found.push(path.getAttribute('d') ?? 'path')
+          break
+        }
+      }
+    }
+    return found
+  })
+  expect(crossings).toEqual([])
 })
 
 test('reduced motion renders the final frame', async ({ page }) => {
@@ -304,13 +385,14 @@ test('server HTML carries the headline, the form, the whole night and the licenc
   await staticPage.goto(`${base}${GLASS}`)
   await expect(staticPage.getByRole('heading', { level: 1 })).toBeVisible()
   await expect(staticPage.getByRole('textbox', { name: /^Work email/ })).toBeAttached()
-  await expect(staticPage.locator('#film h2')).toHaveText(/^Illustrative/)
+  await expect(staticPage.locator('#film h2')).toHaveText(/invented/i)
   await expect(staticPage.locator('.glass-beat')).toHaveCount(6)
   for (const hour of ['23:47', '00:06', '01:18', '03:42', '06:50', '08:04']) {
     await expect(staticPage.locator('.glass-beat', { hasText: hour })).toBeVisible()
   }
   await expect(staticPage.getByText('Six sources that never meet.')).toBeVisible()
-  await expect(staticPage.getByText('One thread, every source attached.')).toBeVisible()
+  await expect(staticPage.getByText('Now they meet.')).toBeVisible()
+  await expect(staticPage.getByText(/The six on this page are invented/)).toBeVisible()
   await context.close()
 })
 
