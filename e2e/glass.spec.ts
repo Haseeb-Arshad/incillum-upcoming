@@ -115,12 +115,25 @@ test('the film says it is invented first, and its chapters are the thread’s ho
   await chapters.nth(3).press('Enter')
   await expect(film.locator('.glass-beat[data-active="true"]')).toContainText('03:42')
   await expect(film.locator('.glass-sheet-row[data-status="changed"]')).toHaveCount(1)
-  await expect(film.locator('.glass-namebox')).toHaveText('E4')
-  // The cost the supplier moved, struck through beside the one that replaced it, in the cell selected.
+  await expect(film.locator('.glass-namebox')).toHaveText('E15')
+  // The cost the supplier moved, struck through above the one that replaced it, in the cell selected.
   const moved = film.locator('.glass-sheet-row[data-status="changed"] [data-column="rate"]')
   await expect(moved).toHaveAttribute('data-selected', 'true')
-  await expect(moved.locator('s')).toHaveText('46.50')
-  await expect(moved).toContainText('49.29')
+  await expect(moved.locator('s')).toHaveText('128.00')
+  await expect(moved).toContainText('135.68')
+  // And both fit the cell. A cell clips what it cannot hold, and once cut the new cost mid-figure.
+  // Measured on the figures, not on `scrollWidth`, which also counts the fill handle.
+  const spill = await moved.evaluate((cell) => {
+    const box = cell.getBoundingClientRect()
+    const value = cell.querySelector('.glass-cell-value')!.getBoundingClientRect()
+    return Math.max(
+      box.left - value.left,
+      value.right - box.right,
+      box.top - value.top,
+      value.bottom - box.bottom,
+    )
+  })
+  expect(spill).toBeLessThanOrEqual(0)
 })
 
 test('the sheet is a spreadsheet: empty while the request is a PDF, then every rate a document’s', async ({
@@ -147,7 +160,7 @@ test('the sheet is a spreadsheet: empty while the request is a PDF, then every r
   await expect(film.getByRole('columnheader', { name: 'Item' })).toBeVisible()
   await expect(film.getByRole('columnheader', { name: 'Rate' })).toBeVisible()
   const rates = film.locator('.glass-sheet-row [data-column="rate"]')
-  await expect(rates).toHaveText(['21.60', '18.40', '46.50', '—', '3.15', '6.90', '—'])
+  await expect(rates).toHaveText(['21.60', '18.40', '—', '3.15', '6.90', '—', '128.00'])
 
   await film.getByRole('button', { name: /^08:04/ }).click()
   await expect(film.locator('.glass-namebox')).toHaveText('Quote')
@@ -326,8 +339,8 @@ test('the documents carry their own contents, and the part lies on bare desk', a
   const desk = page.locator('.glass-desk-figure')
   // Real contents, from the same quotation: the empty revision, the moving cost, the floor clause.
   await expect(desk.locator('.gd-drawing')).toContainText('Rev —')
-  await expect(desk.locator('.gd-grid tr[data-moving]')).toContainText('46.50')
-  await expect(desk.locator('.gd-changes')).toContainText('49.29')
+  await expect(desk.locator('.gd-grid tr[data-moving]')).toContainText('128.00')
+  await expect(desk.locator('.gd-changes')).toContainText('135.68')
   await expect(desk.locator('.gd-clauses li[data-floor]')).toContainText('20.0%')
   // The agreed rates the sheet reads for the two lines priced from the agreement.
   await expect(desk.locator('.gd-clauses')).toContainText('BR-6061 21.60')

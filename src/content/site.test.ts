@@ -761,3 +761,170 @@ describe('the presentation', () => {
     expect(documents.request.address).toMatch(/\.example$/)
   })
 })
+
+/**
+ * The line the 03:42 confirmation moved.
+ *
+ * Four sections name it — the matrix marks it, the thread calls it the largest
+ * line, the evidence document takes it apart, and /glass lays its price-list
+ * row and the confirmation on the desk — and they once named two different
+ * lines: a stepped shaft at 46.50 on line 03, and a flanged housing at 128.00
+ * on line 14. Every test above still passed, because each held its own section
+ * to the thread's six per cent and none held the sections to each other. These
+ * do: one confirmation, read in one minute, moving one line, one part, one
+ * quantity and one cost.
+ */
+describe('the line the supplier moved is one line on every surface', () => {
+  const moved = home.matrix.rows.filter((row) => row.status === 'changed')
+  const { documents } = glass.sources
+  const { sheet } = glass.film
+  const listed = documents.prices.rows.find((row) => row.part === documents.prices.moving)
+  const landed = glass.film.frames.flatMap((frame) =>
+    frame.chips
+      .filter((chip) => chip.source === 'supplier')
+      .map((chip) => ({ ...chip, at: frame.at })),
+  )
+  const ledger = thread.beats.find((beat) => beat.figures)?.figures ?? []
+
+  const decimal = (value: string) => Number(value.replaceAll(',', ''))
+  const days = (value: string) => Number(/(\d+)/.exec(value)?.[1])
+  const lineIn = (value: string) => Number(/Line (\d+)/.exec(value)?.[1])
+  const hoursIn = (value: string) =>
+    [...value.matchAll(/\d{2}:\d{2}/g)].map((match) => match[0])
+  const sheetLine = (line: string) => sheet.lines[line as keyof typeof sheet.lines]
+  const source = (term: string) => {
+    const found = evidence.record.source.items.find((item) => item.term.startsWith(term))
+    expect(found, `no source "${term}" in the evidence document`).toBeTruthy()
+    return found!
+  }
+  const change = (term: string) => {
+    const found = documents.supplier.changes.find((entry) => entry.term === term)
+    expect(found, `no "${term}" on the confirmation`).toBeTruthy()
+    return found!
+  }
+  const calculated = (basis: string) => {
+    const found = evidence.record.calculation.rows.find((row) =>
+      row.basis.startsWith(basis),
+    )
+    expect(found, `no calculation row starting "${basis}"`).toBeTruthy()
+    return money(found!.amount)
+  }
+  const quote = () =>
+    money(ledger.find((entry) => entry.term === 'Quote value')?.value ?? '')
+
+  it('is one line of the matrix, and it is the evidence document’s line', () => {
+    expect(moved).toHaveLength(1)
+    const line = Number(moved[0]!.line)
+    expect(lineIn(evidence.record.reference)).toBe(line)
+    expect(lineIn(source('Customer RFQ').value)).toBe(line)
+  })
+
+  it('is the line /glass moves: on the film, on the gathered sheet, and off the price list', () => {
+    const { line } = moved[0]!
+    expect(glass.sources.thread.find((row) => row.key === 'supplier')?.line).toBe(line)
+    expect(landed.map((chip) => chip.target)).toEqual([line])
+    const entry = sheetLine(line)
+    expect('rate' in entry ? entry.rate.part : undefined).toBe(documents.prices.moving)
+  })
+
+  it('belongs to one request', () => {
+    const rfq = (value: string) => /RFQ (\d+)/.exec(value)?.[1]
+    expect(rfq(evidence.record.reference)).toBeTruthy()
+    expect(rfq(source('Customer RFQ').term)).toBe(rfq(evidence.record.reference))
+    expect(rfq(documents.request.subject)).toBe(rfq(evidence.record.reference))
+  })
+
+  it('names one part, in the same words', () => {
+    const [part] = evidence.record.part.split(' · ')
+    expect(moved[0]!.item).toBe(part)
+    expect(listed?.description).toBe(part)
+    expect(documents.supplier.item).toBe(part)
+  })
+
+  it('carries one quantity', () => {
+    const { quantity } = sheetLine(moved[0]!.line)
+    expect(decimal(quantity)).toBe(evidence.visual.units)
+    expect(evidence.record.part).toContain(`${quantity} units`)
+  })
+
+  it('moves one cost, from the evidence document’s figure to the evidence document’s figure', () => {
+    const cost = change('Unit cost')
+    expect(decimal(listed!.cost)).toBe(evidence.visual.unitCostBefore)
+    expect(decimal(cost.was)).toBe(evidence.visual.unitCostBefore)
+    expect(decimal(cost.now)).toBe(evidence.visual.unitCostAfter)
+    const finding = [
+      ...evidence.record.finding.body.matchAll(/EUR ([\d,]+\.\d{2})/g),
+    ].map((match) => decimal(match[1]!))
+    expect(finding).toEqual([decimal(cost.was), decimal(cost.now)])
+    // The sheet's quantity at the confirmed cost is the evidence's cost line, to the cent.
+    expect(decimal(sheetLine(moved[0]!.line).quantity) * decimal(cost.now)).toBeCloseTo(
+      calculated('Cost'),
+      2,
+    )
+  })
+
+  it('moves one lead time', () => {
+    const lead = change('Lead time')
+    expect(days(listed!.lead)).toBe(days(lead.was))
+    const stated = [...evidence.visual.leadTime.matchAll(/\d+/g)].map((match) =>
+      Number(match[0]),
+    )
+    expect(stated).toEqual([days(lead.was), days(lead.now)])
+    expect(evidence.record.finding.body).toContain(
+      `from ${days(lead.was)} days to ${days(lead.now)}`,
+    )
+  })
+
+  it('is one confirmation, read and recalculated in the same minute', () => {
+    const number = /SC-\d+/.exec(documents.supplier.title)?.[0]
+    expect(number).toBeTruthy()
+    expect(evidence.visual.sourceReference).toContain(number)
+    expect(source('Supplier confirmation').term).toContain(number)
+
+    // The thread recalculates "on the spot", so every hour the confirmation and
+    // the evidence document name is the one it arrives in, and that is a beat.
+    const { at } = documents.supplier
+    expect(thread.beats.map((beat) => beat.at)).toContain(at)
+    expect(new Set(hoursIn(JSON.stringify(documents.supplier)))).toEqual(new Set([at]))
+    expect(new Set(hoursIn(JSON.stringify(evidence)))).toEqual(new Set([at]))
+    expect(evidence.record.revisedAt).toBe(at)
+    expect(hoursIn(moved[0]!.evidence)).toEqual([at])
+    for (const chip of landed) {
+      expect(chip.at).toBe(at)
+      expect(hoursIn(chip.text)).toEqual([at])
+    }
+  })
+
+  it('is the largest line on the quotation, which is what the thread calls it', () => {
+    const quoted = calculated('Quoted')
+    // Larger than every other priced line put together, so larger than any one of them.
+    expect(quoted).toBeGreaterThan(quote() - quoted)
+    const beat = thread.beats.find((entry) => entry.at === documents.supplier.at)
+    expect(beat?.body).toMatch(/largest line/)
+    expect(evidence.record.decision.body).toMatch(/largest line/)
+  })
+
+  it('leaves room beside it for every other rate the sheet shows', () => {
+    // A rate on the sheet is a unit cost or an agreed unit rate, and either is
+    // at most what its line is quoted at. So the other priced lines, at their
+    // rates, have to fit inside what the quotation carries beside this one.
+    const agreed = documents.agreement.clauses.flatMap((clause) =>
+      'rates' in clause ? clause.rates : [],
+    )
+    let others = 0
+    for (const row of home.matrix.rows) {
+      if (row.status !== 'priced') continue
+      const entry = sheetLine(row.line)
+      if (!('rate' in entry)) continue
+      const { from, part } = entry.rate
+      const rate =
+        from === 'prices'
+          ? documents.prices.rows.find((price) => price.part === part)?.cost
+          : agreed.find((term) => term.part === part)?.rate
+      expect(rate, `${row.line} reads ${part}`).toBeTruthy()
+      others += decimal(entry.quantity) * decimal(rate!)
+    }
+    expect(others).toBeGreaterThan(0)
+    expect(others).toBeLessThan(quote() - calculated('Quoted'))
+  })
+})

@@ -3089,8 +3089,19 @@
   display: inline-block;
   animation: glass-pop var(--ic-slow) var(--glass-ease) both;
 }
+/*
+ * A moved rate keeps the figure it replaced, struck, stacked above it at the
+ * grid's furniture size. Side by side the pair is wider than the column, and a
+ * cell that clips it cuts the new cost mid-figure; stacked, it fits the column
+ * and the row's own height, so nothing under the film moves when it lands.
+ */
+.glass-cell-value:has(s) {
+  line-height: 1.15;
+  vertical-align: middle;
+}
 .glass-cell-value s {
-  margin-right: 0.4375rem;
+  display: block;
+  font-size: 0.6875rem;
   text-decoration-thickness: 1px;
   color: var(--ic-ink-400);
 }
