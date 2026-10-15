@@ -1125,6 +1125,13 @@ export const glass = {
     body: home.closing.body,
     action: home.closing.action,
     writeTo: 'Or write to',
+    /**
+     * The morning plate: the night plate's own room at 08:04, where the film
+     * ends. Described the way `nightfall.alt` describes the night — the
+     * composition, not the argument — so the two read as one room, twice.
+     */
+    morning:
+      'The same office at 08:04, photographed from inside. Grey morning daylight comes through the glass wall; the desk lamp is still on over the printed quotation, the chair behind it is empty and pushed back, and the monitor is still switched off.',
   },
 
   /**

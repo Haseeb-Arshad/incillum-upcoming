@@ -2582,11 +2582,20 @@
      2. the film: one hour per `--glass-frame` while it is on screen, once
         through, paused by the reader, never looped;
      3. the gathering: one change of state, tied to where the reader is;
-     4. one reveal for the close;
-     5. the arrow nudge and the press, as everywhere.
+     4. the field: dust drifting at thirty frames a second while it is on
+        screen — a landscape under the opening that settles when the page
+        assembles and falls behind on scroll, and the same dust settled round
+        the morning plate. The one motion that continues while the reader is
+        still, by the owner's choice: it is the night, moving while nobody
+        watches it. It stops off screen and in a hidden tab;
+     5. the morning plate's parallax, a few per cent inside its frame;
+     6. two reveals at the close: the handover over the photograph, and the
+        invitation under it;
+     7. the arrow nudge and the press, as everywhere.
 
-   Nothing pulses and nothing loops. Under reduced motion every one of these
-   renders its final frame, and the film becomes six chapters to step through.
+   Nothing pulses and nothing else loops. Under reduced motion every one of
+   these renders its final frame, and the film becomes six chapters to step
+   through.
    ══════════════════════════════════════════════════════════════════════════ */
 .glass {
   --glass-display: clamp(2.75rem, 6vw, 5.5rem);
@@ -2668,6 +2677,40 @@
   transform-origin: top;
   animation: glass-rule 1400ms var(--glass-ease) both;
   animation-delay: calc(var(--i) * 45ms);
+}
+
+/*
+ * The field (`glass-field.tsx`, drawn by `lib/dust.ts`): dust under the opening
+ * and the hero, and again round the morning plate. Its colour is this
+ * element's `color`, read by the script, so it is the scope's ink — light on
+ * the night, dark on the desk — and follows the tokens like everything else.
+ * The script moves it on scroll; nothing here animates it.
+ */
+.glass-field {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: -1;
+  height: max(40rem, 100svh);
+  color: var(--ic-ink-900);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+/* Round the morning plate: the full width of the window, from above the photograph to below it. */
+.glass-field[data-tone='morning'] {
+  top: -30%;
+  right: auto;
+  bottom: -22%;
+  left: 50%;
+  width: 100vw;
+  height: auto;
+  margin-left: -50vw;
+}
+.glass-field canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .glass-opening {
@@ -4077,6 +4120,91 @@
 }
 
 /* ── The close, on the same desk ──────────────────────────────────────── */
+/*
+ * The morning plate. Cropped a little larger than its frame so the drift the
+ * script writes (a fraction between -0.5 and 0.5) has room to move it without
+ * ever showing an edge; at rest, and under reduced motion, it sits centred.
+ * The photograph is generated at the frame's own 16:7, so on a wide screen the
+ * only crop is that margin.
+ */
+.glass-morning {
+  position: relative;
+  isolation: isolate;
+  margin: 0 0 clamp(3.5rem, 7vw, 5.5rem);
+}
+.glass-morning-frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 7;
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-sunken);
+}
+.glass-morning-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 55%;
+  transform: translate3d(0, calc(var(--glass-drift, 0) * -10%), 0) scale(1.12);
+  will-change: transform;
+  user-select: none;
+}
+
+/*
+ * The handover (`glass-handover.tsx`): the plate's caption, set as the product
+ * would set it — a lit sheet over the window, where the generated frame keeps
+ * its quiet third. On a narrow screen it is tucked under the photograph
+ * instead, over its lower edge, because over a phone-sized window it would hide
+ * the room it is about.
+ */
+.glass-handover {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: start;
+  gap: 0.875rem;
+  margin: -2.5rem 0.75rem 0;
+  padding: 1.125rem 1.25rem 1.25rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  color: var(--ic-ink-900);
+}
+.glass-handover-decision {
+  font-family: var(--font-display);
+  font-size: clamp(1.1875rem, 1.6vw, 1.4375rem);
+  line-height: 1.18;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+.glass-handover-figures {
+  display: grid;
+  gap: 0.375rem;
+  justify-self: stretch;
+  padding-block: 0.75rem;
+  border-block: 1px solid var(--ic-line);
+  font-size: var(--text-small);
+}
+.glass-handover-figures > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+}
+.glass-handover-figures dt,
+.glass-handover-figures dd span,
+.glass-handover-owner {
+  color: var(--ic-ink-600);
+}
+.glass-handover-figures dd {
+  font-weight: 500;
+}
+.glass-handover-short dd {
+  color: var(--ic-signal);
+}
+.glass-handover-owner {
+  font-size: var(--text-small);
+}
 .glass-close {
   padding-block: clamp(5.5rem, 11vw, 9rem) clamp(4.5rem, 9vw, 7rem);
 }
@@ -4237,6 +4365,20 @@
     align-items: start;
   }
 }
+@media (min-width: 48rem) {
+  .glass-handover {
+    position: absolute;
+    top: clamp(1rem, 2.4vw, 2rem);
+    right: clamp(1rem, 2.4vw, 2rem);
+    width: min(23rem, 42%);
+    margin: 0;
+  }
+}
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+  .glass-morning-frame {
+    aspect-ratio: 2 / 1;
+  }
+}
 @media (min-width: 64rem) {
   .glass-hours {
     padding-inline: 2.5rem;
@@ -4247,6 +4389,12 @@
   }
 }
 @media (max-width: 47.99rem) {
+  .glass-morning-frame {
+    aspect-ratio: 4 / 3;
+  }
+  .glass-morning-frame img {
+    object-position: 34% 60%;
+  }
   .glass-desk-figure {
     height: 35rem;
   }

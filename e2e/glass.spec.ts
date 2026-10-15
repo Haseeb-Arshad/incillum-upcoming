@@ -259,7 +259,8 @@ test('nothing is claimed, nothing pulses, and the signal stays where it is licen
   // The one hue is set on held lines and on the figure that breaks the floor. Anything else in it is a fifth use.
   const strays = await page.evaluate(() => {
     const signal = new Set(['rgb(154, 85, 24)', 'rgb(228, 160, 70)'])
-    const licensed = '.matrix-status--held, .glass-sheet-short, .glass-thread-short'
+    const licensed =
+      '.matrix-status--held, .glass-sheet-short, .glass-thread-short, .glass-handover-short'
     return [...document.querySelectorAll('body *')]
       .filter((element) => element.childElementCount === 0 && element.textContent?.trim())
       .filter((element) => signal.has(getComputedStyle(element).color))
@@ -358,6 +359,52 @@ test('reduced motion renders the final frame', async ({ page }) => {
       .first()
       .evaluate((element) => getComputedStyle(element).transitionDuration),
   ).toMatch(/^0s/)
+})
+
+test('the dust holds one still frame under reduced motion, and drifts without it', async ({
+  page,
+}) => {
+  for (const tone of ['night', 'morning']) {
+    const field = page.locator(`.glass-field[data-tone="${tone}"]`)
+    await expect(field, tone).toHaveAttribute('data-ready', 'true')
+    await expect(field, tone).toHaveAttribute('data-motion', 'still')
+    expect(await field.evaluate((element: HTMLElement) => element.style.transform), tone).toBe('')
+  }
+
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  const night = page.locator('.glass-field[data-tone="night"]')
+  await expect(night).toHaveAttribute('data-motion', 'flowing')
+  const first = await night.screenshot()
+  await expect
+    .poll(async () => Buffer.compare(first, await night.screenshot()) !== 0, { timeout: 15_000 })
+    .toBe(true)
+
+  // Scrolled past, it fades out and stops drawing rather than running behind the film.
+  await page.locator('.glass-film').evaluate((element) =>
+    element.scrollIntoView({ block: 'start', behavior: 'instant' }),
+  )
+  await expect(night).toHaveAttribute('data-motion', 'still')
+})
+
+test('the morning is the same room, and what waits in it is the night’s own', async ({
+  page,
+}) => {
+  const morning = page.locator('.glass-morning')
+  await expect(morning.getByRole('img')).toHaveAttribute('alt', /08:04/)
+  const handover = morning.locator('.glass-handover')
+  await expect(handover).toContainText('With a person · 08:04')
+  await expect(handover).toContainText('Quote under the floor, or go back on the lead time.')
+  await expect(handover).toContainText('Neither happens without you.')
+  for (const figure of ['16.4%', '20.0%', 'EUR 10,638.00']) {
+    await expect(handover).toContainText(figure)
+  }
+  await expect(handover.locator('.glass-handover-short')).toContainText('EUR 10,638.00')
+  // Reduced motion: the photograph holds still, centred.
+  expect(
+    await morning
+      .locator('.glass-morning-frame')
+      .evaluate((element: HTMLElement) => element.style.getPropertyValue('--glass-drift')),
+  ).toBe('')
 })
 
 test('the inline field keeps its name and validates, and nothing is sent', async ({

@@ -52,12 +52,12 @@ incillum/
 ├── src/
 │   ├── content/site.ts        every word the site renders
 │   ├── components/            one file per section, used once each
-│   ├── lib/                   schema, spam heuristic, seo, analytics, cn
+│   ├── lib/                   schema, spam heuristic, seo, analytics, motion, dust, cn
 │   ├── server/                the one server function, its env, its notifier
 │   ├── routes/                __root, index, contact, glass, robots, sitemap
 │   ├── fonts/                 self-hosted woff2
 │   └── styles.css             tokens, type scale, the two scopes
-├── design/                    generators for the mark and the share card
+├── design/                    generators for the mark and the share card, photo encoders
 ├── e2e/                       Playwright
 └── public/                    favicon, logo, share card
 ```
@@ -214,20 +214,37 @@ It is off the spine: `noindex`, not in the sitemap, linked from nowhere.
   sentence at reading size; `e2e/glass.spec.ts` fails on any uppercase text.
 - **The documents are built, not pictured** (`components/glass-documents.tsx`):
   real contents from the same quotation, in the site's own type, because a
-  generated document's text is nonsense and the reader zooms in. The one
-  photograph is the part (`design/encode-glass.sh`), shown with `multiply` —
+  generated document's text is nonsense and the reader zooms in. The part on
+  the desk is a photograph (`design/encode-glass.sh`), shown with `multiply` —
   so nothing may lie under it, and a test checks that nothing does.
+- **It ends in the night plate's own room at 08:04** — the morning plate,
+  generated from the night source as its reference, overcast on purpose (a low
+  orange sun read as evening and spent a sky's worth of the signal's hue), and
+  cleaned of the one mark the generator left on the monitor. Its caption is the
+  handover (`components/glass-handover.tsx`): the person and the decision from
+  the film's last frame, and the two figures from the 06:50 ledger, built in
+  the site's type and writing nothing of its own.
 - **One story still.** Every hour, line and figure on it is the thread's or the
   matrix's, read by the components rather than written again; `glass` in
   `content/site.ts` writes none of the quotation's own figures, and the one cost
   that moves, moves by the thread's six per cent and three weeks. Tests hold it.
 - **Its own motion budget**, larger than the home page's because a presentation
   tells by moving, and listed in `styles.css` above the block that spends it:
-  the opening, the film, the gathering, one reveal per section, the nudge and
-  the press. Nothing loops — the film plays once and stops at 08:04 — nothing
-  pulses, and reduced motion gets the final frame of all of it.
+  the opening, the film, the gathering, the dust, the morning's parallax, one
+  reveal per block at the close, the nudge and the press. The film plays once
+  and stops at 08:04; nothing pulses; reduced motion gets the final frame of
+  all of it.
+- **The dust is the one exception to "nothing moves while the reader is
+  still"**, and it is the owner's call rather than a lapse: a landscape of it
+  under the opening and the hero, and the same dust settled round the morning
+  plate (`components/glass-field.tsx`, drawn by `lib/dust.ts` in WebGL with no
+  library). It is ink, never the signal; it stops off screen, in a hidden tab
+  and once it has faded on scroll; it clears a space behind the hero's type;
+  and without WebGL it is simply absent. The home page's night plate still
+  does not move — this is a different page making a different argument.
 - **The same licence for the signal**: the held state and the figure that breaks
-  the floor. `e2e/glass.spec.ts` fails on any other text in it.
+  the floor — on the film's sheet, the gathered sheet and the handover.
+  `e2e/glass.spec.ts` fails on any other text in it.
 - **No motto.** Its placements are the home page's close and the success state.
 
 ### The mark

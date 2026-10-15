@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { GlassField } from '#/components/glass-field.tsx'
 import { GlassFilm } from '#/components/glass-film.tsx'
+import { GlassHandover } from '#/components/glass-handover.tsx'
 import { GlassSources } from '#/components/glass-sources.tsx'
 import { ButtonLink, Container, TextLink } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
@@ -14,14 +16,18 @@ import { contactEmail } from '#/env.ts'
  *
  * ── The acts ───────────────────────────────────────────────────────────────
  *
- * 1. **The opening.** The night, a field of hour rules drawing down it, and two
- *    beats of type. Then the page assembles.
+ * 1. **The opening.** The night, a field of hour rules drawing down it, a
+ *    landscape of dust under it (`glass-field.tsx`), and two beats of type.
+ *    Then the page assembles: the dust sinks, dims and clears a space for the
+ *    type, and falls behind as the page scrolls.
  * 2. **The hero.** Centred: the headline and the home page's form.
  * 3. **The film.** One request carried from 23:47 to 08:04 in a frame, the
  *    sheet changing state as the hours pass (`glass-film.tsx`).
  * 4. **Six sources.** The documents a quotation is assembled from, lying on a
  *    desk, then gathered onto one sheet (`glass-sources.tsx`).
- * 5. **The close.** One invitation, and one sentence about what exists.
+ * 5. **The close.** The same office at 08:04 with what is waiting in it
+ *    (`glass-handover.tsx`), the night's dust settled around it, one
+ *    invitation, and one sentence about what exists.
  *
  * Acts one to three are the page's one `[data-inverted]` region. The film ends
  * at 08:04 and the page turns to paper with it.
@@ -69,6 +75,7 @@ const nightHours = Math.floor(minutesAfter(officeEmpties, morning) / 60) + 1
 
 export function GlassPage() {
   const openingRef = useRef<HTMLDivElement>(null)
+  const filmRef = useRef<HTMLDivElement>(null)
   const [opening, setOpening] = useState<Opening>('playing')
 
   useEffect(() => {
@@ -115,6 +122,8 @@ export function GlassPage() {
             <span key={hour} style={{ ['--i' as string]: hour }} />
           ))}
         </div>
+
+        <GlassField settled={opening !== 'playing'} until={filmRef} />
 
         {/*
           Decoration, as far as a screen reader is concerned: the two beats set
@@ -168,7 +177,7 @@ export function GlassPage() {
           </Container>
         </section>
 
-        <div className="glass-film-enter glass-enter">
+        <div ref={filmRef} className="glass-film-enter glass-enter">
           <GlassFilm ready={opening !== 'playing'} />
         </div>
       </div>
@@ -180,7 +189,12 @@ export function GlassPage() {
 }
 
 /**
- * One invitation, on the same desk the contact memo is laid on.
+ * The morning, and one invitation, on the same desk the contact memo is laid on.
+ *
+ * The page ends where the film does: the same office, at 08:04 — the night
+ * plate's own room in daylight, the lamp still on over the quotation. It is
+ * the one large picture on the page and it sits above the ask, so the last
+ * thing a reader sees before deciding is the morning the product is for.
  *
  * Left-aligned, one statement, one action and an address — no label over it,
  * and no grid of stages under it: where the build stands is a sentence read off
@@ -194,6 +208,7 @@ function Close() {
     <div className="desk glass-desk">
       <section className="glass-close" aria-labelledby="glass-close-title">
         <Container>
+          <MorningPlate />
           <Reveal className="glass-close-grid">
             <h2 id="glass-close-title" className="glass-close-title">
               {closing.headline}
@@ -226,5 +241,87 @@ function Close() {
         </Container>
       </footer>
     </div>
+  )
+}
+
+/**
+ * The morning plate: the photograph, what is waiting in it, and the dust.
+ *
+ * The photograph is cropped a little larger than its frame and drifts against
+ * the scroll by a few per cent, so the room reads as a place seen through the
+ * page rather than a print laid on it. The drift is a custom property written
+ * on an animation frame — nothing re-renders — and under reduced motion it is
+ * never written at all: the frame holds still, centred.
+ *
+ * Its caption is the handover, laid over the window on a wide screen and
+ * tucked under the photograph on a narrow one; behind it, the night's dust has
+ * settled on the desk.
+ */
+function MorningPlate() {
+  const frameRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const frame = frameRef.current
+    if (!frame) return
+    const motion = matchMedia('(prefers-reduced-motion: reduce)')
+    let request = 0
+
+    function place() {
+      request = 0
+      if (!frame) return
+      if (motion.matches) {
+        frame.style.removeProperty('--glass-drift')
+        return
+      }
+      const box = frame.getBoundingClientRect()
+      const through = (window.innerHeight - box.top) / (window.innerHeight + box.height)
+      frame.style.setProperty('--glass-drift', (Math.min(1, Math.max(0, through)) - 0.5).toFixed(3))
+    }
+    function onScroll() {
+      if (!request) request = requestAnimationFrame(place)
+    }
+
+    place()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    motion.addEventListener('change', onScroll)
+    return () => {
+      cancelAnimationFrame(request)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      motion.removeEventListener('change', onScroll)
+    }
+  }, [])
+
+  const widths = [640, 900, 1280, 1896]
+  const sizes = '(min-width: 1360px) 1280px, 100vw'
+  return (
+    <figure className="glass-morning">
+      <GlassField tone="morning" />
+      <div ref={frameRef} className="glass-morning-frame">
+        <picture>
+          <source
+            type="image/avif"
+            sizes={sizes}
+            srcSet={widths.map((width) => `/glass/morning-${width}.avif ${width}w`).join(', ')}
+          />
+          <source
+            type="image/webp"
+            sizes={sizes}
+            srcSet={widths.map((width) => `/glass/morning-${width}.webp ${width}w`).join(', ')}
+          />
+          <img
+            src="/glass/morning-1896.jpg"
+            alt={glass.closing.morning}
+            width={1896}
+            height={830}
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+          />
+        </picture>
+      </div>
+      <GlassHandover />
+    </figure>
   )
 }
