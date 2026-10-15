@@ -645,6 +645,37 @@ describe('the presentation', () => {
     expect(documents.request.at).toBe(thread.beats[0]!.at)
   })
 
+  it('sets the sheet’s lines as the matrix’s, and reads every rate off a document on the desk', () => {
+    const { sheet } = glass.film
+    expect(Object.keys(sheet.lines).sort()).toEqual(home.matrix.rows.map((row) => row.line).sort())
+    const agreed = documents.agreement.clauses.flatMap((clause) =>
+      'rates' in clause ? clause.rates : [],
+    )
+    for (const row of home.matrix.rows) {
+      const line = sheet.lines[row.line as keyof typeof sheet.lines]
+      expect(line.quantity, row.line).toMatch(/^\d{1,3}(,\d{3})*$/)
+      const rate = 'rate' in line ? line.rate : undefined
+      // Nothing is guessed: a held line has no rate, and every other line has one.
+      expect(Boolean(rate), row.line).toBe(row.status !== 'held')
+      if (!rate) continue
+      const found =
+        rate.from === 'prices'
+          ? documents.prices.rows.find((entry) => entry.part === rate.part)
+          : agreed.find((entry) => entry.part === rate.part)
+      expect(found, `${row.line} reads ${rate.part}`).toBeTruthy()
+      // Read from where the matrix says the line is priced from.
+      expect(row.evidence, row.line).toMatch(rate.from === 'agreement' ? /schedule B/i : /supplier/i)
+    }
+    // The line that moves is priced off the row the supplier moves.
+    const moved = home.matrix.rows.find((row) => row.status === 'changed')!
+    const movedLine = sheet.lines[moved.line as keyof typeof sheet.lines]
+    expect('rate' in movedLine ? movedLine.rate.part : null).toBe(documents.prices.moving)
+    // The agreed rates name the items they price, as the matrix names them.
+    for (const entry of agreed) {
+      expect(home.matrix.rows.map((row) => row.item), entry.item).toContain(entry.item)
+    }
+  })
+
   it('is short: titles of six words, lines of sixteen, ledes of thirty', () => {
     const titles = [
       ...glass.opening,

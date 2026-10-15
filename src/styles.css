@@ -2580,14 +2580,16 @@
      1. the opening: hour rules drawing down, two beats of type, the page
         assembling. Once, ended early by any input, absent under reduced motion;
      2. the film: one hour per `--glass-frame` while it is on screen, once
-        through, paused by the reader, never looped;
+        through, paused by the reader, never looped — its sheet filling, its
+        selection moving to what each hour changed;
      3. the gathering: one change of state, tied to where the reader is;
      4. the field: dust drifting at thirty frames a second while it is on
-        screen — a landscape under the opening that settles when the page
-        assembles and falls behind on scroll, and the same dust settled round
-        the morning plate. The one motion that continues while the reader is
-        still, by the owner's choice: it is the night, moving while nobody
-        watches it. It stops off screen and in a hidden tab;
+        screen — a landscape under the opening that unrolls out of one slit of
+        light, settles when the page assembles and falls behind on scroll; and
+        round the morning plate, two ribbons of it. The one motion that
+        continues while the reader is still, by the owner's choice: it is the
+        night, moving while nobody watches it. It stops off screen and in a
+        hidden tab;
      5. the morning plate's parallax, a few per cent inside its frame;
      6. two reveals at the close: the handover over the photograph, and the
         invitation under it;
@@ -2926,10 +2928,16 @@
   text-wrap: pretty;
 }
 
-/* The sheet: the matrix's rows, on paper, at one hour of the night. */
+/*
+ * The sheet: the matrix's rows, on paper, at one hour of the night — set as a
+ * spreadsheet. Letters over the columns, numbers down the side, hairlines
+ * between every cell, and the selection a spreadsheet would show; in the site's
+ * type and its two inks, with no green and no gridline heavier than a hairline.
+ */
 .glass-sheet {
   min-width: 0;
   overflow: hidden;
+  container-type: inline-size;
   border: 1px solid var(--ic-line);
   border-radius: var(--radius-panel);
   background-color: var(--ic-paper-raised);
@@ -2953,95 +2961,244 @@
   gap: 0.625rem;
   font-weight: 500;
 }
-.glass-sheet-rows {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.glass-sheet-row {
-  position: relative;
+
+/* The name box, and where a spreadsheet keeps its formula: the source of this hour's change. */
+.glass-sheet-sourcebar {
   display: grid;
-  grid-template-columns: 2.25rem minmax(0, 1fr) auto 7.5rem;
-  align-items: center;
-  column-gap: 0.75rem;
+  grid-template-columns: 5.75rem minmax(0, 1fr);
   min-height: 2.75rem;
-  padding: 0.375rem 1.25rem;
   border-bottom: 1px solid var(--ic-line);
-  font-size: 0.875rem;
-  line-height: 1.4;
 }
-/* The row a source has just landed on, picked out the way a finger runs down a page. */
-.glass-sheet-row::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-color: var(--ic-paper-sunken);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--ic-slow) var(--glass-ease);
-}
-.glass-sheet-row[data-fresh='true']::before {
-  opacity: 1;
-}
-.glass-sheet-row > * {
-  position: relative;
-}
-.glass-sheet-line {
-  color: var(--ic-ink-400);
-}
-.glass-sheet-item {
-  min-width: 0;
+.glass-namebox {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 0 0.75rem;
+  border-right: 1px solid var(--ic-line);
+  font-size: 0.75rem;
   font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ic-ink-900);
 }
-.glass-sheet-text {
-  transition: opacity var(--ic-slow) var(--glass-ease);
+.glass-sheet-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.75rem;
+  min-width: 0;
+  padding: 0.5rem 0.875rem;
+  animation: glass-pop var(--ic-slow) var(--glass-ease) both;
 }
-.glass-sheet-item .glass-skeleton {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 68%;
-  transform: translateY(-50%);
-  transition: opacity var(--ic-slow) var(--glass-ease);
-}
-.glass-sheet-row:nth-child(even) .glass-sheet-item .glass-skeleton {
-  width: 52%;
-}
-/* 23:47: until somebody opens it, it is a PDF. */
-.glass-sheet[data-stage='0'] .glass-sheet-text {
-  opacity: 0;
-}
-.glass-sheet:not([data-stage='0']) .glass-sheet-item .glass-skeleton {
-  opacity: 0;
-}
-.glass-sheet-source {
-  justify-self: end;
-}
-.glass-sheet-status {
-  justify-self: start;
-}
-.glass-sheet-more {
-  min-height: 2.5rem;
-  border-bottom: 0;
-  color: var(--ic-ink-400);
-}
-.glass-sheet-more .glass-sheet-item {
-  grid-column: 2 / -1;
-  font-weight: 400;
+.glass-sheet-note {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--ic-ink-600);
 }
 
-/* Bars standing in for text not yet read: the shape of a line, never its words. */
-.glass-skeleton {
-  display: block;
-  height: 0.5rem;
-  background-color: var(--ic-line);
+/* The grid. Fixed layout, so a cell truncates the way a spreadsheet's does rather than pushing its column. */
+.glass-grid {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  line-height: 1.3;
 }
-.glass-skeleton--status {
-  width: 4.5rem;
+.glass-grid :is(th, td) {
+  height: 2.375rem;
+  overflow: hidden;
+  padding: 0 0.625rem;
+  border: 1px solid var(--ic-line);
+  font-weight: 400;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  transition: background-color var(--ic-slow) var(--glass-ease);
+}
+/* Only the lines inside: the sheet's own border is the frame. */
+.glass-grid tr > :first-child {
+  border-left: 0;
+}
+.glass-grid tr > :last-child {
+  border-right: 0;
+}
+.glass-grid thead tr:first-child > * {
+  border-top: 0;
+}
+.glass-grid tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.glass-grid [data-column='line'] {
+  width: 2.875rem;
+}
+.glass-grid [data-column='category'] {
+  width: 6rem;
+}
+.glass-grid [data-column='quantity'] {
+  width: 3.75rem;
+  text-align: right;
+}
+.glass-grid [data-column='rate'] {
+  width: 5.5rem;
+  text-align: right;
+}
+.glass-grid [data-column='status'] {
+  width: 7.75rem;
+}
+.glass-grid [data-column='item'] {
+  font-weight: 500;
+}
+.glass-grid [data-column='line'],
+.glass-grid [data-column='category'] {
+  color: var(--ic-ink-600);
+}
+
+/* The furniture: the letters, the column names, the row numbers. */
+.glass-grid .glass-grid-letters > td {
   height: 1.375rem;
-  border: 1px dashed var(--ic-line-strong);
-  border-radius: var(--radius-control);
-  background-color: transparent;
+  padding: 0;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  text-align: center;
+  color: var(--ic-ink-400);
+  background-color: var(--ic-paper);
+}
+.glass-grid .glass-grid-head > th {
+  height: 2.125rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ic-ink-600);
+  background-color: var(--ic-paper);
+}
+.glass-grid .glass-grid-index {
+  width: 2.25rem;
+  padding: 0;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  text-align: center;
+  color: var(--ic-ink-400);
+  background-color: var(--ic-paper);
+}
+/* Rows the sheet is not showing, marked the way a spreadsheet marks them: a double rule in the row numbers. */
+.glass-grid tr[data-after-hidden='true'] > .glass-grid-index {
+  border-top: 3px double var(--ic-line-strong);
+}
+
+.glass-cell-value {
+  display: inline-block;
+  animation: glass-pop var(--ic-slow) var(--glass-ease) both;
+}
+.glass-cell-value s {
+  margin-right: 0.4375rem;
+  text-decoration-thickness: 1px;
+  color: var(--ic-ink-400);
+}
+.glass-cell-empty {
+  color: var(--ic-ink-400);
+}
+.glass-sheet-more td {
+  color: var(--ic-ink-400);
+}
+
+/*
+ * The selection. A cell takes a ruled box with a spreadsheet's fill handle at
+ * its corner, and its row number darkens; a range takes a tint. It moves to
+ * whatever this hour changed.
+ */
+.glass-grid [data-selected='true'] {
+  position: relative;
+  overflow: visible;
+}
+.glass-grid [data-selected='true']::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 2px solid var(--ic-ink-900);
+  pointer-events: none;
+  animation: glass-select var(--ic-slow) var(--glass-ease) both;
+}
+.glass-grid [data-selected='true']::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  z-index: 1;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--ic-paper-raised);
+  background-color: var(--ic-ink-900);
+  pointer-events: none;
+}
+/* At the sheet's right edge the handle stays inside, where a window would keep it. */
+.glass-grid tr > [data-selected='true']:last-child::after {
+  right: 1px;
+}
+.glass-sheet-row:has([data-selected='true']) > .glass-grid-index,
+.glass-sheet[data-range='rows'] .glass-sheet-row > .glass-grid-index,
+.glass-sheet[data-range='all'] .glass-grid .glass-grid-index {
+  color: var(--ic-ink-900);
+  background-color: var(--ic-paper-sunken);
+}
+.glass-sheet[data-range='rows'] .glass-sheet-row > td:not(.glass-grid-index),
+.glass-sheet[data-range='all'] .glass-grid tbody td:not(.glass-grid-index),
+.glass-sheet[data-range='all'] .glass-grid .glass-grid-head > th {
+  background-color: var(--ic-paper-sunken);
+}
+/* 00:06: the night reads the lines in, one after the other. */
+.glass-sheet[data-stage='1'] .glass-sheet-row > td:not(.glass-grid-index) {
+  animation: glass-fill var(--ic-slow) var(--glass-ease) both;
+  animation-delay: calc(var(--row) * 70ms);
+}
+
+/*
+ * A narrow sheet hides columns the way a spreadsheet does — the letters skip
+ * them — so the item keeps room to be read: first the category, then the
+ * quantity, and on a phone the line number too, where the item may wrap.
+ */
+@container (max-width: 40rem) {
+  .glass-grid [data-column='category'] {
+    display: none;
+  }
+}
+@container (max-width: 34rem) {
+  .glass-grid [data-column='quantity'] {
+    display: none;
+  }
+}
+@container (max-width: 29rem) {
+  .glass-grid [data-column='line'] {
+    display: none;
+  }
+  .glass-grid [data-column='rate'] {
+    width: 4.25rem;
+  }
+  .glass-grid [data-column='status'] {
+    width: 6rem;
+  }
+  .glass-grid .matrix-status {
+    gap: 0.3rem;
+    padding-inline: 0.375rem;
+    font-size: 0.6875rem;
+  }
+  .glass-grid :is(th, td) {
+    padding-inline: 0.5rem;
+  }
+  .glass-grid tbody [data-column='item'] {
+    height: auto;
+    padding-block: 0.4375rem;
+    line-height: 1.25;
+    white-space: normal;
+  }
+  .glass-sheet-sourcebar {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+  }
+  .glass-namebox {
+    padding-inline: 0.5rem;
+  }
+  .glass-sheet-sources .glass-chip {
+    white-space: normal;
+  }
 }
 
 .matrix-status--read {
@@ -3092,55 +3249,51 @@
   color: var(--ic-ink-900);
 }
 
-/* The foot: a line about the night until 06:50, the ledger after. Both always laid out, one shown. */
+/* The foot: the quotation's totals, pending until the ledger exists at 06:50. */
 .glass-sheet-foot {
   display: grid;
   padding: 1rem 1.25rem 1.125rem;
   border-top: 1px solid var(--ic-line-strong);
   background-color: var(--ic-paper);
 }
-.glass-sheet-notes,
 .glass-sheet-ledger {
-  grid-area: 1 / 1;
+  display: grid;
+  gap: 1rem;
+}
+/* Before 06:50 the margin's track is laid out empty; the floor, and what falls short of it, arrive with the ledger. */
+.glass-sheet-foot :is(.glass-margin-label, .glass-margin-floor, .glass-sheet-short) {
+  transition:
+    opacity var(--ic-slow) var(--glass-ease),
+    visibility 0s linear 0s;
+}
+.glass-sheet-foot[data-ledger='false'] :is(.glass-margin-label, .glass-margin-floor, .glass-sheet-short) {
+  opacity: 0;
+  visibility: hidden;
   transition:
     opacity var(--ic-slow) var(--glass-ease),
     visibility 0s linear var(--ic-slow);
 }
-.glass-sheet-foot[data-ledger='true'] .glass-sheet-notes,
-.glass-sheet-foot[data-ledger='false'] .glass-sheet-ledger {
-  opacity: 0;
-  visibility: hidden;
+/* 06:50: the selection on the margin, which is where the floor meets it. */
+.glass-sheet-figures > div {
+  position: relative;
 }
-.glass-sheet-foot[data-ledger='true'] .glass-sheet-ledger,
-.glass-sheet-foot[data-ledger='false'] .glass-sheet-notes {
-  transition-delay: 0s;
+.glass-sheet-figures > div[data-selected='true']::before {
+  content: '';
+  position: absolute;
+  inset: -0.5rem -0.625rem;
+  border: 2px solid var(--ic-ink-900);
+  pointer-events: none;
+  animation: glass-select var(--ic-slow) var(--glass-ease) both;
 }
-.glass-sheet-notes {
-  display: grid;
-  align-content: start;
-  gap: 0.875rem;
-}
-.glass-sheet-notes > p {
-  grid-area: 1 / 1;
-  font-size: 0.875rem;
-  line-height: 1.45;
-  color: var(--ic-ink-600);
-  opacity: 0;
-  transition: opacity var(--ic-slow) var(--glass-ease);
-}
-.glass-sheet-notes > p[data-active='true'] {
-  opacity: 1;
-}
-.glass-sheet-notes > .glass-skeleton {
-  grid-column: 1;
-  width: 38%;
-}
-.glass-sheet-notes > .glass-skeleton--wide {
-  width: 62%;
-}
-.glass-sheet-ledger {
-  display: grid;
-  gap: 1rem;
+.glass-sheet-figures > div[data-selected='true']::after {
+  content: '';
+  position: absolute;
+  right: calc(-0.625rem - 4px);
+  bottom: calc(-0.5rem - 4px);
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--ic-paper-raised);
+  background-color: var(--ic-ink-900);
 }
 .glass-sheet-figures {
   display: grid;
@@ -4337,6 +4490,24 @@
     transform: none;
   }
 }
+@keyframes glass-select {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes glass-fill {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 @keyframes glass-dock {
   from {
     opacity: 0;
@@ -4456,23 +4627,6 @@
     border-top: 0;
   }
 
-  .glass-sheet-row {
-    grid-template-columns: 2rem minmax(0, 1fr) auto;
-    row-gap: 0.375rem;
-    padding-inline: 1rem;
-  }
-  .glass-sheet-source {
-    grid-row: 2;
-    grid-column: 2 / -1;
-    justify-self: start;
-  }
-  .glass-sheet-source:empty {
-    display: none;
-  }
-  .glass-sheet-status {
-    grid-row: 1;
-    grid-column: 3;
-  }
   .glass-sheet-bar,
   .glass-sheet-foot {
     padding-inline: 1rem;
@@ -4513,16 +4667,17 @@
   .glass-enter,
   .glass-hours > span,
   .glass-status,
-  .glass-chip {
-    animation: none;
+  .glass-chip,
+  .glass-sheet-sources,
+  .glass-cell-value,
+  .glass-sheet-row > td,
+  .glass-grid [data-selected='true']::before,
+  .glass-sheet-figures > div::before {
+    animation: none !important;
   }
   .glass-beat,
-  .glass-sheet-text,
-  .glass-sheet-item .glass-skeleton,
-  .glass-sheet-row::before,
-  .glass-sheet-notes,
-  .glass-sheet-notes > p,
-  .glass-sheet-ledger,
+  .glass-grid :is(th, td),
+  .glass-sheet-foot :is(.glass-margin-label, .glass-margin-floor, .glass-sheet-short),
   .glass-margin-bar,
   .glass-chip,
   .glass-tangle,

@@ -33,6 +33,12 @@ describe('dust', () => {
     expect(dustCount(3840, 2160)).toBe(120_000)
   })
 
+  it('gives the morning’s two ribbons far fewer grains, since they gather them into thin bands', () => {
+    expect(dustCount(1440, 900, 'morning')).toBe(48_000)
+    expect(dustCount(390, 630, 'morning')).toBe(14_000)
+    expect(dustCount(1440, 900, 'morning')).toBeLessThan(dustCount(1440, 900))
+  })
+
   it('reads a computed colour into channels', () => {
     expect(channels('rgb(242, 242, 238)')).toEqual([242 / 255, 242 / 255, 238 / 255])
     expect(channels('rgba(17, 17, 16, 0.5)')).toEqual([17 / 255, 17 / 255, 16 / 255])

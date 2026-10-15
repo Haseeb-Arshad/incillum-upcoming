@@ -15,11 +15,12 @@ import type { AnimationEvent } from 'react'
  *
  * The night thread at another magnification, which is the only kind of second
  * look this site allows itself. On the left, the hour and what happened in it.
- * On the right, one sheet — the matrix's own rows — that changes state as the
- * night goes: unread at 23:47, read at 00:06, two lines held at 01:18, a cost
- * moved at 03:42, the ledger at 06:50, a person at 08:04. Where a source lands
- * on the sheet, a chip says which one, and it stays: every figure keeps the page
- * it came from, so the provenance accumulates rather than flashing past.
+ * On the right, one sheet — the matrix's own rows, set as a spreadsheet — that
+ * fills as the night goes: empty at 23:47, read at 00:06, two lines held at
+ * 01:18, a cost moved at 03:42, the ledger at 06:50, a person at 08:04. Each
+ * hour the selection moves to the cell it changed, and where a spreadsheet's
+ * formula bar would show a formula, this one shows the document the value came
+ * from: every figure keeps the page it came from.
  *
  * Nothing here is written down twice. The hours and titles are the thread's,
  * the rows and states are the matrix's, the money is the 06:50 ledger's, and the
@@ -81,6 +82,75 @@ function chipAt(target: string, stage: number) {
     if (chip) return { text: chip.text, source: chip.source, fresh: hour === stage }
   }
   return null
+}
+
+const { sheet } = film
+const { documents } = glass.sources
+
+/** The grid's columns, in order. Their letters are a spreadsheet's: A for the first. */
+const columns = ['line', 'item', 'category', 'quantity', 'rate', 'status'] as const
+type Column = (typeof columns)[number]
+const letter = (column: Column) => String.fromCharCode(65 + columns.indexOf(column))
+
+type SheetLine = { category: string; quantity: string; rate?: { from: string; part: string } }
+const sheetLine = (line: string): SheetLine | undefined =>
+  (sheet.lines as Record<string, SheetLine>)[line]
+
+/**
+ * The header is row 1, so line NN sits on row NN + 1, and the rows between the
+ * lines the matrix shows are hidden the way a spreadsheet hides them.
+ */
+const rowOf = (line: string) => Number(line) + 1
+const lastRow = home.matrix.lines.total + 1
+
+/** A line's rate at an hour, read off the document row it names — never written here. */
+function rateAt(line: string, stage: number): { now: string; was?: string } | null {
+  const source = sheetLine(line)?.rate
+  if (stage < 1 || !source) return null
+  if (source.from === 'agreement') {
+    for (const clause of documents.agreement.clauses) {
+      if (!('rates' in clause)) continue
+      const rate = clause.rates.find((entry) => entry.part === source.part)?.rate
+      if (rate) return { now: rate }
+    }
+    return null
+  }
+  const cost = documents.prices.rows.find((row) => row.part === source.part)?.cost
+  if (!cost) return null
+  const change = documents.supplier.changes.find((entry) => entry.was === cost)
+  if (source.part === documents.prices.moving && change && stage >= MOVED) {
+    return { now: change.now, was: change.was }
+  }
+  return { now: cost }
+}
+
+interface Selection {
+  /** What the name box says. */
+  name: string
+  cells: ReadonlySet<string>
+  range?: 'rows' | 'all' | 'floor'
+}
+
+/**
+ * Where the selection stands at an hour, and what the name box calls it: the
+ * first cell while the sheet is empty, every line while the night reads them,
+ * the cells a source changed, the floor when the ledger meets it — and at
+ * 08:04 the whole quotation, handed to a person.
+ */
+function selectionAt(stage: number): Selection {
+  const targets = film.frames[stage]?.chips.map((chip) => chip.target) ?? []
+  if (stage === LAST) return { name: sheet.all, cells: new Set(), range: 'all' }
+  if (targets.includes('floor')) return { name: film.floor, cells: new Set(), range: 'floor' }
+  const lines = targets.filter((target) => sheetLine(target))
+  if (lines.length) {
+    const cells = lines.map((line) => {
+      const moved = home.matrix.rows.find((row) => row.line === line)?.status === 'changed'
+      return `${letter(moved ? 'rate' : 'status')}${rowOf(line)}`
+    })
+    return { name: cells.join(', '), cells: new Set(cells) }
+  }
+  if (targets.includes('head')) return { name: 'A1', cells: new Set(['A1']) }
+  return { name: `A2:${letter('status')}${lastRow}`, cells: new Set(), range: 'rows' }
 }
 
 export function GlassFilm({ ready }: { ready: boolean }) {
@@ -233,18 +303,29 @@ export function GlassFilm({ ready }: { ready: boolean }) {
 }
 
 /**
- * The sheet under the lamp, at one hour of the night.
+ * The sheet under the lamp, at one hour of the night, set as a spreadsheet.
  *
- * A list rather than the home page's table: it is an illustration of the
- * matrix changing, read one row at a time, and on a phone each row wraps its
- * source under the item — which a table cannot do without losing its semantics.
- * The real table, with every column, is on the home page.
+ * A real table — the matrix's rows under the columns a quotation is worked in
+ * — with a spreadsheet's furniture: column letters, row numbers, hidden rows
+ * where the matrix skips lines, a selection with its fill handle, and a name
+ * box. Where the formula bar would be is the source bar: the document this
+ * hour's change came from, and a line on what the night has done so far. The
+ * cells start empty, because at 23:47 the request is still a PDF; nothing is
+ * drawn as a grey bar standing in for text.
+ *
+ * On a narrow sheet the category and quantity columns are hidden, the way a
+ * spreadsheet hides columns: the letters skip them, and the selection never
+ * lands in them.
  */
 function Sheet({ stage }: { stage: number }) {
   const head = chipAt('head', stage)
+  const selection = selectionAt(stage)
+  const frame = film.frames[stage]
+  const read = stage >= 1
+  const selected = (cell: string) => (selection.cells.has(cell) ? 'true' : undefined)
 
   return (
-    <div data-lit="" className="glass-sheet" data-stage={stage}>
+    <div data-lit="" className="glass-sheet" data-stage={stage} data-range={selection.range}>
       <div className="glass-sheet-bar">
         <p className="glass-sheet-title">
           <span className="matrix-mark" aria-hidden="true" />
@@ -253,83 +334,140 @@ function Sheet({ stage }: { stage: number }) {
         {head ? <Chip key={head.text} {...head} /> : null}
       </div>
 
-      <ol className="glass-sheet-rows">
-        {home.matrix.rows.map((row) => {
-          const status = statusAt(row.status, stage)
-          const chip = chipAt(row.line, stage)
-          return (
-            <li
-              key={row.line}
-              className="glass-sheet-row"
-              data-status={status ?? 'unread'}
-              data-fresh={chip?.fresh ? 'true' : undefined}
-            >
-              <span className="glass-sheet-line ic-tabular">{row.line}</span>
-              <span className="glass-sheet-item">
-                <span className="glass-sheet-text">{row.item}</span>
-                <span className="glass-skeleton" aria-hidden="true" />
-              </span>
-              <span className="glass-sheet-source">
-                {chip ? <Chip key={chip.text} {...chip} /> : null}
-              </span>
-              <span className="glass-sheet-status">
-                {status ? (
-                  <span
-                    key={status}
-                    className={`matrix-status matrix-status--${status} glass-status`}
-                  >
-                    {film.statusLabels[status]}
-                  </span>
-                ) : (
-                  <span
-                    className="glass-skeleton glass-skeleton--status"
-                    aria-hidden="true"
-                  />
-                )}
-              </span>
-            </li>
-          )
-        })}
-        <li className="glass-sheet-row glass-sheet-more">
-          <span className="glass-sheet-line" aria-hidden="true" />
-          <span className="glass-sheet-item">
-            <span className="ic-tabular">{home.matrix.more.count}</span> {film.more}
-          </span>
-        </li>
-      </ol>
+      <div className="glass-sheet-sourcebar">
+        <span className="glass-namebox ic-tabular" aria-hidden="true">
+          {selection.name}
+        </span>
+        <p key={stage} className="glass-sheet-sources">
+          {frame?.chips.map((chip) => (
+            <Chip key={chip.text} text={chip.text} source={chip.source} fresh />
+          ))}
+          {frame?.note ? <span className="glass-sheet-note">{frame.note}</span> : null}
+        </p>
+      </div>
 
-      <Foot stage={stage} />
+      <table className="glass-grid" aria-label={film.title}>
+        <thead>
+          <tr className="glass-grid-letters" aria-hidden="true">
+            <td className="glass-grid-index" />
+            {columns.map((column) => (
+              <td key={column} data-column={column}>
+                {letter(column)}
+              </td>
+            ))}
+          </tr>
+          <tr className="glass-grid-head">
+            <td className="glass-grid-index" aria-hidden="true">
+              1
+            </td>
+            {columns.map((column) => (
+              <th
+                key={column}
+                scope="col"
+                data-column={column}
+                data-selected={selected(`${letter(column)}1`)}
+              >
+                {sheet.columns[column]}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {home.matrix.rows.map((row, index) => {
+            const status = statusAt(row.status, stage)
+            const line = sheetLine(row.line)
+            const rate = rateAt(row.line, stage)
+            const number = rowOf(row.line)
+            const previous = home.matrix.rows[index - 1]
+            const hidden = previous ? number - rowOf(previous.line) > 1 : number > 2
+            return (
+              <tr
+                key={row.line}
+                className="glass-sheet-row"
+                data-status={status ?? 'unread'}
+                data-after-hidden={hidden ? 'true' : undefined}
+                style={{ ['--row' as string]: index }}
+              >
+                <td className="glass-grid-index" aria-hidden="true">
+                  {number}
+                </td>
+                <td data-column="line" className="ic-tabular">
+                  {read ? row.line : null}
+                </td>
+                <td data-column="item">{read ? row.item : null}</td>
+                <td data-column="category">{read ? line?.category : null}</td>
+                <td data-column="quantity" className="ic-tabular">
+                  {read ? line?.quantity : null}
+                </td>
+                <td
+                  data-column="rate"
+                  className="ic-tabular"
+                  data-selected={selected(`${letter('rate')}${number}`)}
+                >
+                  {rate ? (
+                    <span key={rate.now} className="glass-cell-value">
+                      {rate.was ? <s>{rate.was}</s> : null}
+                      {rate.now}
+                    </span>
+                  ) : read ? (
+                    <span className="glass-cell-empty">—</span>
+                  ) : null}
+                </td>
+                <td
+                  data-column="status"
+                  data-selected={selected(`${letter('status')}${number}`)}
+                >
+                  {status ? (
+                    <span
+                      key={status}
+                      className={`matrix-status matrix-status--${status} glass-status`}
+                    >
+                      {film.statusLabels[status]}
+                    </span>
+                  ) : null}
+                </td>
+              </tr>
+            )
+          })}
+          {/*
+            One cell a column rather than one spanning them, so a hidden column
+            hides here too and the span never invents a column of its own.
+          */}
+          <tr className="glass-sheet-more" data-after-hidden="true">
+            <td className="glass-grid-index" aria-hidden="true" />
+            {columns.map((column) => (
+              <td key={column} data-column={column}>
+                {column === 'item' && read ? (
+                  <>
+                    <span className="ic-tabular">{home.matrix.more.count}</span> {film.more}
+                  </>
+                ) : null}
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+
+      <Foot stage={stage} selected={selection.range === 'floor'} />
     </div>
   )
 }
 
 /**
- * The foot: a line about where the night is, until 06:50, and the ledger after.
+ * The foot: the quotation's totals, pending until the ledger exists at 06:50.
  *
- * Both layers are always rendered and stacked in one cell, so the sheet is as
- * tall at 23:47 as it is at 08:04 and nothing under the film moves while it
- * plays. The hidden one is hidden from a screen reader as well as from sight.
+ * Laid out from the first hour, so the sheet is as tall at 23:47 as at 08:04
+ * and nothing under the film moves while it plays: before 06:50 the totals are
+ * a dash, the way an empty total cell reads, and the margin's bar is empty.
  */
-function Foot({ stage }: { stage: number }) {
+function Foot({ stage, selected }: { stage: number; selected: boolean }) {
   const priced = stage >= LEDGER
   const floorChip = chipAt('floor', stage)
   const scale = evidence.visual.scaleMax
 
   return (
     <div className="glass-sheet-foot" data-ledger={priced ? 'true' : 'false'}>
-      <div className="glass-sheet-notes" aria-hidden={priced}>
-        {film.frames.map((frame, hour) =>
-          frame.note ? (
-            <p key={frame.at} data-active={hour === stage ? 'true' : 'false'}>
-              {frame.note}
-            </p>
-          ) : null,
-        )}
-        <span className="glass-skeleton glass-skeleton--wide" aria-hidden="true" />
-        <span className="glass-skeleton" aria-hidden="true" />
-      </div>
-
-      <div className="glass-sheet-ledger" aria-hidden={!priced}>
+      <div className="glass-sheet-ledger">
         {/*
           The matrix's own summary, in the same words: the quote, and its margin
           against the floor. Proportional figures — the serif's tabular ones are
@@ -338,16 +476,18 @@ function Foot({ stage }: { stage: number }) {
         <dl className="glass-sheet-figures">
           <div>
             <dt>{quote?.term}</dt>
-            <dd>{quote?.value}</dd>
+            <dd>{priced ? quote?.value : '—'}</dd>
           </div>
-          <div>
+          <div data-selected={selected ? 'true' : undefined}>
             <dt>{margin?.term}</dt>
             <dd>
-              {margin?.value}
-              <span>
-                {' '}
-                · {home.matrix.summary.floor} {floor?.value}
-              </span>
+              {priced ? margin?.value : '—'}
+              {priced ? (
+                <span>
+                  {' '}
+                  · {home.matrix.summary.floor} {floor?.value}
+                </span>
+              ) : null}
             </dd>
           </div>
         </dl>
@@ -380,7 +520,7 @@ function Foot({ stage }: { stage: number }) {
         </div>
 
         {short ? (
-          <p className="glass-sheet-short">
+          <p className="glass-sheet-short" aria-hidden={!priced}>
             <span>{short.term}</span>
             <strong>{short.value}</strong>
           </p>

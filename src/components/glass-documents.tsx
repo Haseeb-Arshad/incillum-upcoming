@@ -267,6 +267,14 @@ function AgreementDocument({ floor }: { floor: string }) {
                   <strong>{floor}</strong>.
                 </>
               ) : null}
+              {'rates' in clause
+                ? clause.rates.map((entry, index) => (
+                    <span key={entry.part} className="gd-rate">
+                      {index ? ' · ' : ' '}
+                      <span className="gd-quiet">{entry.part}</span> {entry.rate}
+                    </span>
+                  ))
+                : null}
             </span>
           </li>
         ))}

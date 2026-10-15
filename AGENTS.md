@@ -235,13 +235,25 @@ It is off the spine: `noindex`, not in the sitemap, linked from nowhere.
   and stops at 08:04; nothing pulses; reduced motion gets the final frame of
   all of it.
 - **The dust is the one exception to "nothing moves while the reader is
-  still"**, and it is the owner's call rather than a lapse: a landscape of it
-  under the opening and the hero, and the same dust settled round the morning
-  plate (`components/glass-field.tsx`, drawn by `lib/dust.ts` in WebGL with no
-  library). It is ink, never the signal; it stops off screen, in a hidden tab
-  and once it has faded on scroll; it clears a space behind the hero's type;
-  and without WebGL it is simply absent. The home page's night plate still
-  does not move — this is a different page making a different argument.
+  still"**, and it is the owner's call rather than a lapse
+  (`components/glass-field.tsx`, drawn by `lib/dust.ts` in WebGL with no
+  library). Under the opening it is a landscape that is not there when the page
+  opens: it unrolls out of one thin slit of light on the horizon, far ridge
+  first, across the two beats. Round the morning plate it is a different
+  formation on purpose — two twisted ribbons framing the room, the night's dust
+  put in order. It is ink, never the signal; it stops off screen, in a hidden
+  tab and once it has faded on scroll; it clears a space behind the hero's
+  type; and without WebGL it is simply absent. The home page's night plate
+  still does not move — this is a different page making a different argument.
+- **The film's sheet is a spreadsheet**, because that is what the reader
+  quotes in: column letters, row numbers, hidden rows where the matrix skips
+  lines, a selection with its fill handle that moves to whatever the hour
+  changed, and a name box. Where the formula would be, the source bar names the
+  document the value came from. Its categories and quantities are the
+  request's; its rates are read off the documents on the desk — the price list,
+  and the agreed rates in schedule B (clause B.6) for the two lines the matrix
+  prices from the agreement — and a held line has none. No grey bars stand in
+  for text; at 23:47 the cells are simply empty.
 - **The same licence for the signal**: the held state and the figure that breaks
   the floor — on the film's sheet, the gathered sheet and the handover.
   `e2e/glass.spec.ts` fails on any other text in it.

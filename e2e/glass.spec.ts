@@ -110,10 +110,48 @@ test('the film says it is invented first, and its chapters are the thread’s ho
   await chapters.nth(2).click()
   await expect(film.locator('.glass-beat[data-active="true"]')).toContainText('01:18')
   await expect(film.locator('.glass-sheet-row[data-status="held"]')).toHaveCount(2)
+  await expect(film.locator('.glass-namebox')).toHaveText('F5, F12')
 
   await chapters.nth(3).press('Enter')
   await expect(film.locator('.glass-beat[data-active="true"]')).toContainText('03:42')
   await expect(film.locator('.glass-sheet-row[data-status="changed"]')).toHaveCount(1)
+  await expect(film.locator('.glass-namebox')).toHaveText('E4')
+  // The cost the supplier moved, struck through beside the one that replaced it, in the cell selected.
+  const moved = film.locator('.glass-sheet-row[data-status="changed"] [data-column="rate"]')
+  await expect(moved).toHaveAttribute('data-selected', 'true')
+  await expect(moved.locator('s')).toHaveText('46.50')
+  await expect(moved).toContainText('49.29')
+})
+
+test('the sheet is a spreadsheet: empty while the request is a PDF, then every rate a document’s', async ({
+  page,
+}) => {
+  const film = page.locator('#film')
+  const cells = film.locator('.glass-sheet-row td:not(.glass-grid-index)')
+
+  await film.getByRole('button', { name: /^23:47/ }).click()
+  await expect(film.locator('.glass-namebox')).toHaveText('A1')
+  expect((await cells.allTextContents()).join('').trim()).toBe('')
+
+  await film.getByRole('button', { name: /^00:06/ }).click()
+  await expect(film.locator('.glass-namebox')).toHaveText('A2:F21')
+  // All six columns are the sheet's; a narrow sheet hides some, as a spreadsheet hides columns.
+  expect(await film.locator('.glass-grid-head th').allTextContents()).toEqual([
+    'Line',
+    'Item',
+    'Category',
+    'Qty',
+    'Rate',
+    'Status',
+  ])
+  await expect(film.getByRole('columnheader', { name: 'Item' })).toBeVisible()
+  await expect(film.getByRole('columnheader', { name: 'Rate' })).toBeVisible()
+  const rates = film.locator('.glass-sheet-row [data-column="rate"]')
+  await expect(rates).toHaveText(['21.60', '18.40', '46.50', '—', '3.15', '6.90', '—'])
+
+  await film.getByRole('button', { name: /^08:04/ }).click()
+  await expect(film.locator('.glass-namebox')).toHaveText('Quote')
+  await expect(film.locator('.glass-sheet')).toHaveAttribute('data-range', 'all')
 })
 
 test('the film’s money is the thread’s money', async ({ page }) => {
@@ -291,6 +329,9 @@ test('the documents carry their own contents, and the part lies on bare desk', a
   await expect(desk.locator('.gd-grid tr[data-moving]')).toContainText('46.50')
   await expect(desk.locator('.gd-changes')).toContainText('49.29')
   await expect(desk.locator('.gd-clauses li[data-floor]')).toContainText('20.0%')
+  // The agreed rates the sheet reads for the two lines priced from the agreement.
+  await expect(desk.locator('.gd-clauses')).toContainText('BR-6061 21.60')
+  await expect(desk.locator('.gd-clauses')).toContainText('GS-12 3.15')
   await expect(desk.locator('.gd-question')).toHaveCount(6)
 
   // `multiply` shows whatever is under the photograph through the metal, so nothing may be.
@@ -370,6 +411,8 @@ test('the dust holds one still frame under reduced motion, and drifts without it
     await expect(field, tone).toHaveAttribute('data-motion', 'still')
     expect(await field.evaluate((element: HTMLElement) => element.style.transform), tone).toBe('')
   }
+  // Reduced motion gets the landscape formed, never its opening.
+  await expect(page.locator('.glass-field[data-tone="night"]')).toHaveAttribute('data-formed', 'true')
 
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   const night = page.locator('.glass-field[data-tone="night"]')
@@ -384,6 +427,21 @@ test('the dust holds one still frame under reduced motion, and drifts without it
     element.scrollIntoView({ block: 'start', behavior: 'instant' }),
   )
   await expect(night).toHaveAttribute('data-motion', 'still')
+})
+
+test('the landscape opens from a slit of light, and forms by the end of the opening', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await holdTheOpening(page)
+  await page.goto(GLASS)
+  const night = page.locator('.glass-field[data-tone="night"]')
+  await expect(night).toHaveAttribute('data-ready', 'true')
+  await expect(night).toHaveAttribute('data-formed', 'false')
+  // Skipping the opening finishes the formation at once rather than leaving it half drawn.
+  await page.keyboard.press('Shift')
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'skipped')
+  await expect(night).toHaveAttribute('data-formed', 'true', { timeout: 15_000 })
 })
 
 test('the morning is the same room, and what waits in it is the night’s own', async ({

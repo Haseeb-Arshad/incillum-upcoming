@@ -7,21 +7,24 @@ import { channels, createDust } from '#/lib/dust.ts'
 import type { Dust, DustScene, DustTone } from '#/lib/dust.ts'
 
 /**
- * The field — dust on slow swells, at the two ends of the page.
+ * The field — the night's dust, at the two ends of the page.
  *
  * ── Where it lies ──────────────────────────────────────────────────────────
  *
  * Twice, in ink, and never in the signal: it is not one of the places
  * something is lit.
  *
- *   - **The night.** Under the opening and the hero. The two beats of the
- *     opening are read over a whole landscape of it; when the page assembles,
- *     the landscape sinks a little, dims, and clears a space behind the centred
- *     type, so the form is never read through it. As the reader scrolls it
- *     falls behind at a little under half the page's speed and fades before
- *     the film.
- *   - **The morning.** Around the photograph at the close, on the desk, where
- *     the same dust has settled: its swells flatten as the reader arrives.
+ *   - **The night.** Under the opening and the hero, as a landscape. It is not
+ *     there when the page opens: one thin slit of light appears on the horizon
+ *     under the first beat, and the landscape unrolls out of it — the far ridge
+ *     first, the near dunes last — across the opening's two beats. When the
+ *     page assembles it sinks a little, dims, and clears a space behind the
+ *     centred type, so the form is never read through it. As the reader
+ *     scrolls it falls behind at a little under half the page's speed, and it
+ *     has faded out by the time the film is on screen.
+ *   - **The morning.** Around the photograph at the close, on the desk: the
+ *     same dust put in order, as two ribbons framing the room, one above it
+ *     and one below.
  *
  * ── How it moves, and when it stops ────────────────────────────────────────
  *
@@ -50,20 +53,28 @@ const scenes = {
     wide: { horizon: 0.56, camera: 1.4, swell: 1.4, level: 0.62, clear: 0.85, flank: 1, fade: [0.04, 0.9] },
     narrow: { horizon: 0.64, camera: 2, swell: 1.4, level: 0.62, clear: 0.85, flank: 0.25, fade: [0.04, 0.86] },
   },
+  // The ribbons read only the level and the fade.
   morning: {
-    wide: { horizon: 0.3, camera: 1.6, swell: 1, level: 0.46, clear: 0, flank: 1, fade: [0.14, 0.74] },
-    narrow: { horizon: 0.3, camera: 2, swell: 1, level: 0.46, clear: 0, flank: 0.25, fade: [0.14, 0.74] },
+    wide: { horizon: 0.3, camera: 1.6, swell: 1, level: 0.9, clear: 0, flank: 1, fade: [0.03, 0.98] },
+    narrow: { horizon: 0.3, camera: 2, swell: 1, level: 0.7, clear: 0, flank: 0.25, fade: [0.03, 0.98] },
   },
-} satisfies Record<string, Record<'wide' | 'narrow', DustScene>>
+} satisfies Record<string, Record<'wide' | 'narrow', Composition>>
 
 /** The moment of the swells the scene was composed at, so the first frame and the still frame are that one. */
 const START = 12
 /** How long the night takes to settle from the opening into the hero. */
 const SETTLE = 1600
+/** How long the landscape takes to unroll from its opening, inside the opening's two beats. */
+const FORM = 2600
+/** How quickly it finishes forming once the reader has skipped the opening. */
+const FORM_SKIPPED = 450
+
+/** A scene without the formation, which is the field's own state rather than a composition. */
+type Composition = Omit<DustScene, 'form'>
 
 const mix = (from: number, to: number, amount: number) => from + (to - from) * amount
 
-function blend(from: DustScene, to: DustScene, amount: number): DustScene {
+function blend(from: Composition, to: Composition, amount: number): Composition {
   return {
     horizon: mix(from.horizon, to.horizon, amount),
     camera: mix(from.camera, to.camera, amount),
@@ -116,23 +127,27 @@ export function GlassField({
     let faded = false
     /** The night, from the opening (0) to the hero (1). */
     let settle = settledRef.current ? 1 : 0
-    /** The morning's swells, flattening as the reader arrives. */
-    let calm = 1
     let wide = 1
+    /**
+     * The night, from every grain inside its opening (0) to every grain in
+     * place (1). It forms once, during the opening; arriving after the opening
+     * has already ended, or under reduced motion, it is simply formed.
+     */
+    let form = tone === 'night' && !settledRef.current && !motion.matches ? 0 : 1
 
     function scene(): DustScene {
-      const at = (pair: Record<'wide' | 'narrow', DustScene>) => blend(pair.narrow, pair.wide, wide)
-      if (tone === 'morning') {
-        const morning = at(scenes.morning)
-        return { ...morning, swell: morning.swell * calm }
-      }
-      return blend(at(scenes.opening), at(scenes.hero), 1 - Math.pow(1 - settle, 3))
+      const at = (pair: Record<'wide' | 'narrow', Composition>) => blend(pair.narrow, pair.wide, wide)
+      if (tone === 'morning') return { ...at(scenes.morning), form: 1 }
+      return { ...blend(at(scenes.opening), at(scenes.hero), 1 - Math.pow(1 - settle, 3)), form }
     }
 
     function render() {
       if (!dust || !root) return
       dust.draw(time, scene())
       root.dataset.ready = 'true'
+      // Written when it changes, which is twice: a test can tell a landscape forming from one formed.
+      const formed = form >= 1 ? 'true' : 'false'
+      if (root.dataset.formed !== formed) root.dataset.formed = formed
     }
 
     function running() {
@@ -150,6 +165,7 @@ export function GlassField({
         time += Math.min(elapsed / 1000, 0.06)
         previous = now
         if (settledRef.current && settle < 1) settle = Math.min(1, settle + elapsed / SETTLE)
+        if (form < 1) form = Math.min(1, form + elapsed / (settledRef.current ? FORM_SKIPPED : FORM))
         render()
       }
       frame = requestAnimationFrame(tick)
@@ -166,6 +182,7 @@ export function GlassField({
       if (motion.matches) {
         time = START
         settle = settledRef.current ? 1 : 0
+        form = 1
       }
       place()
       const flowing = running()
@@ -177,7 +194,7 @@ export function GlassField({
       }
     }
 
-    /** The parallax. The night falls behind and fades; the morning drifts slowly against the page. */
+    /** The parallax. The night falls behind and fades; the morning's ribbons drift slowly against the page. */
     function place() {
       scrollFrame = 0
       if (!root) return
@@ -185,7 +202,6 @@ export function GlassField({
         root.style.transform = ''
         root.style.opacity = ''
         faded = false
-        calm = 1
         return
       }
       if (tone === 'night') {
@@ -202,7 +218,6 @@ export function GlassField({
       }
       const box = (root.parentElement ?? root).getBoundingClientRect()
       const through = Math.min(1, Math.max(0, (window.innerHeight - box.top) / (window.innerHeight + box.height)))
-      calm = 1.25 - 0.5 * through
       root.style.transform = `translate3d(0, ${((through - 0.5) * box.height * 0.16).toFixed(1)}px, 0)`
     }
 

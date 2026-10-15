@@ -893,7 +893,7 @@ export interface GlassFrame {
   /** An hour of the thread. A test holds every frame to a beat. */
   at: string
   line: string
-  /** The sheet's foot until the ledger exists, which is 06:50. */
+  /** The sheet's source bar until the ledger exists, which is 06:50: what the night has done so far. */
   note?: string
   /**
    * Where a source lands on the sheet — `head`, `floor`, or a line number from
@@ -942,6 +942,47 @@ const glassFrames: ReadonlyArray<GlassFrame> = [
     chips: [{ target: 'head', text: 'With a person · 08:04' }],
   },
 ]
+
+/**
+ * The film's sheet, set as a spreadsheet: what the night reads off the request
+ * for each of the matrix's lines, and where each line's rate comes from.
+ *
+ * The categories and quantities are the request's own and are written here,
+ * because the request is a PDF no page draws. The rates are not: each names the
+ * document row it is read from — the supplier's price list, or the agreed
+ * rates in schedule B for the two lines the matrix prices from the agreement —
+ * and the component reads the figure there, so the sheet and the documents on
+ * the desk cannot disagree. The held lines have no rate, because nothing is
+ * guessed. A test holds every line to the matrix and every rate to a row.
+ */
+const glassSheet = {
+  columns: {
+    line: 'Line',
+    item: 'Item',
+    category: 'Category',
+    quantity: 'Qty',
+    rate: 'Rate',
+    status: 'Status',
+  },
+  /** The name box's name for the selection that takes the whole sheet, at 08:04. */
+  all: 'Quote',
+  lines: {
+    '01': { category: 'Machined', quantity: '400', rate: { from: 'agreement', part: 'BR-6061' } },
+    '02': { category: 'Cast', quantity: '250', rate: { from: 'prices', part: 'CH-A380' } },
+    '03': { category: 'Turned', quantity: '1,200', rate: { from: 'prices', part: 'SS-20H6' } },
+    '04': { category: 'Catalogue', quantity: '600' },
+    '05': { category: 'Sealing', quantity: '1,000', rate: { from: 'agreement', part: 'GS-12' } },
+    '06': { category: 'Sheet metal', quantity: '300', rate: { from: 'prices', part: 'CP-LC3' } },
+    '11': { category: 'Machined', quantity: '150' },
+  },
+} as const satisfies {
+  columns: Record<string, string>
+  all: string
+  lines: Record<
+    string,
+    { category: string; quantity: string; rate?: { from: 'prices' | 'agreement'; part: string } }
+  >
+}
 
 /**
  * The six documents, as they lie on the desk before anything reads them.
@@ -1016,6 +1057,15 @@ const glassDocuments = {
       { number: 'B.3', text: 'Payment falls due sixty days after invoice.' },
       { number: 'B.4', text: 'No quotation is issued below a margin of', floor: true },
       { number: 'B.5', text: 'Lead times are confirmed in writing.' },
+      /** The agreed unit rates the sheet reads for lines 01 and 05, which the matrix prices from schedule B. */
+      {
+        number: 'B.6',
+        text: 'Agreed unit rates:',
+        rates: [
+          { part: 'BR-6061', item: 'Machined bracket, 6061-T6', rate: '21.60' },
+          { part: 'GS-12', item: 'Gasket set', rate: '3.15' },
+        ],
+      },
     ],
     signatures: ['For the customer', 'For the supplier'],
     question: 'What is their floor?',
@@ -1100,6 +1150,7 @@ export const glass = {
     },
     frames: glassFrames,
     floor: 'Floor',
+    sheet: glassSheet,
   },
 
   sources: {
