@@ -116,11 +116,24 @@ test('the film says it is invented first, and its chapters are the thread’s ho
   await expect(film.locator('.glass-beat[data-active="true"]')).toContainText('03:42')
   await expect(film.locator('.glass-sheet-row[data-status="changed"]')).toHaveCount(1)
   await expect(film.locator('.glass-namebox')).toHaveText('E15')
-  // The cost the supplier moved, struck through beside the one that replaced it, in the cell selected.
+  // The cost the supplier moved, struck through above the one that replaced it, in the cell selected.
   const moved = film.locator('.glass-sheet-row[data-status="changed"] [data-column="rate"]')
   await expect(moved).toHaveAttribute('data-selected', 'true')
   await expect(moved.locator('s')).toHaveText('128.00')
   await expect(moved).toContainText('135.68')
+  // And both fit the cell. A cell clips what it cannot hold, and once cut the new cost mid-figure.
+  // Measured on the figures, not on `scrollWidth`, which also counts the fill handle.
+  const spill = await moved.evaluate((cell) => {
+    const box = cell.getBoundingClientRect()
+    const value = cell.querySelector('.glass-cell-value')!.getBoundingClientRect()
+    return Math.max(
+      box.left - value.left,
+      value.right - box.right,
+      box.top - value.top,
+      value.bottom - box.bottom,
+    )
+  })
+  expect(spill).toBeLessThanOrEqual(0)
 })
 
 test('the sheet is a spreadsheet: empty while the request is a PDF, then every rate a document’s', async ({
