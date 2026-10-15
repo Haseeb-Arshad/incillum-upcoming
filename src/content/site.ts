@@ -428,8 +428,10 @@ export const boundary = {
  * ── The arithmetic, which is checked ───────────────────────────────────────
  *
  * This is line 14 of the same twenty-line quotation the night thread runs, seen
- * close up, and it is why that quotation misses its floor. Every figure below
- * is exact rather than plausible:
+ * close up, and it is why that quotation misses its floor. It is the line the
+ * matrix marks as moved and the one /glass lays on the desk, and a test holds
+ * all three to one line, one part and one cost. Every figure below is exact
+ * rather than plausible:
  *
  *   1,200 units
  *   unit cost was 128.00, now 135.68            128.00 × 1.06 = 135.68
@@ -461,7 +463,7 @@ export const evidence = {
     scaleMax: 25,
     sourceLabel: 'The source',
     sourceTitle: 'A supplier cost changes.',
-    sourceReference: 'Supplier confirmation SC-4471 · 03:39',
+    sourceReference: 'Supplier confirmation SC-4471 · 03:42',
     costLabel: 'Cost per unit',
     beforeLabel: 'Previous',
     afterLabel: 'Confirmed',
@@ -501,7 +503,7 @@ export const evidence = {
         },
         {
           term: 'Supplier confirmation SC-4471',
-          value: 'Received 03:39. Unit cost and lead time, superseding the price list.',
+          value: 'Received 03:42. Unit cost and lead time, superseding the price list.',
         },
         {
           term: 'Price list, February',
@@ -512,7 +514,7 @@ export const evidence = {
 
     finding: {
       label: 'Finding',
-      body: 'The supplier confirmation moves two things on one line: unit cost from EUR 128.00 to EUR 135.68, a rise of six per cent, and lead time from 21 days to 42. The price list is not wrong; it is out of date by three minutes.',
+      body: 'The supplier confirmation moves two things on one line: unit cost from EUR 128.00 to EUR 135.68, a rise of six per cent, and lead time from 21 days to 42. The price list is not wrong; it has been out of date since 03:42.',
     },
 
     calculation: {
@@ -775,6 +777,8 @@ export const launch = {
  * twenty lines, eighteen priced, two held — one because a part number matches
  * three catalogue entries, one because a customer drawing carries no revision —
  * and one line whose cost moved when a supplier confirmation arrived at 03:42.
+ * That line is 14, the flanged housing the evidence document takes apart and
+ * the largest line on the quotation, which is what the thread calls it.
  * Its money is not written here. It is read off the thread's 06:50 ledger, so
  * the two cannot disagree. `content/site.test.ts` counts the rows below against
  * the totals and the totals against the thread's own prose.
@@ -823,11 +827,11 @@ export const home = {
     rows: [
       { line: '01', item: 'Machined bracket, 6061-T6', status: 'priced', evidence: 'Framework agreement, schedule B' },
       { line: '02', item: 'Cast housing, A380', status: 'priced', evidence: 'Supplier price list, page 4' },
-      { line: '03', item: 'Stepped shaft, Ø20 h6', status: 'changed', evidence: 'Supplier confirmation at 03:42 — unit cost up six per cent, lead time out three weeks' },
       { line: '04', item: 'Bearing seat, catalogue part', status: 'held', evidence: 'Part number matches three catalogue entries; only the tolerance separates them' },
       { line: '05', item: 'Gasket set', status: 'priced', evidence: 'Framework agreement, schedule B' },
       { line: '06', item: 'Cover plate, laser cut', status: 'priced', evidence: 'Supplier price list, page 9' },
       { line: '11', item: 'Sensor mount, customer drawing', status: 'held', evidence: 'Drawing carries no revision' },
+      { line: '14', item: 'Flanged housing, machined', status: 'changed', evidence: 'Supplier confirmation at 03:42 — unit cost up six per cent, lead time out three weeks' },
     ] satisfies ReadonlyArray<{ line: string; item: string; status: MatrixStatus; evidence: string }>,
     more: { count: 13, text: 'more lines priced, each with its source attached' },
   },
@@ -929,7 +933,7 @@ const glassFrames: ReadonlyArray<GlassFrame> = [
     at: '03:42',
     line: 'A confirmation arrives: unit cost up six per cent, lead time out three weeks.',
     note: 'Recalculated when the answer arrived.',
-    chips: [{ target: '03', source: 'supplier', text: 'Supplier confirmation · 03:42' }],
+    chips: [{ target: '14', source: 'supplier', text: 'Supplier confirmation · 03:42' }],
   },
   {
     at: '06:50',
@@ -969,11 +973,11 @@ const glassSheet = {
   lines: {
     '01': { category: 'Machined', quantity: '400', rate: { from: 'agreement', part: 'BR-6061' } },
     '02': { category: 'Cast', quantity: '250', rate: { from: 'prices', part: 'CH-A380' } },
-    '03': { category: 'Turned', quantity: '1,200', rate: { from: 'prices', part: 'SS-20H6' } },
     '04': { category: 'Catalogue', quantity: '600' },
     '05': { category: 'Sealing', quantity: '1,000', rate: { from: 'agreement', part: 'GS-12' } },
     '06': { category: 'Sheet metal', quantity: '300', rate: { from: 'prices', part: 'CP-LC3' } },
     '11': { category: 'Machined', quantity: '150' },
+    '14': { category: 'Machined', quantity: '1,200', rate: { from: 'prices', part: 'FH-6082' } },
   },
 } as const satisfies {
   columns: Record<string, string>
@@ -992,9 +996,10 @@ const glassSheet = {
  * three catalogue entries a tolerance apart, the cost the supplier is about to
  * change. All of it is the same invented quotation, and it reconciles — the
  * held lines are held for the reasons the matrix gives, and the confirmation
- * moves line 03's cost by exactly six per cent and its lead time by exactly
- * three weeks. The floor in the agreement is not written here: the component
- * reads it off the ledger, so the clause and the figure cannot disagree.
+ * moves line 14's cost by exactly six per cent and its lead time by exactly
+ * three weeks, from the evidence document's own figures. The floor in the
+ * agreement is not written here: the component reads it off the ledger, so the
+ * clause and the figure cannot disagree.
  *
  * Each carries the one question a person would ask of it at 23:47. They are the
  * same questions the held lines are narrowed to, asked by hand.
@@ -1038,14 +1043,15 @@ const glassDocuments = {
     columns: ['Part', 'Description', 'Unit cost', 'Lead time'],
     rows: [
       { part: 'CH-A380', description: 'Cast housing, A380', cost: '18.40', lead: '21 d' },
-      { part: 'SS-20H6', description: 'Stepped shaft, Ø20 h6', cost: '46.50', lead: '21 d' },
+      { part: 'FH-6082', description: 'Flanged housing, machined', cost: '128.00', lead: '21 d' },
       { part: 'CP-LC3', description: 'Cover plate, laser cut', cost: '6.90', lead: '10 d' },
       { part: 'SR-20', description: 'Spacer ring', cost: '1.85', lead: '7 d' },
       { part: 'LP-6', description: 'Locating pin', cost: '0.62', lead: '7 d' },
     ],
     /** The row the supplier is about to change. A test holds it to the confirmation. */
-    moving: 'SS-20H6',
-    tabs: ['Housings', 'Shafts', 'Plates'],
+    moving: 'FH-6082',
+    /** The second tab is drawn open, and it is the one the moving row is kept on. */
+    tabs: ['Shafts', 'Housings', 'Plates'],
     question: 'Still this price?',
   },
   agreement: {
@@ -1073,9 +1079,9 @@ const glassDocuments = {
   supplier: {
     title: 'Supplier confirmation SC-4471',
     at: '03:42',
-    item: 'Stepped shaft, Ø20 h6',
+    item: 'Flanged housing, machined',
     changes: [
-      { term: 'Unit cost', was: '46.50', now: '49.29' },
+      { term: 'Unit cost', was: '128.00', now: '135.68' },
       { term: 'Lead time', was: '21 days', now: '42 days' },
     ],
     note: 'Supersedes the price list for this part.',
@@ -1088,7 +1094,7 @@ const glassDocuments = {
  *
  * The line numbers and states are the matrix's, and a test holds them to it:
  * the catalogue and the drawing hold lines 04 and 11, and the supplier answer
- * moves line 03. Declared rather than inferred, for the reason `ThreadBeat`
+ * moves line 14. Declared rather than inferred, for the reason `ThreadBeat`
  * is: only some rows carry a line, and reading `row.line` should type-check
  * against the shape of a row, not against six literals.
  */
@@ -1108,7 +1114,7 @@ const glassThread: ReadonlyArray<GlassThreadRow> = [
   { key: 'catalogue', title: 'Catalogue', line: '04', text: 'Three entries match the part', status: 'held' },
   { key: 'prices', title: 'Supplier price list', text: 'Unit costs for the priced lines', status: 'priced' },
   { key: 'agreement', title: 'Framework agreement', text: 'Margin floor', floor: true },
-  { key: 'supplier', title: 'Supplier confirmation', line: '03', text: 'Six per cent up, three weeks later', status: 'changed' },
+  { key: 'supplier', title: 'Supplier confirmation', line: '14', text: 'Six per cent up, three weeks later', status: 'changed' },
 ]
 
 export const glass = {
