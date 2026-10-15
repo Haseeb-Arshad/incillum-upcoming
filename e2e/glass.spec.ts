@@ -167,6 +167,58 @@ test('the sheet is a spreadsheet: empty while the request is a PDF, then every r
   await expect(film.locator('.glass-sheet')).toHaveAttribute('data-range', 'all')
 })
 
+test('every pill on the sheet is whole, at every hour and every width', async ({
+  page,
+}) => {
+  const film = page.locator('#film')
+  const pills = film.locator('.glass-sheet-row .matrix-status')
+  // 23:47 has none: the request is still a PDF.
+  for (const hour of ['00:06', '01:18', '03:42', '06:50', '08:04']) {
+    await film.getByRole('button', { name: new RegExp(`^${hour}`) }).click()
+    await expect(film.locator('.glass-beat[data-active="true"]')).toContainText(hour)
+    await expect(pills).toHaveCount(await film.locator('.glass-sheet-row').count())
+    // Measured against the cell's content box, not its edge: a cell cuts a pill off at its
+    // padding, and trails an ellipsis after one that is over its content by any amount.
+    // And against the sheet, which cuts off whatever its last column cannot hold.
+    const spills = await pills.evaluateAll((elements) =>
+      elements
+        .map((pill) => {
+          const cell = pill.closest('td')!
+          const sheet = pill.closest('.glass-sheet')!
+          const box = cell.getBoundingClientRect()
+          const style = getComputedStyle(cell)
+          const value = pill.getBoundingClientRect()
+          const edge =
+            sheet.getBoundingClientRect().left + sheet.clientLeft + sheet.clientWidth
+          const spill = Math.max(
+            box.left + parseFloat(style.paddingLeft) - value.left,
+            value.right - (box.right - parseFloat(style.paddingRight)),
+            value.right - edge,
+            box.top - value.top,
+            value.bottom - box.bottom,
+          )
+          return { pill: pill.textContent, spill }
+        })
+        .filter(({ spill }) => spill > 0),
+    )
+    expect(spills, hour).toEqual([])
+  }
+
+  // The room is not taken from the item: where it wraps, on a phone, no word of it is cut.
+  const cut = await film
+    .locator('.glass-sheet-row [data-column="item"]')
+    .evaluateAll((cells) =>
+      cells
+        .filter((cell) => getComputedStyle(cell).whiteSpace !== 'nowrap')
+        .filter((cell) => cell.scrollWidth > cell.clientWidth)
+        .map((cell) => cell.textContent),
+    )
+  expect(cut).toEqual([])
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+  ).toBe(true)
+})
+
 test('the film’s money is the thread’s money', async ({ page }) => {
   const film = page.locator('#film')
   await film.getByRole('button', { name: /^06:50/ }).click()

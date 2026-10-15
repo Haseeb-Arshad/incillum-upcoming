@@ -3040,11 +3040,16 @@
   text-align: right;
 }
 .glass-grid [data-column='rate'] {
-  width: 5.5rem;
+  width: 5.25rem;
   text-align: right;
 }
+/*
+ * Wide enough for the widest pill, "Needs review", whole. A pill is not text a
+ * cell may truncate: over its cell by even a fraction of a pixel, it is cut off
+ * or trailed by a stray ellipsis. The rate, which has room to spare, gives it.
+ */
 .glass-grid [data-column='status'] {
-  width: 7.75rem;
+  width: 8rem;
 }
 .glass-grid [data-column='item'] {
   font-weight: 500;
@@ -3181,11 +3186,20 @@
   .glass-grid [data-column='line'] {
     display: none;
   }
+  /*
+   * The status column holds "Needs review" whole on a phone too. Its room
+   * comes from the row numbers, two digits at most, and from the cells'
+   * padding, so the item keeps the width its longest word needs to wrap
+   * rather than be cut.
+   */
+  .glass-grid .glass-grid-index {
+    width: 1.75rem;
+  }
   .glass-grid [data-column='rate'] {
     width: 4.25rem;
   }
   .glass-grid [data-column='status'] {
-    width: 6rem;
+    width: 6.75rem;
   }
   .glass-grid .matrix-status {
     gap: 0.3rem;
@@ -3193,7 +3207,7 @@
     font-size: 0.6875rem;
   }
   .glass-grid :is(th, td) {
-    padding-inline: 0.5rem;
+    padding-inline: 0.375rem;
   }
   .glass-grid tbody [data-column='item'] {
     height: auto;
