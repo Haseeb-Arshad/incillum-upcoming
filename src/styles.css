@@ -2936,8 +2936,15 @@
 }
 
 /* ── The night: hour rules, the opening, the hero ─────────────────────── */
+/*
+ * The night is its own stacking layer (`isolation`), and the fixed masthead
+ * lives inside it — so the layer is lifted above the acts after it. At `auto`
+ * every positioned section further down painted over the masthead as it
+ * scrolled under it. Nothing else in the night overlaps what follows.
+ */
 .glass-night {
   position: relative;
+  z-index: 1;
   isolation: isolate;
   background-color: var(--ic-paper-sunken);
 }
@@ -3097,6 +3104,12 @@
 }
 .glass-bar[data-scrolled='true']::before {
   opacity: 1;
+}
+/* The masthead's button is the quiet version of the hero's: one step smaller, the same fill. */
+.glass .glass-bar .desk-cta {
+  min-height: 2.375rem;
+  padding: 0.375rem 0.875rem 0.375rem 1rem;
+  font-size: 0.875rem;
 }
 .glass-bar-inner {
   display: flex;
