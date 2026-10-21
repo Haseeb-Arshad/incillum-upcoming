@@ -82,7 +82,9 @@ function RootComponent() {
    */
   const ownsChrome = useRouterState({
     select: (state) =>
-      ['/', '/contact', '/glass', '/lab/particles'].includes(state.location.pathname),
+      ['/', '/contact', '/charlie', '/security', '/glass', '/lab/particles'].includes(
+        state.location.pathname,
+      ),
   })
   useEffect(() => {
     /**

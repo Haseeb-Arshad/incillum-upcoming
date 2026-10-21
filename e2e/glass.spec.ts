@@ -712,10 +712,10 @@ test('the masthead stays with the reader, and its links land somewhere real', as
   expect((await banner.boundingBox())?.y).toBe(0)
   await expect(banner.getByRole('link', { name: 'Request early access' })).toBeInViewport()
 
-  // Every in-page link names a section that exists, once.
+  // Every link to a section of this page, written `#id` or `/#id`, names one that exists, once.
   const anchors = await page
-    .locator('a[href^="#"]')
-    .evaluateAll((links) => links.map((link) => link.getAttribute('href')!.slice(1)))
+    .locator('a[href^="#"], a[href^="/#"]')
+    .evaluateAll((links) => links.map((link) => link.getAttribute('href')!.split('#')[1]!))
   for (const id of new Set(anchors)) {
     await expect(page.locator(`[id="${id}"]`), `#${id}`).toHaveCount(1)
   }

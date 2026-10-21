@@ -1,4 +1,4 @@
-import { Container } from '#/components/primitives.tsx'
+import { Container, TextLink } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { trust } from '#/content/site.ts'
 
@@ -27,7 +27,8 @@ import type { TrustGlyph, TrustState } from '#/content/site.ts'
  * which is replaced by the list of held certifications, each linked to its
  * report, the day one exists.
  */
-export function Trust() {
+/** `more` adds the way to the security page, which the front page needs and the security page does not. */
+export function Trust({ more = false }: { more?: boolean }) {
   return (
     <section
       id={trust.anchor}
@@ -71,6 +72,13 @@ export function Trust() {
           ) : (
             <p className="trust-certification">{trust.noCertification}</p>
           )}
+          {more ? (
+            <p className="trust-more">
+              <TextLink href={trust.more.href} className="text-ink">
+                {trust.more.text}
+              </TextLink>
+            </p>
+          ) : null}
         </Reveal>
       </Container>
     </section>

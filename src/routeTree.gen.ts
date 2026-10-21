@@ -10,9 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CharlieRouteImport } from './routes/charlie'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as GlassRouteImport } from './routes/glass'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SecurityRouteImport } from './routes/security'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as LabParticlesRouteImport } from './routes/lab.particles'
 import { Route as WorkJanusRouteImport } from './routes/work.janus'
@@ -20,6 +22,11 @@ import { Route as WorkJanusRouteImport } from './routes/work.janus'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CharlieRoute = CharlieRouteImport.update({
+  id: '/charlie',
+  path: '/charlie',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -35,6 +42,11 @@ const GlassRoute = GlassRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -55,18 +67,22 @@ const WorkJanusRoute = WorkJanusRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/charlie': typeof CharlieRoute
   '/contact': typeof ContactRoute
   '/glass': typeof GlassRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/lab/particles': typeof LabParticlesRoute
   '/work/janus': typeof WorkJanusRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/charlie': typeof CharlieRoute
   '/contact': typeof ContactRoute
   '/glass': typeof GlassRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/lab/particles': typeof LabParticlesRoute
   '/work/janus': typeof WorkJanusRoute
@@ -74,9 +90,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/charlie': typeof CharlieRoute
   '/contact': typeof ContactRoute
   '/glass': typeof GlassRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/lab/particles': typeof LabParticlesRoute
   '/work/janus': typeof WorkJanusRoute
@@ -85,27 +103,33 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/charlie'
     | '/contact'
     | '/glass'
     | '/robots.txt'
+    | '/security'
     | '/sitemap.xml'
     | '/lab/particles'
     | '/work/janus'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/charlie'
     | '/contact'
     | '/glass'
     | '/robots.txt'
+    | '/security'
     | '/sitemap.xml'
     | '/lab/particles'
     | '/work/janus'
   id:
     | '__root__'
     | '/'
+    | '/charlie'
     | '/contact'
     | '/glass'
     | '/robots.txt'
+    | '/security'
     | '/sitemap.xml'
     | '/lab/particles'
     | '/work/janus'
@@ -113,9 +137,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CharlieRoute: typeof CharlieRoute
   ContactRoute: typeof ContactRoute
   GlassRoute: typeof GlassRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   LabParticlesRoute: typeof LabParticlesRoute
   WorkJanusRoute: typeof WorkJanusRoute
@@ -128,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/charlie': {
+      id: '/charlie'
+      path: '/charlie'
+      fullPath: '/charlie'
+      preLoaderRoute: typeof CharlieRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -149,6 +182,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -177,9 +217,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CharlieRoute: CharlieRoute,
   ContactRoute: ContactRoute,
   GlassRoute: GlassRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
+  SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   LabParticlesRoute: LabParticlesRoute,
   WorkJanusRoute: WorkJanusRoute,

@@ -4,6 +4,7 @@ import {
   access,
   boundary,
   brand,
+  charlie,
   contact,
   earlyAccess,
   evidence,
@@ -13,8 +14,10 @@ import {
   firstBuild,
   hero,
   instrument,
+  menu,
   nightfall,
   questions,
+  security,
   standing,
   thread,
   trust,
@@ -1120,12 +1123,19 @@ describe('questions', () => {
     }
   })
 
-  it('says no to sending and to supplier contact, and keeps both in the future tense', () => {
-    expect(answer(/send quotations/)).toMatch(/^No\./)
+  /**
+   * The owner decided on 22 October 2026 that Charlie is being built to ask
+   * approved suppliers for a price. So the answers say what is true today —
+   * nothing is sent on its own — and what is planned, gated by an approval.
+   */
+  it('says nothing is sent on its own, and that supplier contact is planned behind an approval', () => {
+    expect(answer(/send quotations/)).toMatch(/^Not on its own\./)
     expect(answer(/send quotations/)).toMatch(/being built/)
-    expect(answer(/suppliers/)).toMatch(/^No\./)
+    expect(answer(/send quotations/)).toMatch(/approves/)
+    expect(answer(/suppliers/)).toMatch(/^Not today\./)
     expect(answer(/suppliers/)).toMatch(/arrives/)
-    expect(answer(/suppliers/)).toMatch(/being built/)
+    expect(answer(/suppliers/)).toMatch(/planned/)
+    expect(answer(/suppliers/)).toMatch(/approval/)
   })
 
   it('reads the commitments from where they already live', () => {
@@ -1148,5 +1158,138 @@ describe('the home page’s navigation', () => {
     expect(how.anchor).toBe('how')
     expect(trust.anchor).toBe('trust')
     expect(questions.anchor).toBe('questions')
+  })
+})
+
+describe('the masthead’s menus', () => {
+  const pages = new Set(['/', '/contact', charlie.path, security.path])
+  const sections = new Set(['film', how.anchor, trust.anchor, questions.anchor])
+
+  it('land every item on a page or a front-page section that exists', () => {
+    for (const group of menu.groups) {
+      for (const item of group.items) {
+        const [path, hash] = item.href.split('#')
+        expect(pages.has(path || '/'), item.href).toBe(true)
+        if (hash) expect(sections.has(hash), item.href).toBe(true)
+        expect(words(item.line), item.line).toBeLessThanOrEqual(10)
+      }
+    }
+  })
+
+  it('claims nothing, names no system and spends no motto', () => {
+    claimsNothing(menu)
+  })
+})
+
+/**
+ * Charlie.
+ *
+ * Its scene is invented and says so first; its figures are tokens the
+ * component fills from the evidence and the ledger; and every outward ability
+ * — a request to a supplier, a call — is planned and waits for a person.
+ */
+describe('Charlie', () => {
+  const states = ['Decided', 'Built', 'In build', 'Planned']
+
+  it('says the conversation is invented and not yet built, in its first line', () => {
+    expect(charlie.scene.licence).toMatch(/^Invented/)
+    expect(charlie.scene.licence).toMatch(/not yet built/)
+    expect(charlie.act.lede).toMatch(/invented/i)
+  })
+
+  it('writes no figure of its own: the scene reads them from the evidence and the ledger', () => {
+    expect(JSON.stringify(charlie.scene)).not.toMatch(/EUR|\d+(\.\d+)?\s?%|\d+\.\d{2}|\d,\d{3}/)
+    for (const message of charlie.scene.messages) {
+      for (const token of message.text.match(/\{(\w+)\}/g) ?? []) {
+        expect(
+          ['{line}', '{was}', '{now}', '{leadWas}', '{leadNow}', '{margin}', '{floor}', '{priced}', '{held}', '{units}', '{part}'],
+          token,
+        ).toContain(token)
+      }
+    }
+  })
+
+  it('tells the night in order, starting at the hour the supplier answer arrives', () => {
+    const hours = charlie.scene.messages.map((message) => message.at)
+    expect([...hours].sort()).toEqual(hours)
+    expect(hours[0]).toBe(glass.sources.documents.supplier.at)
+    expect(hours).toContain(thread.beats.at(-1)!.at)
+  })
+
+  it('asks for an approval before anything leaves, and shows who gave it', () => {
+    const asks = charlie.scene.messages.filter((message) => message.ask)
+    expect(asks.length).toBeGreaterThanOrEqual(1)
+    for (const message of asks) expect(message.decided).toMatch(/^Approved by /)
+  })
+
+  it('gives every ability a real state, and keeps every outward one planned and behind a person', () => {
+    for (const ability of charlie.abilities.items) {
+      expect(states).toContain(ability.state)
+      expect(words(ability.title), ability.title).toBeLessThanOrEqual(5)
+    }
+    const outward = charlie.abilities.items.filter((ability) => ['ask', 'call'].includes(ability.glyph))
+    expect(outward).toHaveLength(2)
+    for (const ability of outward) expect(ability.state).toBe('Planned')
+    const ask = charlie.abilities.items.find((ability) => ability.glyph === 'ask')!
+    expect(ask.body).toMatch(/only once someone approves/)
+    const approve = charlie.abilities.items.find((ability) => ability.glyph === 'approve')!
+    expect(approve.state).toBe('Decided')
+    // Nothing Charlie does is called built yet: widen to the type's own set to check.
+    const claimed: ReadonlyArray<string> = charlie.abilities.items.map((ability) => ability.state)
+    expect(claimed).not.toContain('Built')
+  })
+
+  it('keeps the product in the future tense', () => {
+    expect(charlie.hero.lede).toMatch(/being built/)
+    expect(charlie.act.lede).toMatch(/being built/i)
+  })
+
+  it('claims nothing, names no ERP or mail client, and spends no motto', () => {
+    claimsNothing({ ...charlie, scene: { ...charlie.scene, messages: [] } })
+    claimsNothing(charlie.scene.messages)
+  })
+})
+
+/**
+ * Security.
+ *
+ * The frameworks a buyer looks for are named here, and only here, each with
+ * its real status in its own card: not held. Controls carry a state from the
+ * closed set, and the ones that need a hosted environment are not called built.
+ */
+describe('security', () => {
+  it('names each framework with a status that says it is not held', () => {
+    expect(security.frameworks.items.length).toBeGreaterThanOrEqual(4)
+    for (const framework of security.frameworks.items) {
+      expect(['Not held · planned', 'Not yet assessed']).toContain(framework.status)
+    }
+    expect(security.frameworks.lede).toMatch(/None is held today/)
+    expect(security.frameworks.note).toMatch(/^Not held means not held/)
+  })
+
+  it('gives every control a real state, and calls nothing hosted built', () => {
+    for (const control of security.controls.items) {
+      expect(['Decided', 'Built', 'In build', 'Planned']).toContain(control.state)
+      if (/hosted/i.test(control.body)) expect(control.state).not.toBe('Built')
+    }
+    const titles = (state: string) =>
+      security.controls.items.filter((control) => control.state === state).map((control) => control.title)
+    expect(titles('Built')).toEqual(
+      expect.arrayContaining(['Approval routing', 'Audit record']),
+    )
+    expect(titles('Planned')).toEqual(expect.arrayContaining(['SAML single sign-on', 'Encryption at rest and in transit']))
+  })
+
+  it('keeps the framework names off every front-page section', () => {
+    const front = JSON.stringify([home, glass, how, trust, questions, standing, menu, charlie])
+    for (const name of ['SOC 2', 'ISO/IEC', 'GDPR', 'CCPA']) expect(front, name).not.toContain(name)
+  })
+
+  it('claims no customer, no metric and no date, and spends no motto', () => {
+    const text = JSON.stringify(security)
+    for (const forbidden of ['trusted by', 'customers include', 'testimonial', 'certified', 'compliant', 'stay with the work']) {
+      expect(text.toLowerCase()).not.toContain(forbidden)
+    }
+    for (const date of calendar) expect(text, date).not.toContain(date)
   })
 })

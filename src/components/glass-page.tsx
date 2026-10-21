@@ -4,7 +4,9 @@ import { GlassField } from '#/components/glass-field.tsx'
 import { GlassFilm } from '#/components/glass-film.tsx'
 import { GlassHandover } from '#/components/glass-handover.tsx'
 import { GlassSources } from '#/components/glass-sources.tsx'
+import { CharlieAct } from '#/components/charlie.tsx'
 import { HowItWorks } from '#/components/how-it-works.tsx'
+import { MastheadBar } from '#/components/masthead-bar.tsx'
 import { ButtonLink, Container, TextLink } from '#/components/primitives.tsx'
 import { Questions } from '#/components/questions.tsx'
 import { Reveal } from '#/components/reveal.tsx'
@@ -13,10 +15,17 @@ import { Standing } from '#/components/standing.tsx'
 import { StepIcon } from '#/components/step-icon.tsx'
 import { Trust } from '#/components/trust.tsx'
 import { WaitlistForm } from '#/components/waitlist-form.tsx'
-import { brand, contact, glass, how, instrument, questions, thread, trust } from '#/content/site.ts'
+import {
+  brand,
+  contact,
+  glass,
+  how,
+  instrument,
+  questions,
+  thread,
+  trust,
+} from '#/content/site.ts'
 import { contactEmail } from '#/env.ts'
-
-import type { MouseEvent } from 'react'
 
 /**
  * /glass — the presentation.
@@ -174,32 +183,7 @@ export function GlassPage() {
           It belongs to the night region, so it is the same night bar over every
           act on the desk and never changes colour twice a visit.
         */}
-        <header
-          className="glass-bar glass-enter"
-          role="banner"
-          data-scrolled={scrolled ? 'true' : 'false'}
-        >
-          <Container className="glass-bar-inner">
-            <SiteBrand />
-            <nav className="desk-nav" aria-label="Primary">
-              <a href={`#${how.anchor}`} className="desk-nav-link">
-                {glass.nav.how}
-              </a>
-              <a href={`#${trust.anchor}`} className="desk-nav-link">
-                {glass.nav.trust}
-              </a>
-              <a href={`#${questions.anchor}`} className="desk-nav-link">
-                {glass.nav.questions}
-              </a>
-              <a href="/contact" className="desk-nav-link">
-                {glass.nav.contact}
-              </a>
-              <ButtonLink href="#early-access" arrow className="desk-cta" onClick={focusEmail}>
-                {glass.cta}
-              </ButtonLink>
-            </nav>
-          </Container>
-        </header>
+        <MastheadBar scrolled={scrolled} onFront className="glass-enter" />
 
         <section className="glass-hero" aria-labelledby="glass-title">
           <Container className="glass-hero-inner">
@@ -240,8 +224,9 @@ export function GlassPage() {
       <GlassSources />
       <div className="desk glass-acts">
         <HowItWorks />
+        <CharlieAct />
         <Standing />
-        <Trust />
+        <Trust more />
         <Questions />
       </div>
       <Close />
@@ -365,7 +350,10 @@ function MorningPlate() {
       }
       const box = frame.getBoundingClientRect()
       const through = (window.innerHeight - box.top) / (window.innerHeight + box.height)
-      frame.style.setProperty('--glass-drift', (Math.min(1, Math.max(0, through)) - 0.5).toFixed(3))
+      frame.style.setProperty(
+        '--glass-drift',
+        (Math.min(1, Math.max(0, through)) - 0.5).toFixed(3),
+      )
     }
     function onScroll() {
       if (!request) request = requestAnimationFrame(place)
@@ -393,12 +381,16 @@ function MorningPlate() {
           <source
             type="image/avif"
             sizes={sizes}
-            srcSet={widths.map((width) => `/glass/morning-${width}.avif ${width}w`).join(', ')}
+            srcSet={widths
+              .map((width) => `/glass/morning-${width}.avif ${width}w`)
+              .join(', ')}
           />
           <source
             type="image/webp"
             sizes={sizes}
-            srcSet={widths.map((width) => `/glass/morning-${width}.webp ${width}w`).join(', ')}
+            srcSet={widths
+              .map((width) => `/glass/morning-${width}.webp ${width}w`)
+              .join(', ')}
           />
           <img
             src="/glass/morning-1896.jpg"
@@ -414,19 +406,4 @@ function MorningPlate() {
       <GlassHandover />
     </figure>
   )
-}
-
-/**
- * The masthead's button lands on the field rather than near it.
- *
- * On a wide screen the form is already in view, so a plain jump to
- * `#early-access` would do nothing visible and read as a dead button. Focusing
- * the field scrolls it into view where it is not and puts the cursor in it
- * where it is. Without JavaScript the anchor still jumps.
- */
-function focusEmail(event: MouseEvent<HTMLAnchorElement>) {
-  const field = document.querySelector<HTMLInputElement>('#early-access input[type="email"]')
-  if (!field) return
-  event.preventDefault()
-  field.focus()
 }
