@@ -1404,7 +1404,6 @@ export const glass = {
     controls: {
       play: 'Play the night',
       pause: 'Pause',
-      replay: 'Watch it again',
       chapters: 'Hours of the night',
     },
     frames: glassFrames,

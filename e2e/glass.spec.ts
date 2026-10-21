@@ -229,30 +229,29 @@ test('the film’s money is the thread’s money', async ({ page }) => {
   await expect(film.locator('.glass-sheet-row[data-status="priced"]')).toHaveCount(4)
 })
 
-test('the film plays once, in order, and stops at 08:04', async ({ page }) => {
-  // Six hours of animation-timed playback, then a replay: on a loaded machine a
+test('the film plays in order, holds the morning, and goes round again', async ({ page }) => {
+  // Six hours of animation-timed playback and round again: on a loaded machine a
   // headless browser draws frames slowly enough to need more than the default budget.
   test.slow()
   await watchTheFilm(page, '400ms')
   const film = page.locator('.glass-film')
   const seen: string[] = []
+  let wrapped = false
   await expect
     .poll(
       async () => {
         const stage = (await film.getAttribute('data-stage')) ?? ''
         if (seen.at(-1) !== stage) seen.push(stage)
-        return stage
+        // Once the morning has been reached, the next hour is 23:47 again.
+        wrapped = seen.includes('5') && seen.at(-1) === '0'
+        return wrapped
       },
-      { intervals: [100], timeout: 10_000 },
+      { intervals: [100], timeout: 15_000 },
     )
-    .toBe('5')
-  expect(seen).toEqual(['0', '1', '2', '3', '4', '5'])
-  await expect(page.getByRole('button', { name: 'Watch it again' })).toBeVisible()
-  await page.waitForTimeout(1200)
-  await expect(film).toHaveAttribute('data-stage', '5')
-
-  await page.getByRole('button', { name: 'Watch it again' }).click()
-  await expect(film).toHaveAttribute('data-stage', '0')
+    .toBe(true)
+  expect(seen).toEqual(['0', '1', '2', '3', '4', '5', '0'])
+  // It keeps playing: the reader is offered a pause, not a replay.
+  await expect(page.getByRole('button', { name: 'Pause' })).toBeVisible()
 })
 
 test('the reader can pause the film, and it holds where it was', async ({ page }) => {
