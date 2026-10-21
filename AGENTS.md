@@ -10,14 +10,14 @@ The public site at **incillum.com** while there is no product to show yet. One
 page, one argument, one conversion: an email address for the waitlist.
 
 **The front page is the presentation** (`components/glass-page.tsx`, §4 *The
-presentation*): the night told as a film. It moved to `/` from `/glass`, which
-now redirects there. The eight-act page that briefly stood at `/`
-(`components/home-page.tsx`, §4 *The night* and *The acts on the desk*) is no
-longer routed; its acts — the tabs, the build's states, the trust grid, the
-questions — are being carried into the presentation, so read those sections as
-the specification for them. Either way every act is the same invented
-quotation, and every proof device the reference pages use (Harvey, Hebbia) is
-replaced by an honest one.
+presentation*): the night told as a film, then the same quotation taken apart
+on the desk — six sources, four tabs that end where the work stops, the build's
+states, a trust grid, the questions — and the morning. It moved to `/` from
+`/glass`, which now redirects there. Its acts on the desk are specified in §4
+*The acts on the desk*; the eight-act page they were first built for
+(`components/home-page.tsx`) is no longer routed. Every act is the same
+invented quotation, and every proof device the reference pages use (Harvey,
+Hebbia) is replaced by an honest one.
 
 It is deliberately **not** a marketing site with the product pages removed. Its
 navigation is links to sections of the one page and to the contact memo; there
@@ -214,7 +214,7 @@ each says so in its component's header:
 | Where this stands — *Built · In build · Opening* | the band of usage figures | `standing.tsx` |
 | Data and trust — six commitments | the certification badges | `trust.tsx` |
 | Questions, answered in full | the testimonials | `questions.tsx` |
-| The morning — the 08:04 room, the handover, the ask | the closing band | `home-page.tsx` |
+| The morning — the 08:04 room, the handover, the ask, the next steps | the closing band | `glass-page.tsx` |
 
 - **The tabs are the boundaries.** Read · Hold · Price · Decide, one line of the
   quotation each, and each ends on one entry of `boundary` — all four, once
@@ -269,10 +269,18 @@ The front page (`/`) is the night told as a film, for somebody who wants to be
 shown rather than read to. Two beats of type over a field of hour rules, a
 centred hero with the form, then the quotation played hour by hour in a frame;
 after it, the six documents a quotation is assembled from lie on a desk with the
-part itself among them, and gather onto one sheet; then one invitation. It
-carries the front page's head — the title, description and canonical at `/` —
-and `/glass`, where it used to live off the spine, is a permanent redirect to
-it. `e2e/glass.spec.ts` holds both.
+part itself among them, and gather onto one sheet; then the acts on the desk —
+the four tabs, where the build stands, data and trust, the questions — and the
+morning, one invitation, and the motto. It carries the front page's head — the
+title, description and canonical at `/` — and `/glass`, where it used to live
+off the spine, is a permanent redirect to it. `e2e/glass.spec.ts` holds both.
+
+- **The masthead stays with the reader**: fixed, transparent over the night,
+  and filled with the night's sunken ground once the first screen has gone. It
+  belongs to the night region, so it is the same night bar over every act and
+  never changes colour twice a visit. Its links are the page's own sections and
+  the contact memo, with the one button, which puts the cursor in the field;
+  below a laptop's width only the brand and the button remain.
 
 - **No labels over headings.** No tracked capitals anywhere on it — not over a
   title, not inside a document — and no title in two tones. The first version
@@ -296,8 +304,9 @@ it. `e2e/glass.spec.ts` holds both.
   that moves, moves by the thread's six per cent and three weeks. Tests hold it.
 - **Its own motion budget**, larger than the home page's because a presentation
   tells by moving, and listed in `styles.css` above the block that spends it:
-  the opening, the film, the gathering, the dust, the morning's parallax, one
-  reveal per block at the close, the nudge and the press. The film plays once
+  the opening, the film, the gathering, the dust, the morning's parallax, a tab
+  change (one 220ms crossfade the reader asked for), the masthead filling in,
+  one reveal per block after the night, the nudge and the press. The film plays once
   and stops at 08:04; nothing pulses; reduced motion gets the final frame of
   all of it.
 - **The dust is the one exception to "nothing moves while the reader is
@@ -321,9 +330,11 @@ it. `e2e/glass.spec.ts` holds both.
   prices from the agreement — and a held line has none. No grey bars stand in
   for text; at 23:47 the cells are simply empty.
 - **The same licence for the signal**: the held state and the figure that breaks
-  the floor — on the film's sheet, the gathered sheet and the handover.
-  `e2e/glass.spec.ts` fails on any other text in it.
-- **No motto.** Its placements are the home page's close and the success state.
+  the floor — on the film's sheet, the gathered sheet, the handover and the
+  tabs. `e2e/glass.spec.ts` fails on any other text in it.
+- **The motto signs it off**, at the head of the footer: this is the front page,
+  and its close is one of the motto's two placements; the other is the success
+  state of its form. `e2e/glass.spec.ts` counts it.
 
 ### The mark
 
