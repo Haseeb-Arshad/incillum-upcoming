@@ -17,12 +17,19 @@ test.beforeEach(async ({ page }) => {
   await page.waitForSelector('html[data-hydrated="true"]')
 })
 
-/** The wire shape of `joinWaitlist`'s success, as TanStack Start serialises it. */
+/**
+ * The wire shape of `joinWaitlist`'s success, as TanStack Start serialises it.
+ *
+ * Copied from a real response, not written from the docs: 1.169 sends only
+ * `result`, where 1.168 also sent `error` and `context`, and the client will not
+ * read the old shape. When the framework moves again, capture one real
+ * response from a local server with no providers configured and paste it here.
+ */
 const joined = {
   t: 10,
   i: 0,
   p: {
-    k: ['result', 'error', 'context'],
+    k: ['result'],
     v: [
       {
         t: 10,
@@ -30,8 +37,6 @@ const joined = {
         p: { k: ['status', 'reference'], v: [{ t: 1, s: 'joined' }, { t: 1, s: 'IC-TEST0001-ABC' }] },
         o: 0,
       },
-      { t: 2, s: 1 },
-      { t: 11, i: 2, p: { k: [], v: [] }, o: 0 },
     ],
   },
   o: 0,
