@@ -762,24 +762,22 @@ export const launch = {
 } as const
 
 /**
- * The home page: one quotation, told in eight acts.
+ * The front page's shared copy: its head, its navigation, the quotation's
+ * lines as the film's sheet sets them, and the close the presentation reads.
  *
- * The page opens on the commissioned photograph — an empty office, one lamp,
- * a quotation still lying under it — because that frame is the argument with
- * the words taken away. Then the night itself, played in a frame (the film
- * from /glass); then the page turns to paper and takes the same quotation
- * apart at closer magnifications: the six sources it is assembled from, the
- * four steps it goes through and where each one stops, what exists, what is
- * promised about the data, the questions a buyer asks, and the morning.
+ * The front page is the presentation (`glass` below, `components/glass-page.tsx`).
+ * What lives here is what more than one surface reads: the masthead's links and
+ * button, the matrix the film, the gathered sheet and the tabs all draw, and
+ * the close's headline, body and action.
  *
  * ── Shaped like the pages it is measured against, proved differently ───────
  *
- * The order is the order Harvey and Hebbia use — a product film, the context it
- * draws on, product tabs, a band of figures, a security grid, then the close.
- * Their proof is not available here (AGENTS.md §5), so every act carries the
- * honest substitute instead: documents for a logo wall, states for metrics,
- * written answers for testimonials, and commitments with their real state for
- * certification badges.
+ * The front page follows the order Harvey and Hebbia use — a product film, the
+ * context it draws on, product tabs, a band of figures, a security grid, then
+ * the close. Their proof is not available here (AGENTS.md §5), so every act
+ * carries the honest substitute instead: documents for a logo wall, states for
+ * metrics, written answers for testimonials, and commitments with their real
+ * state for certification badges.
  *
  * ── The matrix is illustrative, and reconciles ─────────────────────────────
  *
@@ -799,10 +797,6 @@ export const launch = {
 export type MatrixStatus = 'priced' | 'changed' | 'held'
 
 export const home = {
-  headlineStart: hero.headlineStart,
-  headlineEnd: hero.headlineEnd,
-  kicker: 'For the unattended hours',
-  lede: hero.lede,
   /**
    * The masthead's links. Every one lands on something that exists — a section
    * on this page or the contact memo — because a link to a page that is not
@@ -811,11 +805,6 @@ export const home = {
   nav: { how: 'How it works', trust: 'Trust', questions: 'Questions', contact: 'Contact' },
   cta: 'Request early access',
   emailPlaceholder: 'Your work email',
-  /** The note under the field: what a first email is for, and what it is not. */
-  assurance: hero.assurance,
-  /** The quiet link under the form, down to the film. */
-  watch: 'Watch one night',
-  status: 'In progress. Carefully built.',
 
   matrix: {
     heading: 'What is waiting at 08:04.',
@@ -849,13 +838,9 @@ export const home = {
   },
 
   closing: {
-    label: hero.invitation,
     headline: close.headline,
     body: 'If there is an RFQ that lands on a Friday evening, or a quotation that is always waiting on one number from one supplier, that is the conversation we want to have.',
     action: 'Tell us about the work',
-    emailLabel: 'Or write to us',
-    /** Over the contact memo's own three steps, which the component reads from `contact`. */
-    nextLabel: earlyAccess.nextLabel,
   },
 
   title: seoCopy.title,

@@ -968,65 +968,6 @@
   }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   Home — one quotation in eight acts (`components/home-page.tsx`).
-
-   The first screen is the commissioned photograph, full-bleed: an empty
-   office, one lamp, a quotation under it. The headline sits over the dark side
-   of the frame. Below it the night plays in a frame — the film from /glass,
-   whose sheet is *lit*, the way the quotation is the one lit thing in the
-   photograph. Then the page turns to the desk the contact memo is laid on and
-   takes the same quotation apart: six sources, four tabs, the build's states,
-   the trust grid, the questions, and the morning.
-
-   One dark region (`.home-night`, carrying `[data-inverted]`), one lit panel
-   inside it (`[data-lit]`), one desk after it. Every colour below is a token
-   or a scrim built from one.
-
-   ── Its motion budget ─────────────────────────────────────────────────────
-     1. the hero's one entrance;
-     2. the film: once through while on screen, pausable, never looped;
-     3. the sources gathering: one change of state tied to the scroll;
-     4. a tab change: one 220ms crossfade, only when the reader asks;
-     5. one reveal per section;
-     6. the masthead filling in once the hero has gone — 300ms, a state change;
-     7. the arrow nudge and the press.
-   The night plate never moves, nothing loops, and there is no dust and no
-   parallax here. Reduced motion renders the final frame of every one.
-
-   Contrast:
-     on the night (#0d0d0c)   ink-900 18.6:1 · ink-600 10.3:1 · ink-400 6.9:1
-     over the scrim           the headline column sits on ≥ 86% night, so the
-                              same figures hold within a few tenths
-     on the desk (#e0ddd5)    ink-900 14.2:1 · ink-600 7.6:1 · ink-400 (re-
-                              pointed below to #5c5b55) 5.2:1
-   ══════════════════════════════════════════════════════════════════════════ */
-.home {
-  /* The fixed masthead's height. Anchors land below it (`--ic-anchor-offset`). */
-  --home-bar: 4.75rem;
-  /* The masthead's one state change, and the tab change: in, and the faster way out. */
-  --home-fill: 300ms;
-  --home-tab-in: 220ms;
-  --home-tab-out: 120ms;
-  --home-display: clamp(2.5rem, 4.6vw, 5.25rem);
-  --home-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
-  --home-form: 30rem;
-  --home-control: 3rem;
-  --home-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --home-arrive: 900ms;
-  --hero-scrim-strong: rgba(13, 13, 12, 0.94);
-  --hero-scrim: rgba(13, 13, 12, 0.7);
-
-  position: relative;
-  color: var(--ic-ink-900);
-  overflow: clip;
-}
-
-/* The page's one dark region. Deeper than the default night: a photograph on black reads as a print. */
-.home-night {
-  background-color: var(--ic-paper-sunken);
-}
-
 /* ── The brand and the navigation, shared with /contact ───────────────── */
 .site-brand {
   display: inline-flex;
@@ -1073,222 +1014,13 @@
   background-color: currentColor;
   transform: scaleX(0);
   transform-origin: right;
-  transition: transform var(--ic-slow) var(--home-ease);
+  transition: transform var(--ic-slow) var(--ic-ease);
 }
 .desk-nav-link:hover::after {
   transform: scaleX(1);
   transform-origin: left;
 }
-.home .desk-cta {
-  min-height: 2.5rem;
-  padding: 0.5rem 1.125rem 0.5rem 1.25rem;
-}
-.home .desk-cta--large {
-  min-height: 3.25rem;
-  padding: 0.75rem 1.5rem 0.75rem 1.75rem;
-}
 
-/* ── Act one: the plate ───────────────────────────────────────────────── */
-.hero {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  min-height: max(40rem, min(100svh, 64rem));
-  overflow: hidden;
-}
-.hero-plate {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-}
-.hero-plate img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* Crop from the original's left, where the lamp and the quotation are; the flip then puts them on the right. */
-  object-position: 12% 62%;
-  transform: scaleX(-1);
-  user-select: none;
-}
-.hero-plate::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, var(--hero-scrim-strong) 0%, var(--hero-scrim) 36%, transparent 68%),
-    linear-gradient(0deg, var(--ic-paper-sunken) 0%, transparent 30%),
-    linear-gradient(180deg, var(--hero-scrim) 0%, transparent 20%);
-}
-.hero-inner {
-  display: flex;
-  flex-direction: column;
-  padding-top: var(--home-bar);
-}
-
-/*
- * The masthead, fixed. Transparent over the photograph, where the top scrim
- * already holds it at AA; once the first screen has scrolled away it fills in
- * with the night's own sunken ground and grain, and a hairline under it. That
- * fill is its one state change, and the 300ms it takes is the documented
- * exception to the two durations. It never shrinks, never gains a shadow, and
- * never changes colour: it belongs to the night region, so it is the same night
- * bar over the paper sections as over the photograph.
- */
-.home-sentinel {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1px;
-  height: 6rem;
-  pointer-events: none;
-}
-.home-bar {
-  position: fixed;
-  inset: 0 0 auto;
-  z-index: 40;
-  color: var(--ic-ink-900);
-}
-.home-bar::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-bottom: 1px solid var(--ic-line);
-  background-color: var(--ic-paper-sunken);
-  background-image: var(--ic-grain);
-  opacity: 0;
-  transition: opacity var(--home-fill) var(--home-ease);
-}
-.home-bar[data-scrolled='true']::before {
-  opacity: 1;
-}
-.home-bar-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  min-height: var(--home-bar);
-}
-.hero-body {
-  display: grid;
-  gap: 2rem;
-  align-items: end;
-  margin-top: auto;
-  padding-block: clamp(4rem, 10vh, 8rem) clamp(3rem, 8vh, 5.5rem);
-}
-.hero-copy {
-  min-width: 0;
-  max-width: 46rem;
-}
-.hero-kicker {
-  margin-bottom: 1.5rem;
-  font-size: var(--text-label);
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ic-ink-600);
-}
-.home-title {
-  font-size: var(--home-display);
-  line-height: 0.96;
-  letter-spacing: -0.006em;
-  text-transform: uppercase;
-  color: var(--ic-ink-900);
-}
-/* Each headline line rises out of its own line box; the clip is padded so nothing is cut at rest. */
-.home-line {
-  display: inline-block;
-  white-space: nowrap;
-  overflow: clip;
-  padding-bottom: 0.1em;
-  margin-bottom: -0.1em;
-}
-.home-line > span {
-  display: inline-block;
-  animation: home-line-rise var(--home-arrive) var(--home-ease) both;
-  animation-delay: 150ms;
-}
-.home-line + .home-line > span {
-  animation-delay: 240ms;
-}
-.home-lede {
-  max-width: 36rem;
-  margin-top: clamp(1.5rem, 3vh, 2rem);
-  font-size: var(--home-lede);
-  line-height: 1.6;
-  color: var(--ic-ink-600);
-  text-wrap: pretty;
-}
-.home-form {
-  max-width: var(--home-form);
-  margin-top: 2.25rem;
-}
-.home-note {
-  max-width: var(--home-form);
-  margin-top: 1rem;
-  font-size: var(--text-small);
-  line-height: 1.5;
-  color: var(--ic-ink-400);
-}
-.hero-caption {
-  max-width: 17rem;
-  font-family: var(--font-display);
-  font-size: 1rem;
-  line-height: 1.4;
-  color: var(--ic-ink-600);
-}
-
-.home-rise {
-  animation: home-rise var(--home-arrive) var(--home-ease) both;
-}
-.hero-kicker.home-rise {
-  animation-delay: 80ms;
-}
-.home-lede.home-rise {
-  animation-delay: 380ms;
-}
-.home-form.home-rise {
-  animation-delay: 470ms;
-}
-.home-note.home-rise {
-  animation-delay: 560ms;
-}
-.hero-caption.home-rise {
-  animation-delay: 900ms;
-}
-.home-drop {
-  animation: home-drop var(--home-arrive) var(--home-ease) both;
-}
-@keyframes home-line-rise {
-  from {
-    transform: translate3d(0, 108%, 0);
-  }
-  to {
-    transform: none;
-  }
-}
-@keyframes home-rise {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 14px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-@keyframes home-drop {
-  from {
-    opacity: 0;
-    transform: translate3d(0, -10px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
 
 /*
  * The field: a rule, not a box — the same underline the contact memo uses.
@@ -1296,7 +1028,7 @@
  * plain readable tone rather than carry the field's name.
  */
 .waitlist-inline-input {
-  height: var(--home-control);
+  height: 3rem;
   padding: 0 0.125rem;
   border: 0;
   border-bottom: 1px solid var(--ic-line-strong);
@@ -1321,10 +1053,6 @@
   outline: none;
   border-bottom-color: var(--ic-ink-900);
   box-shadow: 0 1px 0 var(--ic-ink-900);
-}
-.home .waitlist-inline-submit {
-  min-height: var(--home-control);
-  padding: 0.625rem 1.25rem 0.625rem 1.5rem;
 }
 
 /*
@@ -1374,14 +1102,6 @@
   color: var(--ic-signal);
 }
 
-/* ── Act two: the film, under the plate ───────────────────────────────── */
-.home-watch {
-  margin-top: 1.25rem;
-}
-.home-film {
-  padding-top: clamp(0.5rem, 2vw, 1.5rem);
-}
-
 /* ── After the night: the desk ────────────────────────────────────────── */
 .desk {
   /* ink-400 is re-pointed here so muted text clears AA on the darker paper. */
@@ -1414,8 +1134,7 @@
 .how-title,
 .standing-title,
 .trust-title,
-.questions-title,
-.home-closing-title {
+.questions-title {
   font-size: var(--glass-heading);
   line-height: 1;
   letter-spacing: -0.022em;
@@ -1521,17 +1240,17 @@
   visibility: hidden;
   transform: translate3d(0, 6px, 0);
   transition:
-    opacity var(--home-tab-out) var(--ic-ease),
-    transform var(--home-tab-out) var(--ic-ease),
-    visibility 0s linear var(--home-tab-out);
+    opacity var(--glass-tab-out) var(--ic-ease),
+    transform var(--glass-tab-out) var(--ic-ease),
+    visibility 0s linear var(--glass-tab-out);
 }
 .how-body[data-enhanced='true'] .how-panel[data-active='true'] {
   opacity: 1;
   visibility: visible;
   transform: none;
   transition:
-    opacity var(--home-tab-in) var(--ic-ease),
-    transform var(--home-tab-in) var(--ic-ease),
+    opacity var(--glass-tab-in) var(--ic-ease),
+    transform var(--glass-tab-in) var(--ic-ease),
     visibility 0s;
 }
 .how-panel:focus-visible {
@@ -2059,114 +1778,6 @@
   color: var(--ic-ink-600);
 }
 
-/* ── Act eight: the morning ───────────────────────────────────────────── */
-/* This page's photographs hold still: the morning plate sits centred, with no drift and no dust. */
-.home-morning .glass-morning-frame img {
-  transform: none;
-  will-change: auto;
-}
-.home-closing {
-  padding-block: clamp(5rem, 10vw, 8.5rem) clamp(4.5rem, 9vw, 7rem);
-  border-top: 1px solid var(--ic-line);
-}
-.home-closing-grid {
-  display: grid;
-  gap: 2.5rem 4rem;
-}
-.home-closing-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-.home-closing-title {
-  max-width: 16ch;
-}
-.home-closing-body {
-  max-width: 34rem;
-  font-size: var(--glass-lede);
-  line-height: 1.6;
-  color: var(--ic-ink-600);
-}
-.home-closing-side {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2rem;
-}
-.home-next {
-  display: grid;
-  gap: 0.875rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--ic-line-strong);
-}
-.home-next-steps {
-  display: grid;
-  gap: 0.75rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.home-next-steps li {
-  display: grid;
-  grid-template-columns: 1.25rem minmax(0, 1fr);
-  gap: 0.75rem;
-  align-items: start;
-  max-width: 30rem;
-  font-size: var(--text-body);
-  line-height: 1.5;
-  color: var(--ic-ink-600);
-}
-.home-next-steps svg {
-  width: 1.125rem;
-  height: 1.125rem;
-  margin-top: 0.2rem;
-  color: var(--ic-ink-900);
-}
-
-.home-footer {
-  padding-bottom: 2rem;
-}
-.home-footer-sign {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  padding-top: clamp(2.5rem, 5vw, 3rem);
-  border-top: 1px solid var(--ic-line-strong);
-}
-.home-footer-base {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem 2.5rem;
-  margin-top: clamp(3rem, 6vw, 4rem);
-  padding-top: 1.75rem;
-  border-top: 1px solid var(--ic-line-strong);
-}
-.home-footer-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.75rem;
-  font-size: var(--text-small);
-}
-.home-footer-nav a {
-  color: var(--ic-ink-900);
-  text-decoration: underline;
-  text-decoration-color: var(--ic-line-strong);
-  text-underline-offset: 0.3em;
-  transition: text-decoration-color var(--ic-fast) var(--ic-ease);
-}
-.home-footer-nav a:hover {
-  text-decoration-color: currentColor;
-}
-
-/* The sources pin under the fixed masthead, so their stage starts below it. */
-@media (min-width: 48rem) and (min-height: 46rem) {
-  .home .glass-sources[data-enhanced='true'] .glass-sources-stage {
-    padding-top: calc(var(--home-bar) + clamp(1.25rem, 4vh, 3rem));
-  }
-}
-
 @media (min-width: 48rem) {
   .how-copy {
     grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
@@ -2269,131 +1880,36 @@
     position: sticky;
     top: calc(var(--glass-bar, 0px) + 2rem);
   }
-  .home-closing-grid {
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-    align-items: start;
-  }
-}
-.home a:focus-visible,
-.home button:focus-visible {
-  outline: 2px solid var(--ic-ink-900);
-  outline-offset: 3px;
 }
 
-/* ── Responsive ───────────────────────────────────────────────────────── */
-@media (min-width: 64rem) {
-  .hero-body {
-    grid-template-columns: minmax(0, 46rem) minmax(0, 1fr);
-  }
-  .hero-caption {
-    justify-self: end;
-    text-align: right;
-  }
-}
-@media (max-width: 63.99rem) {
-  .hero-caption {
-    display: none;
-  }
-}
 @media (max-width: 720px) {
   .desk-nav-link {
     display: none;
   }
 }
-/* Four section links and the button need a laptop's width; below it the bar keeps the brand and the button. */
-@media (max-width: 59.99rem) {
-  .home-bar .desk-nav-link {
-    display: none;
-  }
-}
-@media (max-width: 639px) {
-  .home {
-    --home-display: clamp(2.125rem, 10.4vw, 3.25rem);
-  }
-  /* A phone cannot hold "COMMERCIAL WORK." on one line at a readable size, so the lines may wrap. */
-  .home-line {
-    white-space: normal;
-  }
-  .hero {
-    min-height: 100svh;
-  }
-  /*
-   * On a phone the photograph cannot sit behind the words without being
-   * scrimmed to nothing, so it takes the top half of the screen on its own —
-   * lamp and quotation in view — and the words sit under it on the night.
-   */
-  .hero-plate {
-    bottom: auto;
-    height: 56svh;
-  }
-  .hero-plate img {
-    object-position: 0% 60%;
-  }
-  .hero-plate::after {
-    background:
-      linear-gradient(0deg, var(--ic-paper-sunken) 0%, transparent 42%),
-      linear-gradient(180deg, var(--hero-scrim) 0%, transparent 26%);
-  }
-  .hero-body {
-    padding-top: 42svh;
-  }
-  .home .waitlist-inline-submit {
-    width: 100%;
-  }
-}
+
 @media (max-width: 440px) {
-  /* The masthead button has to share a 342px row with the wordmark; drop the arrow and tighten the tracking. */
-  .home-bar .desk-cta {
-    padding-inline: 0.875rem;
-    font-size: 0.6875rem;
-    letter-spacing: 0.07em;
-  }
   .desk-cta .ic-cta-arrow {
     display: none;
-  }
-}
-@media (max-width: 380px) {
-  .home-bar-inner {
-    gap: 0.75rem;
-  }
-  .home-bar .site-brand {
-    gap: 0.5rem;
-    font-size: 1.25rem;
-  }
-  .home-bar .site-brand-mark {
-    width: 2rem;
-    height: 2rem;
-  }
-  .home-bar .desk-cta {
-    padding-inline: 0.625rem;
-    font-size: 0.65625rem;
-    letter-spacing: 0.04em;
   }
 }
 
 /*
  * Reduced motion renders the final frame. The global rule shortens durations
- * but keeps delays, and an entrance with `both` fill would sit invisible for
- * its delay — so every home animation is removed outright.
+ * but keeps delays, so each of these is removed outright.
  */
 @media (prefers-reduced-motion: reduce) {
-  .home-line > span,
-  .home-rise,
-  .home-drop {
-    animation: none;
-  }
   .site-brand-mark {
     transform: none;
     transition: none;
   }
-  /* A tab change swaps the panel at once; the masthead fills without a fade. */
+  /* A tab change swaps the panel at once. */
   .how-body[data-enhanced='true'] .how-panel,
   .how-body[data-enhanced='true'] .how-panel[data-active='true'] {
     transform: none;
     transition: none;
   }
-  .how-tab,
-  .home-bar::before {
+  .how-tab {
     transition: none;
   }
 }
@@ -2421,7 +1937,6 @@
      ink-400 #6e6e66     5.1:1    the optional note and the privacy line
    ══════════════════════════════════════════════════════════════════════════ */
 .memo-page,
-.home,
 .glass {
   --memo-desk: #e0ddd5;
   --memo-sheet: var(--ic-paper-raised);
@@ -2442,7 +1957,6 @@
 
   /* Speckled ink: alpha is thinned where the noise runs high, so a fill reads as pressed, not printed. */
   --memo-ink-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='m' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -9 7.6'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23m)'/%3E%3C/svg%3E");
-
 }
 
 .memo-page {
@@ -3370,8 +2884,7 @@
    the presentation's own furniture — its opening, its dust, its parallax —
    stays on /glass.
    ══════════════════════════════════════════════════════════════════════════ */
-.glass,
-.home {
+.glass {
   --glass-display: clamp(2.75rem, 6vw, 5.5rem);
   --glass-heading: clamp(2.25rem, 4.4vw, 4.25rem);
   --glass-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
@@ -3551,6 +3064,9 @@
 .glass {
   --glass-bar: 4.75rem;
   --glass-fill: 300ms;
+  /* A tab change: in, and the faster way out. */
+  --glass-tab-in: 220ms;
+  --glass-tab-out: 120ms;
 
   position: relative;
 }
