@@ -604,7 +604,10 @@ test('how it works is a real tablist, and each step ends where it stops', async 
     await tabs.nth(index).click()
     const panel = section.getByRole('tabpanel')
     await expect(panel).toHaveAttribute('aria-labelledby', (await tabs.nth(index).getAttribute('id'))!)
-    limits.push((await panel.locator('.how-stops-line strong').innerText()).replace(/\.$/, ''))
+    // Wait for the panel to be drawn before reading it: `innerText` of a panel not yet shown is empty.
+    const limit = panel.locator('.how-stops-line strong')
+    await expect(limit).toHaveText(/\S/)
+    limits.push((await limit.innerText()).replace(/\.$/, ''))
   }
   expect([...limits].sort()).toEqual(['Ambiguity', 'Approval', 'Commercial policy', 'Missing evidence'])
 })
