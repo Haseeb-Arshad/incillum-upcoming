@@ -1398,7 +1398,9 @@ export const glass = {
    */
   opening: ['AI made every desk faster.', 'Then everyone went home.'],
 
-  nav: { contact: home.nav.contact },
+  /** The masthead's links: this page's own sections and the contact memo, and the one button. */
+  nav: home.nav,
+  cta: home.cta,
 
   hero: {
     headlineStart: hero.headlineStart,
@@ -1448,6 +1450,8 @@ export const glass = {
     body: home.closing.body,
     action: home.closing.action,
     writeTo: 'Or write to',
+    /** Over the contact memo's own three steps, which the component reads from `contact`. */
+    nextLabel: earlyAccess.nextLabel,
     /**
      * The morning plate: the night plate's own room at 08:04, where the film
      * ends. Described the way `nightfall.alt` describes the night — the

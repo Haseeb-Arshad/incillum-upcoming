@@ -3543,12 +3543,125 @@
   animation-delay: var(--glass-enter-delay, 0ms);
 }
 
-.glass-header {
+/*
+ * The masthead, fixed: transparent over the night, filled with the night's own
+ * sunken ground and grain once the first screen has gone. That fill is its one
+ * state change. It never shrinks and never gains a shadow.
+ */
+.glass {
+  --glass-bar: 4.75rem;
+  --glass-fill: 300ms;
+
+  position: relative;
+}
+.glass-sentinel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 6rem;
+  pointer-events: none;
+}
+.glass-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  color: var(--ic-ink-900);
+}
+.glass-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-bottom: 1px solid var(--ic-line);
+  background-color: var(--ic-paper-sunken);
+  background-image: var(--ic-grain);
+  opacity: 0;
+  transition: opacity var(--glass-fill) var(--glass-ease);
+}
+.glass-bar[data-scrolled='true']::before {
+  opacity: 1;
+}
+.glass-bar-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  padding-top: 2rem;
+  min-height: var(--glass-bar);
+}
+.glass-hero {
+  padding-top: var(--glass-bar);
+}
+@media (max-width: 59.99rem) {
+  .glass-bar .desk-nav-link {
+    display: none;
+  }
+}
+@media (min-width: 48rem) and (min-height: 46rem) {
+  .glass .glass-sources[data-enhanced='true'] .glass-sources-stage {
+    padding-top: calc(var(--glass-bar) + clamp(1.25rem, 4vh, 3rem));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-bar::before {
+    transition: none;
+  }
+}
+
+/* What happens after somebody writes, under the ask — sentence case, no label style. */
+.glass-next {
+  display: grid;
+  gap: 0.875rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.glass-next-label {
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--ic-ink-600);
+}
+.glass-next-steps {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.glass-next-steps li {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.glass-next-steps svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.2rem;
+  color: var(--ic-ink-900);
+}
+.glass-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  margin-bottom: 2rem;
+  font-size: var(--text-small);
+}
+.glass-footer-nav a {
+  color: var(--ic-ink-900);
+  text-decoration: underline;
+  text-decoration-color: var(--ic-line-strong);
+  text-underline-offset: 0.3em;
+}
+.glass-motto {
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+  font-family: var(--font-display);
+  font-size: var(--glass-heading);
+  line-height: 1;
+  letter-spacing: -0.022em;
+  color: var(--ic-ink-900);
 }
 
 .glass-hero-inner {

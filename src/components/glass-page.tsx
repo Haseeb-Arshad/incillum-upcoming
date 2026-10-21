@@ -10,10 +10,13 @@ import { Questions } from '#/components/questions.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { SiteBrand } from '#/components/site-brand.tsx'
 import { Standing } from '#/components/standing.tsx'
+import { StepIcon } from '#/components/step-icon.tsx'
 import { Trust } from '#/components/trust.tsx'
 import { WaitlistForm } from '#/components/waitlist-form.tsx'
-import { brand, glass, instrument, thread } from '#/content/site.ts'
+import { brand, contact, glass, how, instrument, questions, thread, trust } from '#/content/site.ts'
 import { contactEmail } from '#/env.ts'
+
+import type { MouseEvent } from 'react'
 
 /**
  * /glass — the presentation.
@@ -87,7 +90,25 @@ const nightHours = Math.floor(minutesAfter(officeEmpties, morning) / 60) + 1
 export function GlassPage() {
   const openingRef = useRef<HTMLDivElement>(null)
   const filmRef = useRef<HTMLDivElement>(null)
+  const sentinelRef = useRef<HTMLSpanElement>(null)
   const [opening, setOpening] = useState<Opening>('playing')
+  const [scrolled, setScrolled] = useState(false)
+
+  /**
+   * Whether the first screen has scrolled away, as one boolean from an
+   * observer rather than a scroll listener — two renders a visit. It is what
+   * fills the masthead in.
+   */
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0]
+      if (entry) setScrolled(!entry.isIntersecting && entry.boundingClientRect.top < 0)
+    })
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     if (opening !== 'playing') return
@@ -127,6 +148,7 @@ export function GlassPage() {
 
   return (
     <div className="glass" data-opening={opening}>
+      <span ref={sentinelRef} className="glass-sentinel" aria-hidden="true" />
       <div data-inverted="" className="glass-night">
         <div className="glass-hours" aria-hidden="true">
           {Array.from({ length: nightHours }, (_, hour) => (
@@ -146,16 +168,38 @@ export function GlassPage() {
           ))}
         </div>
 
-        <Container>
-          <header className="glass-header glass-enter" role="banner">
+        {/*
+          The masthead stays with the reader: fixed, transparent over the night,
+          and filled with the night's own ground once the first screen has gone.
+          It belongs to the night region, so it is the same night bar over every
+          act on the desk and never changes colour twice a visit.
+        */}
+        <header
+          className="glass-bar glass-enter"
+          role="banner"
+          data-scrolled={scrolled ? 'true' : 'false'}
+        >
+          <Container className="glass-bar-inner">
             <SiteBrand />
             <nav className="desk-nav" aria-label="Primary">
+              <a href={`#${how.anchor}`} className="desk-nav-link">
+                {glass.nav.how}
+              </a>
+              <a href={`#${trust.anchor}`} className="desk-nav-link">
+                {glass.nav.trust}
+              </a>
+              <a href={`#${questions.anchor}`} className="desk-nav-link">
+                {glass.nav.questions}
+              </a>
               <a href="/contact" className="desk-nav-link">
                 {glass.nav.contact}
               </a>
+              <ButtonLink href="#early-access" arrow className="desk-cta" onClick={focusEmail}>
+                {glass.cta}
+              </ButtonLink>
             </nav>
-          </header>
-        </Container>
+          </Container>
+        </header>
 
         <section className="glass-hero" aria-labelledby="glass-title">
           <Container className="glass-hero-inner">
@@ -213,11 +257,15 @@ export function GlassPage() {
  * the one large picture on the page and it sits above the ask, so the last
  * thing a reader sees before deciding is the morning the product is for.
  *
- * Left-aligned, one statement, one action and an address — no label over it,
- * and no grid of stages under it: where the build stands is a sentence read off
- * `standing`, set as quietly as the footer it sits above. The motto is not
- * here; its placements are the home page's last line and the success state,
- * and this page already carries the second through its form.
+ * Left-aligned, one statement, one action and an address — no label over it —
+ * and under them what happens after somebody writes: the contact memo's own
+ * three steps, read from `contact`, so the two pages promise the same thing in
+ * the same words. Where the build stands is a sentence read off `standing`, set
+ * as quietly as the footer it sits above.
+ *
+ * The motto is the page's last line. This is the front page, and its close is
+ * one of the motto's two placements; the other is the success state of the
+ * form above.
  */
 function Close() {
   const { closing } = glass
@@ -243,18 +291,43 @@ function Close() {
                   </TextLink>
                 </p>
               </div>
+              <div className="glass-next">
+                <p className="glass-next-label">{closing.nextLabel}</p>
+                <ol className="glass-next-steps">
+                  {contact.steps.map((step) => (
+                    <li key={step.icon}>
+                      <StepIcon name={step.icon} />
+                      <span>{step.text}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </div>
           </Reveal>
         </Container>
       </section>
 
       <footer className="glass-footer" role="contentinfo">
-        <Container className="glass-footer-inner">
-          <SiteBrand />
-          <p className="glass-standing">{glass.standing}</p>
-          <p className="glass-copyright">
-            © {new Date().getFullYear()} {brand.name}
-          </p>
+        <Container>
+          <nav aria-label="Sections" className="glass-footer-nav">
+            <a href={`#${how.anchor}`}>{glass.nav.how}</a>
+            <a href={`#${trust.anchor}`}>{glass.nav.trust}</a>
+            <a href={`#${questions.anchor}`}>{glass.nav.questions}</a>
+            <a href="/contact">{glass.nav.contact}</a>
+          </nav>
+          <div className="glass-footer-inner">
+            <SiteBrand />
+            <p className="glass-standing">{glass.standing}</p>
+            <p className="glass-copyright">
+              © {new Date().getFullYear()} {brand.name}
+            </p>
+          </div>
+          {/*
+            The motto: one of its two placements on the whole site, and the last
+            thing on the page. It is not extended and not repeated — see
+            `brand.motto`.
+          */}
+          <p className="glass-motto">{brand.motto}</p>
         </Container>
       </footer>
     </div>
@@ -341,4 +414,19 @@ function MorningPlate() {
       <GlassHandover />
     </figure>
   )
+}
+
+/**
+ * The masthead's button lands on the field rather than near it.
+ *
+ * On a wide screen the form is already in view, so a plain jump to
+ * `#early-access` would do nothing visible and read as a dead button. Focusing
+ * the field scrolls it into view where it is not and puts the cursor in it
+ * where it is. Without JavaScript the anchor still jumps.
+ */
+function focusEmail(event: MouseEvent<HTMLAnchorElement>) {
+  const field = document.querySelector<HTMLInputElement>('#early-access input[type="email"]')
+  if (!field) return
+  event.preventDefault()
+  field.focus()
 }

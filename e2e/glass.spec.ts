@@ -349,8 +349,10 @@ test('nothing is claimed, nothing pulses, and the signal stays where it is licen
   await expect(page.locator('body')).not.toContainText(
     /trusted by|customers include|testimonial|SOC 2|ISO 27001|HIPAA|GDPR|check your inbox|NetSuite|\bSAP\b|Salesforce|Gmail|Outlook|�/i,
   )
+  // The front page's close carries the motto once, as its last line.
   const text = await page.locator('body').innerText()
-  expect(text.match(/stay with the work/gi)).toBeNull()
+  expect(text.match(/stay with the work/gi)).toHaveLength(1)
+  await expect(page.getByRole('contentinfo')).toContainText('Stay with the work.')
 
   const infinite = await page.evaluate(
     () =>
