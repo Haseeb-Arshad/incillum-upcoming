@@ -1599,6 +1599,74 @@
   font-weight: 500;
 }
 
+/*
+ * Pinned to the scroll, where the whole stage fits on one screen: the track
+ * is the scroll the four steps take, a screen and three quarters more, and the
+ * stage holds still under the masthead while it passes. A hairline on the rail
+ * shows how far through the four the reader has come — a transform on one
+ * custom property, written by the scroll, with nothing re-rendered.
+ */
+@media (min-width: 48rem) and (min-height: 46rem) {
+  .how-track[data-pinned='true'] {
+    height: calc(100svh + 3 * 75svh);
+  }
+  .how-track[data-pinned='true'] .how-stage {
+    position: sticky;
+    top: var(--glass-bar, 0px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: calc(100svh - var(--glass-bar, 0px));
+  }
+  .how-track[data-pinned='true'] .how-body {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+  /*
+   * The whole step on one screen: the copy keeps its height and the desk takes
+   * what is left, and the paper on it scales down with the desk rather than
+   * running off the bottom of the screen.
+   */
+  .how-track[data-pinned='true'] .how-panel {
+    height: calc(100svh - var(--glass-bar, 0px) - 3rem);
+    gap: 1.25rem;
+  }
+  .how-track[data-pinned='true'] .how-desk {
+    min-height: 0;
+    height: 100%;
+    padding-block: clamp(1.5rem, 3.5vh, 2.75rem);
+  }
+  .how-track[data-pinned='true'] .how-doc {
+    font-size: clamp(6.5px, min(0.7vw, 1.25vh), 10.5px);
+  }
+  .how-track[data-pinned='true'] .how-card {
+    font-size: 0.9375rem;
+  }
+  .how-track[data-pinned='true'] .how-tabs {
+    position: relative;
+  }
+  .how-track[data-pinned='true'] .how-tabs::after {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background-color: var(--ic-ink-900);
+    transform: scaleX(var(--how-progress, 0));
+    transform-origin: left;
+    pointer-events: none;
+  }
+}
+@media (min-width: 64rem) and (min-height: 46rem) {
+  .how-track[data-pinned='true'] .how-tabs::after {
+    inset: 0 auto 0 0;
+    width: 2px;
+    height: auto;
+    transform: scaleY(var(--how-progress, 0));
+    transform-origin: top;
+  }
+}
+
 /* ── Act five: where this stands (`standing.tsx`) ─────────────────────── */
 /*
  * The reference pages' band of figures, answered with the build's three states

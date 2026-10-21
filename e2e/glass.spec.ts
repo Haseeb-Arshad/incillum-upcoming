@@ -575,6 +575,45 @@ test('server HTML carries the headline, the form, the whole night and the licenc
   await context.close()
 })
 
+test('where the stage pins, the scroll walks the four steps, and a tab scrolls to its step', async ({
+  page,
+}) => {
+  const track = page.locator('.how-track')
+  const fits = await page.evaluate(
+    () => window.matchMedia('(min-width: 48rem) and (min-height: 46rem)').matches,
+  )
+  // The attribute follows hydration by one render, so wait for it rather than read it once.
+  await expect(track).toHaveAttribute('data-pinned', fits ? 'true' : 'false')
+  test.skip(!fits, 'pins only where the whole stage fits on one screen')
+
+  const tabs = page.locator('#how').getByRole('tab')
+  const scrollTo = (fraction: number) =>
+    track.evaluate((element, f) => {
+      const top = element.getBoundingClientRect().top + window.scrollY
+      const height = element.getBoundingClientRect().height
+      window.scrollTo(0, top + f * (height - window.innerHeight))
+    }, fraction)
+  for (const [fraction, index] of [
+    [0.1, 0],
+    [0.35, 1],
+    [0.6, 2],
+    [0.9, 3],
+  ] as const) {
+    await scrollTo(fraction)
+    await expect(tabs.nth(index)).toHaveAttribute('aria-selected', 'true')
+  }
+  // The stage holds still under the masthead while the track passes.
+  const stage = await page.locator('.how-stage').boundingBox()
+  const bar = await page.getByRole('banner').boundingBox()
+  expect(Math.abs((stage?.y ?? 0) - (bar?.height ?? 0))).toBeLessThan(2)
+
+  // Choosing a tab scrolls to its step, and the scroll keeps it chosen.
+  await tabs.nth(1).click()
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true')
+  await page.waitForTimeout(1200)
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true')
+})
+
 test('how it works is a real tablist, and each step ends where it stops', async ({ page }) => {
   const section = page.locator('#how')
   await expect(section.getByText(/invented quotation/)).toBeVisible()
