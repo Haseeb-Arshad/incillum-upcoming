@@ -1,34 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router'
-
-import { GlassPage } from '#/components/glass-page.tsx'
-import { glass } from '#/content/site.ts'
-import { seoTags } from '#/lib/seo.ts'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 /**
- * /glass — the presentation, off the spine.
+ * /glass — where the presentation used to live.
  *
- * The same argument as the home page, told as a film, for handing to somebody
- * who wants to be shown rather than read to. It is not a second front door:
- * nothing on the site links here, it is not in the sitemap, and it carries a
- * `noindex` so that a search result for the company lands on the page the site
- * is for. Like `/lab/particles` it is deliberately not in robots.txt — a
- * Disallow would stop a crawler from ever reading the `noindex`.
- *
- * Promoting it is two deletions: the robots tag here, and the line in
- * `e2e/glass.spec.ts` that holds it unlisted.
+ * It is the front page now (`routes/index.tsx`). The address was handed to
+ * people before that, so it stays, as a permanent redirect: one canonical page,
+ * and nobody holding the old link lands on nothing.
  */
 export const Route = createFileRoute('/glass')({
-  head: () => {
-    const base = seoTags({
-      path: '/glass',
-      title: glass.title,
-      description: glass.description,
-    })
-
-    return {
-      meta: [...base.meta, { name: 'robots', content: 'noindex, nofollow' }],
-      links: base.links,
-    }
+  // `throw: true` has the router throw its own redirect, so nothing here throws a non-Error.
+  beforeLoad: () => {
+    redirect({ to: '/', statusCode: 301, throw: true })
   },
-  component: GlassPage,
 })

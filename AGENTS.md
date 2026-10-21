@@ -9,11 +9,15 @@ The operating contract for this repository. Read it before changing code.
 The public site at **incillum.com** while there is no product to show yet. One
 page, one argument, one conversion: an email address for the waitlist.
 
-The home page is told at the length the pages it is measured against give
-theirs — Harvey and Hebbia: a product film, the context it draws on, product
-tabs, a band of figures, a security grid, then the close — but every act is the
-same invented quotation, and every proof device they use is replaced by an
-honest one (§4, *The acts on the desk*).
+**The front page is the presentation** (`components/glass-page.tsx`, §4 *The
+presentation*): the night told as a film. It moved to `/` from `/glass`, which
+now redirects there. The eight-act page that briefly stood at `/`
+(`components/home-page.tsx`, §4 *The night* and *The acts on the desk*) is no
+longer routed; its acts — the tabs, the build's states, the trust grid, the
+questions — are being carried into the presentation, so read those sections as
+the specification for them. Either way every act is the same invented
+quotation, and every proof device the reference pages use (Harvey, Hebbia) is
+replaced by an honest one.
 
 It is deliberately **not** a marketing site with the product pages removed. Its
 navigation is links to sections of the one page and to the contact memo; there
@@ -261,12 +265,14 @@ have it and will write once.
 
 ### The presentation
 
-`/glass` is the same night told as a film, for somebody who wants to be shown
-rather than read to. Two beats of type over a field of hour rules, a centred
-hero with the home page's form, then the quotation played hour by hour in a
-frame; after it, the six documents a quotation is assembled from lie on a desk
-with the part itself among them, and gather onto one sheet; then one invitation.
-It is off the spine: `noindex`, not in the sitemap, linked from nowhere.
+The front page (`/`) is the night told as a film, for somebody who wants to be
+shown rather than read to. Two beats of type over a field of hour rules, a
+centred hero with the form, then the quotation played hour by hour in a frame;
+after it, the six documents a quotation is assembled from lie on a desk with the
+part itself among them, and gather onto one sheet; then one invitation. It
+carries the front page's head — the title, description and canonical at `/` —
+and `/glass`, where it used to live off the spine, is a permanent redirect to
+it. `e2e/glass.spec.ts` holds both.
 
 - **No labels over headings.** No tracked capitals anywhere on it — not over a
   title, not inside a document — and no title in two tones. The first version
