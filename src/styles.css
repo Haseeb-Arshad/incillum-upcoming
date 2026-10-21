@@ -969,18 +969,30 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   Home — night first, then morning (`components/home-page.tsx`).
+   Home — one quotation in eight acts (`components/home-page.tsx`).
 
    The first screen is the commissioned photograph, full-bleed: an empty
    office, one lamp, a quotation under it. The headline sits over the dark side
-   of the frame. Below it the product's object is *lit* — a paper-toned panel
-   in the dark, the way the quotation is the one lit thing in the photograph.
-   Then the thread, then the page returns to the desk the contact memo is laid
-   on, which is where the two pages meet.
+   of the frame. Below it the night plays in a frame — the film from /glass,
+   whose sheet is *lit*, the way the quotation is the one lit thing in the
+   photograph. Then the page turns to the desk the contact memo is laid on and
+   takes the same quotation apart: six sources, four tabs, the build's states,
+   the trust grid, the questions, and the morning.
 
    One dark region (`.home-night`, carrying `[data-inverted]`), one lit panel
    inside it (`[data-lit]`), one desk after it. Every colour below is a token
    or a scrim built from one.
+
+   ── Its motion budget ─────────────────────────────────────────────────────
+     1. the hero's one entrance;
+     2. the film: once through while on screen, pausable, never looped;
+     3. the sources gathering: one change of state tied to the scroll;
+     4. a tab change: one 220ms crossfade, only when the reader asks;
+     5. one reveal per section;
+     6. the masthead filling in once the hero has gone — 300ms, a state change;
+     7. the arrow nudge and the press.
+   The night plate never moves, nothing loops, and there is no dust and no
+   parallax here. Reduced motion renders the final frame of every one.
 
    Contrast:
      on the night (#0d0d0c)   ink-900 18.6:1 · ink-600 10.3:1 · ink-400 6.9:1
@@ -990,6 +1002,12 @@
                               pointed below to #5c5b55) 5.2:1
    ══════════════════════════════════════════════════════════════════════════ */
 .home {
+  /* The fixed masthead's height. Anchors land below it (`--ic-anchor-offset`). */
+  --home-bar: 4.75rem;
+  /* The masthead's one state change, and the tab change: in, and the faster way out. */
+  --home-fill: 300ms;
+  --home-tab-in: 220ms;
+  --home-tab-out: 120ms;
   --home-display: clamp(2.5rem, 4.6vw, 5.25rem);
   --home-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
   --home-form: 30rem;
@@ -999,6 +1017,7 @@
   --hero-scrim-strong: rgba(13, 13, 12, 0.94);
   --hero-scrim: rgba(13, 13, 12, 0.7);
 
+  position: relative;
   color: var(--ic-ink-900);
   overflow: clip;
 }
@@ -1104,13 +1123,52 @@
 .hero-inner {
   display: flex;
   flex-direction: column;
+  padding-top: var(--home-bar);
 }
-.hero-header {
+
+/*
+ * The masthead, fixed. Transparent over the photograph, where the top scrim
+ * already holds it at AA; once the first screen has scrolled away it fills in
+ * with the night's own sunken ground and grain, and a hairline under it. That
+ * fill is its one state change, and the 300ms it takes is the documented
+ * exception to the two durations. It never shrinks, never gains a shadow, and
+ * never changes colour: it belongs to the night region, so it is the same night
+ * bar over the paper sections as over the photograph.
+ */
+.home-sentinel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 6rem;
+  pointer-events: none;
+}
+.home-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  color: var(--ic-ink-900);
+}
+.home-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-bottom: 1px solid var(--ic-line);
+  background-color: var(--ic-paper-sunken);
+  background-image: var(--ic-grain);
+  opacity: 0;
+  transition: opacity var(--home-fill) var(--home-ease);
+}
+.home-bar[data-scrolled='true']::before {
+  opacity: 1;
+}
+.home-bar-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  padding-top: 2rem;
+  min-height: var(--home-bar);
 }
 .hero-body {
   display: grid;
@@ -1279,150 +1337,12 @@
   mask: none;
 }
 
-/* ── Act two: the matrix, lit ─────────────────────────────────────────── */
-.home-matrix {
-  padding-block: clamp(5rem, 10vw, 9rem) clamp(4rem, 8vw, 7rem);
-}
-.matrix-intro {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  max-width: 46rem;
-  margin-bottom: clamp(2.5rem, 5vw, 4rem);
-}
-.matrix {
-  overflow: hidden;
-  border: 1px solid var(--ic-line);
-  border-radius: var(--radius-panel);
-  background-color: var(--ic-paper-raised);
-  color: var(--ic-ink-900);
-  background-image: none;
-}
-.matrix-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem 1.5rem;
-  padding: 0.875rem 1.5rem;
-  border-bottom: 1px solid var(--ic-line);
-  background-color: var(--ic-paper);
-  font-size: 0.8125rem;
-}
-.matrix-title {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  font-weight: 500;
-  color: var(--ic-ink-900);
-}
+/* ── The matrix's marks, shared by the film, the sources and the tabs ─── */
 .matrix-mark {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 2px;
   background-color: var(--ic-ink-900);
-}
-.matrix-due {
-  color: var(--ic-ink-400);
-}
-.matrix-summary {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: 0;
-  border-bottom: 1px solid var(--ic-line);
-}
-.matrix-summary > div {
-  min-width: 0;
-  padding: 1.25rem 1.5rem 1.375rem;
-}
-.matrix-summary > div + div {
-  border-left: 1px solid var(--ic-line);
-}
-.matrix-summary dt {
-  font-size: var(--text-label);
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ic-ink-400);
-}
-.matrix-summary dd {
-  margin: 0.75rem 0 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.25rem, 1.75vw, 1.625rem);
-  white-space: nowrap;
-  line-height: 1.1;
-  letter-spacing: -0.015em;
-}
-.matrix-summary dd span {
-  font-family: var(--font-sans);
-  font-size: 0.875rem;
-  letter-spacing: 0;
-  color: var(--ic-ink-400);
-}
-.matrix-summary .matrix-held {
-  color: var(--ic-signal);
-}
-.matrix-scroll {
-  overflow-x: auto;
-}
-.matrix-table {
-  width: 100%;
-  min-width: 46rem;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-  line-height: 1.45;
-}
-.matrix-table caption {
-  caption-side: top;
-  padding: 1.125rem 1.5rem 0.5rem;
-  text-align: left;
-  font-size: var(--text-label);
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ic-ink-400);
-}
-.matrix-table th,
-.matrix-table td {
-  padding: 0.875rem 1rem;
-  border-bottom: 1px solid var(--ic-line);
-  text-align: left;
-  vertical-align: top;
-}
-.matrix-table th:first-child,
-.matrix-table td:first-child {
-  padding-left: 1.5rem;
-}
-.matrix-table th:last-child,
-.matrix-table td:last-child {
-  padding-right: 1.5rem;
-}
-.matrix-table thead th {
-  padding-block: 0.625rem;
-  font-size: var(--text-label);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ic-ink-400);
-}
-.matrix-table tbody th {
-  font-weight: 500;
-  color: var(--ic-ink-900);
-}
-.matrix-table tbody td:first-child {
-  width: 4.5rem;
-  color: var(--ic-ink-400);
-}
-.matrix-table tbody td:last-child {
-  color: var(--ic-ink-600);
-}
-.matrix-table tbody td:nth-child(3) {
-  width: 9rem;
-}
-.matrix-table .matrix-more td {
-  border-bottom: 0;
-  color: var(--ic-ink-400);
 }
 .matrix-status {
   display: inline-flex;
@@ -1453,47 +1373,16 @@
   background-color: var(--ic-signal-soft);
   color: var(--ic-signal);
 }
-.matrix-foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem 2.5rem;
-  padding: 1.25rem 1.5rem 1.375rem;
-  border-top: 1px solid var(--ic-line-strong);
-  background-color: var(--ic-paper);
+
+/* ── Act two: the film, under the plate ───────────────────────────────── */
+.home-watch {
+  margin-top: 1.25rem;
 }
-.matrix-shortfall {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.25rem 1rem;
-  color: var(--ic-signal);
-}
-.matrix-shortfall span {
-  font-size: var(--text-label);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.matrix-shortfall strong {
-  font-family: var(--font-display);
-  font-size: clamp(1.375rem, 2vw, 1.75rem);
-  font-weight: 400;
-  letter-spacing: -0.015em;
-}
-.matrix-decision {
-  font-family: var(--font-display);
-  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
-  line-height: 1.35;
+.home-film {
+  padding-top: clamp(0.5rem, 2vw, 1.5rem);
 }
 
-/* ── Act three: the thread ────────────────────────────────────────────── */
-.home-thread {
-  padding-top: clamp(2rem, 4vw, 3rem);
-}
-
-/* ── Act four: the morning, on the desk ───────────────────────────────── */
+/* ── After the night: the desk ────────────────────────────────────────── */
 .desk {
   /* ink-400 is re-pointed here so muted text clears AA on the darker paper. */
   --ic-ink-400: #5c5b55;
@@ -1501,11 +1390,891 @@
   background-image: var(--ic-grain);
   color: var(--ic-ink-900);
 }
-.home-closing {
-  padding-block: clamp(4.5rem, 9vw, 8rem);
+
+/*
+ * One section shape for every act on the desk, the same skeleton the brand's
+ * components reference gives: label, title, lede, then the content. The titles
+ * share one size so the acts read as one document rather than as slides.
+ */
+.how,
+.standing,
+.trust,
+.questions {
+  padding-block: clamp(5rem, 10vw, 8.5rem);
 }
+.how-intro,
+.standing-intro,
+.trust-intro,
+.questions-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 46rem;
+}
+.how-title,
+.standing-title,
+.trust-title,
+.questions-title,
+.home-closing-title {
+  font-size: var(--glass-heading);
+  line-height: 1;
+  letter-spacing: -0.022em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.how-lede,
+.trust-lede {
+  max-width: 36rem;
+  font-size: var(--glass-lede);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+
+/* ── Act four: how it works — four tabs (`how-it-works.tsx`) ──────────── */
+/*
+ * A rail of four tabs and the panel beside it. The tab names the step and
+ * its title; the panel carries what happens, where it stops, and the desk
+ * with that step's documents on it. Selected is weight and a 2px ink rule on
+ * the leading edge — never a filled pill and never the signal.
+ */
+.how-body {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3rem);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  padding-top: clamp(2rem, 4vw, 3rem);
+  border-top: 1px solid var(--ic-line-strong);
+}
+.how-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  align-content: start;
+}
+.how-tab {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 0.25rem;
+  min-height: 3.5rem;
+  padding: 0.75rem 0.25rem 0.75rem 0;
+  border-top: 2px solid var(--ic-line);
+  text-align: left;
+  color: var(--ic-ink-400);
+  cursor: pointer;
+  transition:
+    color var(--ic-fast) var(--ic-ease),
+    border-color var(--ic-fast) var(--ic-ease);
+}
+.how-tab[aria-selected='true'] {
+  border-top-color: var(--ic-ink-900);
+  color: var(--ic-ink-900);
+}
+@media (hover: hover) and (pointer: fine) {
+  .how-tab:hover:not([aria-selected='true']) {
+    color: var(--ic-ink-600);
+  }
+}
+.how-tab-number {
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+.how-tab-name {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.6vw, 1.5rem);
+  line-height: 1.15;
+  letter-spacing: -0.012em;
+}
+.how-tab-title {
+  display: none;
+  font-size: var(--text-small);
+  line-height: 1.45;
+  color: inherit;
+}
+
+.how-panels {
+  display: grid;
+  min-width: 0;
+}
+/* The copy, then the desk taking the rest: every desk ends on the same line however long its copy. */
+.how-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(1.5rem, 3vw, 2rem);
+  min-width: 0;
+}
+.how-body[data-enhanced='false'] .how-panel + .how-panel {
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+  padding-top: clamp(3rem, 6vw, 4.5rem);
+  border-top: 1px solid var(--ic-line);
+}
+/*
+ * With a script the panels share one cell, so the section keeps the height of
+ * its tallest step and nothing under it moves when a tab changes. The change
+ * is one crossfade the reader asked for — the outgoing panel goes at once, the
+ * incoming one settles 6px over 220ms.
+ */
+.how-body[data-enhanced='true'] .how-panel {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(0, 6px, 0);
+  transition:
+    opacity var(--home-tab-out) var(--ic-ease),
+    transform var(--home-tab-out) var(--ic-ease),
+    visibility 0s linear var(--home-tab-out);
+}
+.how-body[data-enhanced='true'] .how-panel[data-active='true'] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity var(--home-tab-in) var(--ic-ease),
+    transform var(--home-tab-in) var(--ic-ease),
+    visibility 0s;
+}
+.how-panel:focus-visible {
+  outline: 2px solid var(--ic-ink-900);
+  outline-offset: 6px;
+  border-radius: var(--radius-panel);
+}
+.how-panel-heading {
+  font-size: var(--text-heading);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+}
+
+.how-copy {
+  display: grid;
+  gap: 1.25rem 3rem;
+  align-items: start;
+}
+.how-line {
+  max-width: 38ch;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.75vw, 1.625rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ic-ink-900);
+  text-wrap: pretty;
+}
+.how-stops {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 30rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--ic-ink-900);
+}
+.how-stops-label {
+  font-size: var(--text-label);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+}
+.how-stops-line {
+  font-size: var(--text-body);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+}
+.how-stops-line strong {
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+
+/*
+ * The desk, from above, under the lamp — or at 08:04, in daylight. The
+ * documents and the card lie on it in two columns, each turned a degree or two
+ * the way paper lands; on a phone they stack. Everything inside a document is
+ * in em, so one font-size here sets the size of the paper.
+ */
+.how-desk {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: center;
+  justify-items: center;
+  min-height: 30rem;
+  padding: clamp(2.75rem, 5vw, 4rem) clamp(1rem, 4vw, 3.5rem);
+  overflow: hidden;
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-ink-900);
+}
+.how-desk-photo {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.how-desk-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+.how-desk-pieces {
+  display: contents;
+}
+.how-doc {
+  position: relative;
+  font-size: clamp(8px, 0.82vw, 11.5px);
+  transform: rotate(var(--turn, -1.5deg));
+}
+.how-doc--request {
+  width: 34em;
+  max-width: 100%;
+}
+.how-doc--catalogue {
+  --turn: -2deg;
+
+  width: 26em;
+}
+.how-doc--drawing {
+  --turn: 1.5deg;
+
+  width: 33em;
+}
+.how-doc--supplier {
+  --turn: -1.5deg;
+
+  width: 32em;
+  max-width: 100%;
+}
+.how-doc .gd-question {
+  font-size: 0.75rem;
+}
+/* The drawing's question hangs under it; on a stacked desk it needs the room before the card. */
+.how-doc--drawing {
+  margin-bottom: 2.5rem;
+}
+
+/* The lit card: what the step became, on paper, in the product's own set. */
+.how-card {
+  display: grid;
+  gap: 0.875rem;
+  width: min(100%, 24rem);
+  padding: 1.125rem 1.25rem 1.25rem;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  color: var(--ic-ink-900);
+  transform: rotate(var(--turn, 1deg));
+}
+.how-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--ic-line);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+.how-card-note {
+  font-size: var(--text-small);
+  line-height: 1.45;
+  color: var(--ic-ink-600);
+}
+.how-card-fields {
+  display: grid;
+  margin: 0;
+}
+.how-card-fields > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.5rem;
+  border-bottom: 1px solid var(--ic-line);
+  font-size: var(--text-small);
+}
+.how-card-fields dt {
+  color: var(--ic-ink-400);
+}
+.how-card-fields dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: right;
+}
+.how-card-lines {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* The line number, then the item, its reason and its state under it — so the reason gets the card's whole width. */
+.how-card-lines li {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.75rem;
+  align-items: start;
+  padding-block: 0.625rem;
+  border-bottom: 1px solid var(--ic-line);
+}
+.how-card-lines .matrix-status {
+  grid-column: 2;
+  justify-self: start;
+}
+.how-card-line {
+  font-size: var(--text-small);
+  color: var(--ic-ink-400);
+}
+.how-card-item {
+  display: grid;
+  gap: 0.125rem;
+  font-size: var(--text-small);
+  font-weight: 500;
+  line-height: 1.35;
+}
+.how-card-item span {
+  font-weight: 400;
+  color: var(--ic-ink-600);
+}
+.how-card-part {
+  font-size: var(--text-body);
+  font-weight: 500;
+}
+.how-card-quoted {
+  font-size: var(--text-small);
+  color: var(--ic-ink-600);
+}
+.how-margins {
+  display: grid;
+  gap: 0.875rem;
+  padding-block: 0.875rem;
+  border-block: 1px solid var(--ic-line);
+}
+.how-margin {
+  display: grid;
+  gap: 0.375rem;
+}
+.how-margin p {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: var(--text-small);
+  color: var(--ic-ink-600);
+}
+.how-margin p span + span {
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+/* Margin against the floor on the evidence document's zero-to-twenty-five scale. The bar is ink; the floor is a hairline. */
+.how-margin-track {
+  position: relative;
+  display: block;
+  height: 0.5rem;
+  border-radius: 2px;
+  background-color: var(--ic-paper-sunken);
+}
+.how-margin-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 100%;
+  border-radius: 2px;
+  background-color: var(--ic-ink-900);
+  transform: scaleX(var(--how-value));
+  transform-origin: left;
+}
+.how-margin-floor {
+  position: absolute;
+  top: -0.25rem;
+  bottom: -0.25rem;
+  left: calc(var(--how-floor) * 100%);
+  width: 1px;
+  background-color: var(--ic-ink-600);
+}
+.how-margin-scale {
+  font-size: 0.75rem;
+  color: var(--ic-ink-400);
+}
+/* The figure that breaks the floor — one of the signal's licensed places. */
+.how-card-short,
+.how-decide-short {
+  color: var(--ic-signal);
+}
+.how-card-short {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  font-size: var(--text-small);
+}
+.how-card-short strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.375rem, 2vw, 1.75rem);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+.how-card--decide {
+  --turn: 0deg;
+
+  width: min(100%, 30rem);
+  gap: 1rem;
+  padding: 1.375rem 1.5rem 1.5rem;
+}
+.how-decide-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.8vw, 1.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+.how-options {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: option;
+}
+.how-options li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.125rem 1rem;
+  padding-block: 0.75rem;
+  border-top: 1px solid var(--ic-line);
+}
+.how-option-title {
+  font-size: var(--text-body);
+  font-weight: 500;
+}
+.how-option-detail {
+  grid-column: 1;
+  font-size: var(--text-small);
+  color: var(--ic-ink-600);
+}
+.how-option-figure {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: var(--text-small);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.how-decide-figures {
+  display: grid;
+  gap: 0.375rem;
+  margin: 0;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--ic-line-strong);
+  font-size: var(--text-small);
+}
+.how-decide-figures > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+}
+.how-decide-figures dt,
+.how-decide-figures dd span {
+  color: var(--ic-ink-600);
+}
+.how-decide-short dt {
+  color: var(--ic-signal);
+}
+.how-decide-figures dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ── Act five: where this stands (`standing.tsx`) ─────────────────────── */
+/*
+ * The reference pages' band of figures, answered with the build's three states
+ * at the size they give their numbers.
+ */
+.standing {
+  border-top: 1px solid var(--ic-line);
+}
+.standing-stages {
+  display: grid;
+  gap: 0 clamp(2rem, 4vw, 3.5rem);
+  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.standing-stage {
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+  padding-block: 1.75rem 2rem;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.standing-number {
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--ic-ink-400);
+}
+.standing-state {
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 5.2vw, 4.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+  color: var(--ic-ink-900);
+}
+.standing-stage-title {
+  margin-top: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+.standing-stage-body {
+  max-width: 34ch;
+  font-size: var(--text-small);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+}
+
+/* ── Act six: data and trust (`trust.tsx`) ────────────────────────────── */
+/*
+ * Six cells on one hairline grid, the shape the reference pages give their
+ * certifications — here each cell is a commitment and its real state. The
+ * state is a word with a mark, filled for settled and open for in build; no
+ * colour, and no badge.
+ */
+.trust-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  list-style: none;
+}
+.trust-cell {
+  display: grid;
+  align-content: start;
+  gap: 0.625rem;
+  padding: clamp(1.5rem, 2.5vw, 2rem);
+  border-top: 1px solid var(--ic-line);
+}
+.trust-cell:first-child {
+  border-top: 0;
+}
+.trust-glyph {
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--ic-ink-600);
+}
+.trust-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-label);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ic-ink-600);
+}
+.trust-state::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid var(--ic-ink-900);
+  border-radius: 50%;
+  background-color: var(--ic-ink-900);
+}
+.trust-state[data-state='building']::before {
+  background-color: transparent;
+}
+.trust-cell-title {
+  margin-top: 0.25rem;
+  font-size: var(--text-heading);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  color: var(--ic-ink-900);
+}
+.trust-cell-body {
+  max-width: 36ch;
+  font-size: var(--text-small);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+}
+.trust-foot {
+  display: grid;
+  gap: 1.5rem 4rem;
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+.trust-open {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 40rem;
+}
+.trust-open-title {
+  font-size: var(--text-heading);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+}
+.trust-open-body {
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+}
+.trust-certification {
+  max-width: 30rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--ic-ink-900);
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--ic-ink-900);
+}
+
+/* ── Act seven: questions (`questions.tsx`) ───────────────────────────── */
+.questions {
+  border-top: 1px solid var(--ic-line);
+}
+.questions-grid {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem) 4rem;
+}
+.questions-list {
+  margin: 0;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.questions-item {
+  display: grid;
+  gap: 0.625rem;
+  padding-block: 1.5rem 1.625rem;
+  border-bottom: 1px solid var(--ic-line);
+}
+.questions-question {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.6vw, 1.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  color: var(--ic-ink-900);
+}
+.questions-answer {
+  max-width: 62ch;
+  margin: 0;
+  font-size: var(--text-body);
+  line-height: 1.62;
+  color: var(--ic-ink-600);
+}
+
+/* ── Act eight: the morning ───────────────────────────────────────────── */
+/* This page's photographs hold still: the morning plate sits centred, with no drift and no dust. */
+.home-morning .glass-morning-frame img {
+  transform: none;
+  will-change: auto;
+}
+.home-closing {
+  padding-block: clamp(5rem, 10vw, 8.5rem) clamp(4.5rem, 9vw, 7rem);
+  border-top: 1px solid var(--ic-line);
+}
+.home-closing-grid {
+  display: grid;
+  gap: 2.5rem 4rem;
+}
+.home-closing-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.home-closing-title {
+  max-width: 16ch;
+}
+.home-closing-body {
+  max-width: 34rem;
+  font-size: var(--glass-lede);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+}
+.home-closing-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+.home-next {
+  display: grid;
+  gap: 0.875rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.home-next-steps {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.home-next-steps li {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+  max-width: 30rem;
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.home-next-steps svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.2rem;
+  color: var(--ic-ink-900);
+}
+
 .home-footer {
   padding-bottom: 2rem;
+}
+.home-footer-sign {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-top: clamp(2.5rem, 5vw, 3rem);
+  border-top: 1px solid var(--ic-line-strong);
+}
+.home-footer-base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2.5rem;
+  margin-top: clamp(3rem, 6vw, 4rem);
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.home-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  font-size: var(--text-small);
+}
+.home-footer-nav a {
+  color: var(--ic-ink-900);
+  text-decoration: underline;
+  text-decoration-color: var(--ic-line-strong);
+  text-underline-offset: 0.3em;
+  transition: text-decoration-color var(--ic-fast) var(--ic-ease);
+}
+.home-footer-nav a:hover {
+  text-decoration-color: currentColor;
+}
+
+/* The sources pin under the fixed masthead, so their stage starts below it. */
+@media (min-width: 48rem) and (min-height: 46rem) {
+  .home .glass-sources[data-enhanced='true'] .glass-sources-stage {
+    padding-top: calc(var(--home-bar) + clamp(1.25rem, 4vh, 3rem));
+  }
+}
+
+@media (min-width: 48rem) {
+  .how-copy {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+  .how-copy {
+    min-height: 6.5rem;
+  }
+  .how-desk {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    min-height: 32rem;
+  }
+  .how-desk .how-card {
+    margin-left: -2.5rem;
+  }
+  .how-panel[data-step='hold'] .how-desk {
+    grid-template-rows: auto auto;
+  }
+  .how-panel[data-step='hold'] .how-doc--catalogue {
+    justify-self: end;
+    margin-right: 2rem;
+  }
+  .how-panel[data-step='hold'] .how-doc--drawing {
+    grid-row: 2;
+    justify-self: start;
+    margin-bottom: 1.5rem;
+  }
+  .how-panel[data-step='hold'] .how-card {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+  .how-panel[data-step='decide'] .how-desk {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .how-panel[data-step='decide'] .how-card {
+    margin-left: 0;
+  }
+  .trust-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .trust-cell:nth-child(2) {
+    border-top: 0;
+  }
+  .trust-cell:nth-child(even) {
+    border-left: 1px solid var(--ic-line);
+  }
+  .standing-stages {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .how-body[data-enhanced='true'] {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: clamp(2.5rem, 5vw, 4.5rem);
+  }
+  .how-tabs {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .how-tab {
+    gap: 0.375rem;
+    padding: 1.25rem 0.5rem 1.25rem 1.25rem;
+    border-top: 0;
+    border-bottom: 1px solid var(--ic-line);
+    border-left: 2px solid transparent;
+  }
+  .how-tab:first-child {
+    border-top: 1px solid var(--ic-line);
+  }
+  .how-tab[aria-selected='true'] {
+    border-left-color: var(--ic-ink-900);
+  }
+  .how-tab-title {
+    display: block;
+  }
+  .how-tab-name {
+    font-size: clamp(1.375rem, 1.9vw, 1.75rem);
+  }
+  .trust-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .trust-cell:nth-child(-n + 3) {
+    border-top: 0;
+  }
+  .trust-cell:nth-child(even) {
+    border-left: 0;
+  }
+  .trust-cell:not(:nth-child(3n + 1)) {
+    border-left: 1px solid var(--ic-line);
+  }
+  .trust-foot {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: start;
+  }
+  .questions-grid {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    align-items: start;
+  }
+  .questions-intro {
+    position: sticky;
+    top: calc(var(--home-bar) + 2rem);
+  }
+  .home-closing-grid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: start;
+  }
 }
 .home a:focus-visible,
 .home button:focus-visible {
@@ -1528,19 +2297,14 @@
     display: none;
   }
 }
-@media (max-width: 52rem) {
-  .matrix-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .matrix-summary > div:nth-child(3) {
-    border-left: 0;
-  }
-  .matrix-summary > div:nth-child(n + 3) {
-    border-top: 1px solid var(--ic-line);
-  }
-}
 @media (max-width: 720px) {
   .desk-nav-link {
+    display: none;
+  }
+}
+/* Four section links and the button need a laptop's width; below it the bar keeps the brand and the button. */
+@media (max-width: 59.99rem) {
+  .home-bar .desk-nav-link {
     display: none;
   }
 }
@@ -1578,15 +2342,10 @@
   .home .waitlist-inline-submit {
     width: 100%;
   }
-  .matrix-bar,
-  .matrix-summary > div,
-  .matrix-foot {
-    padding-inline: 1.125rem;
-  }
 }
 @media (max-width: 440px) {
   /* The masthead button has to share a 342px row with the wordmark; drop the arrow and tighten the tracking. */
-  .home .hero-header .desk-cta {
+  .home-bar .desk-cta {
     padding-inline: 0.875rem;
     font-size: 0.6875rem;
     letter-spacing: 0.07em;
@@ -1596,19 +2355,18 @@
   }
 }
 @media (max-width: 380px) {
-  .hero-header {
-    flex-wrap: wrap;
+  .home-bar-inner {
     gap: 0.75rem;
   }
-  .hero-header .site-brand {
+  .home-bar .site-brand {
     gap: 0.5rem;
     font-size: 1.25rem;
   }
-  .hero-header .site-brand-mark {
+  .home-bar .site-brand-mark {
     width: 2rem;
     height: 2rem;
   }
-  .home .hero-header .desk-cta {
+  .home-bar .desk-cta {
     padding-inline: 0.625rem;
     font-size: 0.65625rem;
     letter-spacing: 0.04em;
@@ -1628,6 +2386,16 @@
   }
   .site-brand-mark {
     transform: none;
+    transition: none;
+  }
+  /* A tab change swaps the panel at once; the masthead fills without a fade. */
+  .how-body[data-enhanced='true'] .how-panel,
+  .how-body[data-enhanced='true'] .how-panel[data-active='true'] {
+    transform: none;
+    transition: none;
+  }
+  .how-tab,
+  .home-bar::before {
     transition: none;
   }
 }
@@ -2598,8 +3366,14 @@
    Nothing pulses and nothing else loops. Under reduced motion every one of
    these renders its final frame, and the film becomes six chapters to step
    through.
+
+   The film and the sources also play on the home page, so `.home` takes the
+   same timings and measures from this block rather than a copy of them. Only
+   the presentation's own furniture — its opening, its dust, its parallax —
+   stays on /glass.
    ══════════════════════════════════════════════════════════════════════════ */
-.glass {
+.glass,
+.home {
   --glass-display: clamp(2.75rem, 6vw, 5.5rem);
   --glass-heading: clamp(2.25rem, 4.4vw, 4.25rem);
   --glass-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);

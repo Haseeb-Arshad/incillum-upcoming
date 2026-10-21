@@ -657,7 +657,7 @@ export const access = {
 
   open: {
     title: 'Before you share a case',
-    body: 'Data location, internal access and audit arrangements are being settled with the first group of teams. We will explain the current setup before you decide whether to share a case.',
+    body: 'Data location, encryption, internal access and audit arrangements are being settled with the first group of teams. We will explain the current setup before you decide whether to share a case.',
   },
 } as const
 
@@ -762,29 +762,36 @@ export const launch = {
 } as const
 
 /**
- * The home page: night first, then morning.
+ * The home page: one quotation, told in eight acts.
  *
  * The page opens on the commissioned photograph — an empty office, one lamp,
  * a quotation still lying under it — because that frame is the argument with
- * the words taken away, and it was sitting below the fold. Then the product's
- * own object, lit: one request's twenty lines with their status and their
- * evidence. Then the thread of the night that produced it. The page ends on
- * paper, at the hour a person picks the work back up, with one invitation.
+ * the words taken away. Then the night itself, played in a frame (the film
+ * from /glass); then the page turns to paper and takes the same quotation
+ * apart at closer magnifications: the six sources it is assembled from, the
+ * four steps it goes through and where each one stops, what exists, what is
+ * promised about the data, the questions a buyer asks, and the morning.
+ *
+ * ── Shaped like the pages it is measured against, proved differently ───────
+ *
+ * The order is the order Harvey and Hebbia use — a product film, the context it
+ * draws on, product tabs, a band of figures, a security grid, then the close.
+ * Their proof is not available here (AGENTS.md §5), so every act carries the
+ * honest substitute instead: documents for a logo wall, states for metrics,
+ * written answers for testimonials, and commitments with their real state for
+ * certification badges.
  *
  * ── The matrix is illustrative, and reconciles ─────────────────────────────
  *
- * It is the same quotation the thread follows, at a different magnification:
- * twenty lines, eighteen priced, two held — one because a part number matches
- * three catalogue entries, one because a customer drawing carries no revision —
- * and one line whose cost moved when a supplier confirmation arrived at 03:42.
+ * `matrix` below is the quotation's twenty lines as the film's sheet sets them:
+ * eighteen priced, two held — one because a part number matches three
+ * catalogue entries, one because a customer drawing carries no revision — and
+ * one line whose cost moved when a supplier confirmation arrived at 03:42.
  * That line is 14, the flanged housing the evidence document takes apart and
  * the largest line on the quotation, which is what the thread calls it.
  * Its money is not written here. It is read off the thread's 06:50 ledger, so
  * the two cannot disagree. `content/site.test.ts` counts the rows below against
  * the totals and the totals against the thread's own prose.
- *
- * It says it is invented in its first line, at reading size, in the server's
- * HTML, with the same words the thread uses.
  *
  * No price per line. A line price would be twenty more figures to keep true and
  * would not tell a stranger anything the status and the evidence do not.
@@ -796,14 +803,19 @@ export const home = {
   headlineEnd: hero.headlineEnd,
   kicker: 'For the unattended hours',
   lede: hero.lede,
-  nav: { night: 'One night', contact: 'Contact' },
+  /**
+   * The masthead's links. Every one lands on something that exists — a section
+   * on this page or the contact memo — because a link to a page that is not
+   * there is a promise this site would be breaking in its first line.
+   */
+  nav: { how: 'How it works', trust: 'Trust', questions: 'Questions', contact: 'Contact' },
   cta: 'Request early access',
   emailPlaceholder: 'Your work email',
   /** The note under the field: what a first email is for, and what it is not. */
   assurance: hero.assurance,
+  /** The quiet link under the form, down to the film. */
+  watch: 'Watch one night',
   status: 'In progress. Carefully built.',
-
-  night: { anchor: 'night' },
 
   matrix: {
     heading: 'What is waiting at 08:04.',
@@ -842,11 +854,268 @@ export const home = {
     body: 'If there is an RFQ that lands on a Friday evening, or a quotation that is always waiting on one number from one supplier, that is the conversation we want to have.',
     action: 'Tell us about the work',
     emailLabel: 'Or write to us',
+    /** Over the contact memo's own three steps, which the component reads from `contact`. */
+    nextLabel: earlyAccess.nextLabel,
   },
 
   title: seoCopy.title,
   description:
     'Incillum is being built to carry commercial work forward and bring people back where judgement matters: an RFQ that arrives at night, and a decision ready for a person by morning. Request early access.',
+} as const
+
+/**
+ * How it works — four tabs, one quotation.
+ *
+ * ── The tabs are the boundaries ────────────────────────────────────────────
+ *
+ * The section the reference pages fill with product modules. This product has
+ * one job, so its tabs are the four things that happen to one request — read,
+ * hold, price, decide — and each one ends on the place it stops. Those are the
+ * four entries of `boundary`, once each, named by their titles here and read
+ * from there: a stranger who clicks through the tabs has read "where it stops"
+ * without being handed a list of limits.
+ *
+ * ── Nothing here is a figure ───────────────────────────────────────────────
+ *
+ * Every number the panels show — the cost before and after, the margins, the
+ * floor, the shortfall, the price at the floor — is read by the component off
+ * `evidence`, the 06:50 ledger and the documents on the desk. The words below
+ * name what happens; a test fails the moment one of them carries a figure.
+ *
+ * Each step is pinned to an hour of the thread, so the tabs and the film can
+ * never tell the night in a different order.
+ */
+export type HowKey = 'read' | 'hold' | 'price' | 'decide'
+
+export interface HowStep {
+  key: HowKey
+  /** The tab's own name: one word. */
+  tab: string
+  /** The beat of the thread the step happens in. */
+  at: string
+  title: string
+  line: string
+  /** The `boundary` point the step ends on, by its title. */
+  stops: string
+  stopsLine: string
+}
+
+const howSteps: ReadonlyArray<HowStep> = [
+  {
+    key: 'read',
+    tab: 'Read',
+    at: '00:06',
+    title: 'Every line, from what arrived.',
+    line: 'A PDF, drawing pack, spreadsheet or email, read into parts, quantities, dates and terms.',
+    stops: 'Missing evidence',
+    stopsLine: 'What the request does not say is flagged, never filled in.',
+  },
+  {
+    key: 'hold',
+    tab: 'Hold',
+    at: '01:18',
+    title: 'What cannot be settled is held.',
+    line: 'One part matches three catalogue entries, and only the tolerance separates them. Nothing is chosen.',
+    stops: 'Ambiguity',
+    stopsLine: 'The line waits for a person, with the question narrowed to one thing.',
+  },
+  {
+    key: 'price',
+    tab: 'Price',
+    at: '03:42',
+    title: 'Costs carried through to margin.',
+    line: 'A supplier answer arrives: six per cent up, three weeks later. The margin is recalculated.',
+    stops: 'Commercial policy',
+    stopsLine: 'The floor is checked on every line, and never argued down.',
+  },
+  {
+    key: 'decide',
+    tab: 'Decide',
+    at: '08:04',
+    title: 'A decision, not an investigation.',
+    line: 'Eighteen lines priced, two lines held, and one call that is yours to make.',
+    stops: 'Approval',
+    stopsLine: 'Nothing is sent and no price is committed until a person picks one.',
+  },
+]
+
+export const how = {
+  anchor: 'how',
+  label: 'How it works',
+  headline: 'From request to decision.',
+  lede: 'Four steps through one invented quotation. Each is being built to stop exactly where a person should take over.',
+  tabsLabel: 'Steps of one quotation',
+  stopsLabel: 'Where it stops',
+  steps: howSteps,
+
+  /** The panels' own words. Their figures are the evidence document's and the ledger's. */
+  panels: {
+    read: {
+      title: 'Read into lines',
+      fields: { request: 'Request', terms: 'Terms', lines: 'Lines', due: 'Due' },
+    },
+    price: {
+      quoted: 'Quoted at',
+    },
+    decide: {
+      options: [
+        { key: 'keep', title: 'Keep the price', detail: 'and accept the lower margin on the largest line' },
+        { key: 'floor', title: 'Price to the floor', detail: 'and go back to the supplier on the lead time' },
+        { key: 'split', title: 'Split the quantity', detail: 'across both' },
+      ],
+      quotation: 'The whole quotation',
+    },
+  },
+} as const
+
+/**
+ * Data and trust.
+ *
+ * ── The section the reference pages fill with badges ───────────────────────
+ *
+ * Both pages this site is measured against close their argument with a grid of
+ * certifications. Incillum holds none, and a certification shown before it is
+ * held is the one claim a buyer's procurement team can check in an afternoon.
+ * So the grid is kept and the badges are not: six commitments, each carrying
+ * its real state, from a closed set of three.
+ *
+ *   · Decided — a promise that could be made before anything shipped, so it
+ *     was. The two here are already on the record: `access.decided`, and the
+ *     approval line of `boundary`.
+ *   · Built — what `standing` already says exists: policies, approval routing
+ *     and the audit record.
+ *   · In build — the rest, said plainly.
+ *
+ * Nothing moves up a state a moment before it is true. The data arrangements
+ * that are still open — location, encryption, internal access, audit — are
+ * `access.open`, set under the grid in the same ink.
+ *
+ * ── Certifications ─────────────────────────────────────────────────────────
+ *
+ * `certifications` is empty, and the type will not accept an entry without a
+ * link to its report. While it is empty the section says so, in one sentence.
+ * No framework is named anywhere on the page until one is held; the end-to-end
+ * suite fails the page if one is.
+ */
+export type TrustState = 'Decided' | 'Built' | 'In build'
+
+export type TrustGlyph = 'training' | 'sending' | 'approval' | 'record' | 'source' | 'separate'
+
+export interface TrustCommitment {
+  glyph: TrustGlyph
+  state: TrustState
+  title: string
+  body: string
+}
+
+export interface Certification {
+  name: string
+  /** Where the report can be read. No report, no listing. */
+  report: `https://${string}`
+}
+
+const certifications: ReadonlyArray<Certification> = []
+
+export const trust = {
+  anchor: 'trust',
+  label: 'Data and trust',
+  headline: 'What happens to your figures.',
+  lede: 'Prices, costs and margins are the numbers a business guards most. Each commitment below carries its real state: decided, built, or still in build.',
+  commitments: [
+    {
+      glyph: 'training',
+      state: 'Decided',
+      title: 'Not used for training',
+      body: access.decided.body,
+    },
+    {
+      glyph: 'sending',
+      state: 'Decided',
+      title: 'Nothing sent on your behalf',
+      body: 'No quotation is sent, no price is committed and no order is confirmed without a person.',
+    },
+    {
+      glyph: 'approval',
+      state: 'Built',
+      title: 'Approvals reach the right person',
+      body: 'Your policies say who must approve what, and the decision is routed to them.',
+    },
+    {
+      glyph: 'record',
+      state: 'Built',
+      title: 'A record of every decision',
+      body: 'Who decided what, and when, is kept with the work it belongs to.',
+    },
+    {
+      glyph: 'source',
+      state: 'In build',
+      title: 'Every figure keeps its source',
+      body: 'A price is shown with the document it came from, never without it.',
+    },
+    {
+      glyph: 'separate',
+      state: 'In build',
+      title: 'Kept to your organisation',
+      body: 'Each organisation’s records are kept apart from every other organisation’s.',
+    },
+  ] satisfies ReadonlyArray<TrustCommitment>,
+  open: access.open,
+  certifications,
+  noCertification:
+    'No certification is claimed on this page. When one is held, it will be listed here with its report.',
+} as const
+
+/**
+ * Questions.
+ *
+ * Where the reference pages put their testimonials. There is nobody to quote,
+ * so the section answers what a commercial director asks before leaving an
+ * address — in full, in the page's HTML, with nothing folded away behind a
+ * click. Three of the answers are copy this site has already committed to and
+ * are read from where it lives, so they cannot drift.
+ *
+ * The answers keep the house tense: what the product will do is being built;
+ * what has been decided is said flatly.
+ */
+export const questions = {
+  anchor: 'questions',
+  label: 'Questions',
+  headline: 'Before you ask.',
+  items: [
+    {
+      question: 'Who is it for?',
+      answer:
+        'Teams for whom a quote is real work: parts to match and drawings to read, suppliers who move costs while it is open, and a margin somebody has to approve.',
+    },
+    {
+      question: 'Does it send quotations?',
+      answer:
+        'No. It is being built to prepare the quotation and the working behind it. A person decides, and a person sends.',
+    },
+    {
+      question: 'Does it contact our suppliers?',
+      answer:
+        'No. It is being built to read a supplier’s answer when one arrives. Nothing is requested, chased or negotiated on your behalf.',
+    },
+    {
+      question: 'What happens to a line it cannot resolve?',
+      answer:
+        'It is held rather than guessed, with the question narrowed to the one thing it needs from a person. The rest of the quotation carries on.',
+    },
+    {
+      question: 'Is our data used to train models?',
+      answer: `No. ${access.decided.body}`,
+    },
+    {
+      question: 'Which systems does it work with?',
+      answer:
+        'Tell us which ones you use; the contact form asks. Connections are being chosen with the first teams, so none is listed here.',
+    },
+    {
+      question: 'What does early access involve?',
+      answer: earlyAccess.next,
+    },
+  ],
 } as const
 
 /**

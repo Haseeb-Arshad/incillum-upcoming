@@ -1,73 +1,113 @@
+import { useEffect, useRef, useState } from 'react'
+
+import { StepIcon } from '#/components/step-icon.tsx'
+import { GlassFilm } from '#/components/glass-film.tsx'
+import { GlassHandover } from '#/components/glass-handover.tsx'
+import { GlassSources } from '#/components/glass-sources.tsx'
+import { HowItWorks } from '#/components/how-it-works.tsx'
 import { ButtonLink, Container, Label, TextLink } from '#/components/primitives.tsx'
+import { Questions } from '#/components/questions.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { SiteBrand } from '#/components/site-brand.tsx'
-import { Thread } from '#/components/thread.tsx'
+import { Standing } from '#/components/standing.tsx'
+import { Trust } from '#/components/trust.tsx'
 import { WaitlistForm } from '#/components/waitlist-form.tsx'
-import { brand, home, nightfall, thread } from '#/content/site.ts'
+import { brand, contact, glass, home, how, nightfall, questions, trust } from '#/content/site.ts'
 import { contactEmail } from '#/env.ts'
 
-import type { MatrixStatus } from '#/content/site.ts'
 import type { MouseEvent } from 'react'
 
 /**
- * The home page: night first, then morning.
+ * The home page: one quotation, told in eight acts.
  *
  * ── The acts ───────────────────────────────────────────────────────────────
  *
  * 1. **The plate.** The commissioned photograph, full-bleed, as the first
- *    screen: an empty office, one lamp, a quotation still lying under it. The
- *    headline sits over the dark side of the frame and the field sits under it.
- * 2. **The matrix.** The product's own object, lit like the paper under the
- *    lamp: one request's twenty lines with their status and their evidence, and
- *    the one call left for a person. Illustrative, and it says so first.
- * 3. **The thread.** How the night produced it, from 23:47 to 08:04.
- * 4. **The morning.** The page returns to the desk — the same desk the contact
- *    memo is laid on — with one invitation and the motto.
+ *    screen: an empty office, one lamp, a quotation still lying under it.
+ * 2. **The film.** The night itself, played in a frame — one sheet that fills
+ *    from 23:47 to 08:04 (`glass-film.tsx`, shared with /glass).
+ * 3. **Six sources.** The documents the quotation is assembled from, scattered
+ *    on a desk, then gathered onto one sheet (`glass-sources.tsx`).
+ * 4. **How it works.** Four tabs — read, hold, price, decide — each one line of
+ *    the quotation close up, each ending where it stops.
+ * 5. **Where this stands.** Built, in build, opening.
+ * 6. **Data and trust.** Six commitments, each with its real state.
+ * 7. **Questions.** Answered in full, nothing folded away.
+ * 8. **The morning.** The same office at 08:04, what is waiting in it, one
+ *    invitation, and the motto.
  *
- * Acts one to three are the page's single `[data-inverted]` region. Nothing
- * inside it knows it is dark; the matrix re-points the same tokens back to
- * paper with `[data-lit]`, the way the band re-points them to night.
- *
- * ── Why the photograph is mirrored ─────────────────────────────────────────
- *
- * In the original frame the lamp and the quotation are on the left, which is
- * where a headline has to go. Mirrored, they sit on the right and the dark
- * mass of the switched-off monitor sits under the words. Nothing in the frame
- * is legible, so nothing reads backwards.
+ * Acts one and two are the page's single `[data-inverted]` region; the film
+ * ends at 08:04 and the page turns to paper with it. Nothing inside the night
+ * knows it is dark; the film's sheet re-points the tokens back to paper with
+ * `[data-lit]`, the way the band re-points them to night.
  *
  * ── What it cannot borrow from the pages it is measured against ────────────
  *
  * Enterprise pages at this level lean on a wall of proof — customer logos,
  * volume figures, testimonials, certification badges. This site has none of
- * them and may not imply any (AGENTS.md §5). The matrix is the substitute, and
- * it is the honest one: it shows the work rather than claiming the result.
+ * them and may not imply any (AGENTS.md §5). Each act carries the honest
+ * substitute instead, and every figure on the page is one invented quotation's,
+ * read by the components from one content file so no two acts can disagree.
+ *
+ * ── The masthead ───────────────────────────────────────────────────────────
+ *
+ * One `banner`, fixed, so the way to act and the way round the page stay with
+ * the reader down a long page. Over the photograph it is transparent; once the
+ * first screen has scrolled away it fills in with the night — the one state
+ * change it has. It belongs to the night region, so it is the same night bar
+ * over every section and never changes colour twice a visit.
  *
  * Motion, all of it off under `prefers-reduced-motion`: the headline lines rise
  * out of their own boxes and the copy follows. The photograph does not move.
  */
 export function HomePage() {
+  const sentinelRef = useRef<HTMLSpanElement>(null)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel || typeof IntersectionObserver === 'undefined') return
+    // A boolean from an observer, not a scroll listener: two renders a visit.
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0]
+      if (entry) setScrolled(!entry.isIntersecting && entry.boundingClientRect.top < 0)
+    })
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div className="home">
+      <span ref={sentinelRef} className="home-sentinel" aria-hidden="true" />
+
       <div data-inverted="" className="home-night">
+        <header className="home-bar home-drop" role="banner" data-scrolled={scrolled ? 'true' : 'false'}>
+          <Container className="home-bar-inner">
+            <SiteBrand />
+            <nav className="desk-nav" aria-label="Primary">
+              <a href={`#${how.anchor}`} className="desk-nav-link">
+                {home.nav.how}
+              </a>
+              <a href={`#${trust.anchor}`} className="desk-nav-link">
+                {home.nav.trust}
+              </a>
+              <a href={`#${questions.anchor}`} className="desk-nav-link">
+                {home.nav.questions}
+              </a>
+              <a href="/contact" className="desk-nav-link">
+                {home.nav.contact}
+              </a>
+              <ButtonLink href="#early-access" arrow className="desk-cta" onClick={focusEmail}>
+                {home.cta}
+              </ButtonLink>
+            </nav>
+          </Container>
+        </header>
+
         <section className="hero" aria-labelledby="home-title">
           <HeroPlate />
 
           <Container className="hero-inner">
-            <header className="hero-header home-drop" role="banner">
-              <SiteBrand />
-              <nav className="desk-nav" aria-label="Primary">
-                <a href={`#${home.night.anchor}`} className="desk-nav-link">
-                  {home.nav.night}
-                </a>
-                <a href="/contact" className="desk-nav-link">
-                  {home.nav.contact}
-                </a>
-                <ButtonLink href="#early-access" arrow className="desk-cta" onClick={focusEmail}>
-                  {home.cta}
-                </ButtonLink>
-              </nav>
-            </header>
-
             <div className="hero-body">
               <div className="hero-copy">
                 <p className="hero-kicker home-rise">{home.kicker}</p>
@@ -84,6 +124,18 @@ export function HomePage() {
                   <WaitlistForm inline />
                 </div>
                 <p className="home-note home-rise">{home.assurance}</p>
+                <a href="#film" className="glass-watch home-watch home-rise">
+                  {home.watch}
+                  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className="glass-watch-arrow">
+                    <path
+                      d="M8 3v10M4 9l4 4 4-4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </a>
               </div>
 
               {/*
@@ -95,59 +147,23 @@ export function HomePage() {
           </Container>
         </section>
 
-        <section className="home-matrix" aria-labelledby="matrix-heading">
-          <Container>
-            <Reveal className="matrix-intro">
-              <Label>{thread.label}</Label>
-              <h2 id="matrix-heading" className="text-title text-ink">
-                {home.matrix.heading}
-              </h2>
-              <p className="max-w-[52ch] text-lede text-ink-600">{home.matrix.lede}</p>
-            </Reveal>
-            <Reveal delay={80}>
-              <Matrix />
-            </Reveal>
-          </Container>
-        </section>
-
-        <div id={home.night.anchor} className="home-thread">
-          <Thread />
+        <div className="home-film">
+          <GlassFilm ready />
         </div>
       </div>
 
-      <div className="desk">
-        <section aria-labelledby="closing-title" className="home-closing">
-          <Container>
-            <Reveal className="grid gap-10 lg:grid-cols-12 lg:gap-16">
-              <div className="flex flex-col gap-5 lg:col-span-7">
-                <Label>{home.closing.label}</Label>
-                <h2 id="closing-title" className="max-w-[18ch] text-title text-ink">
-                  {home.closing.headline}
-                </h2>
-                <p className="max-w-[54ch] text-lede text-ink-600">{home.closing.body}</p>
-              </div>
+      <GlassSources />
 
-              <div className="flex flex-col items-start gap-8 lg:col-span-5 lg:pt-9">
-                <ButtonLink href="/contact" arrow className="desk-cta desk-cta--large">
-                  {home.closing.action}
-                </ButtonLink>
-                <div className="flex flex-col gap-2">
-                  <Label>{home.closing.emailLabel}</Label>
-                  <TextLink
-                    href={`mailto:${contactEmail}`}
-                    className="w-fit font-display text-heading text-ink"
-                  >
-                    {contactEmail}
-                  </TextLink>
-                </div>
-              </div>
-            </Reveal>
-          </Container>
-        </section>
+      <div className="desk home-desk">
+        <HowItWorks />
+        <Standing />
+        <Trust />
+        <Questions />
+        <Morning />
 
         <footer className="home-footer" role="contentinfo">
           <Container>
-            <Reveal className="flex flex-col gap-5 border-t border-line-strong pt-10 sm:pt-12">
+            <Reveal className="home-footer-sign">
               <SiteBrand />
               {/*
                 The motto: one of its two placements on the whole site, and the
@@ -156,11 +172,17 @@ export function HomePage() {
               */}
               <p className="font-display text-title text-ink">{brand.motto}</p>
             </Reveal>
-            <div className="mt-14 flex flex-col gap-3 border-t border-line-strong pt-7 sm:mt-16 sm:flex-row sm:items-center sm:justify-between">
+            <div className="home-footer-base">
+              <nav aria-label="Sections" className="home-footer-nav">
+                <a href={`#${how.anchor}`}>{home.nav.how}</a>
+                <a href={`#${trust.anchor}`}>{home.nav.trust}</a>
+                <a href={`#${questions.anchor}`}>{home.nav.questions}</a>
+                <a href="/contact">{home.nav.contact}</a>
+              </nav>
+              <p className="text-small text-ink-600">{home.status}</p>
               <p className="text-small text-ink-600">
                 © {new Date().getFullYear()} {brand.name}
               </p>
-              <p className="text-small text-ink-600">{home.status}</p>
             </div>
           </Container>
         </footer>
@@ -172,10 +194,9 @@ export function HomePage() {
 /**
  * The photograph, full-bleed behind the first screen.
  *
- * Same encodes as `Nightfall` (see the delivery note there), with `sizes` at
- * the full viewport because here the plate is. `fetchPriority="high"` and no
- * lazy loading: it is the largest thing in the first screen. The `alt` is the
- * composition, from `nightfall.alt`; the caption is a separate line of text.
+ * `sizes` at the full viewport because here the plate is. `fetchPriority="high"`
+ * and no lazy loading: it is the largest thing in the first screen. The `alt` is
+ * the composition, from `nightfall.alt`; the caption is a separate line of text.
  *
  * The scrim is the one gradient on the site, and it is functional rather than
  * decorative: it is what holds the headline at AA over a photograph, on the
@@ -212,119 +233,90 @@ function HeroPlate() {
 }
 
 /**
- * The request, as the product would hand it back.
+ * The morning: the night plate's own room at 08:04, what is waiting in it, and
+ * one invitation.
  *
- * A real `<table>`: twenty lines of a quotation are tabular data, and a screen
- * reader should be able to move across a row and down a column. Its caption is
- * the licence — illustrative, in the first line, at reading size.
+ * The page ends where the film does. The photograph is the morning plate /glass
+ * closes on, here held still — this page's photographs do not move — with the
+ * handover laid over the window: the decision and the two figures it turns on,
+ * read from the film's last frame and the 06:50 ledger.
  *
- * The figures in the summary are read off the thread's 06:50 ledger rather
- * than written here, and the counts are the content file's, which a test holds
- * to the rows. The signal colour appears twice, on the two things it is
- * licensed for: the held state, and the one figure that breaks the floor.
+ * Under it, the ask, the address, and what happens after somebody writes —
+ * the contact memo's own three steps, read from `contact` so the two pages
+ * promise the same thing in the same words.
  */
-function Matrix() {
-  const ledger = thread.beats.find((beat) => beat.figures)?.figures ?? []
-  const figure = (term: string) => ledger.find((entry) => entry.term === term)?.value ?? ''
-  const shortfall = ledger.find((entry) => entry.breaches)
-  const morning = thread.beats[thread.beats.length - 1]
-  const { matrix } = home
-
+function Morning() {
+  const widths = [640, 900, 1280, 1896]
+  const sizes = '(min-width: 1360px) 1280px, 100vw'
+  const { closing } = home
   return (
-    <div data-lit="" className="matrix">
-      <div className="matrix-bar">
-        <p className="matrix-title">
-          <span className="matrix-mark" aria-hidden="true" />
-          {matrix.title}
-        </p>
-        <p className="matrix-due">{matrix.due}</p>
-      </div>
+    <section aria-labelledby="closing-title" className="home-closing">
+      <Container>
+        <figure className="glass-morning home-morning">
+          <div className="glass-morning-frame">
+            <picture>
+              <source
+                type="image/avif"
+                sizes={sizes}
+                srcSet={widths.map((width) => `/glass/morning-${width}.avif ${width}w`).join(', ')}
+              />
+              <source
+                type="image/webp"
+                sizes={sizes}
+                srcSet={widths.map((width) => `/glass/morning-${width}.webp ${width}w`).join(', ')}
+              />
+              <img
+                src="/glass/morning-1896.jpg"
+                alt={glass.closing.morning}
+                width={1896}
+                height={830}
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+              />
+            </picture>
+          </div>
+          <GlassHandover />
+        </figure>
 
-      <dl className="matrix-summary">
-        <div>
-          <dt>{matrix.summary.priced}</dt>
-          <dd>
-            {matrix.lines.priced}
-            <span> / {matrix.lines.total}</span>
-          </dd>
-        </div>
-        <div>
-          <dt>{matrix.summary.held}</dt>
-          <dd className="matrix-held">{matrix.lines.held}</dd>
-        </div>
-        <div>
-          <dt>{matrix.summary.value}</dt>
-          <dd>{figure('Quote value')}</dd>
-        </div>
-        <div>
-          <dt>{matrix.summary.margin}</dt>
-          <dd>
-            {figure('Expected margin')}
-            <span>
-              {' '}
-              · {matrix.summary.floor} {figure('Commercial floor')}
-            </span>
-          </dd>
-        </div>
-      </dl>
+        <Reveal className="home-closing-grid">
+          <div className="home-closing-copy">
+            <Label>{closing.label}</Label>
+            <h2 id="closing-title" className="home-closing-title">
+              {closing.headline}
+            </h2>
+            <p className="home-closing-body">{closing.body}</p>
+          </div>
 
-      {/*
-        On a phone the table is wider than the screen and scrolls inside its
-        own box. A scrolling region has to be reachable without a pointer, so it
-        takes focus and carries a name.
-      */}
-      <div className="matrix-scroll" tabIndex={0} role="region" aria-label={matrix.title}>
-        <table className="matrix-table">
-          {/*
-            The table's name for a screen reader. The same words are the
-            visible first line of this section, directly above the panel, so
-            printing them a second time here would only be repetition.
-          */}
-          <caption className="sr-only">{thread.label}</caption>
-          <thead>
-            <tr>
-              <th scope="col">{matrix.columns.line}</th>
-              <th scope="col">{matrix.columns.item}</th>
-              <th scope="col">{matrix.columns.status}</th>
-              <th scope="col">{matrix.columns.evidence}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {matrix.rows.map((row) => (
-              <tr key={row.line} data-status={row.status}>
-                <td className="ic-tabular">{row.line}</td>
-                <th scope="row">{row.item}</th>
-                <td>
-                  <Status status={row.status} />
-                </td>
-                <td>{row.evidence}</td>
-              </tr>
-            ))}
-            <tr className="matrix-more">
-              <td />
-              <td colSpan={3}>
-                <span className="ic-tabular">{matrix.more.count}</span> {matrix.more.text}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {shortfall ? (
-        <div className="matrix-foot">
-          <p className="matrix-shortfall">
-            <span>{shortfall.term}</span>
-            <strong>{shortfall.value}</strong>
-          </p>
-          {morning ? <p className="matrix-decision">{morning.title}</p> : null}
-        </div>
-      ) : null}
-    </div>
+          <div className="home-closing-side">
+            <ButtonLink href="/contact" arrow className="desk-cta desk-cta--large">
+              {closing.action}
+            </ButtonLink>
+            <div className="flex flex-col gap-2">
+              <Label>{closing.emailLabel}</Label>
+              <TextLink
+                href={`mailto:${contactEmail}`}
+                className="w-fit font-display text-heading text-ink"
+              >
+                {contactEmail}
+              </TextLink>
+            </div>
+            <div className="home-next">
+              <Label>{closing.nextLabel}</Label>
+              <ol className="home-next-steps">
+                {contact.steps.map((step) => (
+                  <li key={step.icon}>
+                    <StepIcon name={step.icon} />
+                    <span>{step.text}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </Reveal>
+      </Container>
+    </section>
   )
-}
-
-function Status({ status }: { status: MatrixStatus }) {
-  return <span className={`matrix-status matrix-status--${status}`}>{home.matrix.statusLabels[status]}</span>
 }
 
 /**

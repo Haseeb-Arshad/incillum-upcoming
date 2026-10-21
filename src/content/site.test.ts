@@ -9,12 +9,15 @@ import {
   evidence,
   glass,
   home,
+  how,
   firstBuild,
   hero,
   instrument,
   nightfall,
+  questions,
   standing,
   thread,
+  trust,
 } from '#/content/site.ts'
 
 /**
@@ -245,6 +248,9 @@ describe('nothing claims outbound supplier contact', () => {
     boundary,
     hero,
     standing,
+    how,
+    trust,
+    questions,
   ])
 
   it('never says it asks, chases or contacts a supplier', () => {
@@ -286,6 +292,10 @@ describe('no system is named on the page', () => {
     access,
     earlyAccess,
     contact,
+    home,
+    how,
+    trust,
+    questions,
   ])
 
   it('names no ERP, CRM or mail client', () => {
@@ -330,6 +340,11 @@ describe('the motto', () => {
       access,
       earlyAccess,
       contact,
+      home,
+      how,
+      trust,
+      questions,
+      glass,
     ])
     expect(everywhereElse.toLowerCase()).not.toContain('stay with the work')
   })
@@ -926,5 +941,212 @@ describe('the line the supplier moved is one line on every surface', () => {
     }
     expect(others).toBeGreaterThan(0)
     expect(others).toBeLessThan(quote() - calculated('Quoted'))
+  })
+})
+
+/** Everything a page section may never say, gathered so every new section is held to all of it. */
+const banned = [
+  'trusted by',
+  'customers include',
+  'testimonial',
+  'SOC 2',
+  'SOC2',
+  'ISO',
+  'GDPR',
+  'CCPA',
+  'HIPAA',
+  'certified',
+  'compliant',
+  'magic',
+  'revolutionary',
+  'autonomous',
+  'replaces your team',
+  'seamless',
+  'effortless',
+  'supercharge',
+  'unlock',
+  'next-generation',
+  'cutting-edge',
+  'asks the supplier',
+  'chases the supplier',
+  'contacts the supplier',
+  'emails the supplier',
+  'reaches out to the supplier',
+  'check your inbox',
+  'stay with the work',
+] as const
+const calendar = ['2026', '2027', 'Q1', 'Q2', 'Q3', 'Q4', 'January', 'February', 'September']
+const words = (text: string) => text.split(/\s+/).filter((word) => /\w/.test(word)).length
+
+function claimsNothing(section: unknown) {
+  const text = JSON.stringify(section)
+  for (const forbidden of banned) {
+    // Whole words for the short ones, so "ISO" cannot hide inside "decisions".
+    const pattern = /^[A-Z0-9 ]+$/.test(forbidden)
+      ? new RegExp(`\\b${forbidden}\\b`)
+      : new RegExp(forbidden.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+    expect(text, forbidden).not.toMatch(pattern)
+  }
+  for (const date of calendar) expect(text, date).not.toContain(date)
+}
+
+/**
+ * How it works — the four tabs.
+ *
+ * The tabs are the boundaries: each step ends on one entry of `where it stops`,
+ * and all four entries are used once. They are held to the thread's hours, to
+ * the presentation's word budgets, and to carrying no figure of their own.
+ */
+describe('how it works', () => {
+  it('walks one request in four steps, in the order of the night', () => {
+    expect(how.steps.map((step) => step.key)).toEqual(['read', 'hold', 'price', 'decide'])
+    const hours = thread.beats.map((beat) => beat.at)
+    const order = how.steps.map((step) => hours.indexOf(step.at))
+    for (const index of order) expect(index).toBeGreaterThanOrEqual(0)
+    expect([...order].sort((a, b) => a - b)).toEqual(order)
+    // It starts after the request has arrived and ends where the night does.
+    expect(how.steps.at(-1)?.at).toBe(thread.beats.at(-1)?.at)
+  })
+
+  it('ends every step on one of the four places it stops, and uses each once', () => {
+    const limits = boundary.points.map((point) => point.title)
+    expect(how.steps.map((step) => step.stops).sort()).toEqual([...limits].sort())
+  })
+
+  it('names each tab in one word, and keeps the rest short', () => {
+    for (const step of how.steps) {
+      expect(words(step.tab), step.tab).toBe(1)
+      expect(words(step.title), step.title).toBeLessThanOrEqual(6)
+      expect(words(step.line), step.line).toBeLessThanOrEqual(16)
+      expect(words(step.stopsLine), step.stopsLine).toBeLessThanOrEqual(14)
+    }
+    expect(words(how.headline)).toBeLessThanOrEqual(6)
+    expect(words(how.lede)).toBeLessThanOrEqual(30)
+  })
+
+  it('says the quotation is invented, and keeps the product in the future tense', () => {
+    expect(how.lede).toMatch(/invented/i)
+    expect(how.lede).toMatch(/being built/i)
+  })
+
+  it('writes no figure: the panels read every one off the evidence and the ledger', () => {
+    expect(JSON.stringify(how)).not.toMatch(/EUR|\d+(\.\d+)?\s?%|\d,\d{3}/)
+  })
+
+  it('tells each step in the thread’s own terms', () => {
+    const step = (key: string) => how.steps.find((entry) => entry.key === key)!
+    expect(step('hold').line).toMatch(/three catalogue entries/)
+    expect(step('price').line).toMatch(/six per cent/)
+    expect(step('price').line).toMatch(/three weeks/)
+    expect(step('price').line).toMatch(/arrives/)
+    expect(step('decide').line.toLowerCase()).toContain('eighteen lines priced')
+    expect(step('decide').line.toLowerCase()).toContain('two lines held')
+    expect(step('decide').stopsLine).toMatch(/until a person/)
+  })
+
+  it('claims nothing, names no system and spends no motto', () => {
+    claimsNothing(how)
+  })
+})
+
+/**
+ * Data and trust — the grid that stands where the badges would.
+ *
+ * Its states come from a closed set, each Decided entry is a promise already
+ * on the record, each Built entry is something `standing` already says is
+ * built, and no certification is named while none is held.
+ */
+describe('data and trust', () => {
+  it('gives every commitment one of three states', () => {
+    for (const commitment of trust.commitments) {
+      expect(['Decided', 'Built', 'In build']).toContain(commitment.state)
+      expect(words(commitment.title), commitment.title).toBeLessThanOrEqual(6)
+    }
+    expect(new Set(trust.commitments.map((commitment) => commitment.glyph)).size).toBe(
+      trust.commitments.length,
+    )
+  })
+
+  it('decides only what is already decided', () => {
+    const decided = trust.commitments.filter((commitment) => commitment.state === 'Decided')
+    expect(decided.map((commitment) => commitment.body)).toContain(access.decided.body)
+    // The other decided promise is the approval boundary's own first clause.
+    const approval = boundary.points.find((point) => point.title === 'Approval')!
+    const promise = /^No quotation is sent, no price is committed and no order is confirmed\b/
+    expect(approval.body).toMatch(promise)
+    for (const commitment of decided) {
+      const onRecord = commitment.body === access.decided.body || promise.test(commitment.body)
+      expect(onRecord, commitment.title).toBe(true)
+    }
+  })
+
+  it('calls built only what the build already says is built', () => {
+    const built = standing.stages.find((stage) => stage.state === 'Built')!
+    expect(built.body).toMatch(/approval routing/)
+    expect(built.body).toMatch(/audit record/)
+    const claimed = trust.commitments.filter((commitment) => commitment.state === 'Built')
+    expect(claimed.map((commitment) => commitment.glyph).sort()).toEqual(['approval', 'record'])
+  })
+
+  it('keeps the open arrangements open, encryption among them', () => {
+    expect(trust.open).toBe(access.open)
+    expect(trust.open.body).toMatch(/being settled/i)
+    expect(trust.open.body).toMatch(/encryption/i)
+  })
+
+  it('lists a certification only with its report, and says so while there are none', () => {
+    for (const certification of trust.certifications) {
+      expect(certification.report).toMatch(/^https:\/\/\S+$/)
+    }
+    if (trust.certifications.length === 0) {
+      expect(trust.noCertification).toMatch(/^No certification is claimed/)
+    }
+  })
+
+  it('claims nothing, names no framework and spends no motto', () => {
+    claimsNothing({ ...trust, certifications: [] })
+  })
+})
+
+describe('questions', () => {
+  const answer = (question: RegExp) =>
+    questions.items.find((item) => question.test(item.question))?.answer ?? ''
+
+  it('answers in full, each one a question', () => {
+    expect(questions.items.length).toBeGreaterThanOrEqual(5)
+    for (const item of questions.items) {
+      expect(item.question.trim().endsWith('?'), item.question).toBe(true)
+      expect(item.answer.trim(), item.question).not.toBe('')
+    }
+  })
+
+  it('says no to sending and to supplier contact, and keeps both in the future tense', () => {
+    expect(answer(/send quotations/)).toMatch(/^No\./)
+    expect(answer(/send quotations/)).toMatch(/being built/)
+    expect(answer(/suppliers/)).toMatch(/^No\./)
+    expect(answer(/suppliers/)).toMatch(/arrives/)
+    expect(answer(/suppliers/)).toMatch(/being built/)
+  })
+
+  it('reads the commitments from where they already live', () => {
+    expect(answer(/train/)).toContain(access.decided.body)
+    expect(answer(/early access/)).toBe(earlyAccess.next)
+  })
+
+  it('asks about systems rather than naming any', () => {
+    expect(answer(/systems/)).toMatch(/form asks/)
+  })
+
+  it('claims nothing, names no system and spends no motto', () => {
+    claimsNothing(questions)
+  })
+})
+
+describe('the home page’s navigation', () => {
+  it('points only at sections that exist on the page, or at the memo', () => {
+    expect(Object.keys(home.nav)).toEqual(['how', 'trust', 'questions', 'contact'])
+    expect(how.anchor).toBe('how')
+    expect(trust.anchor).toBe('trust')
+    expect(questions.anchor).toBe('questions')
   })
 })
