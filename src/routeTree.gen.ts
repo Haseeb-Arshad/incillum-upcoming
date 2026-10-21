@@ -10,13 +10,26 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as GlassRouteImport } from './routes/glass'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as LabParticlesRouteImport } from './routes/lab.particles'
 import { Route as WorkJanusRouteImport } from './routes/work.janus'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GlassRoute = GlassRouteImport.update({
+  id: '/glass',
+  path: '/glass',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
@@ -29,6 +42,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LabParticlesRoute = LabParticlesRouteImport.update({
+  id: '/lab/particles',
+  path: '/lab/particles',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WorkJanusRoute = WorkJanusRouteImport.update({
   id: '/work/janus',
   path: '/work/janus',
@@ -37,35 +55,69 @@ const WorkJanusRoute = WorkJanusRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
+  '/glass': typeof GlassRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/lab/particles': typeof LabParticlesRoute
   '/work/janus': typeof WorkJanusRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
+  '/glass': typeof GlassRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/lab/particles': typeof LabParticlesRoute
   '/work/janus': typeof WorkJanusRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
+  '/glass': typeof GlassRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/lab/particles': typeof LabParticlesRoute
   '/work/janus': typeof WorkJanusRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/robots.txt' | '/sitemap.xml' | '/work/janus'
+  fullPaths:
+    | '/'
+    | '/contact'
+    | '/glass'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/lab/particles'
+    | '/work/janus'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/robots.txt' | '/sitemap.xml' | '/work/janus'
-  id: '__root__' | '/' | '/robots.txt' | '/sitemap.xml' | '/work/janus'
+  to:
+    | '/'
+    | '/contact'
+    | '/glass'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/lab/particles'
+    | '/work/janus'
+  id:
+    | '__root__'
+    | '/'
+    | '/contact'
+    | '/glass'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/lab/particles'
+    | '/work/janus'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ContactRoute: typeof ContactRoute
+  GlassRoute: typeof GlassRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  LabParticlesRoute: typeof LabParticlesRoute
   WorkJanusRoute: typeof WorkJanusRoute
 }
 
@@ -76,6 +128,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/glass': {
+      id: '/glass'
+      path: '/glass'
+      fullPath: '/glass'
+      preLoaderRoute: typeof GlassRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/robots.txt': {
@@ -92,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lab/particles': {
+      id: '/lab/particles'
+      path: '/lab/particles'
+      fullPath: '/lab/particles'
+      preLoaderRoute: typeof LabParticlesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/work/janus': {
       id: '/work/janus'
       path: '/work/janus'
@@ -104,8 +177,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ContactRoute: ContactRoute,
+  GlassRoute: GlassRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  LabParticlesRoute: LabParticlesRoute,
   WorkJanusRoute: WorkJanusRoute,
 }
 export const routeTree = rootRouteImport

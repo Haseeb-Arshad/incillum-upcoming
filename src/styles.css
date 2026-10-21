@@ -277,6 +277,34 @@
   color: var(--ic-ink-900);
 }
 
+/* ── The lit scope ────────────────────────────────────────────────────────
+ *
+ * The inverted scope's opposite, for one thing on the page: the product panel
+ * inside the night band, which is paper because the one lit object in the
+ * photograph above it is paper. It re-points the same tokens back to their
+ * daylight values, so the panel is written against `text-ink` and
+ * `border-line` like everything else and does not know where it landed.
+ */
+[data-lit] {
+  --ic-paper: #f7f7f5;
+  --ic-paper-raised: #ffffff;
+  --ic-paper-sunken: #efefec;
+
+  --ic-ink-900: #111110;
+  --ic-ink-800: #1c1c1a;
+  --ic-ink-600: #45453f;
+  --ic-ink-400: #6e6e66;
+  --ic-ink-200: #a3a39a;
+
+  --ic-line: rgba(17, 17, 16, 0.11);
+  --ic-line-strong: rgba(17, 17, 16, 0.22);
+
+  --ic-signal: #9a5518;
+  --ic-signal-soft: rgba(154, 85, 24, 0.1);
+
+  color: var(--ic-ink-900);
+}
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
@@ -712,8 +740,8 @@
   --launch-wordmark: 1.75rem;
   --launch-form: 25rem;
   --launch-rule: 1px;
-  --launch-orbit: 100s;
-  --launch-art-ink: #a9b7ac;
+  --launch-particle-color: #eee5d5;
+  --launch-particle-size: min(63vw, 54rem);
   min-height: 100svh;
   background-color: var(--ic-paper);
   background-image: var(--ic-grain);
@@ -806,28 +834,26 @@
   color: var(--ic-ink-400);
   margin-top: 1rem;
 }
-.launch-art {
+.particle-core {
   position: absolute;
-  width: min(66vw, 57rem);
-  right: -6%;
+  width: var(--launch-particle-size);
+  aspect-ratio: 1;
+  right: -9%;
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
+  overflow: hidden;
+  contain: strict;
 }
-.launch-art svg {
+.particle-core canvas,
+.particle-core-still {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
-  overflow: visible;
+  height: 100%;
 }
-.launch-contours {
-  stroke: var(--launch-art-ink);
-  stroke-width: 0.65;
-  opacity: 0.48;
-  transform-origin: 350px 350px;
-  animation: launch-orbit var(--launch-orbit) linear infinite;
-}
-.launch[data-paused='true'] .launch-contours {
-  animation-play-state: paused;
+.particle-core[data-ready='true'] .particle-core-still {
+  visibility: hidden;
 }
 .launch-art-caption {
   position: absolute;
@@ -871,19 +897,10 @@
   font-size: 1.1rem;
   color: var(--ic-ink-900);
 }
-.launch-motion {
-  cursor: pointer;
-  min-height: 2.75rem;
-}
 .launch a:focus-visible,
 .launch button:focus-visible {
   outline: 2px solid var(--ic-ink-900);
   outline-offset: 5px;
-}
-@keyframes launch-orbit {
-  to {
-    transform: rotate(360deg);
-  }
 }
 @media (min-width: 1500px) {
   .launch-stage-area {
@@ -893,11 +910,6 @@
 @media (max-width: 1050px) {
   .launch {
     --launch-display: clamp(3.6rem, 8.7vw, 6rem);
-  }
-  .launch-art {
-    right: -20%;
-    width: 80vw;
-    opacity: 0.65;
   }
   .launch-index {
     gap: 2rem;
@@ -924,12 +936,11 @@
     font-size: 0.6rem;
     margin-bottom: 1.6rem;
   }
-  .launch-art {
-    width: 110%;
-    right: -28%;
-    top: 8rem;
-    transform: none;
-    opacity: 0.45;
+  .particle-core {
+    --launch-particle-size: 21rem;
+    top: 7.4rem;
+    right: 50%;
+    transform: translateX(50%);
   }
   .launch-invitation {
     margin-top: 15rem;
@@ -956,11 +967,4525 @@
     flex-basis: 100%;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Home — one quotation in eight acts (`components/home-page.tsx`).
+
+   The first screen is the commissioned photograph, full-bleed: an empty
+   office, one lamp, a quotation under it. The headline sits over the dark side
+   of the frame. Below it the night plays in a frame — the film from /glass,
+   whose sheet is *lit*, the way the quotation is the one lit thing in the
+   photograph. Then the page turns to the desk the contact memo is laid on and
+   takes the same quotation apart: six sources, four tabs, the build's states,
+   the trust grid, the questions, and the morning.
+
+   One dark region (`.home-night`, carrying `[data-inverted]`), one lit panel
+   inside it (`[data-lit]`), one desk after it. Every colour below is a token
+   or a scrim built from one.
+
+   ── Its motion budget ─────────────────────────────────────────────────────
+     1. the hero's one entrance;
+     2. the film: once through while on screen, pausable, never looped;
+     3. the sources gathering: one change of state tied to the scroll;
+     4. a tab change: one 220ms crossfade, only when the reader asks;
+     5. one reveal per section;
+     6. the masthead filling in once the hero has gone — 300ms, a state change;
+     7. the arrow nudge and the press.
+   The night plate never moves, nothing loops, and there is no dust and no
+   parallax here. Reduced motion renders the final frame of every one.
+
+   Contrast:
+     on the night (#0d0d0c)   ink-900 18.6:1 · ink-600 10.3:1 · ink-400 6.9:1
+     over the scrim           the headline column sits on ≥ 86% night, so the
+                              same figures hold within a few tenths
+     on the desk (#e0ddd5)    ink-900 14.2:1 · ink-600 7.6:1 · ink-400 (re-
+                              pointed below to #5c5b55) 5.2:1
+   ══════════════════════════════════════════════════════════════════════════ */
+.home {
+  /* The fixed masthead's height. Anchors land below it (`--ic-anchor-offset`). */
+  --home-bar: 4.75rem;
+  /* The masthead's one state change, and the tab change: in, and the faster way out. */
+  --home-fill: 300ms;
+  --home-tab-in: 220ms;
+  --home-tab-out: 120ms;
+  --home-display: clamp(2.5rem, 4.6vw, 5.25rem);
+  --home-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
+  --home-form: 30rem;
+  --home-control: 3rem;
+  --home-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --home-arrive: 900ms;
+  --hero-scrim-strong: rgba(13, 13, 12, 0.94);
+  --hero-scrim: rgba(13, 13, 12, 0.7);
+
+  position: relative;
+  color: var(--ic-ink-900);
+  overflow: clip;
+}
+
+/* The page's one dark region. Deeper than the default night: a photograph on black reads as a print. */
+.home-night {
+  background-color: var(--ic-paper-sunken);
+}
+
+/* ── The brand and the navigation, shared with /contact ───────────────── */
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ic-ink-900);
+  text-decoration: none;
+  border-radius: var(--radius-control);
+}
+.site-brand-mark {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  transition: transform 1400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.site-brand:hover .site-brand-mark {
+  transform: rotate(45deg);
+}
+
+.desk-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.25rem, 2.2vw, 2.25rem);
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+}
+.desk-nav-link {
+  position: relative;
+  color: var(--ic-ink-900);
+  text-decoration: none;
+  border-radius: 2px;
+}
+.desk-nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.3em;
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--ic-slow) var(--home-ease);
+}
+.desk-nav-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+.home .desk-cta {
+  min-height: 2.5rem;
+  padding: 0.5rem 1.125rem 0.5rem 1.25rem;
+}
+.home .desk-cta--large {
+  min-height: 3.25rem;
+  padding: 0.75rem 1.5rem 0.75rem 1.75rem;
+}
+
+/* ── Act one: the plate ───────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: max(40rem, min(100svh, 64rem));
+  overflow: hidden;
+}
+.hero-plate {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.hero-plate img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Crop from the original's left, where the lamp and the quotation are; the flip then puts them on the right. */
+  object-position: 12% 62%;
+  transform: scaleX(-1);
+  user-select: none;
+}
+.hero-plate::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, var(--hero-scrim-strong) 0%, var(--hero-scrim) 36%, transparent 68%),
+    linear-gradient(0deg, var(--ic-paper-sunken) 0%, transparent 30%),
+    linear-gradient(180deg, var(--hero-scrim) 0%, transparent 20%);
+}
+.hero-inner {
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--home-bar);
+}
+
+/*
+ * The masthead, fixed. Transparent over the photograph, where the top scrim
+ * already holds it at AA; once the first screen has scrolled away it fills in
+ * with the night's own sunken ground and grain, and a hairline under it. That
+ * fill is its one state change, and the 300ms it takes is the documented
+ * exception to the two durations. It never shrinks, never gains a shadow, and
+ * never changes colour: it belongs to the night region, so it is the same night
+ * bar over the paper sections as over the photograph.
+ */
+.home-sentinel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 6rem;
+  pointer-events: none;
+}
+.home-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  color: var(--ic-ink-900);
+}
+.home-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-bottom: 1px solid var(--ic-line);
+  background-color: var(--ic-paper-sunken);
+  background-image: var(--ic-grain);
+  opacity: 0;
+  transition: opacity var(--home-fill) var(--home-ease);
+}
+.home-bar[data-scrolled='true']::before {
+  opacity: 1;
+}
+.home-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  min-height: var(--home-bar);
+}
+.hero-body {
+  display: grid;
+  gap: 2rem;
+  align-items: end;
+  margin-top: auto;
+  padding-block: clamp(4rem, 10vh, 8rem) clamp(3rem, 8vh, 5.5rem);
+}
+.hero-copy {
+  min-width: 0;
+  max-width: 46rem;
+}
+.hero-kicker {
+  margin-bottom: 1.5rem;
+  font-size: var(--text-label);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ic-ink-600);
+}
+.home-title {
+  font-size: var(--home-display);
+  line-height: 0.96;
+  letter-spacing: -0.006em;
+  text-transform: uppercase;
+  color: var(--ic-ink-900);
+}
+/* Each headline line rises out of its own line box; the clip is padded so nothing is cut at rest. */
+.home-line {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: clip;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+}
+.home-line > span {
+  display: inline-block;
+  animation: home-line-rise var(--home-arrive) var(--home-ease) both;
+  animation-delay: 150ms;
+}
+.home-line + .home-line > span {
+  animation-delay: 240ms;
+}
+.home-lede {
+  max-width: 36rem;
+  margin-top: clamp(1.5rem, 3vh, 2rem);
+  font-size: var(--home-lede);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.home-form {
+  max-width: var(--home-form);
+  margin-top: 2.25rem;
+}
+.home-note {
+  max-width: var(--home-form);
+  margin-top: 1rem;
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ic-ink-400);
+}
+.hero-caption {
+  max-width: 17rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--ic-ink-600);
+}
+
+.home-rise {
+  animation: home-rise var(--home-arrive) var(--home-ease) both;
+}
+.hero-kicker.home-rise {
+  animation-delay: 80ms;
+}
+.home-lede.home-rise {
+  animation-delay: 380ms;
+}
+.home-form.home-rise {
+  animation-delay: 470ms;
+}
+.home-note.home-rise {
+  animation-delay: 560ms;
+}
+.hero-caption.home-rise {
+  animation-delay: 900ms;
+}
+.home-drop {
+  animation: home-drop var(--home-arrive) var(--home-ease) both;
+}
+@keyframes home-line-rise {
+  from {
+    transform: translate3d(0, 108%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes home-drop {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * The field: a rule, not a box — the same underline the contact memo uses.
+ * The label is visually hidden, not absent, so the placeholder can be a
+ * plain readable tone rather than carry the field's name.
+ */
+.waitlist-inline-input {
+  height: var(--home-control);
+  padding: 0 0.125rem;
+  border: 0;
+  border-bottom: 1px solid var(--ic-line-strong);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ic-ink-900);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  transition: border-color 150ms;
+}
+.waitlist-inline-input::placeholder {
+  color: var(--ic-ink-400);
+  opacity: 1;
+}
+@media (hover: hover) {
+  .waitlist-inline-input:hover:not(:focus, [aria-invalid='true']) {
+    border-bottom-color: var(--ic-ink-400);
+  }
+}
+.waitlist-inline-input:focus,
+.waitlist-inline-input[aria-invalid='true'] {
+  outline: none;
+  border-bottom-color: var(--ic-ink-900);
+  box-shadow: 0 1px 0 var(--ic-ink-900);
+}
+.home .waitlist-inline-submit {
+  min-height: var(--home-control);
+  padding: 0.625rem 1.25rem 0.625rem 1.5rem;
+}
+
+/*
+ * Clean fills in the dark. The pressed-ink speckle is ink on paper; on a light
+ * button over a black ground its holes show the night through and read as dust.
+ */
+[data-inverted] .desk-cta::before,
+[data-inverted] .waitlist-inline-submit::before {
+  -webkit-mask: none;
+  mask: none;
+}
+
+/* ── The matrix's marks, shared by the film, the sources and the tabs ─── */
+.matrix-mark {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 2px;
+  background-color: var(--ic-ink-900);
+}
+.matrix-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  color: var(--ic-ink-600);
+}
+.matrix-status::before {
+  content: '';
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+.matrix-status--changed {
+  border-color: var(--ic-ink-900);
+  color: var(--ic-ink-900);
+}
+.matrix-status--held {
+  border-color: transparent;
+  background-color: var(--ic-signal-soft);
+  color: var(--ic-signal);
+}
+
+/* ── Act two: the film, under the plate ───────────────────────────────── */
+.home-watch {
+  margin-top: 1.25rem;
+}
+.home-film {
+  padding-top: clamp(0.5rem, 2vw, 1.5rem);
+}
+
+/* ── After the night: the desk ────────────────────────────────────────── */
+.desk {
+  /* ink-400 is re-pointed here so muted text clears AA on the darker paper. */
+  --ic-ink-400: #5c5b55;
+  background-color: var(--memo-desk);
+  background-image: var(--ic-grain);
+  color: var(--ic-ink-900);
+}
+
+/*
+ * One section shape for every act on the desk, the same skeleton the brand's
+ * components reference gives: label, title, lede, then the content. The titles
+ * share one size so the acts read as one document rather than as slides.
+ */
+.how,
+.standing,
+.trust,
+.questions {
+  padding-block: clamp(5rem, 10vw, 8.5rem);
+}
+.how-intro,
+.standing-intro,
+.trust-intro,
+.questions-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 46rem;
+}
+.how-title,
+.standing-title,
+.trust-title,
+.questions-title,
+.home-closing-title {
+  font-size: var(--glass-heading);
+  line-height: 1;
+  letter-spacing: -0.022em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.how-lede,
+.trust-lede {
+  max-width: 36rem;
+  font-size: var(--glass-lede);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+
+/* ── Act four: how it works — four tabs (`how-it-works.tsx`) ──────────── */
+/*
+ * A rail of four tabs and the panel beside it. The tab names the step and
+ * its title; the panel carries what happens, where it stops, and the desk
+ * with that step's documents on it. Selected is weight and a 2px ink rule on
+ * the leading edge — never a filled pill and never the signal.
+ */
+.how-body {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3rem);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  padding-top: clamp(2rem, 4vw, 3rem);
+  border-top: 1px solid var(--ic-line-strong);
+}
+.how-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  align-content: start;
+}
+.how-tab {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 0.25rem;
+  min-height: 3.5rem;
+  padding: 0.75rem 0.25rem 0.75rem 0;
+  border-top: 2px solid var(--ic-line);
+  text-align: left;
+  color: var(--ic-ink-400);
+  cursor: pointer;
+  transition:
+    color var(--ic-fast) var(--ic-ease),
+    border-color var(--ic-fast) var(--ic-ease);
+}
+.how-tab[aria-selected='true'] {
+  border-top-color: var(--ic-ink-900);
+  color: var(--ic-ink-900);
+}
+@media (hover: hover) and (pointer: fine) {
+  .how-tab:hover:not([aria-selected='true']) {
+    color: var(--ic-ink-600);
+  }
+}
+.how-tab-number {
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+.how-tab-name {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.6vw, 1.5rem);
+  line-height: 1.15;
+  letter-spacing: -0.012em;
+}
+.how-tab-title {
+  display: none;
+  font-size: var(--text-small);
+  line-height: 1.45;
+  color: inherit;
+}
+
+.how-panels {
+  display: grid;
+  min-width: 0;
+}
+/* The copy, then the desk taking the rest: every desk ends on the same line however long its copy. */
+.how-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(1.5rem, 3vw, 2rem);
+  min-width: 0;
+}
+.how-body[data-enhanced='false'] .how-panel + .how-panel {
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+  padding-top: clamp(3rem, 6vw, 4.5rem);
+  border-top: 1px solid var(--ic-line);
+}
+/*
+ * With a script the panels share one cell, so the section keeps the height of
+ * its tallest step and nothing under it moves when a tab changes. The change
+ * is one crossfade the reader asked for — the outgoing panel goes at once, the
+ * incoming one settles 6px over 220ms.
+ */
+.how-body[data-enhanced='true'] .how-panel {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(0, 6px, 0);
+  transition:
+    opacity var(--home-tab-out) var(--ic-ease),
+    transform var(--home-tab-out) var(--ic-ease),
+    visibility 0s linear var(--home-tab-out);
+}
+.how-body[data-enhanced='true'] .how-panel[data-active='true'] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity var(--home-tab-in) var(--ic-ease),
+    transform var(--home-tab-in) var(--ic-ease),
+    visibility 0s;
+}
+.how-panel:focus-visible {
+  outline: 2px solid var(--ic-ink-900);
+  outline-offset: 6px;
+  border-radius: var(--radius-panel);
+}
+.how-panel-heading {
+  font-size: var(--text-heading);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+}
+
+.how-copy {
+  display: grid;
+  gap: 1.25rem 3rem;
+  align-items: start;
+}
+.how-line {
+  max-width: 38ch;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.75vw, 1.625rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ic-ink-900);
+  text-wrap: pretty;
+}
+.how-stops {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 30rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--ic-ink-900);
+}
+.how-stops-label {
+  font-size: var(--text-label);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+}
+.how-stops-line {
+  font-size: var(--text-body);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+}
+.how-stops-line strong {
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+
+/*
+ * The desk, from above, under the lamp — or at 08:04, in daylight. The
+ * documents and the card lie on it in two columns, each turned a degree or two
+ * the way paper lands; on a phone they stack. Everything inside a document is
+ * in em, so one font-size here sets the size of the paper.
+ */
+.how-desk {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: center;
+  justify-items: center;
+  min-height: 30rem;
+  padding: clamp(2.75rem, 5vw, 4rem) clamp(1rem, 4vw, 3.5rem);
+  overflow: hidden;
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-ink-900);
+}
+.how-desk-photo {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.how-desk-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+.how-desk-pieces {
+  display: contents;
+}
+.how-doc {
+  position: relative;
+  font-size: clamp(8px, 0.82vw, 11.5px);
+  transform: rotate(var(--turn, -1.5deg));
+}
+.how-doc--request {
+  width: 34em;
+  max-width: 100%;
+}
+.how-doc--catalogue {
+  --turn: -2deg;
+
+  width: 26em;
+}
+.how-doc--drawing {
+  --turn: 1.5deg;
+
+  width: 33em;
+}
+.how-doc--supplier {
+  --turn: -1.5deg;
+
+  width: 32em;
+  max-width: 100%;
+}
+.how-doc .gd-question {
+  font-size: 0.75rem;
+}
+/* The drawing's question hangs under it; on a stacked desk it needs the room before the card. */
+.how-doc--drawing {
+  margin-bottom: 2.5rem;
+}
+
+/* The lit card: what the step became, on paper, in the product's own set. */
+.how-card {
+  display: grid;
+  gap: 0.875rem;
+  width: min(100%, 24rem);
+  padding: 1.125rem 1.25rem 1.25rem;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  color: var(--ic-ink-900);
+  transform: rotate(var(--turn, 1deg));
+}
+.how-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--ic-line);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+.how-card-note {
+  font-size: var(--text-small);
+  line-height: 1.45;
+  color: var(--ic-ink-600);
+}
+.how-card-fields {
+  display: grid;
+  margin: 0;
+}
+.how-card-fields > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.5rem;
+  border-bottom: 1px solid var(--ic-line);
+  font-size: var(--text-small);
+}
+.how-card-fields dt {
+  color: var(--ic-ink-400);
+}
+.how-card-fields dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: right;
+}
+.how-card-lines {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* The line number, then the item, its reason and its state under it — so the reason gets the card's whole width. */
+.how-card-lines li {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.75rem;
+  align-items: start;
+  padding-block: 0.625rem;
+  border-bottom: 1px solid var(--ic-line);
+}
+.how-card-lines .matrix-status {
+  grid-column: 2;
+  justify-self: start;
+}
+.how-card-line {
+  font-size: var(--text-small);
+  color: var(--ic-ink-400);
+}
+.how-card-item {
+  display: grid;
+  gap: 0.125rem;
+  font-size: var(--text-small);
+  font-weight: 500;
+  line-height: 1.35;
+}
+.how-card-item span {
+  font-weight: 400;
+  color: var(--ic-ink-600);
+}
+.how-card-part {
+  font-size: var(--text-body);
+  font-weight: 500;
+}
+.how-card-quoted {
+  font-size: var(--text-small);
+  color: var(--ic-ink-600);
+}
+.how-margins {
+  display: grid;
+  gap: 0.875rem;
+  padding-block: 0.875rem;
+  border-block: 1px solid var(--ic-line);
+}
+.how-margin {
+  display: grid;
+  gap: 0.375rem;
+}
+.how-margin p {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: var(--text-small);
+  color: var(--ic-ink-600);
+}
+.how-margin p span + span {
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+/* Margin against the floor on the evidence document's zero-to-twenty-five scale. The bar is ink; the floor is a hairline. */
+.how-margin-track {
+  position: relative;
+  display: block;
+  height: 0.5rem;
+  border-radius: 2px;
+  background-color: var(--ic-paper-sunken);
+}
+.how-margin-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 100%;
+  border-radius: 2px;
+  background-color: var(--ic-ink-900);
+  transform: scaleX(var(--how-value));
+  transform-origin: left;
+}
+.how-margin-floor {
+  position: absolute;
+  top: -0.25rem;
+  bottom: -0.25rem;
+  left: calc(var(--how-floor) * 100%);
+  width: 1px;
+  background-color: var(--ic-ink-600);
+}
+.how-margin-scale {
+  font-size: 0.75rem;
+  color: var(--ic-ink-400);
+}
+/* The figure that breaks the floor — one of the signal's licensed places. */
+.how-card-short,
+.how-decide-short {
+  color: var(--ic-signal);
+}
+.how-card-short {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  font-size: var(--text-small);
+}
+.how-card-short strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.375rem, 2vw, 1.75rem);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+.how-card--decide {
+  --turn: 0deg;
+
+  width: min(100%, 30rem);
+  gap: 1rem;
+  padding: 1.375rem 1.5rem 1.5rem;
+}
+.how-decide-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.8vw, 1.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+.how-options {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: option;
+}
+.how-options li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.125rem 1rem;
+  padding-block: 0.75rem;
+  border-top: 1px solid var(--ic-line);
+}
+.how-option-title {
+  font-size: var(--text-body);
+  font-weight: 500;
+}
+.how-option-detail {
+  grid-column: 1;
+  font-size: var(--text-small);
+  color: var(--ic-ink-600);
+}
+.how-option-figure {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: var(--text-small);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.how-decide-figures {
+  display: grid;
+  gap: 0.375rem;
+  margin: 0;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--ic-line-strong);
+  font-size: var(--text-small);
+}
+.how-decide-figures > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+}
+.how-decide-figures dt,
+.how-decide-figures dd span {
+  color: var(--ic-ink-600);
+}
+.how-decide-short dt {
+  color: var(--ic-signal);
+}
+.how-decide-figures dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ── Act five: where this stands (`standing.tsx`) ─────────────────────── */
+/*
+ * The reference pages' band of figures, answered with the build's three states
+ * at the size they give their numbers.
+ */
+.standing {
+  border-top: 1px solid var(--ic-line);
+}
+.standing-stages {
+  display: grid;
+  gap: 0 clamp(2rem, 4vw, 3.5rem);
+  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.standing-stage {
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+  padding-block: 1.75rem 2rem;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.standing-number {
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--ic-ink-400);
+}
+.standing-state {
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 5.2vw, 4.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+  color: var(--ic-ink-900);
+}
+.standing-stage-title {
+  margin-top: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+.standing-stage-body {
+  max-width: 34ch;
+  font-size: var(--text-small);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+}
+
+/* ── Act six: data and trust (`trust.tsx`) ────────────────────────────── */
+/*
+ * Six cells on one hairline grid, the shape the reference pages give their
+ * certifications — here each cell is a commitment and its real state. The
+ * state is a word with a mark, filled for settled and open for in build; no
+ * colour, and no badge.
+ */
+.trust-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  list-style: none;
+}
+.trust-cell {
+  display: grid;
+  align-content: start;
+  gap: 0.625rem;
+  padding: clamp(1.5rem, 2.5vw, 2rem);
+  border-top: 1px solid var(--ic-line);
+}
+.trust-cell:first-child {
+  border-top: 0;
+}
+.trust-glyph {
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--ic-ink-600);
+}
+.trust-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-label);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ic-ink-600);
+}
+.trust-state::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid var(--ic-ink-900);
+  border-radius: 50%;
+  background-color: var(--ic-ink-900);
+}
+.trust-state[data-state='building']::before {
+  background-color: transparent;
+}
+.trust-cell-title {
+  margin-top: 0.25rem;
+  font-size: var(--text-heading);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  color: var(--ic-ink-900);
+}
+.trust-cell-body {
+  max-width: 36ch;
+  font-size: var(--text-small);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+}
+.trust-foot {
+  display: grid;
+  gap: 1.5rem 4rem;
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+.trust-open {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 40rem;
+}
+.trust-open-title {
+  font-size: var(--text-heading);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+}
+.trust-open-body {
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+}
+.trust-certification {
+  max-width: 30rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--ic-ink-900);
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--ic-ink-900);
+}
+
+/* ── Act seven: questions (`questions.tsx`) ───────────────────────────── */
+.questions {
+  border-top: 1px solid var(--ic-line);
+}
+.questions-grid {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem) 4rem;
+}
+.questions-list {
+  margin: 0;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.questions-item {
+  display: grid;
+  gap: 0.625rem;
+  padding-block: 1.5rem 1.625rem;
+  border-bottom: 1px solid var(--ic-line);
+}
+.questions-question {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.6vw, 1.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  color: var(--ic-ink-900);
+}
+.questions-answer {
+  max-width: 62ch;
+  margin: 0;
+  font-size: var(--text-body);
+  line-height: 1.62;
+  color: var(--ic-ink-600);
+}
+
+/* ── Act eight: the morning ───────────────────────────────────────────── */
+/* This page's photographs hold still: the morning plate sits centred, with no drift and no dust. */
+.home-morning .glass-morning-frame img {
+  transform: none;
+  will-change: auto;
+}
+.home-closing {
+  padding-block: clamp(5rem, 10vw, 8.5rem) clamp(4.5rem, 9vw, 7rem);
+  border-top: 1px solid var(--ic-line);
+}
+.home-closing-grid {
+  display: grid;
+  gap: 2.5rem 4rem;
+}
+.home-closing-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.home-closing-title {
+  max-width: 16ch;
+}
+.home-closing-body {
+  max-width: 34rem;
+  font-size: var(--glass-lede);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+}
+.home-closing-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+}
+.home-next {
+  display: grid;
+  gap: 0.875rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.home-next-steps {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.home-next-steps li {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+  max-width: 30rem;
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.home-next-steps svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.2rem;
+  color: var(--ic-ink-900);
+}
+
+.home-footer {
+  padding-bottom: 2rem;
+}
+.home-footer-sign {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-top: clamp(2.5rem, 5vw, 3rem);
+  border-top: 1px solid var(--ic-line-strong);
+}
+.home-footer-base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2.5rem;
+  margin-top: clamp(3rem, 6vw, 4rem);
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.home-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  font-size: var(--text-small);
+}
+.home-footer-nav a {
+  color: var(--ic-ink-900);
+  text-decoration: underline;
+  text-decoration-color: var(--ic-line-strong);
+  text-underline-offset: 0.3em;
+  transition: text-decoration-color var(--ic-fast) var(--ic-ease);
+}
+.home-footer-nav a:hover {
+  text-decoration-color: currentColor;
+}
+
+/* The sources pin under the fixed masthead, so their stage starts below it. */
+@media (min-width: 48rem) and (min-height: 46rem) {
+  .home .glass-sources[data-enhanced='true'] .glass-sources-stage {
+    padding-top: calc(var(--home-bar) + clamp(1.25rem, 4vh, 3rem));
+  }
+}
+
+@media (min-width: 48rem) {
+  .how-copy {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+  .how-copy {
+    min-height: 6.5rem;
+  }
+  .how-desk {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    min-height: 32rem;
+  }
+  .how-desk .how-card {
+    margin-left: -2.5rem;
+  }
+  .how-panel[data-step='hold'] .how-desk {
+    grid-template-rows: auto auto;
+  }
+  .how-panel[data-step='hold'] .how-doc--catalogue {
+    justify-self: end;
+    margin-right: 2rem;
+  }
+  .how-panel[data-step='hold'] .how-doc--drawing {
+    grid-row: 2;
+    justify-self: start;
+    margin-bottom: 1.5rem;
+  }
+  .how-panel[data-step='hold'] .how-card {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+  .how-panel[data-step='decide'] .how-desk {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .how-panel[data-step='decide'] .how-card {
+    margin-left: 0;
+  }
+  .trust-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .trust-cell:nth-child(2) {
+    border-top: 0;
+  }
+  .trust-cell:nth-child(even) {
+    border-left: 1px solid var(--ic-line);
+  }
+  .standing-stages {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .how-body[data-enhanced='true'] {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: clamp(2.5rem, 5vw, 4.5rem);
+  }
+  .how-tabs {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .how-tab {
+    gap: 0.375rem;
+    padding: 1.25rem 0.5rem 1.25rem 1.25rem;
+    border-top: 0;
+    border-bottom: 1px solid var(--ic-line);
+    border-left: 2px solid transparent;
+  }
+  .how-tab:first-child {
+    border-top: 1px solid var(--ic-line);
+  }
+  .how-tab[aria-selected='true'] {
+    border-left-color: var(--ic-ink-900);
+  }
+  .how-tab-title {
+    display: block;
+  }
+  .how-tab-name {
+    font-size: clamp(1.375rem, 1.9vw, 1.75rem);
+  }
+  .trust-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .trust-cell:nth-child(-n + 3) {
+    border-top: 0;
+  }
+  .trust-cell:nth-child(even) {
+    border-left: 0;
+  }
+  .trust-cell:not(:nth-child(3n + 1)) {
+    border-left: 1px solid var(--ic-line);
+  }
+  .trust-foot {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: start;
+  }
+  .questions-grid {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    align-items: start;
+  }
+  .questions-intro {
+    position: sticky;
+    top: calc(var(--home-bar) + 2rem);
+  }
+  .home-closing-grid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: start;
+  }
+}
+.home a:focus-visible,
+.home button:focus-visible {
+  outline: 2px solid var(--ic-ink-900);
+  outline-offset: 3px;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (min-width: 64rem) {
+  .hero-body {
+    grid-template-columns: minmax(0, 46rem) minmax(0, 1fr);
+  }
+  .hero-caption {
+    justify-self: end;
+    text-align: right;
+  }
+}
+@media (max-width: 63.99rem) {
+  .hero-caption {
+    display: none;
+  }
+}
+@media (max-width: 720px) {
+  .desk-nav-link {
+    display: none;
+  }
+}
+/* Four section links and the button need a laptop's width; below it the bar keeps the brand and the button. */
+@media (max-width: 59.99rem) {
+  .home-bar .desk-nav-link {
+    display: none;
+  }
+}
+@media (max-width: 639px) {
+  .home {
+    --home-display: clamp(2.125rem, 10.4vw, 3.25rem);
+  }
+  /* A phone cannot hold "COMMERCIAL WORK." on one line at a readable size, so the lines may wrap. */
+  .home-line {
+    white-space: normal;
+  }
+  .hero {
+    min-height: 100svh;
+  }
+  /*
+   * On a phone the photograph cannot sit behind the words without being
+   * scrimmed to nothing, so it takes the top half of the screen on its own —
+   * lamp and quotation in view — and the words sit under it on the night.
+   */
+  .hero-plate {
+    bottom: auto;
+    height: 56svh;
+  }
+  .hero-plate img {
+    object-position: 0% 60%;
+  }
+  .hero-plate::after {
+    background:
+      linear-gradient(0deg, var(--ic-paper-sunken) 0%, transparent 42%),
+      linear-gradient(180deg, var(--hero-scrim) 0%, transparent 26%);
+  }
+  .hero-body {
+    padding-top: 42svh;
+  }
+  .home .waitlist-inline-submit {
+    width: 100%;
+  }
+}
+@media (max-width: 440px) {
+  /* The masthead button has to share a 342px row with the wordmark; drop the arrow and tighten the tracking. */
+  .home-bar .desk-cta {
+    padding-inline: 0.875rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.07em;
+  }
+  .desk-cta .ic-cta-arrow {
+    display: none;
+  }
+}
+@media (max-width: 380px) {
+  .home-bar-inner {
+    gap: 0.75rem;
+  }
+  .home-bar .site-brand {
+    gap: 0.5rem;
+    font-size: 1.25rem;
+  }
+  .home-bar .site-brand-mark {
+    width: 2rem;
+    height: 2rem;
+  }
+  .home-bar .desk-cta {
+    padding-inline: 0.625rem;
+    font-size: 0.65625rem;
+    letter-spacing: 0.04em;
+  }
+}
+
+/*
+ * Reduced motion renders the final frame. The global rule shortens durations
+ * but keeps delays, and an entrance with `both` fill would sit invisible for
+ * its delay — so every home animation is removed outright.
+ */
 @media (prefers-reduced-motion: reduce) {
-  .launch-contours {
+  .home-line > span,
+  .home-rise,
+  .home-drop {
     animation: none;
   }
-  .launch-motion {
+  .site-brand-mark {
+    transform: none;
+    transition: none;
+  }
+  /* A tab change swaps the panel at once; the masthead fills without a fade. */
+  .how-body[data-enhanced='true'] .how-panel,
+  .how-body[data-enhanced='true'] .how-panel[data-active='true'] {
+    transform: none;
+    transition: none;
+  }
+  .how-tab,
+  .home-bar::before {
+    transition: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Contact memo — `/contact` (`components/contact-page.tsx`, `memo-form.tsx`).
+
+   A sheet of continuous-feed paper on a desk. Two voices, as everywhere else
+   on this site, and they keep their jobs: the *printed* form is the serif in
+   capitals, whatever a person *enters* is the grotesk. No mono, because a
+   third face for a form would be the third voice this site does not have.
+
+   One hue still, which is none: the page is ink on paper on a darker paper.
+   There is no red for an error and no green for a success — a field that needs
+   attention takes the heavier rule and says so in words, which is how a
+   monochrome page has to do it and is why it was built that way first.
+
+   Depth is hairlines. The sheet is lifted off the desk by its own edge and by
+   the desk being darker, never by a shadow.
+
+   Contrast (ink on the sheet, #ffffff):
+     ink-900 #111110    17.9:1    entered values, the rule when focused
+     ink-600 #45453f     9.6:1    printed labels — worn by the filter, so they
+                                   start here rather than at ink-400
+     ink-400 #6e6e66     5.1:1    the optional note and the privacy line
+   ══════════════════════════════════════════════════════════════════════════ */
+.memo-page,
+.home,
+.glass {
+  --memo-desk: #e0ddd5;
+  --memo-sheet: var(--ic-paper-raised);
+  --memo-copy: #eeebe2;
+  --memo-rule: #8e8c85;
+  --memo-rule-hover: #5c5b56;
+
+  --memo-label: 0.78125rem;
+  --memo-value: 0.875rem;
+  --memo-tracking: 0.07em;
+  --memo-row: 0.75rem;
+  --memo-button: 2.75rem;
+  --memo-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --memo-arrive: 640ms;
+  --memo-column: 26rem;
+  --memo-sheet-width: 50rem;
+  --memo-reading: max(44rem, calc(100svh - 6rem));
+
+  /* Speckled ink: alpha is thinned where the noise runs high, so a fill reads as pressed, not printed. */
+  --memo-ink-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='m' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -9 7.6'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23m)'/%3E%3C/svg%3E");
+
+}
+
+.memo-page {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-height: 100svh;
+  background-color: var(--memo-desk);
+  background-image: var(--ic-grain);
+  color: var(--ic-ink-900);
+}
+
+.memo-filters {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* The printed voice is worn very slightly; entered text never is. */
+.memo-worn {
+  filter: url(#memo-worn);
+}
+
+/* ── Layout ───────────────────────────────────────────────────────────── */
+.memo-shell {
+  display: grid;
+  grid-template-columns: minmax(0, var(--memo-column)) minmax(0, var(--memo-sheet-width));
+  align-items: start;
+  justify-content: space-between;
+  column-gap: clamp(2.5rem, 5vw, 5.5rem);
+  max-width: var(--container-measure);
+  margin: 0 auto;
+  /* The same side padding as `Container`, so the brand lands where it does on the home page. */
+  padding: 2rem 1.5rem 3rem;
+}
+@media (min-width: 40rem) {
+  .memo-shell {
+    padding-inline: 2rem;
+  }
+}
+@media (min-width: 64rem) {
+  .memo-shell {
+    padding-inline: 2.5rem;
+  }
+}
+
+.memo-brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-self: stretch;
+  gap: 2.5rem;
+  min-width: 0;
+  min-height: var(--memo-reading);
+  animation: memo-arrive var(--memo-arrive) var(--ic-ease) both;
+}
+
+/* The brand link keeps its own width; stretched by the column, its hit area would span the whole pane. */
+.memo-brand > .site-brand {
+  align-self: flex-start;
+}
+
+.memo-intro {
+  display: grid;
+  gap: 1.75rem;
+}
+.memo-title {
+  font-size: clamp(2rem, 3vw, 2.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.memo-steps {
+  display: grid;
+  gap: 0.875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.memo-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+.memo-steps li > span {
+  text-wrap: pretty;
+}
+.memo-step-icon {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.25rem;
+  color: var(--ic-ink-900);
+}
+.memo-state {
+  margin-top: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ic-line-strong);
+  font-family: var(--font-display);
+  font-size: var(--memo-label);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ic-ink-400);
+}
+.memo-alt {
+  font-size: var(--text-small);
+  color: var(--ic-ink-400);
+}
+.memo-alt a {
+  color: var(--ic-ink-900);
+  text-underline-offset: 0.3em;
+  text-decoration-color: var(--ic-line-strong);
+  transition: text-decoration-color var(--ic-fast) var(--ic-ease);
+}
+.memo-alt a:hover {
+  text-decoration-color: currentColor;
+}
+
+.memo-stage {
+  container-type: inline-size;
+  min-width: 0;
+  width: 100%;
+  max-width: var(--memo-sheet-width);
+  justify-self: end;
+}
+
+/* ── The sheet ────────────────────────────────────────────────────────── */
+/*
+ * Tractor-feed holes down both edges, punched out of the sheet with a mask so
+ * the desk shows through them. All of it is in `cqw`, units of the stage's own
+ * width, so the holes scale with the sheet and never crowd the copy.
+ *
+ * The mask is four layers. Reading them as composited, last to first: the two
+ * hole tiles are united, punched out of a solid sheet (`exclude`), and then the
+ * tail — everything below the last complete hole — is added back solid (`add`).
+ * Without that last layer the repeating tiles would cut a half hole in the
+ * bottom edge. `round()` snaps the end of the feed to a whole number of holes.
+ */
+.memo-paper {
+  --hole-pitch: 5cqw;
+  --hole-radius: 1.17cqw;
+  --hole-offset: 0.16cqw;
+  --perforation-inset: 5.3cqw;
+  --tail: calc(var(--hole-pitch) * 2.5);
+  --feed-end: round(down, calc(100% - var(--tail)), var(--hole-pitch));
+  --paper-mask:
+    linear-gradient(to bottom, #0000 var(--feed-end), #000 var(--feed-end)),
+    linear-gradient(#000 0 0),
+    radial-gradient(circle, #000 calc(var(--hole-radius) - 0.25px), #0000 calc(var(--hole-radius) + 0.25px)),
+    radial-gradient(circle, #000 calc(var(--hole-radius) - 0.25px), #0000 calc(var(--hole-radius) + 0.25px));
+
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: var(--memo-reading);
+  overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
+  background-color: var(--memo-sheet);
+  color: var(--ic-ink-900);
+  -webkit-mask-image: var(--paper-mask);
+  mask-image: var(--paper-mask);
+  -webkit-mask-size: 100% 100%, 100% 100%, var(--hole-pitch) var(--hole-pitch), var(--hole-pitch) var(--hole-pitch);
+  mask-size: 100% 100%, 100% 100%, var(--hole-pitch) var(--hole-pitch), var(--hole-pitch) var(--hole-pitch);
+  -webkit-mask-position: 0 0, 0 0, var(--hole-offset) 0, calc(100% - var(--hole-offset)) 0;
+  mask-position: 0 0, 0 0, var(--hole-offset) 0, calc(100% - var(--hole-offset)) 0;
+  -webkit-mask-repeat: no-repeat, no-repeat, repeat-y, repeat-y;
+  mask-repeat: no-repeat, no-repeat, repeat-y, repeat-y;
+  -webkit-mask-composite: source-over, xor, xor;
+  mask-composite: add, exclude, exclude;
+}
+.memo-paper--copy {
+  background-color: var(--memo-copy);
+}
+.memo-enter {
+  animation: memo-arrive var(--memo-arrive) var(--ic-ease) 120ms both;
+}
+
+.memo-texture {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--ic-grain);
+  background-repeat: repeat;
+  mix-blend-mode: multiply;
+}
+.memo-perforations {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.memo-perforations::before,
+.memo-perforations::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: repeating-linear-gradient(180deg, var(--ic-line-strong) 0 2.5px, transparent 2.5px 5px);
+}
+.memo-perforations::before {
+  left: var(--perforation-inset);
+}
+.memo-perforations::after {
+  right: var(--perforation-inset);
+}
+
+.memo-header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 1.75rem 4rem 0;
+}
+.memo-mark {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--ic-ink-900);
+  border-radius: var(--radius-control);
+}
+.memo-mark svg {
+  width: 100%;
+  height: 100%;
+}
+
+.memo-body {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 5rem 2rem;
+}
+.memo-content {
+  width: 100%;
+  max-width: 24rem;
+}
+
+.memo-description {
+  margin-bottom: 1.75rem;
+  font-family: var(--font-display);
+  font-size: var(--memo-label);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: var(--ic-ink-900);
+  text-wrap: pretty;
+}
+
+/* ── Fields ───────────────────────────────────────────────────────────── */
+.memo-form {
+  width: 100%;
+}
+.memo-fieldset {
+  display: grid;
+  gap: var(--memo-row);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.memo-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--memo-row) 1.25rem;
+}
+.memo-field {
+  min-width: 0;
+}
+
+.floating-field {
+  position: relative;
+  min-width: 0;
+  padding-top: 2px;
+}
+.floating-label {
+  display: block;
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: var(--memo-label);
+  line-height: 14px;
+  letter-spacing: var(--memo-tracking);
+  text-transform: uppercase;
+  color: var(--ic-ink-600);
+  transform-origin: left top;
+  transform: translateY(19px);
+  transition: transform 160ms var(--memo-ease);
+  /*
+   * The label rests on top of its own field, so it must let the pointer through:
+   * a click on it then lands on the input or the select's trigger itself, rather
+   * than on a label that forwards it — which works for a person and is exactly
+   * the sort of indirection that fails for a switch-control or a test.
+   */
+  pointer-events: none;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/*
+ * `input` and `textarea` are named, not `.input-field`: the select's trigger is
+ * a button, and a button is never `:placeholder-shown`, so the bare class would
+ * match it while empty and lift its label off a field with nothing in it. Each
+ * `:has()` is its own argument because the list inside `:is()` is forgiving and
+ * the one inside `:has()` is not — one browser not knowing `:-webkit-autofill`
+ * must not take the placeholder test down with it.
+ */
+.floating-field:is(
+    :focus-within,
+    [data-filled],
+    [data-open],
+    :has(input.input-field:not(:placeholder-shown)),
+    :has(textarea.input-field:not(:placeholder-shown)),
+    :has(.input-field:-webkit-autofill)
+  )
+  .floating-label {
+  transform: translateY(0) scale(0.82);
+  max-width: 122%;
+}
+
+.input-field {
+  display: block;
+  width: 100%;
+  min-height: 24px;
+  padding: 3px 0;
+  appearance: none;
+  border: 0;
+  border-bottom: 1px solid var(--memo-rule);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ic-ink-900);
+  font-family: var(--font-sans);
+  font-size: var(--memo-value);
+  font-weight: 400;
+  line-height: 17px;
+  transition: border-color 150ms;
+}
+.input-field::placeholder {
+  color: transparent;
+}
+/* One pixel heavier under the pointer's hand: a rule thickening, not a shadow. */
+.input-field:focus,
+.input-field:focus-visible,
+.select-trigger[aria-expanded='true'] {
+  outline: none;
+  border-bottom-color: var(--ic-ink-900);
+  box-shadow: 0 1px 0 var(--ic-ink-900);
+}
+.input-field[aria-invalid='true'] {
+  border-bottom-color: var(--ic-ink-900);
+  box-shadow: 0 1px 0 var(--ic-ink-900);
+}
+.input-field:-webkit-autofill {
+  -webkit-text-fill-color: var(--ic-ink-900);
+  transition: background-color 9999s ease-out;
+  box-shadow: inset 0 0 0 100px var(--memo-sheet);
+}
+@media (hover: hover) {
+  .input-field:hover:not(:focus, [aria-invalid='true']) {
+    border-bottom-color: var(--memo-rule-hover);
+  }
+}
+
+/* The one multi-line field grows with its text, up to a ceiling, by mirroring it. */
+.grow {
+  display: grid;
+}
+.grow::after,
+.grow > .needs-field {
+  grid-area: 1 / 1;
+  min-width: 0;
+  max-height: 15rem;
+  padding: 3px 0;
+  border-bottom: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-size: var(--memo-value);
+  line-height: 17px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+.grow::after {
+  content: attr(data-mirror);
+  visibility: hidden;
+  overflow: hidden;
+  pointer-events: none;
+}
+.grow > .needs-field {
+  resize: none;
+  overflow-y: auto;
+  border-bottom-color: var(--memo-rule);
+}
+
+/* ── The select ───────────────────────────────────────────────────────── */
+.select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+  text-align: left;
+}
+.select-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.select-chevron {
+  flex: none;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--ic-ink-600);
+  transition: transform 160ms var(--memo-ease);
+}
+.select-trigger[aria-expanded='true'] .select-chevron {
+  transform: rotate(180deg);
+}
+.select-trigger:focus-visible .select-chevron {
+  color: var(--ic-ink-900);
+}
+.select-popup {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  max-height: min(18rem, 50svh);
+  margin: 0;
+  padding: 0.25rem 0;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper-raised);
+  animation: memo-pop 140ms var(--memo-ease) both;
+}
+.select-option {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--font-sans);
+  font-size: var(--memo-value);
+  line-height: 1.3;
+  color: var(--ic-ink-900);
+}
+.select-option[data-active] {
+  background-color: var(--ic-paper-sunken);
+}
+.select-option[aria-selected='true'] {
+  font-weight: 600;
+}
+.select-option[data-skip] {
+  color: var(--ic-ink-400);
+  font-weight: 400;
+}
+
+/* ── Errors and notes ─────────────────────────────────────────────────── */
+.form-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 220ms var(--memo-ease),
+    opacity 160ms ease-out;
+}
+.form-reveal[data-open='true'] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.form-reveal-content {
+  min-height: 0;
+  overflow: hidden;
+}
+.field-error {
+  margin-top: 0.5rem;
+  font-size: var(--memo-label);
+  line-height: 1.3;
+  color: var(--ic-ink-900);
+}
+
+.memo-note,
+.memo-privacy {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  color: var(--ic-ink-400);
+}
+.memo-note {
+  margin-top: 1rem;
+  font-size: var(--memo-label);
+  line-height: 1.4;
+}
+.memo-privacy {
+  margin-top: 1rem;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+}
+.memo-progress {
+  min-height: 0;
+  margin-top: 0.75rem;
+  font-family: var(--font-display);
+  font-size: var(--memo-label);
+  color: var(--ic-ink-900);
+}
+.memo-progress:empty {
+  display: none;
+}
+
+.memo-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  margin-top: 1rem;
+  padding: 0.875rem 0;
+  border-block: 1px solid var(--ic-line-strong);
+  font-size: var(--memo-label);
+  line-height: 1.4;
+}
+.memo-notice:focus {
+  outline: 1px dashed var(--ic-ink-400);
+  outline-offset: 6px;
+}
+.memo-notice-icon {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.0625rem;
+}
+.memo-notice-title {
+  font-weight: 600;
+}
+.memo-notice-body {
+  margin-top: 0.25rem;
+  color: var(--ic-ink-600);
+}
+.memo-notice-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+/* ── Buttons: pressed ink ─────────────────────────────────────────────── */
+.memo-submit,
+.memo-action,
+.desk-cta,
+.waitlist-inline-submit {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--memo-button);
+  padding: 0.625rem 1.5rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ic-paper);
+  font-family: var(--font-display);
+  font-size: var(--memo-label);
+  line-height: 1.25;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform var(--ic-fast) var(--ic-ease);
+}
+.memo-submit {
+  width: 100%;
+  margin-top: 1.25rem;
+}
+.memo-submit::before,
+.memo-action--primary::before,
+.desk-cta::before,
+.waitlist-inline-submit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-color: var(--ic-ink-900);
+  -webkit-mask: var(--memo-ink-mask) 0 0 / 256px 256px repeat;
+  mask: var(--memo-ink-mask) 0 0 / 256px 256px repeat;
+  transition: background-color 150ms;
+  pointer-events: none;
+}
+.memo-submit-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+.memo-arrow,
+.desk-cta .ic-cta-arrow,
+.waitlist-inline-submit .ic-cta-arrow {
+  width: 0.875em;
+  height: 0.875em;
+  flex: none;
+  transition: transform var(--ic-fast) var(--ic-ease);
+}
+.memo-submit:active,
+.memo-action:active,
+.desk-cta:active,
+.waitlist-inline-submit:active {
+  transform: translateY(1px);
+}
+.memo-submit:disabled {
+  cursor: wait;
+}
+.memo-submit:focus-visible,
+.memo-action:focus-visible,
+.desk-cta:focus-visible,
+.waitlist-inline-submit:focus-visible {
+  outline: 2px solid var(--ic-ink-900);
+  outline-offset: 3px;
+}
+@media (hover: hover) {
+  .memo-submit:hover:not(:disabled)::before,
+  .memo-action--primary:hover::before,
+  .desk-cta:hover::before,
+  .waitlist-inline-submit:hover:not(:disabled)::before {
+    background-color: var(--ic-ink-800);
+  }
+  .memo-submit:hover:not(:disabled) .memo-arrow,
+  .desk-cta:hover .ic-cta-arrow,
+  .waitlist-inline-submit:hover:not(:disabled) .ic-cta-arrow {
+    transform: translateX(3px);
+  }
+  .memo-action:not(.memo-action--primary):hover {
+    background-color: var(--ic-line);
+  }
+}
+.memo-spinner {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: memo-spin 900ms linear infinite;
+}
+
+/* ── The receipt: the carbon ──────────────────────────────────────────── */
+.memo-receipt {
+  display: flex;
+  flex-direction: column;
+}
+.memo-kicker {
+  font-family: var(--font-display);
+  font-size: var(--memo-label);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ic-ink-600);
+}
+.memo-receipt-title {
+  margin-top: 1rem;
+  font-size: clamp(2.5rem, 7cqw, 3.5rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.memo-receipt-title:focus {
+  outline: none;
+}
+.memo-receipt-body {
+  margin-top: 1rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.memo-record {
+  margin: 1.75rem 0 0;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.memo-record > div {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px dotted var(--ic-line-strong);
+}
+.memo-record dt {
+  padding-top: 0.125rem;
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ic-ink-600);
+}
+.memo-record dd {
+  margin: 0;
+  min-width: 0;
+  font-size: var(--memo-value);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.memo-lead {
+  margin-top: 1.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 1.6cqw + 0.6rem, 1.375rem);
+  line-height: 1.3;
+}
+.memo-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+.memo-action {
+  padding-inline: 0.75rem;
+  border: 1px solid var(--ic-line-strong);
+  color: var(--ic-ink-900);
+}
+.memo-action--primary {
+  border-color: transparent;
+  color: var(--ic-paper);
+}
+
+.memo-stamp {
+  position: absolute;
+  z-index: 2;
+  top: 0.5rem;
+  right: 6.5cqw;
+  width: min(13.5rem, 32cqw);
+  color: var(--ic-ink-900);
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  transform: rotate(-7deg);
+}
+.memo-stamp-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: memo-stamp 190ms cubic-bezier(0.16, 1, 0.3, 1) 420ms both;
+}
+.memo-stamp-word {
+  font-family: var(--font-display);
+}
+.memo-stamp-small {
+  font-family: var(--font-sans);
+  font-weight: 500;
+}
+
+/* ── Motion ───────────────────────────────────────────────────────────── */
+@keyframes memo-arrive {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes memo-pop {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -4px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes memo-stamp {
+  0% {
+    opacity: 0.3;
+    transform: scale(1.14);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes memo-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .memo-shell {
+    --memo-column: 19rem;
+    column-gap: 2rem;
+  }
+  .memo-body {
+    padding-inline: 3rem;
+  }
+}
+@media (max-width: 859px) {
+  .memo-page {
+    --memo-reading: 0px;
+  }
+  .memo-shell {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2.5rem;
+    padding-block: 1.5rem 2.5rem;
+  }
+  .memo-brand {
+    min-height: 0;
+    gap: 2rem;
+  }
+  .memo-alt {
     display: none;
+  }
+  .memo-stage {
+    justify-self: center;
+    max-width: 44rem;
+  }
+  .memo-body {
+    padding: 2.5rem 3.5rem 4rem;
+  }
+}
+@container (max-width: 540px) {
+  .memo-header {
+    padding: 1.5rem 2.25rem 0;
+  }
+  .memo-body {
+    padding: 2rem 2.25rem 3rem;
+  }
+  .memo-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .memo-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .memo-stamp {
+    top: 0.75rem;
+    right: 4cqw;
+    width: 11rem;
+  }
+  .memo-record > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.memo-page a:focus-visible {
+  outline: 2px solid var(--ic-ink-900);
+  outline-offset: 3px;
+}
+
+/*
+ * Reduced motion renders the final frame: no arrival, no pop, no stamp
+ * press. The global rule shortens durations but keeps delays, and an entrance
+ * with `both` fill would sit invisible for its delay — so these are removed.
+ * The spinner is the exception that stays, and it stops being an animation and
+ * becomes a still ring, which is still a signal that something is in progress.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .memo-brand,
+  .memo-enter,
+  .select-popup,
+  .memo-stamp-art {
+    animation: none;
+  }
+  .floating-label,
+  .select-chevron,
+  .form-reveal {
+    transition: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Glass — the presentation at /glass (`components/glass-page.tsx`,
+   `glass-film.tsx`, `glass-sources.tsx`, `glass-documents.tsx`).
+
+   The same night as the home page, told as a film. It opens in the dark with
+   two beats of type over a field of hour rules, assembles a centred hero, and
+   plays the quotation hour by hour in a frame under it. Then the page turns to
+   the desk: the six documents a quotation is assembled from lie on it with the
+   part itself among them, gather onto one sheet, and the page closes with one
+   invitation.
+
+   Two grounds, the night and the desk, and nothing between them. Every colour
+   is a token, and the signal is spent only where it is licensed: the held
+   state, and the figure that breaks the floor.
+
+   ── What it does not do ───────────────────────────────────────────────────
+   No tracked capital labels over headings, no title in two tones, no row of
+   bordered cards, no centred heading-and-paragraph on every section. Those
+   were the marks of a page assembled rather than made, and the first version
+   had all of them. Labels inside the documents and the sheet are sentence
+   case, the way the documents themselves would set them.
+
+   ── Its motion budget ─────────────────────────────────────────────────────
+   Larger than the home page's, because a presentation tells by moving — and
+   written down here so that it only grows on purpose:
+
+     1. the opening: hour rules drawing down, two beats of type, the page
+        assembling. Once, ended early by any input, absent under reduced motion;
+     2. the film: one hour per `--glass-frame` while it is on screen, once
+        through, paused by the reader, never looped — its sheet filling, its
+        selection moving to what each hour changed;
+     3. the gathering: one change of state, tied to where the reader is;
+     4. the field: dust drifting at thirty frames a second while it is on
+        screen — a landscape under the opening that unrolls out of one slit of
+        light, settles when the page assembles and falls behind on scroll; and
+        round the morning plate, two ribbons of it. The one motion that
+        continues while the reader is still, by the owner's choice: it is the
+        night, moving while nobody watches it. It stops off screen and in a
+        hidden tab;
+     5. the morning plate's parallax, a few per cent inside its frame;
+     6. two reveals at the close: the handover over the photograph, and the
+        invitation under it;
+     7. the arrow nudge and the press, as everywhere.
+
+   Nothing pulses and nothing else loops. Under reduced motion every one of
+   these renders its final frame, and the film becomes six chapters to step
+   through.
+
+   The film and the sources also play on the home page, so `.home` takes the
+   same timings and measures from this block rather than a copy of them. Only
+   the presentation's own furniture — its opening, its dust, its parallax —
+   stays on /glass.
+   ══════════════════════════════════════════════════════════════════════════ */
+.glass,
+.home {
+  --glass-display: clamp(2.75rem, 6vw, 5.5rem);
+  --glass-heading: clamp(2.25rem, 4.4vw, 4.25rem);
+  --glass-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
+  --glass-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --glass-arrive: 900ms;
+  /* The opening: two beats, then the page. */
+  --glass-beat: 1900ms;
+  --glass-opening: calc(var(--glass-beat) * 2);
+  /* One hour of the film, timed by its chapter's hairline. */
+  --glass-frame: 5200ms;
+  /* The documents gathering onto one sheet. */
+  --glass-gather: 1100ms;
+  /* The scroll length the gathering pins for: one screen of stage, and the rest to scroll through. */
+  --glass-pin: 230vh;
+  --glass-film-width: 76rem;
+  --glass-form: 30rem;
+  --glass-control: 2.75rem;
+
+  color: var(--ic-ink-900);
+  overflow: clip;
+}
+
+.glass a:focus-visible,
+.glass button:focus-visible {
+  outline: 2px solid var(--ic-ink-900);
+  outline-offset: 3px;
+}
+
+/* Controls in the grotesk, in sentence case, on a clean fill — as the brand's own button is. */
+.glass .desk-nav {
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  font-weight: 500;
+}
+.glass .desk-cta,
+.glass .waitlist-inline-submit {
+  min-height: 3rem;
+  padding: 0.625rem 1.25rem 0.625rem 1.5rem;
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  font-weight: 500;
+  letter-spacing: -0.006em;
+  text-transform: none;
+}
+.glass .desk-cta::before,
+.glass .waitlist-inline-submit::before {
+  -webkit-mask: none;
+  mask: none;
+}
+
+/* ── The night: hour rules, the opening, the hero ─────────────────────── */
+.glass-night {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--ic-paper-sunken);
+}
+
+/*
+ * One hairline for every hour from the moment the office empties to the
+ * morning — the night the film below plays across, drawn as a field rather
+ * than labelled as a chart. They draw down once, and then they hold still.
+ */
+.glass-hours {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: flex;
+  justify-content: space-between;
+  max-width: var(--container-measure);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+  pointer-events: none;
+}
+.glass-hours > span {
+  width: 1px;
+  background-color: var(--ic-line);
+  transform-origin: top;
+  animation: glass-rule 1400ms var(--glass-ease) both;
+  animation-delay: calc(var(--i) * 45ms);
+}
+
+/*
+ * The field (`glass-field.tsx`, drawn by `lib/dust.ts`): dust under the opening
+ * and the hero, and again round the morning plate. Its colour is this
+ * element's `color`, read by the script, so it is the scope's ink — light on
+ * the night, dark on the desk — and follows the tokens like everything else.
+ * The script moves it on scroll; nothing here animates it.
+ */
+.glass-field {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: -1;
+  height: max(40rem, 100svh);
+  color: var(--ic-ink-900);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+/* Round the morning plate: the full width of the window, from above the photograph to below it. */
+.glass-field[data-tone='morning'] {
+  top: -30%;
+  right: auto;
+  bottom: -22%;
+  left: 50%;
+  width: 100vw;
+  height: auto;
+  margin-left: -50vw;
+}
+.glass-field canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.glass-opening {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  animation: glass-opening-end 1ms linear var(--glass-opening) forwards;
+}
+.glass-opening p {
+  grid-area: 1 / 1;
+  max-width: 20ch;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.2vw, 3.5rem);
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--ic-ink-900);
+  animation: glass-beat var(--glass-beat) var(--glass-ease) both;
+}
+.glass-opening p + p {
+  animation-delay: var(--glass-beat);
+}
+
+/* The page assembles as the second beat leaves; ended early, it assembles at once. */
+.glass-enter {
+  animation: glass-enter var(--glass-arrive) var(--glass-ease) both;
+  animation-delay: calc(var(--glass-opening) - 250ms + var(--glass-enter-delay, 0ms));
+}
+.glass-title.glass-enter {
+  --glass-enter-delay: 80ms;
+}
+.glass-lede.glass-enter {
+  --glass-enter-delay: 180ms;
+}
+.glass-form.glass-enter {
+  --glass-enter-delay: 240ms;
+}
+.glass-note.glass-enter {
+  --glass-enter-delay: 290ms;
+}
+.glass-watch.glass-enter {
+  --glass-enter-delay: 330ms;
+}
+.glass-film-enter.glass-enter {
+  --glass-enter-delay: 440ms;
+}
+.glass[data-opening='skipped'] .glass-opening {
+  display: none;
+}
+.glass[data-opening='skipped'] .glass-enter {
+  animation-name: glass-enter-now;
+  animation-delay: var(--glass-enter-delay, 0ms);
+}
+
+.glass-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 2rem;
+}
+
+.glass-hero-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-block: clamp(5rem, 15vh, 9.5rem) clamp(2.5rem, 6vh, 4rem);
+}
+.glass-title {
+  font-size: var(--glass-display);
+  line-height: 0.98;
+  letter-spacing: -0.021em;
+  color: var(--ic-ink-900);
+}
+.glass-title > span {
+  display: block;
+}
+.glass-lede {
+  max-width: 40rem;
+  margin-top: clamp(1.5rem, 3vh, 2rem);
+  font-size: var(--glass-lede);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.glass-form {
+  width: 100%;
+  max-width: var(--glass-form);
+  margin-top: 2.25rem;
+  text-align: left;
+}
+.glass-note {
+  max-width: var(--glass-form);
+  margin-top: 1rem;
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ic-ink-400);
+  text-wrap: balance;
+}
+.glass-watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--glass-control);
+  margin-top: 1.5rem;
+  border-radius: 2px;
+  font-size: var(--text-ui);
+  font-weight: 500;
+  color: var(--ic-ink-900);
+  text-decoration: underline;
+  text-decoration-color: var(--ic-line-strong);
+  text-underline-offset: 0.3em;
+  transition: text-decoration-color var(--ic-fast) var(--ic-ease);
+}
+.glass-watch:hover {
+  text-decoration-color: currentColor;
+}
+.glass-watch-arrow {
+  width: 0.875em;
+  height: 0.875em;
+}
+
+/* ── The film ─────────────────────────────────────────────────────────── */
+.glass-film-section {
+  padding-bottom: clamp(4.5rem, 10vw, 8rem);
+}
+.glass-film {
+  max-width: var(--glass-film-width);
+  margin-inline: auto;
+  overflow: clip;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper);
+  background-image: var(--ic-grain);
+}
+.glass-film-body {
+  display: grid;
+  gap: clamp(1.75rem, 4vw, 4rem);
+  padding: clamp(1.75rem, 4vw, 3.25rem) clamp(1.25rem, 3vw, 2.5rem);
+}
+.glass-film-story {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.75rem, 3.5vw, 2.75rem);
+}
+/* The licence, as a sentence: the serif's italic, the one place it is used on this page. */
+.glass-film-licence {
+  max-width: 28ch;
+  font-size: 1.0625rem;
+  font-style: italic;
+  line-height: 1.45;
+  letter-spacing: 0;
+  color: var(--ic-ink-600);
+}
+
+/* The hours. Listed without a script; one at a time, in one cell, with one. */
+.glass-beats {
+  display: grid;
+  align-content: start;
+}
+.glass-beat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.glass-film:not([data-enhanced='true']) .glass-beat + .glass-beat {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--ic-line);
+}
+.glass-film[data-enhanced='true'] .glass-beat {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(0, 10px, 0);
+  transition:
+    opacity var(--ic-slow) var(--glass-ease),
+    transform var(--ic-slow) var(--glass-ease),
+    visibility 0s linear var(--ic-slow);
+}
+.glass-film[data-enhanced='true'] .glass-beat[data-active='true'] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 120ms, 120ms, 0s;
+}
+.glass-beat-hour {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6vw, 5.25rem);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--ic-ink-900);
+}
+.glass-beat-title {
+  max-width: 22ch;
+  margin-top: 0.75rem;
+  font-size: var(--text-heading);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.glass-beat-line {
+  max-width: 36ch;
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+
+/*
+ * The sheet: the matrix's rows, on paper, at one hour of the night — set as a
+ * spreadsheet. Letters over the columns, numbers down the side, hairlines
+ * between every cell, and the selection a spreadsheet would show; in the site's
+ * type and its two inks, with no green and no gridline heavier than a hairline.
+ */
+.glass-sheet {
+  min-width: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  color: var(--ic-ink-900);
+}
+.glass-sheet-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  min-height: 3rem;
+  padding: 0.625rem 1.25rem;
+  border-bottom: 1px solid var(--ic-line);
+  background-color: var(--ic-paper);
+  font-size: 0.8125rem;
+}
+.glass-sheet-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-weight: 500;
+}
+
+/* The name box, and where a spreadsheet keeps its formula: the source of this hour's change. */
+.glass-sheet-sourcebar {
+  display: grid;
+  grid-template-columns: 5.75rem minmax(0, 1fr);
+  min-height: 2.75rem;
+  border-bottom: 1px solid var(--ic-line);
+}
+.glass-namebox {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 0 0.75rem;
+  border-right: 1px solid var(--ic-line);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ic-ink-900);
+}
+.glass-sheet-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.75rem;
+  min-width: 0;
+  padding: 0.5rem 0.875rem;
+  animation: glass-pop var(--ic-slow) var(--glass-ease) both;
+}
+.glass-sheet-note {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--ic-ink-600);
+}
+
+/* The grid. Fixed layout, so a cell truncates the way a spreadsheet's does rather than pushing its column. */
+.glass-grid {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+}
+.glass-grid :is(th, td) {
+  height: 2.375rem;
+  overflow: hidden;
+  padding: 0 0.625rem;
+  border: 1px solid var(--ic-line);
+  font-weight: 400;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  transition: background-color var(--ic-slow) var(--glass-ease);
+}
+/* Only the lines inside: the sheet's own border is the frame. */
+.glass-grid tr > :first-child {
+  border-left: 0;
+}
+.glass-grid tr > :last-child {
+  border-right: 0;
+}
+.glass-grid thead tr:first-child > * {
+  border-top: 0;
+}
+.glass-grid tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.glass-grid [data-column='line'] {
+  width: 2.875rem;
+}
+.glass-grid [data-column='category'] {
+  width: 6rem;
+}
+.glass-grid [data-column='quantity'] {
+  width: 3.75rem;
+  text-align: right;
+}
+.glass-grid [data-column='rate'] {
+  width: 5.25rem;
+  text-align: right;
+}
+/*
+ * Wide enough for the widest pill, "Needs review", whole. A pill is not text a
+ * cell may truncate: over its cell by even a fraction of a pixel, it is cut off
+ * or trailed by a stray ellipsis. The rate, which has room to spare, gives it.
+ */
+.glass-grid [data-column='status'] {
+  width: 8rem;
+}
+.glass-grid [data-column='item'] {
+  font-weight: 500;
+}
+.glass-grid [data-column='line'],
+.glass-grid [data-column='category'] {
+  color: var(--ic-ink-600);
+}
+
+/* The furniture: the letters, the column names, the row numbers. */
+.glass-grid .glass-grid-letters > td {
+  height: 1.375rem;
+  padding: 0;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  text-align: center;
+  color: var(--ic-ink-400);
+  background-color: var(--ic-paper);
+}
+.glass-grid .glass-grid-head > th {
+  height: 2.125rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ic-ink-600);
+  background-color: var(--ic-paper);
+}
+.glass-grid .glass-grid-index {
+  width: 2.25rem;
+  padding: 0;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  text-align: center;
+  color: var(--ic-ink-400);
+  background-color: var(--ic-paper);
+}
+/* Rows the sheet is not showing, marked the way a spreadsheet marks them: a double rule in the row numbers. */
+.glass-grid tr[data-after-hidden='true'] > .glass-grid-index {
+  border-top: 3px double var(--ic-line-strong);
+}
+
+.glass-cell-value {
+  display: inline-block;
+  animation: glass-pop var(--ic-slow) var(--glass-ease) both;
+}
+/*
+ * A moved rate keeps the figure it replaced, struck, stacked above it at the
+ * grid's furniture size. Side by side the pair is wider than the column, and a
+ * cell that clips it cuts the new cost mid-figure; stacked, it fits the column
+ * and the row's own height, so nothing under the film moves when it lands.
+ */
+.glass-cell-value:has(s) {
+  line-height: 1.15;
+  vertical-align: middle;
+}
+.glass-cell-value s {
+  display: block;
+  font-size: 0.6875rem;
+  text-decoration-thickness: 1px;
+  color: var(--ic-ink-400);
+}
+.glass-cell-empty {
+  color: var(--ic-ink-400);
+}
+.glass-sheet-more td {
+  color: var(--ic-ink-400);
+}
+
+/*
+ * The selection. A cell takes a ruled box with a spreadsheet's fill handle at
+ * its corner, and its row number darkens; a range takes a tint. It moves to
+ * whatever this hour changed.
+ */
+.glass-grid [data-selected='true'] {
+  position: relative;
+  overflow: visible;
+}
+.glass-grid [data-selected='true']::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 2px solid var(--ic-ink-900);
+  pointer-events: none;
+  animation: glass-select var(--ic-slow) var(--glass-ease) both;
+}
+.glass-grid [data-selected='true']::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  z-index: 1;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--ic-paper-raised);
+  background-color: var(--ic-ink-900);
+  pointer-events: none;
+}
+/* At the sheet's right edge the handle stays inside, where a window would keep it. */
+.glass-grid tr > [data-selected='true']:last-child::after {
+  right: 1px;
+}
+.glass-sheet-row:has([data-selected='true']) > .glass-grid-index,
+.glass-sheet[data-range='rows'] .glass-sheet-row > .glass-grid-index,
+.glass-sheet[data-range='all'] .glass-grid .glass-grid-index {
+  color: var(--ic-ink-900);
+  background-color: var(--ic-paper-sunken);
+}
+.glass-sheet[data-range='rows'] .glass-sheet-row > td:not(.glass-grid-index),
+.glass-sheet[data-range='all'] .glass-grid tbody td:not(.glass-grid-index),
+.glass-sheet[data-range='all'] .glass-grid .glass-grid-head > th {
+  background-color: var(--ic-paper-sunken);
+}
+/* 00:06: the night reads the lines in, one after the other. */
+.glass-sheet[data-stage='1'] .glass-sheet-row > td:not(.glass-grid-index) {
+  animation: glass-fill var(--ic-slow) var(--glass-ease) both;
+  animation-delay: calc(var(--row) * 70ms);
+}
+
+/*
+ * A narrow sheet hides columns the way a spreadsheet does — the letters skip
+ * them — so the item keeps room to be read: first the category, then the
+ * quantity, and on a phone the line number too, where the item may wrap.
+ */
+@container (max-width: 40rem) {
+  .glass-grid [data-column='category'] {
+    display: none;
+  }
+}
+@container (max-width: 34rem) {
+  .glass-grid [data-column='quantity'] {
+    display: none;
+  }
+}
+@container (max-width: 29rem) {
+  .glass-grid [data-column='line'] {
+    display: none;
+  }
+  /*
+   * The status column holds "Needs review" whole on a phone too. Its room
+   * comes from the row numbers, two digits at most, and from the cells'
+   * padding, so the item keeps the width its longest word needs to wrap
+   * rather than be cut.
+   */
+  .glass-grid .glass-grid-index {
+    width: 1.75rem;
+  }
+  .glass-grid [data-column='rate'] {
+    width: 4.25rem;
+  }
+  .glass-grid [data-column='status'] {
+    width: 6.75rem;
+  }
+  .glass-grid .matrix-status {
+    gap: 0.3rem;
+    padding-inline: 0.375rem;
+    font-size: 0.6875rem;
+  }
+  .glass-grid :is(th, td) {
+    padding-inline: 0.375rem;
+  }
+  .glass-grid tbody [data-column='item'] {
+    height: auto;
+    padding-block: 0.4375rem;
+    line-height: 1.25;
+    white-space: normal;
+  }
+  .glass-sheet-sourcebar {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+  }
+  .glass-namebox {
+    padding-inline: 0.5rem;
+  }
+  .glass-sheet-sources .glass-chip {
+    white-space: normal;
+  }
+}
+
+.matrix-status--read {
+  border-color: var(--ic-line);
+  color: var(--ic-ink-400);
+}
+.matrix-status--read::before {
+  border: 1px solid currentColor;
+  background-color: transparent;
+}
+.glass-status {
+  animation: glass-pop var(--ic-slow) var(--glass-ease) both;
+}
+
+/* A source, landed, with the icon of the kind of document it is. The newest is in ink; the older ones step back but stay. */
+.glass-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.1875rem 0.5rem 0.1875rem 0.4375rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper-raised);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--ic-ink-600);
+  animation: glass-dock var(--ic-slow) var(--glass-ease) both;
+  transition:
+    border-color var(--ic-slow) var(--glass-ease),
+    color var(--ic-slow) var(--glass-ease);
+}
+.glass-chip .gd-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: currentColor;
+}
+.glass-chip-person {
+  flex: none;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 1px;
+  background-color: currentColor;
+}
+.glass-chip[data-fresh='true'] {
+  border-color: var(--ic-ink-900);
+  color: var(--ic-ink-900);
+}
+
+/* The foot: the quotation's totals, pending until the ledger exists at 06:50. */
+.glass-sheet-foot {
+  display: grid;
+  padding: 1rem 1.25rem 1.125rem;
+  border-top: 1px solid var(--ic-line-strong);
+  background-color: var(--ic-paper);
+}
+.glass-sheet-ledger {
+  display: grid;
+  gap: 1rem;
+}
+/* Before 06:50 the margin's track is laid out empty; the floor, and what falls short of it, arrive with the ledger. */
+.glass-sheet-foot :is(.glass-margin-label, .glass-margin-floor, .glass-sheet-short) {
+  transition:
+    opacity var(--ic-slow) var(--glass-ease),
+    visibility 0s linear 0s;
+}
+.glass-sheet-foot[data-ledger='false'] :is(.glass-margin-label, .glass-margin-floor, .glass-sheet-short) {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--ic-slow) var(--glass-ease),
+    visibility 0s linear var(--ic-slow);
+}
+/* 06:50: the selection on the margin, which is where the floor meets it. */
+.glass-sheet-figures > div {
+  position: relative;
+}
+.glass-sheet-figures > div[data-selected='true']::before {
+  content: '';
+  position: absolute;
+  inset: -0.5rem -0.625rem;
+  border: 2px solid var(--ic-ink-900);
+  pointer-events: none;
+  animation: glass-select var(--ic-slow) var(--glass-ease) both;
+}
+.glass-sheet-figures > div[data-selected='true']::after {
+  content: '';
+  position: absolute;
+  right: calc(-0.625rem - 4px);
+  bottom: calc(-0.5rem - 4px);
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--ic-paper-raised);
+  background-color: var(--ic-ink-900);
+}
+.glass-sheet-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+.glass-sheet-figures dt {
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  color: var(--ic-ink-400);
+}
+.glass-sheet-figures dd {
+  margin: 0.375rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 1.6vw, 1.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+.glass-sheet-figures dd span {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  letter-spacing: 0;
+  color: var(--ic-ink-400);
+}
+.glass-margin-label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  margin-bottom: 0.625rem;
+  padding-right: calc((1 - var(--glass-floor)) * 100% + 0.625rem);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: var(--ic-ink-600);
+}
+.glass-margin-track {
+  position: relative;
+  display: block;
+  height: 0.5rem;
+  background-color: var(--ic-paper-sunken);
+}
+.glass-margin-bar {
+  display: block;
+  height: 100%;
+  background-color: var(--ic-ink-900);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 900ms var(--glass-ease) 200ms;
+}
+.glass-sheet-foot[data-ledger='true'] .glass-margin-bar {
+  transform: scaleX(var(--glass-margin));
+}
+.glass-margin-floor {
+  position: absolute;
+  top: -0.875rem;
+  bottom: -0.375rem;
+  left: calc(var(--glass-floor) * 100%);
+  width: 1px;
+  background-color: var(--ic-ink-900);
+}
+.glass-sheet-short,
+.glass-thread-short {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  color: var(--ic-signal);
+}
+.glass-sheet-short {
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--ic-line);
+}
+.glass-sheet-short span,
+.glass-thread-short span {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.glass-sheet-short strong,
+.glass-thread-short strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2vw, 1.625rem);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+/* The rail: pause, and the six hours as chapters. Each hairline is the film's clock. */
+.glass-rail {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  padding: 0.75rem clamp(1.25rem, 3vw, 2.5rem) 1rem;
+  border-top: 1px solid var(--ic-line);
+}
+.glass-play {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--glass-control);
+  height: var(--glass-control);
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  background-color: transparent;
+  color: var(--ic-ink-900);
+  cursor: pointer;
+  transition:
+    background-color var(--ic-fast) var(--ic-ease),
+    transform var(--ic-fast) var(--ic-ease);
+}
+.glass-play:active {
+  transform: translateY(1px);
+}
+.glass-chapters {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(0.375rem, 1.2vw, 1rem);
+  min-width: 0;
+}
+.glass-chapter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  min-height: var(--glass-control);
+  padding: 0.625rem 0 0.25rem;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ic-ink-400);
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--ic-fast) var(--ic-ease);
+}
+.glass-chapter[aria-current='step'] {
+  color: var(--ic-ink-900);
+}
+.glass-chapter-track {
+  position: relative;
+  display: block;
+  height: 2px;
+  overflow: hidden;
+  background-color: var(--ic-line-strong);
+}
+.glass-chapter-fill {
+  position: absolute;
+  inset: 0;
+  background-color: var(--ic-ink-900);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.glass-chapter[data-done='true'] .glass-chapter-fill,
+.glass-chapter[aria-current='step'] .glass-chapter-fill:not(.glass-chapter-fill--live) {
+  transform: none;
+}
+.glass-chapter-fill--live {
+  animation: glass-progress var(--glass-frame) linear both;
+  animation-play-state: paused;
+}
+.glass-film[data-running='true'] .glass-chapter-fill--live {
+  animation-play-state: running;
+}
+.glass-chapter-hour {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+}
+@media (hover: hover) {
+  .glass-play:hover {
+    background-color: var(--ic-line);
+  }
+  .glass-chapter:hover {
+    color: var(--ic-ink-900);
+  }
+}
+
+/* ── Six sources, then one sheet ──────────────────────────────────────── */
+.glass-sources {
+  position: relative;
+}
+.glass-sources-sentinel {
+  position: absolute;
+  top: 38%;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+.glass-sources-stage {
+  padding-block: clamp(5rem, 10vw, 8rem);
+}
+/* Stacked: headline, desk, headline, sheet — the arrangement everywhere the stage cannot pin. */
+.glass-sources-grid {
+  display: grid;
+  grid-template-areas: 'scattered' 'desk' 'gathered' 'sheet';
+}
+/* The headline left and its paragraph beside it, on one baseline: a page, not a slide. */
+.glass-sources-title {
+  display: grid;
+  align-items: end;
+  gap: 1.25rem 4rem;
+}
+.glass-sources-title[data-for='scattered'] {
+  grid-area: scattered;
+}
+.glass-sources-title[data-for='gathered'] {
+  grid-area: gathered;
+  margin-top: clamp(4.5rem, 10vw, 7rem);
+}
+.glass-heading {
+  max-width: 13ch;
+  font-size: var(--glass-heading);
+  line-height: 1;
+  letter-spacing: -0.022em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.glass-sources-lede {
+  max-width: 34rem;
+  padding-bottom: 0.25rem;
+  font-size: var(--glass-lede);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+
+/*
+ * The desk. Its own ground is the desk's, because the photograph on it is
+ * blended with `multiply` and has to have the desk behind it to blend with —
+ * the figure is a stacking context, and a transparent one would leave the
+ * photograph's white sweep showing.
+ */
+.glass-desk-figure {
+  position: relative;
+  grid-area: desk;
+  width: 100%;
+  height: clamp(30rem, 46vw, 38rem);
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+  container-type: size;
+  background-color: var(--memo-desk);
+  background-image: var(--ic-grain);
+}
+.glass-tangle {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: var(--ic-ink-400);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+  transition: opacity var(--ic-slow) var(--glass-ease);
+}
+.glass-tangle--narrow {
+  display: none;
+}
+/* The wide tangle is drawn in the same centred band the pieces are laid out in. */
+.glass-tangle--wide {
+  top: 50%;
+  height: min(100%, 45cqw);
+  transform: translateY(-50%);
+}
+.glass-pieces {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/*
+ * One piece of paper. Its size is one `font-size`, read off the width of the
+ * desk, and everything inside it is in `em` — so the whole composition scales
+ * as one drawing, the way a photograph of a desk would.
+ */
+.glass-piece {
+  --x: var(--x-wide);
+  --y: var(--y-wide);
+  --turn: var(--turn-wide);
+  /*
+   * The composition is drawn for a wide desk. On a taller one — a tablet,
+   * pinned — it keeps to a centred band no taller than 45% of the width
+   * rather than drifting apart, and the paper is sized by whichever of the
+   * desk's two dimensions is tighter.
+   */
+  --band: min(1cqh, 0.45cqw);
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: clamp(5px, min(0.72cqw, 1.6cqh), 9.75px);
+  transform: translate(
+      calc(var(--x) * 1cqw - 50%),
+      calc(50cqh + (var(--y) - 50) * var(--band) - 50%)
+    )
+    rotate(calc(var(--turn) * 1deg));
+  transition:
+    transform var(--glass-gather) var(--glass-ease),
+    opacity calc(var(--glass-gather) * 0.6) var(--glass-ease);
+  transition-delay: calc(var(--i) * 40ms);
+}
+.glass-piece[data-kind='request'] {
+  width: 34em;
+}
+.glass-piece[data-kind='drawing'] {
+  width: 36em;
+}
+.glass-piece[data-kind='catalogue'] {
+  width: 25em;
+}
+.glass-piece[data-kind='prices'] {
+  width: 40em;
+}
+.glass-piece[data-kind='agreement'] {
+  width: 27em;
+}
+.glass-piece[data-kind='supplier'] {
+  width: 31em;
+}
+/* The part lies on top of the paper it is about, and its white sweep drops out against the desk. */
+.glass-piece[data-kind='part'] {
+  z-index: 2;
+  width: 21em;
+  mix-blend-mode: multiply;
+}
+
+/* The question a person would ask of each document, pinned where it is asked. */
+.gd-question-anchor {
+  position: absolute;
+  z-index: 3;
+}
+/* Scaled with the desk, within a readable range, so a note never outgrows the paper it is pinned to. */
+.gd-question {
+  display: inline-block;
+  padding: 0.55em 0.85em;
+  border-radius: var(--radius-control);
+  background-color: var(--ic-ink-900);
+  font-family: var(--font-sans);
+  font-size: clamp(10px, 1.02cqw, 13px);
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+  color: var(--ic-paper-raised);
+}
+/* Each just outside its document, beside the thing it asks about, so nothing it asks about is covered. */
+.gd-question-anchor[data-source='request'] {
+  bottom: calc(100% + 0.7em);
+  left: 3em;
+}
+.gd-question-anchor[data-source='drawing'] {
+  top: calc(100% + 0.9em);
+  right: 2em;
+}
+.gd-question-anchor[data-source='catalogue'] {
+  bottom: calc(100% + 0.9em);
+  right: 2em;
+}
+.gd-question-anchor[data-source='prices'] {
+  top: calc(100% + 0.9em);
+  left: 2em;
+}
+.gd-question-anchor[data-source='agreement'] {
+  top: calc(100% + 0.9em);
+  left: 3em;
+}
+.gd-question-anchor[data-source='supplier'] {
+  top: calc(100% + 0.9em);
+  right: 2em;
+}
+
+/* ── The documents (`glass-documents.tsx`) — all in em, so one size sets the sheet ── */
+.gd {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: 0.6em;
+  background-color: var(--ic-paper-raised);
+  color: var(--ic-ink-900);
+  font-family: var(--font-sans);
+  font-size: 1em;
+  line-height: 1.35;
+  text-align: left;
+}
+.gd-icon {
+  flex: none;
+  width: 1.5em;
+  height: 1.5em;
+  color: var(--ic-ink-600);
+}
+.gd-quiet {
+  color: var(--ic-ink-400);
+}
+.gd-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  height: 3em;
+  padding-inline: 1.2em;
+  border-bottom: 1px solid var(--ic-line);
+  background-color: var(--ic-paper);
+}
+.gd-bar-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.gd-bar-meta {
+  color: var(--ic-ink-400);
+}
+
+/* A message: subject, sender, body, attachments. */
+.gd-mail {
+  display: grid;
+  gap: 0.9em;
+  padding: 1.4em 1.5em 1.5em;
+}
+.gd-mail-subject {
+  font-size: 1.4em;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+}
+.gd-mail-from {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35em 0.6em;
+}
+.gd-initial {
+  display: grid;
+  place-items: center;
+  width: 2.1em;
+  height: 2.1em;
+  border-radius: 0.35em;
+  background-color: var(--ic-paper-sunken);
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--ic-ink-600);
+}
+.gd-mail-body {
+  font-size: 1.05em;
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.gd-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em;
+}
+.gd-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.55em 0.9em 0.55em 0.65em;
+  border: 1px solid var(--ic-line);
+  border-radius: 0.45em;
+  font-size: 0.95em;
+}
+.gd-file {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 1.7em;
+  height: 2.1em;
+  color: var(--ic-ink-600);
+}
+.gd-file svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.gd-file-format {
+  position: absolute;
+  bottom: 0.3em;
+  left: -0.25em;
+  padding: 0.1em 0.3em;
+  border-radius: 0.2em;
+  background-color: var(--ic-ink-900);
+  font-size: 0.55em;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  color: var(--ic-paper-raised);
+}
+
+/* A drawing: the frame, the part in two views, its dimensions, and the title block. */
+.gd-drawing-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.gd-d-frame,
+.gd-d-border,
+.gd-d-part,
+.gd-d-centre,
+.gd-d-hidden,
+.gd-d-dim,
+.gd-d-ring {
+  fill: none;
+}
+.gd-d-frame {
+  stroke: var(--ic-ink-600);
+  stroke-width: 1;
+}
+.gd-d-border {
+  stroke: var(--ic-ink-400);
+  stroke-width: 0.75;
+}
+.gd-d-part {
+  stroke: var(--ic-ink-900);
+  stroke-width: 1.15;
+}
+.gd-d-centre {
+  stroke: var(--ic-ink-400);
+  stroke-width: 0.6;
+  stroke-dasharray: 9 2 2 2;
+}
+.gd-d-hidden {
+  stroke: var(--ic-ink-600);
+  stroke-width: 0.7;
+  stroke-dasharray: 3 2;
+}
+.gd-d-dim {
+  stroke: var(--ic-ink-600);
+  stroke-width: 0.6;
+}
+.gd-d-arrow {
+  fill: var(--ic-ink-600);
+}
+.gd-d-text {
+  fill: var(--ic-ink-900);
+  font-family: var(--font-sans);
+  font-size: 8px;
+}
+.gd-d-title {
+  fill: var(--ic-ink-900);
+  font-family: var(--font-display);
+  font-size: 11px;
+}
+.gd-d-ring {
+  stroke: var(--ic-ink-900);
+  stroke-width: 1.25;
+}
+
+/* A page: the catalogue's and the agreement's. */
+.gd-page {
+  padding: 1.5em 1.6em 1.7em;
+}
+.gd-page-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 0.9em;
+  border-bottom: 1px solid var(--ic-line-strong);
+}
+.gd-page-title {
+  font-family: var(--font-display);
+  font-size: 1.7em;
+  line-height: 1.1;
+  letter-spacing: -0.012em;
+}
+.gd-entries {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gd-entry {
+  display: grid;
+  grid-template-columns: 5em minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1em;
+  padding-block: 1em;
+  border-bottom: 1px solid var(--ic-line);
+}
+.gd-entry:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.gd-entry-art {
+  display: block;
+  width: 5em;
+  height: auto;
+  fill: var(--ic-paper-raised);
+  stroke: var(--ic-ink-600);
+  stroke-width: 1;
+}
+.gd-entry-text {
+  display: grid;
+  gap: 0.2em;
+  min-width: 0;
+}
+.gd-entry-part {
+  font-weight: 500;
+}
+.gd-entry-fit {
+  font-family: var(--font-display);
+  font-size: 1.7em;
+  line-height: 1;
+}
+
+/* A workbook: column letters, row numbers, the row about to change, and its tabs. */
+.gd-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+.gd-grid th,
+.gd-grid td {
+  padding: 0.5em 0.65em;
+  border: 1px solid var(--ic-line);
+  text-align: left;
+  white-space: nowrap;
+}
+.gd-grid thead th,
+.gd-grid tbody th {
+  padding: 0.3em 0.4em;
+  background-color: var(--ic-paper);
+  font-size: 0.85em;
+  font-weight: 500;
+  text-align: center;
+  color: var(--ic-ink-400);
+}
+.gd-grid tbody th {
+  width: 2.4em;
+}
+.gd-grid-head td {
+  font-weight: 600;
+}
+.gd-num {
+  text-align: right;
+}
+.gd-grid tr[data-moving] td {
+  background-color: var(--ic-paper);
+}
+.gd-grid tr[data-moving] td:nth-of-type(3) {
+  outline: 0.15em solid var(--ic-ink-900);
+  outline-offset: -0.15em;
+  font-weight: 600;
+}
+.gd-tabs {
+  display: flex;
+  background-color: var(--ic-paper);
+  font-size: 0.85em;
+}
+.gd-tabs span {
+  padding: 0.5em 1.1em;
+  border-right: 1px solid var(--ic-line);
+  color: var(--ic-ink-400);
+}
+.gd-tabs span[data-active] {
+  background-color: var(--ic-paper-raised);
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+
+/* A schedule of terms, with the floor clause marked. */
+.gd-contract {
+  padding: 1.9em 1.9em 2.1em;
+}
+.gd-contract-title {
+  font-family: var(--font-display);
+  font-size: 2em;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+.gd-contract > .gd-quiet {
+  margin-top: 0.4em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid var(--ic-line-strong);
+}
+.gd-clauses {
+  display: grid;
+  gap: 0.8em;
+  margin: 1.1em 0 0;
+  padding: 0;
+  font-size: 0.95em;
+  line-height: 1.45;
+  list-style: none;
+  color: var(--ic-ink-600);
+}
+.gd-clauses li {
+  display: grid;
+  grid-template-columns: 2.6em minmax(0, 1fr);
+}
+.gd-clause-number {
+  color: var(--ic-ink-400);
+}
+.gd-clauses li[data-floor] {
+  margin-inline: -0.65em;
+  padding: 0.55em 0.65em;
+  border: 0.15em solid var(--ic-ink-900);
+  border-radius: 0.35em;
+  color: var(--ic-ink-900);
+}
+.gd-signatures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.6em;
+  margin-top: 2.4em;
+  font-size: 0.85em;
+  color: var(--ic-ink-400);
+}
+.gd-signatures span {
+  padding-top: 0.5em;
+  border-top: 1px solid var(--ic-ink-600);
+}
+
+/* A confirmation: what changed, struck through and replaced. */
+.gd-changes {
+  display: grid;
+  gap: 0.55em;
+  margin: 0;
+}
+.gd-changes div {
+  display: grid;
+  grid-template-columns: 7em minmax(0, 1fr);
+  align-items: baseline;
+}
+.gd-changes dt {
+  color: var(--ic-ink-400);
+}
+.gd-changes dd {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  margin: 0;
+}
+.gd-changes s {
+  color: var(--ic-ink-400);
+}
+.gd-changes strong {
+  font-weight: 600;
+}
+
+.gd-photo,
+.gd-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+
+/*
+ * The sheet the documents gather onto. One grid with named columns — source,
+ * wire, sheet — that the rows inherit as subgrids, so the thumbnails, the wires
+ * and the sheet's cells line up without anything being measured.
+ */
+/*
+ * Positioned, and above the desk: where the two share a cell, the desk is
+ * positioned and opaque, and anything in normal flow paints underneath it.
+ */
+.glass-thread {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-area: sheet;
+  grid-template-columns: [source] minmax(12rem, 16rem) [wire] minmax(2rem, 1fr) [cell] minmax(0, 2.6fr);
+  align-content: center;
+  width: 100%;
+  max-width: 68rem;
+  margin: clamp(2.5rem, 5vw, 3.5rem) auto 0;
+  color: var(--ic-ink-900);
+}
+.glass-thread-title {
+  --i: 0;
+
+  display: flex;
+  grid-column: cell;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  background-color: var(--ic-paper);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+.glass-thread-rows,
+.glass-thread-row {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.glass-thread-row {
+  align-items: stretch;
+}
+.glass-thread-source {
+  display: flex;
+  flex-direction: row-reverse;
+  grid-column: source;
+  align-items: center;
+  align-self: center;
+  justify-self: end;
+  gap: 0.875rem;
+  padding-block: 0.25rem;
+}
+.glass-thread-name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: right;
+}
+/* A document at thumbnail size: the same drawing, cropped to its top edge. */
+.glass-thumb {
+  display: block;
+  flex: none;
+  width: 5.75rem;
+  height: 3.5rem;
+  overflow: hidden;
+  border-radius: var(--radius-control);
+  font-size: 2.5px;
+  pointer-events: none;
+}
+.glass-thumb > .gd {
+  width: 38em;
+  border-radius: 0;
+}
+.glass-thread-wire {
+  position: relative;
+  grid-column: wire;
+  align-self: center;
+  height: 1px;
+  margin-left: 0.875rem;
+}
+.glass-thread-wire::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--ic-ink-900);
+  transform-origin: left;
+}
+/* Where the wire meets the sheet: a small square socket on the panel's edge. */
+.glass-thread-wire::after {
+  content: '';
+  position: absolute;
+  top: -0.21875rem;
+  right: -0.25rem;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border: 1px solid var(--ic-ink-900);
+  background-color: var(--ic-paper-raised);
+}
+.glass-thread-cell {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: cell;
+  align-items: center;
+  gap: 0.375rem 0.75rem;
+  min-height: 3.25rem;
+  padding: 0.5rem 1.25rem;
+  border-inline: 1px solid var(--ic-line);
+  border-top: 1px solid var(--ic-line);
+  background-color: var(--ic-paper-raised);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+.glass-thread-line {
+  font-size: 0.8125rem;
+  color: var(--ic-ink-400);
+}
+.glass-thread-text {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+}
+.glass-thread-text strong {
+  font-weight: 600;
+}
+.glass-thread-foot {
+  --i: 6;
+
+  display: grid;
+  grid-column: cell;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem 1rem;
+  border: 1px solid var(--ic-line);
+  border-top-color: var(--ic-line-strong);
+  border-radius: 0 0 var(--radius-panel) var(--radius-panel);
+  background-color: var(--ic-paper);
+}
+.glass-thread-count {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+
+/*
+ * Pinned: only where the whole stage fits on one screen. The headlines share a
+ * row, the desk and the sheet share another, and the phase decides which of
+ * each is showing. The documents drift toward the column their thumbnails will
+ * occupy as they fade, so the gathering reads as one movement rather than a cut.
+ */
+@media (min-width: 48rem) and (min-height: 46rem) {
+  .glass-sources[data-enhanced='true'] {
+    height: var(--glass-pin);
+  }
+  .glass-sources[data-enhanced='true'] .glass-sources-stage {
+    position: sticky;
+    top: 0;
+    display: flex;
+    height: 100svh;
+    padding-block: clamp(3rem, 8vh, 5.5rem) clamp(1.25rem, 4vh, 2.5rem);
+    background-color: var(--memo-desk);
+    background-image: var(--ic-grain);
+  }
+  .glass-sources[data-enhanced='true'] .glass-sources-grid {
+    flex: 1;
+    min-height: 0;
+    grid-template-areas: 'copy' 'figure';
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .glass-sources[data-enhanced='true'] .glass-sources-title {
+    grid-area: copy;
+    margin-top: 0;
+    transition:
+      opacity var(--ic-slow) var(--glass-ease),
+      transform var(--ic-slow) var(--glass-ease);
+  }
+  .glass-sources[data-enhanced='true'] .glass-desk-figure,
+  .glass-sources[data-enhanced='true'] .glass-thread {
+    grid-area: figure;
+    margin-top: clamp(1.75rem, 4.5vh, 3rem);
+  }
+  .glass-sources[data-enhanced='true'] .glass-desk-figure {
+    height: auto;
+  }
+  .glass-sources[data-enhanced='true'] .glass-thread {
+    align-self: center;
+  }
+  .glass-sources[data-enhanced='true'] .glass-thread-title,
+  .glass-sources[data-enhanced='true'] .glass-thread-row,
+  .glass-sources[data-enhanced='true'] .glass-thread-foot {
+    transition:
+      opacity var(--ic-slow) var(--glass-ease),
+      transform var(--ic-slow) var(--glass-ease);
+    transition-delay: calc(var(--glass-gather) * 0.4 + var(--i, 0) * 60ms);
+  }
+  .glass-sources[data-enhanced='true'] .glass-thread-wire::before {
+    transition: transform 700ms var(--glass-ease);
+    transition-delay: calc(var(--glass-gather) * 0.55 + var(--i, 0) * 60ms);
+  }
+
+  .glass-sources[data-phase='scattered'] [data-for='gathered'],
+  .glass-sources[data-enhanced='true'][data-phase='gathered'] [data-for='scattered'] {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  .glass-sources[data-phase='gathered'] .glass-tangle {
+    opacity: 0;
+  }
+  .glass-sources[data-phase='gathered'] .glass-piece {
+    opacity: 0;
+    transform: translate(calc(22cqw - 50%), calc((20 + var(--i) * 10.5) * 1cqh - 50%)) scale(0.22);
+  }
+  .glass-sources[data-phase='scattered'] .glass-thread {
+    pointer-events: none;
+  }
+  .glass-sources[data-phase='scattered'] .glass-thread-title,
+  .glass-sources[data-phase='scattered'] .glass-thread-row,
+  .glass-sources[data-phase='scattered'] .glass-thread-foot {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+    transition-delay: 0s;
+  }
+  .glass-sources[data-phase='scattered'] .glass-thread-wire::before {
+    transform: scaleX(0);
+    transition-delay: 0s;
+  }
+}
+
+/* ── The close, on the same desk ──────────────────────────────────────── */
+/*
+ * The morning plate. Cropped a little larger than its frame so the drift the
+ * script writes (a fraction between -0.5 and 0.5) has room to move it without
+ * ever showing an edge; at rest, and under reduced motion, it sits centred.
+ * The photograph is generated at the frame's own 16:7, so on a wide screen the
+ * only crop is that margin.
+ */
+.glass-morning {
+  position: relative;
+  isolation: isolate;
+  margin: 0 0 clamp(3.5rem, 7vw, 5.5rem);
+}
+.glass-morning-frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 7;
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-sunken);
+}
+.glass-morning-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 55%;
+  transform: translate3d(0, calc(var(--glass-drift, 0) * -10%), 0) scale(1.12);
+  will-change: transform;
+  user-select: none;
+}
+
+/*
+ * The handover (`glass-handover.tsx`): the plate's caption, set as the product
+ * would set it — a lit sheet over the window, where the generated frame keeps
+ * its quiet third. On a narrow screen it is tucked under the photograph
+ * instead, over its lower edge, because over a phone-sized window it would hide
+ * the room it is about.
+ */
+.glass-handover {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: start;
+  gap: 0.875rem;
+  margin: -2.5rem 0.75rem 0;
+  padding: 1.125rem 1.25rem 1.25rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  color: var(--ic-ink-900);
+}
+.glass-handover-decision {
+  font-family: var(--font-display);
+  font-size: clamp(1.1875rem, 1.6vw, 1.4375rem);
+  line-height: 1.18;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+.glass-handover-figures {
+  display: grid;
+  gap: 0.375rem;
+  justify-self: stretch;
+  padding-block: 0.75rem;
+  border-block: 1px solid var(--ic-line);
+  font-size: var(--text-small);
+}
+.glass-handover-figures > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+}
+.glass-handover-figures dt,
+.glass-handover-figures dd span,
+.glass-handover-owner {
+  color: var(--ic-ink-600);
+}
+.glass-handover-figures dd {
+  font-weight: 500;
+}
+.glass-handover-short dd {
+  color: var(--ic-signal);
+}
+.glass-handover-owner {
+  font-size: var(--text-small);
+}
+.glass-close {
+  padding-block: clamp(5.5rem, 11vw, 9rem) clamp(4.5rem, 9vw, 7rem);
+}
+.glass-close-grid {
+  display: grid;
+  gap: 2rem 4rem;
+}
+.glass-close-title {
+  max-width: 14ch;
+  font-size: clamp(2.5rem, 5.4vw, 4.75rem);
+  line-height: 1;
+  letter-spacing: -0.022em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.glass-close-side {
+  display: grid;
+  gap: 2rem;
+  max-width: 30rem;
+}
+.glass-close-body {
+  font-size: var(--glass-lede);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.glass-close-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+}
+.glass-close-write {
+  font-size: var(--text-small);
+  color: var(--ic-ink-600);
+}
+.glass-footer {
+  padding-bottom: 2rem;
+}
+.glass-footer-inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.glass-standing,
+.glass-copyright {
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.glass-standing {
+  max-width: 44rem;
+}
+
+/* ── Keyframes ────────────────────────────────────────────────────────── */
+@keyframes glass-rule {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes glass-beat {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0.5em, 0);
+  }
+  24%,
+  76% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -0.25em, 0);
+  }
+}
+/*
+ * Hidden at both ends, and filled forwards only. A lone `to` keyframe would
+ * leave the layer up for good: a delay computed in `calc()` finishes at a
+ * progress of 0.9999…, not 1, and `visibility` reads as visible anywhere short
+ * of 1 — so a transparent sheet would sit over the page catching every click.
+ */
+@keyframes glass-opening-end {
+  from,
+  to {
+    visibility: hidden;
+  }
+}
+@keyframes glass-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* The same entrance under another name, so ending the opening early restarts it without a delay. */
+@keyframes glass-enter-now {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes glass-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes glass-pop {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes glass-select {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes glass-fill {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes glass-dock {
+  from {
+    opacity: 0;
+    transform: translate3d(12px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (min-width: 40rem) {
+  .glass-hours {
+    padding-inline: 2rem;
+  }
+}
+@media (min-width: 48rem) {
+  .glass-sources-title {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+}
+@media (min-width: 60rem) {
+  .glass-film-body {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: start;
+  }
+}
+@media (min-width: 48rem) {
+  .glass-handover {
+    position: absolute;
+    top: clamp(1rem, 2.4vw, 2rem);
+    right: clamp(1rem, 2.4vw, 2rem);
+    width: min(23rem, 42%);
+    margin: 0;
+  }
+}
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+  .glass-morning-frame {
+    aspect-ratio: 2 / 1;
+  }
+}
+@media (min-width: 64rem) {
+  .glass-hours {
+    padding-inline: 2.5rem;
+  }
+  .glass-close-grid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: end;
+  }
+}
+@media (max-width: 47.99rem) {
+  .glass-morning-frame {
+    aspect-ratio: 4 / 3;
+  }
+  .glass-morning-frame img {
+    object-position: 34% 60%;
+  }
+  .glass-desk-figure {
+    height: 35rem;
+  }
+  .glass-piece {
+    --x: var(--x-narrow);
+    --y: var(--y-narrow);
+    --turn: var(--turn-narrow);
+    --band: 1cqh;
+
+    font-size: clamp(4px, 1.45cqw, 6.5px);
+  }
+  .glass-tangle--wide {
+    display: none;
+  }
+  .glass-tangle--narrow {
+    display: block;
+  }
+  .gd-question {
+    font-size: 0.6875rem;
+  }
+
+  .glass-thread {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 32rem;
+  }
+  .glass-thread-title,
+  .glass-thread-foot {
+    grid-column: 1;
+  }
+  .glass-thread-source {
+    flex-direction: row;
+    grid-column: 1;
+    grid-row: 1;
+    justify-content: flex-start;
+    justify-self: stretch;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem 0.25rem;
+    border-inline: 1px solid var(--ic-line);
+    border-top: 1px solid var(--ic-line);
+    background-color: var(--ic-paper-raised);
+  }
+  .glass-thread-name {
+    text-align: left;
+    color: var(--ic-ink-600);
+  }
+  .glass-thumb {
+    width: 3.75rem;
+    height: 2.5rem;
+    font-size: 1.6px;
+  }
+  .glass-thread-wire {
+    display: none;
+  }
+  .glass-thread-cell {
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 0;
+    padding: 0.375rem 1rem 0.875rem;
+    border-top: 0;
+  }
+
+  .glass-sheet-bar,
+  .glass-sheet-foot {
+    padding-inline: 1rem;
+  }
+
+  .glass-footer-inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 39.99rem) {
+  .glass {
+    --glass-display: clamp(2.375rem, 10.5vw, 3.25rem);
+  }
+  .glass-hours > span:nth-child(even) {
+    display: none;
+  }
+  .glass-hero-inner {
+    padding-top: 3.5rem;
+  }
+  .glass .waitlist-inline-submit {
+    width: 100%;
+  }
+  .glass-chapter-hour {
+    font-size: 0.75rem;
+  }
+}
+
+/*
+ * Reduced motion renders the final frame of everything: no opening, no
+ * entrance, no gathering, no wires drawing, and a film that does not play. The
+ * global rule shortens durations but keeps delays, and several of these wait on
+ * one — so each is removed outright rather than merely made quick.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .glass-opening {
+    display: none;
+  }
+  .glass-enter,
+  .glass-hours > span,
+  .glass-status,
+  .glass-chip,
+  .glass-sheet-sources,
+  .glass-cell-value,
+  .glass-sheet-row > td,
+  .glass-grid [data-selected='true']::before,
+  .glass-sheet-figures > div::before {
+    animation: none !important;
+  }
+  .glass-beat,
+  .glass-grid :is(th, td),
+  .glass-sheet-foot :is(.glass-margin-label, .glass-margin-floor, .glass-sheet-short),
+  .glass-margin-bar,
+  .glass-chip,
+  .glass-tangle,
+  .glass-piece,
+  .glass-sources-title,
+  .glass-thread-title,
+  .glass-thread-row,
+  .glass-thread-foot,
+  .glass-thread-wire::before {
+    transition: none !important;
   }
 }

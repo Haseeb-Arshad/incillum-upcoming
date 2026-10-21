@@ -9,8 +9,15 @@ The operating contract for this repository. Read it before changing code.
 The public site at **incillum.com** while there is no product to show yet. One
 page, one argument, one conversion: an email address for the waitlist.
 
-It is deliberately **not** a marketing site with the product pages removed. It
-has no navigation, no pricing, no demo and no blog, because a pre-launch site
+The home page is told at the length the pages it is measured against give
+theirs — Harvey and Hebbia: a product film, the context it draws on, product
+tabs, a band of figures, a security grid, then the close — but every act is the
+same invented quotation, and every proof device they use is replaced by an
+honest one (§4, *The acts on the desk*).
+
+It is deliberately **not** a marketing site with the product pages removed. Its
+navigation is links to sections of the one page and to the contact memo; there
+is no pricing, no demo, no blog and no product page, because a pre-launch site
 that offers a full product menu is advertising a product it has not shipped.
 
 ### The positioning
@@ -52,12 +59,12 @@ incillum/
 ├── src/
 │   ├── content/site.ts        every word the site renders
 │   ├── components/            one file per section, used once each
-│   ├── lib/                   schema, spam heuristic, seo, analytics, cn
+│   ├── lib/                   schema, spam heuristic, seo, analytics, motion, dust, cn
 │   ├── server/                the one server function, its env, its notifier
-│   ├── routes/                __root, index, robots, sitemap
+│   ├── routes/                __root, index, contact, glass, robots, sitemap
 │   ├── fonts/                 self-hosted woff2
 │   └── styles.css             tokens, type scale, the two scopes
-├── design/                    generators for the mark and the share card
+├── design/                    generators for the mark and the share card, photo encoders
 ├── e2e/                       Playwright
 └── public/                    favicon, logo, share card
 ```
@@ -87,8 +94,10 @@ written into the file that needs it.
 
 **Two typefaces, one colour.** A text serif at its single weight does every
 heading; a grotesk does everything a person reads at length or operates. There
-is no third voice, no gradient and no shadow. Contrast is still most of the
-emphasis, which is exactly why spending it carelessly ruins this page.
+is no third voice, no shadow, and one gradient: the scrim over the hero
+photograph, which exists to hold the headline at AA and is built from the night
+token. Contrast is still most of the emphasis, which is exactly why spending it
+carelessly ruins this page.
 
 - Every colour, size, radius and duration is a token in `styles.css`. A literal
   hex in a component is a bug. The one exception is `theme-color` in
@@ -103,10 +112,16 @@ of one light, not one colour at two lightnesses.
 It means one thing — *something is still lit* — and it appears in **four**
 places, which is the whole licence:
 
-1. the lamp and the lit windows in the night plate,
-2. the reader's own hour on the instrument,
-3. the held state in the night thread,
-4. the figure in the evidence document that breaks the commercial floor.
+1. the lamp and the lit windows in the night photograph,
+2. the reader's own hour on the instrument, where it is on the page,
+3. the held state — on the film's sheet, the gathered sheet and the held lines
+   in the tabs,
+4. the figure that breaks the commercial floor — in the film's ledger, the
+   gathered sheet, the handover, and the tabs' line and quotation shortfalls.
+
+Every one of those is the same quotation at another magnification, not a new
+place for the colour. `e2e/home.spec.ts` and `e2e/glass.spec.ts` fail on any
+text in the signal outside them.
 
 There is deliberately no red. A held line and a missed floor are the same event
 — work that stopped and is waiting for a person — and two colours would say they
@@ -114,22 +129,51 @@ are two things. Anything that is not one of the four above uses ink.
 
 ### The night
 
-The page is paper while somebody is at their desk, goes dark when the office
-empties, and returns to paper at 08:04, where a person picks the work back up. A
-reader scrolls through a night.
+The home page opens in the night and ends at 08:04, back on paper, where a
+person picks the work back up. A reader scrolls out of a night.
 
-That is the one thing a visitor will still be able to describe a week later, and
-the order inside the band is load-bearing: the plate says where we are, the
-instrument says how long it lasts, the thread is what happens during it.
+It used to open on paper and go dark further down. It opens dark now because
+the commissioned photograph — an empty office, one lamp, a quotation under it —
+is the argument with the words taken away, and below the fold it was doing
+none of that work. The photograph is mirrored so the lamp and the quotation sit
+on the right and the headline sits over the switched-off monitor; nothing in the
+frame is legible, so nothing reads backwards. On a phone it takes the top half of
+the screen by itself rather than being scrimmed to nothing behind the words.
+
+The order inside the band is load-bearing: the photograph says where we are,
+and the film says what happened in it.
+
+- **The film** (`components/glass-film.tsx`, shared with /glass) is the
+  product's own object — one request's lines with status and evidence, set as a
+  spreadsheet on a *lit* panel: `[data-lit]` re-points the tokens back to paper
+  inside the band, because the one lit thing in the photograph is paper. It
+  plays the night from 23:47 to 08:04 once while it is on screen, the reader
+  can pause it or pick an hour, and it stops at 08:04 — where the band ends and
+  the page turns to paper. It is invented and says so in its first line, its
+  rows are the matrix's (`home.matrix`, tested against the thread's prose), and
+  it carries no money of its own: it reads the thread's 06:50 ledger. It is the
+  honest substitute for the product video and the logo wall enterprise pages
+  lead with, which §5 forbids.
+- **The desk.** After the band the page returns to the desk tone the contact memo
+  is laid on (`--memo-desk`). The two pages share the brand at the same
+  coordinates (`components/site-brand.tsx`), the pressed-ink button, and the
+  two typefaces; the pressed-ink speckle is for paper only and is dropped in the
+  dark, where its holes would read as dust.
 
 - The dark region is `[data-inverted]`, which re-points the same tokens. It is
-  not a second palette, and there is **exactly one** on the page — it simply
-  contains three sections now rather than one panel. `e2e/site.spec.ts` counts
+  not a second palette, and there is **exactly one** on the page — the
+  photograph and the film, as one band. `e2e/home.spec.ts` counts
   it. Nothing inside it knows it is dark: every child is written against
   `text-ink` and `border-line` and would render correctly on paper.
 - No hairline at either seam. The colour change is the strongest edge on the
   page already, and a rule drawn on it reads as a mistake.
-- The masthead stays `bg-paper` and opaque while the band scrolls under it.
+- **The masthead stays with the reader.** The home page draws its own: one
+  `banner`, fixed, transparent over the photograph and filled with the night's
+  sunken ground once the first screen has gone. It belongs to the night region,
+  so it is the same night bar over every section and never changes colour twice
+  a visit; it never shrinks and never gains a shadow. Its links are the page's
+  own sections and the contact memo, and below a laptop's width only the brand
+  and the button remain.
 - Radii are 6px on controls and 12px on panels. Nothing else is rounded.
 - Depth comes from hairlines, never from shadows.
 - **Texture:** a fractal-noise tile at ~4% (light) and ~6% (dark), generated by
@@ -137,10 +181,14 @@ instrument says how long it lasts, the thread is what happens during it.
   alpha is baked into the tile rather than applied to a layer over it — the
   obvious `::before` version needs `position: relative` on `body` and silently
   unsticks the masthead.
-- Motion is restrained and has a job. One page-load entrance on the hero, one
-  scroll reveal per section, one live element (the clock), one arrow nudge and
-  one button press. That is the whole budget — a page where every card lifts and
-  every row slides is a page that is nervous.
+- Motion is restrained and has a job. The home page's whole budget, written down
+  in `styles.css` above the block that spends it: the hero's one entrance; the
+  film, once through while on screen; the sources gathering, one change of state
+  tied to the scroll; a tab change, one 220ms crossfade the reader asked for;
+  one reveal per section; the masthead filling in, 300ms; the arrow nudge and
+  the press. Nothing loops, and there is no dust and no parallax on this page —
+  those are /glass's. A page where every card lifts and every row slides is a
+  page that is nervous; if something new wants to move, something old stops.
 - The night plate does not move, and that is a decision rather than an omission.
   Its subject is a room where nothing is happening; a flickering window or a
   drifting light would turn the one honest image on the site into a screensaver.
@@ -148,6 +196,128 @@ instrument says how long it lasts, the thread is what happens during it.
   rendering the final state, not a faster transition. A reveal that starts at
   `opacity: 0` and depends on a script is worse for that reader than the
   animation they were avoiding.
+
+### The acts on the desk
+
+After the night the page takes the same quotation apart, act by act. Each one
+stands where a reference page puts a proof device this site cannot use, and
+each says so in its component's header:
+
+| Act | Stands where they put | Component |
+| --- | --- | --- |
+| Six sources, scattered then gathered | the logo wall | `glass-sources.tsx` |
+| How it works — four tabs | the product modules | `how-it-works.tsx` |
+| Where this stands — *Built · In build · Opening* | the band of usage figures | `standing.tsx` |
+| Data and trust — six commitments | the certification badges | `trust.tsx` |
+| Questions, answered in full | the testimonials | `questions.tsx` |
+| The morning — the 08:04 room, the handover, the ask | the closing band | `home-page.tsx` |
+
+- **The tabs are the boundaries.** Read · Hold · Price · Decide, one line of the
+  quotation each, and each ends on one entry of `boundary` — all four, once
+  each. They write no figure: margins, floor, shortfalls and the price at the
+  floor are computed from `evidence` or read off the ledger. Without a script
+  the four steps are listed in order, each with its heading; with one they are a
+  real ARIA tablist (arrows, Home, End, roving focus) whose panels share one
+  cell, so a tab change never moves the page under it.
+- **The desk photographs** under the tabs are the night plate's own desk from
+  directly above, empty, at night and at 08:04 (`design/encode-how.sh`). Nothing
+  in them is legible because nothing is on them: the documents laid on them are
+  built, in the site's type, from `glass.sources.documents`. The light turns to
+  morning on the last tab, and that is the only thing the photographs say.
+- **Trust states come from a closed set.** *Decided* only for promises already
+  on the record (`access.decided`, the approval boundary); *Built* only for what
+  `standing` already says is built; everything else *In build*. What is still
+  open about the data is `access.open`, set in the same ink. A certification
+  can be listed only with a link to its report — the type will not accept one
+  without — and until one is held the section says no certification is
+  claimed. No framework is named anywhere on the page; both suites fail if one
+  is.
+- **Questions are open.** A real `<dl>`, every answer in the HTML, nothing
+  behind a click; three answers are read from copy the site has already
+  committed to, so they cannot drift.
+
+### The contact memo
+
+`/contact` is the waitlist form on a sheet of continuous-feed paper: a perforated
+page on a darker desk, floating labels, a pressed-ink button, and on success a
+paler carbon copy that repeats what was typed and is stamped. It posts to the
+same `joinWaitlist` function as the home page and keeps the same promise — only
+the address is required, nothing is sent to the joiner, and the receipt says we
+have it and will write once.
+
+- **Two voices, no third.** The printed form is the serif in capitals; whatever a
+  person enters is the grotesk. No mono, however natural a typewritten form makes
+  one look.
+- **No proof column.** The page it is modelled on spends a column on customer
+  logos and quotations. This site has none and §5 forbids implying any, so the
+  column says what happens after somebody writes.
+- **No colour, including for errors.** A field that needs attention takes the
+  heavier rule and says so in words. The stamp is ink, not red.
+- **The desk and the carbon are neutrals** (`--memo-desk`, `--memo-copy`), scoped
+  to `.memo-page` the way the harbour scope is. They are not a palette.
+- **Static text only takes the worn-ink filter.** Never on what somebody is typing.
+- The motto appears in the receipt through `brand.motto`, which is one of its two
+  placements — it is not spent a third time.
+
+### The presentation
+
+`/glass` is the same night told as a film, for somebody who wants to be shown
+rather than read to. Two beats of type over a field of hour rules, a centred
+hero with the home page's form, then the quotation played hour by hour in a
+frame; after it, the six documents a quotation is assembled from lie on a desk
+with the part itself among them, and gather onto one sheet; then one invitation.
+It is off the spine: `noindex`, not in the sitemap, linked from nowhere.
+
+- **No labels over headings.** No tracked capitals anywhere on it — not over a
+  title, not inside a document — and no title in two tones. The first version
+  had both and read as assembled. The licence for invented material is a
+  sentence at reading size; `e2e/glass.spec.ts` fails on any uppercase text.
+- **The documents are built, not pictured** (`components/glass-documents.tsx`):
+  real contents from the same quotation, in the site's own type, because a
+  generated document's text is nonsense and the reader zooms in. The part on
+  the desk is a photograph (`design/encode-glass.sh`), shown with `multiply` —
+  so nothing may lie under it, and a test checks that nothing does.
+- **It ends in the night plate's own room at 08:04** — the morning plate,
+  generated from the night source as its reference, overcast on purpose (a low
+  orange sun read as evening and spent a sky's worth of the signal's hue), and
+  cleaned of the one mark the generator left on the monitor. Its caption is the
+  handover (`components/glass-handover.tsx`): the person and the decision from
+  the film's last frame, and the two figures from the 06:50 ledger, built in
+  the site's type and writing nothing of its own.
+- **One story still.** Every hour, line and figure on it is the thread's or the
+  matrix's, read by the components rather than written again; `glass` in
+  `content/site.ts` writes none of the quotation's own figures, and the one cost
+  that moves, moves by the thread's six per cent and three weeks. Tests hold it.
+- **Its own motion budget**, larger than the home page's because a presentation
+  tells by moving, and listed in `styles.css` above the block that spends it:
+  the opening, the film, the gathering, the dust, the morning's parallax, one
+  reveal per block at the close, the nudge and the press. The film plays once
+  and stops at 08:04; nothing pulses; reduced motion gets the final frame of
+  all of it.
+- **The dust is the one exception to "nothing moves while the reader is
+  still"**, and it is the owner's call rather than a lapse
+  (`components/glass-field.tsx`, drawn by `lib/dust.ts` in WebGL with no
+  library). Under the opening it is a landscape that is not there when the page
+  opens: it unrolls out of one thin slit of light on the horizon, far ridge
+  first, across the two beats. Round the morning plate it is a different
+  formation on purpose — two twisted ribbons framing the room, the night's dust
+  put in order. It is ink, never the signal; it stops off screen, in a hidden
+  tab and once it has faded on scroll; it clears a space behind the hero's
+  type; and without WebGL it is simply absent. The home page's night plate
+  still does not move — this is a different page making a different argument.
+- **The film's sheet is a spreadsheet**, because that is what the reader
+  quotes in: column letters, row numbers, hidden rows where the matrix skips
+  lines, a selection with its fill handle that moves to whatever the hour
+  changed, and a name box. Where the formula would be, the source bar names the
+  document the value came from. Its categories and quantities are the
+  request's; its rates are read off the documents on the desk — the price list,
+  and the agreed rates in schedule B (clause B.6) for the two lines the matrix
+  prices from the agreement — and a held line has none. No grey bars stand in
+  for text; at 23:47 the cells are simply empty.
+- **The same licence for the signal**: the held state and the figure that breaks
+  the floor — on the film's sheet, the gathered sheet and the handover.
+  `e2e/glass.spec.ts` fails on any other text in it.
+- **No motto.** Its placements are the home page's close and the success state.
 
 ### The mark
 
@@ -183,15 +353,17 @@ Two rules go with it:
 
 ### Illustrative material
 
-Two blocks on the page are invented in detail: the night thread and the evidence
-document. Both are allowed to exist **only** while their own first lines say so,
-at reading size, in the server's HTML — not in small print underneath and not as
-a watermark across the figures. `site.test.ts` and `site.spec.ts` both assert it.
+Three blocks on the home page are invented in detail: the film, the six
+sources and the tabs. Each is allowed to exist **only** while its own first
+lines say so, at reading size, in the server's HTML — not in small print
+underneath and not as a watermark across the figures. `site.test.ts` and
+`home.spec.ts` both assert it.
 
-The figures in them are exact and they **reconcile across both sections**, to the
-cent, because they are one quotation at two magnifications. A commercial reader
-will check. Edit one number and `content/site.test.ts` names the others that
-have to move with it.
+The figures in them are exact and they **reconcile across every section**, to
+the cent, because they are one quotation at several magnifications — the
+thread's ledger and the evidence document's line 14, read by the components
+rather than written again. A commercial reader will check. Edit one number and
+`content/site.test.ts` names the others that have to move with it.
 
 ---
 
@@ -204,6 +376,13 @@ and it must never imply otherwise.
 volume figures · "trusted by" · security certifications or compliance claims ·
 integration availability · a launch date or quarter · the name of any ERP, CRM
 or mail client (the form asks; the page does not claim).
+
+**A certification appears only once it is held, and only with its report.**
+Not as "in progress", not as a badge, not as a framework name in a sentence.
+The trust grid is built to take one (`trust.certifications`, whose type requires
+a report link) on the day it exists; until then the page says plainly that none
+is claimed. A certification shown before it is held is the one claim a buyer's
+procurement team can check in an afternoon.
 
 **Never claim outbound supplier contact.** Reading a mailbox is a thing software
 does. Contacting somebody's suppliers on their behalf is a different promise,
@@ -261,7 +440,7 @@ changes.
 
 ## 8. Definition of done
 
-A change is complete only when it:
+For changed product behavior, apply the relevant criteria below:
 
 - behaves correctly, with loading, empty, error and success states,
 - works with the keyboard, and at 390px, 768px, 1024px and 1440px,
@@ -272,8 +451,11 @@ A change is complete only when it:
 - has tests for anything with a rule in it,
 - has no TypeScript, lint or build failure,
 - exposes no secret,
-- claims nothing from §5,
-- **is committed and pushed.**
+- claims nothing from §5.
+
+A prose-only instruction edit needs a focused diff and reference review. Apply UI
+state, viewport, motion and form checks when those behaviors change. Preserve the
+complete release checks when preparing a release; commit/push follows §10.
 
 ---
 
@@ -290,13 +472,18 @@ pnpm generate-routes     # after adding or renaming a route file
 pnpm generate-og         # re-render the share card from content/site.ts
 ```
 
-Run typecheck, lint, test and build for anything you touch — **before**
-committing, not after. A commit that has not been run is a guess.
+Run checks that exercise the affected behavior. UI changes need the relevant viewport
+and interaction checks; form or commercial-content changes need their relevant tests.
+Run the full required suite for a release or when the impact warrants it. Once checks
+pass, repeat them only for new edits, failures or unresolved concerns. Continue fixing
+in-scope failures while a safe next step exists; report concrete blockers accurately.
 
 ---
 
 ## 10. Version control
 
-**Uncommitted work does not exist.** One commit per functional unit; if the
-subject line needs an "and", it is probably two commits. Never end a task with a
-dirty tree — either commit it or say in your summary what you left and why.
+Follow the user's authorized delivery mode: local edits, draft, commit, PR or push.
+Readiness does not require publication for a local edit or read-only review. When
+commits are requested, keep each commit cohesive, validate affected behavior and stage
+only task-owned paths. Preserve unrelated dirty work. State what remains uncommitted
+and do not push unless that delivery is in scope.

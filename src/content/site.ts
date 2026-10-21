@@ -428,8 +428,10 @@ export const boundary = {
  * ── The arithmetic, which is checked ───────────────────────────────────────
  *
  * This is line 14 of the same twenty-line quotation the night thread runs, seen
- * close up, and it is why that quotation misses its floor. Every figure below
- * is exact rather than plausible:
+ * close up, and it is why that quotation misses its floor. It is the line the
+ * matrix marks as moved and the one /glass lays on the desk, and a test holds
+ * all three to one line, one part and one cost. Every figure below is exact
+ * rather than plausible:
  *
  *   1,200 units
  *   unit cost was 128.00, now 135.68            128.00 × 1.06 = 135.68
@@ -461,7 +463,7 @@ export const evidence = {
     scaleMax: 25,
     sourceLabel: 'The source',
     sourceTitle: 'A supplier cost changes.',
-    sourceReference: 'Supplier confirmation SC-4471 · 03:39',
+    sourceReference: 'Supplier confirmation SC-4471 · 03:42',
     costLabel: 'Cost per unit',
     beforeLabel: 'Previous',
     afterLabel: 'Confirmed',
@@ -501,7 +503,7 @@ export const evidence = {
         },
         {
           term: 'Supplier confirmation SC-4471',
-          value: 'Received 03:39. Unit cost and lead time, superseding the price list.',
+          value: 'Received 03:42. Unit cost and lead time, superseding the price list.',
         },
         {
           term: 'Price list, February',
@@ -512,7 +514,7 @@ export const evidence = {
 
     finding: {
       label: 'Finding',
-      body: 'The supplier confirmation moves two things on one line: unit cost from EUR 128.00 to EUR 135.68, a rise of six per cent, and lead time from 21 days to 42. The price list is not wrong; it is out of date by three minutes.',
+      body: 'The supplier confirmation moves two things on one line: unit cost from EUR 128.00 to EUR 135.68, a rise of six per cent, and lead time from 21 days to 42. The price list is not wrong; it has been out of date since 03:42.',
     },
 
     calculation: {
@@ -655,7 +657,7 @@ export const access = {
 
   open: {
     title: 'Before you share a case',
-    body: 'Data location, internal access and audit arrangements are being settled with the first group of teams. We will explain the current setup before you decide whether to share a case.',
+    body: 'Data location, encryption, internal access and audit arrangements are being settled with the first group of teams. We will explain the current setup before you decide whether to share a case.',
   },
 } as const
 
@@ -753,10 +755,790 @@ export const launch = {
   submit: 'Join the waitlist',
   success: 'You are on the list.',
   successNote: 'We have your address. We will write when we are ready.',
-  pause: 'Pause motion',
-  play: 'Resume motion',
   index: ['Artificial intelligence', 'Commercial instinct', 'A new perspective'],
   title: 'Incillum - A different kind of intelligence.',
   description:
     'Commercial intelligence. Reimagined. Incillum is in formation. Join the waitlist.',
+} as const
+
+/**
+ * The home page: one quotation, told in eight acts.
+ *
+ * The page opens on the commissioned photograph — an empty office, one lamp,
+ * a quotation still lying under it — because that frame is the argument with
+ * the words taken away. Then the night itself, played in a frame (the film
+ * from /glass); then the page turns to paper and takes the same quotation
+ * apart at closer magnifications: the six sources it is assembled from, the
+ * four steps it goes through and where each one stops, what exists, what is
+ * promised about the data, the questions a buyer asks, and the morning.
+ *
+ * ── Shaped like the pages it is measured against, proved differently ───────
+ *
+ * The order is the order Harvey and Hebbia use — a product film, the context it
+ * draws on, product tabs, a band of figures, a security grid, then the close.
+ * Their proof is not available here (AGENTS.md §5), so every act carries the
+ * honest substitute instead: documents for a logo wall, states for metrics,
+ * written answers for testimonials, and commitments with their real state for
+ * certification badges.
+ *
+ * ── The matrix is illustrative, and reconciles ─────────────────────────────
+ *
+ * `matrix` below is the quotation's twenty lines as the film's sheet sets them:
+ * eighteen priced, two held — one because a part number matches three
+ * catalogue entries, one because a customer drawing carries no revision — and
+ * one line whose cost moved when a supplier confirmation arrived at 03:42.
+ * That line is 14, the flanged housing the evidence document takes apart and
+ * the largest line on the quotation, which is what the thread calls it.
+ * Its money is not written here. It is read off the thread's 06:50 ledger, so
+ * the two cannot disagree. `content/site.test.ts` counts the rows below against
+ * the totals and the totals against the thread's own prose.
+ *
+ * No price per line. A line price would be twenty more figures to keep true and
+ * would not tell a stranger anything the status and the evidence do not.
+ */
+export type MatrixStatus = 'priced' | 'changed' | 'held'
+
+export const home = {
+  headlineStart: hero.headlineStart,
+  headlineEnd: hero.headlineEnd,
+  kicker: 'For the unattended hours',
+  lede: hero.lede,
+  /**
+   * The masthead's links. Every one lands on something that exists — a section
+   * on this page or the contact memo — because a link to a page that is not
+   * there is a promise this site would be breaking in its first line.
+   */
+  nav: { how: 'How it works', trust: 'Trust', questions: 'Questions', contact: 'Contact' },
+  cta: 'Request early access',
+  emailPlaceholder: 'Your work email',
+  /** The note under the field: what a first email is for, and what it is not. */
+  assurance: hero.assurance,
+  /** The quiet link under the form, down to the film. */
+  watch: 'Watch one night',
+  status: 'In progress. Carefully built.',
+
+  matrix: {
+    heading: 'What is waiting at 08:04.',
+    lede: 'One request, carried through the night: every line priced or held, every figure still attached to where it came from, and the one call that is not software’s to make.',
+    title: 'Request for quotation · framework agreement',
+    due: 'Response expected Thursday',
+    lines: { total: 20, priced: 18, held: 2 },
+    summary: {
+      priced: 'Lines priced',
+      held: 'Held for review',
+      value: 'Quote value',
+      margin: 'Expected margin',
+      floor: 'floor',
+    },
+    columns: { line: 'Line', item: 'Item', status: 'Status', evidence: 'Evidence' },
+    statusLabels: {
+      priced: 'Priced',
+      changed: 'Cost moved',
+      held: 'Needs review',
+    } satisfies Record<MatrixStatus, string>,
+    rows: [
+      { line: '01', item: 'Machined bracket, 6061-T6', status: 'priced', evidence: 'Framework agreement, schedule B' },
+      { line: '02', item: 'Cast housing, A380', status: 'priced', evidence: 'Supplier price list, page 4' },
+      { line: '04', item: 'Bearing seat, catalogue part', status: 'held', evidence: 'Part number matches three catalogue entries; only the tolerance separates them' },
+      { line: '05', item: 'Gasket set', status: 'priced', evidence: 'Framework agreement, schedule B' },
+      { line: '06', item: 'Cover plate, laser cut', status: 'priced', evidence: 'Supplier price list, page 9' },
+      { line: '11', item: 'Sensor mount, customer drawing', status: 'held', evidence: 'Drawing carries no revision' },
+      { line: '14', item: 'Flanged housing, machined', status: 'changed', evidence: 'Supplier confirmation at 03:42 — unit cost up six per cent, lead time out three weeks' },
+    ] satisfies ReadonlyArray<{ line: string; item: string; status: MatrixStatus; evidence: string }>,
+    more: { count: 13, text: 'more lines priced, each with its source attached' },
+  },
+
+  closing: {
+    label: hero.invitation,
+    headline: close.headline,
+    body: 'If there is an RFQ that lands on a Friday evening, or a quotation that is always waiting on one number from one supplier, that is the conversation we want to have.',
+    action: 'Tell us about the work',
+    emailLabel: 'Or write to us',
+    /** Over the contact memo's own three steps, which the component reads from `contact`. */
+    nextLabel: earlyAccess.nextLabel,
+  },
+
+  title: seoCopy.title,
+  description:
+    'Incillum is being built to carry commercial work forward and bring people back where judgement matters: an RFQ that arrives at night, and a decision ready for a person by morning. Request early access.',
+} as const
+
+/**
+ * How it works — four tabs, one quotation.
+ *
+ * ── The tabs are the boundaries ────────────────────────────────────────────
+ *
+ * The section the reference pages fill with product modules. This product has
+ * one job, so its tabs are the four things that happen to one request — read,
+ * hold, price, decide — and each one ends on the place it stops. Those are the
+ * four entries of `boundary`, once each, named by their titles here and read
+ * from there: a stranger who clicks through the tabs has read "where it stops"
+ * without being handed a list of limits.
+ *
+ * ── Nothing here is a figure ───────────────────────────────────────────────
+ *
+ * Every number the panels show — the cost before and after, the margins, the
+ * floor, the shortfall, the price at the floor — is read by the component off
+ * `evidence`, the 06:50 ledger and the documents on the desk. The words below
+ * name what happens; a test fails the moment one of them carries a figure.
+ *
+ * Each step is pinned to an hour of the thread, so the tabs and the film can
+ * never tell the night in a different order.
+ */
+export type HowKey = 'read' | 'hold' | 'price' | 'decide'
+
+export interface HowStep {
+  key: HowKey
+  /** The tab's own name: one word. */
+  tab: string
+  /** The beat of the thread the step happens in. */
+  at: string
+  title: string
+  line: string
+  /** The `boundary` point the step ends on, by its title. */
+  stops: string
+  stopsLine: string
+}
+
+const howSteps: ReadonlyArray<HowStep> = [
+  {
+    key: 'read',
+    tab: 'Read',
+    at: '00:06',
+    title: 'Every line, from what arrived.',
+    line: 'A PDF, drawing pack, spreadsheet or email, read into parts, quantities, dates and terms.',
+    stops: 'Missing evidence',
+    stopsLine: 'What the request does not say is flagged, never filled in.',
+  },
+  {
+    key: 'hold',
+    tab: 'Hold',
+    at: '01:18',
+    title: 'What cannot be settled is held.',
+    line: 'One part matches three catalogue entries, and only the tolerance separates them. Nothing is chosen.',
+    stops: 'Ambiguity',
+    stopsLine: 'The line waits for a person, with the question narrowed to one thing.',
+  },
+  {
+    key: 'price',
+    tab: 'Price',
+    at: '03:42',
+    title: 'Costs carried through to margin.',
+    line: 'A supplier answer arrives: six per cent up, three weeks later. The margin is recalculated.',
+    stops: 'Commercial policy',
+    stopsLine: 'The floor is checked on every line, and never argued down.',
+  },
+  {
+    key: 'decide',
+    tab: 'Decide',
+    at: '08:04',
+    title: 'A decision, not an investigation.',
+    line: 'Eighteen lines priced, two lines held, and one call that is yours to make.',
+    stops: 'Approval',
+    stopsLine: 'Nothing is sent and no price is committed until a person picks one.',
+  },
+]
+
+export const how = {
+  anchor: 'how',
+  label: 'How it works',
+  headline: 'From request to decision.',
+  lede: 'Four steps through one invented quotation. Each is being built to stop exactly where a person should take over.',
+  tabsLabel: 'Steps of one quotation',
+  stopsLabel: 'Where it stops',
+  steps: howSteps,
+
+  /** The panels' own words. Their figures are the evidence document's and the ledger's. */
+  panels: {
+    read: {
+      title: 'Read into lines',
+      fields: { request: 'Request', terms: 'Terms', lines: 'Lines', due: 'Due' },
+    },
+    price: {
+      quoted: 'Quoted at',
+    },
+    decide: {
+      options: [
+        { key: 'keep', title: 'Keep the price', detail: 'and accept the lower margin on the largest line' },
+        { key: 'floor', title: 'Price to the floor', detail: 'and go back to the supplier on the lead time' },
+        { key: 'split', title: 'Split the quantity', detail: 'across both' },
+      ],
+      quotation: 'The whole quotation',
+    },
+  },
+} as const
+
+/**
+ * Data and trust.
+ *
+ * ── The section the reference pages fill with badges ───────────────────────
+ *
+ * Both pages this site is measured against close their argument with a grid of
+ * certifications. Incillum holds none, and a certification shown before it is
+ * held is the one claim a buyer's procurement team can check in an afternoon.
+ * So the grid is kept and the badges are not: six commitments, each carrying
+ * its real state, from a closed set of three.
+ *
+ *   · Decided — a promise that could be made before anything shipped, so it
+ *     was. The two here are already on the record: `access.decided`, and the
+ *     approval line of `boundary`.
+ *   · Built — what `standing` already says exists: policies, approval routing
+ *     and the audit record.
+ *   · In build — the rest, said plainly.
+ *
+ * Nothing moves up a state a moment before it is true. The data arrangements
+ * that are still open — location, encryption, internal access, audit — are
+ * `access.open`, set under the grid in the same ink.
+ *
+ * ── Certifications ─────────────────────────────────────────────────────────
+ *
+ * `certifications` is empty, and the type will not accept an entry without a
+ * link to its report. While it is empty the section says so, in one sentence.
+ * No framework is named anywhere on the page until one is held; the end-to-end
+ * suite fails the page if one is.
+ */
+export type TrustState = 'Decided' | 'Built' | 'In build'
+
+export type TrustGlyph = 'training' | 'sending' | 'approval' | 'record' | 'source' | 'separate'
+
+export interface TrustCommitment {
+  glyph: TrustGlyph
+  state: TrustState
+  title: string
+  body: string
+}
+
+export interface Certification {
+  name: string
+  /** Where the report can be read. No report, no listing. */
+  report: `https://${string}`
+}
+
+const certifications: ReadonlyArray<Certification> = []
+
+export const trust = {
+  anchor: 'trust',
+  label: 'Data and trust',
+  headline: 'What happens to your figures.',
+  lede: 'Prices, costs and margins are the numbers a business guards most. Each commitment below carries its real state: decided, built, or still in build.',
+  commitments: [
+    {
+      glyph: 'training',
+      state: 'Decided',
+      title: 'Not used for training',
+      body: access.decided.body,
+    },
+    {
+      glyph: 'sending',
+      state: 'Decided',
+      title: 'Nothing sent on your behalf',
+      body: 'No quotation is sent, no price is committed and no order is confirmed without a person.',
+    },
+    {
+      glyph: 'approval',
+      state: 'Built',
+      title: 'Approvals reach the right person',
+      body: 'Your policies say who must approve what, and the decision is routed to them.',
+    },
+    {
+      glyph: 'record',
+      state: 'Built',
+      title: 'A record of every decision',
+      body: 'Who decided what, and when, is kept with the work it belongs to.',
+    },
+    {
+      glyph: 'source',
+      state: 'In build',
+      title: 'Every figure keeps its source',
+      body: 'A price is shown with the document it came from, never without it.',
+    },
+    {
+      glyph: 'separate',
+      state: 'In build',
+      title: 'Kept to your organisation',
+      body: 'Each organisation’s records are kept apart from every other organisation’s.',
+    },
+  ] satisfies ReadonlyArray<TrustCommitment>,
+  open: access.open,
+  certifications,
+  noCertification:
+    'No certification is claimed on this page. When one is held, it will be listed here with its report.',
+} as const
+
+/**
+ * Questions.
+ *
+ * Where the reference pages put their testimonials. There is nobody to quote,
+ * so the section answers what a commercial director asks before leaving an
+ * address — in full, in the page's HTML, with nothing folded away behind a
+ * click. Three of the answers are copy this site has already committed to and
+ * are read from where it lives, so they cannot drift.
+ *
+ * The answers keep the house tense: what the product will do is being built;
+ * what has been decided is said flatly.
+ */
+export const questions = {
+  anchor: 'questions',
+  label: 'Questions',
+  headline: 'Before you ask.',
+  items: [
+    {
+      question: 'Who is it for?',
+      answer:
+        'Teams for whom a quote is real work: parts to match and drawings to read, suppliers who move costs while it is open, and a margin somebody has to approve.',
+    },
+    {
+      question: 'Does it send quotations?',
+      answer:
+        'No. It is being built to prepare the quotation and the working behind it. A person decides, and a person sends.',
+    },
+    {
+      question: 'Does it contact our suppliers?',
+      answer:
+        'No. It is being built to read a supplier’s answer when one arrives. Nothing is requested, chased or negotiated on your behalf.',
+    },
+    {
+      question: 'What happens to a line it cannot resolve?',
+      answer:
+        'It is held rather than guessed, with the question narrowed to the one thing it needs from a person. The rest of the quotation carries on.',
+    },
+    {
+      question: 'Is our data used to train models?',
+      answer: `No. ${access.decided.body}`,
+    },
+    {
+      question: 'Which systems does it work with?',
+      answer:
+        'Tell us which ones you use; the contact form asks. Connections are being chosen with the first teams, so none is listed here.',
+    },
+    {
+      question: 'What does early access involve?',
+      answer: earlyAccess.next,
+    },
+  ],
+} as const
+
+/**
+ * /glass — the presentation.
+ *
+ * The same company and the same night as the home page, told the way a launch
+ * film tells it: two beats of type in the dark, one line of argument, the night
+ * played in a frame, and the documents the work is assembled from — scattered,
+ * then gathered onto one sheet. The shape is borrowed from pages it was
+ * measured against. None of their proof is, because there is none to borrow
+ * (AGENTS.md §5).
+ *
+ * ── No labels over headings ────────────────────────────────────────────────
+ *
+ * The first version put a tracked capital label over every block. That is the
+ * most recognisable mark of a page assembled rather than written, and it was
+ * read as one. So the licence for invented material is a sentence, at reading
+ * size, inside the block's own first lines — which is what AGENTS.md asks for
+ * anyway, and says more plainly than a label did.
+ *
+ * ── One story, again ───────────────────────────────────────────────────────
+ *
+ * Nothing here is a second example. The film is the night thread at another
+ * magnification, its sheet is the matrix's rows, and the quotation's figures —
+ * the value, the margin, the floor, the shortfall — are read off the thread's
+ * 06:50 ledger by the components, so none of them is written here and a test
+ * keeps it that way. The hours are the thread's, the line numbers are the
+ * matrix's, and the one cost that moves, moves by the thread's six per cent and
+ * three weeks: tests hold all of it.
+ *
+ * ── Shorter than the home page, on purpose ─────────────────────────────────
+ *
+ * A presentation is watched, not read: titles of six words or fewer, lines of
+ * sixteen or fewer, and a test for both. Anything longer is on the home page.
+ *
+ * ── The motto is not here ──────────────────────────────────────────────────
+ *
+ * Its two placements are the home page's close and the success state. The form
+ * on this page is the home page's form, so its success state can appear here —
+ * that is the same placement, not a third.
+ */
+export type GlassStatus = MatrixStatus | 'read'
+
+/** The six places one quotation's facts are kept. Also the icon a source carries. */
+export type GlassSource = 'request' | 'drawing' | 'catalogue' | 'prices' | 'agreement' | 'supplier'
+
+export interface GlassFrame {
+  /** An hour of the thread. A test holds every frame to a beat. */
+  at: string
+  line: string
+  /** The sheet's source bar until the ledger exists, which is 06:50: what the night has done so far. */
+  note?: string
+  /**
+   * Where a source lands on the sheet — `head`, `floor`, or a line number from
+   * the matrix — and which source it is, for its icon. A chip with no source is
+   * the person the night ends with.
+   */
+  chips: ReadonlyArray<{ target: string; source?: GlassSource; text: string }>
+}
+
+const glassFrames: ReadonlyArray<GlassFrame> = [
+  {
+    at: '23:47',
+    line: 'Twenty line items and a drawing pack, due Thursday. The office is empty.',
+    note: 'Twenty lines, unread.',
+    chips: [{ target: 'head', source: 'request', text: 'Shared mailbox · 23:47' }],
+  },
+  {
+    at: '00:06',
+    line: 'Parts, quantities, dates and terms. What it does not say is flagged, not filled in.',
+    note: 'Twenty lines read. Three gaps flagged, none filled in.',
+    chips: [],
+  },
+  {
+    at: '01:18',
+    line: 'One part matches three catalogue entries. One drawing has no revision. Neither is guessed.',
+    note: 'Two lines held. Eighteen carry on.',
+    chips: [
+      { target: '04', source: 'catalogue', text: 'Catalogue · three entries match' },
+      { target: '11', source: 'drawing', text: 'Drawing · no revision' },
+    ],
+  },
+  {
+    at: '03:42',
+    line: 'A confirmation arrives: unit cost up six per cent, lead time out three weeks.',
+    note: 'Recalculated when the answer arrived.',
+    chips: [{ target: '14', source: 'supplier', text: 'Supplier confirmation · 03:42' }],
+  },
+  {
+    at: '06:50',
+    line: 'Eighteen lines priced, each figure still attached to the page it came from.',
+    chips: [{ target: 'floor', source: 'agreement', text: 'Framework agreement' }],
+  },
+  {
+    at: '08:04',
+    line: 'Quote under the floor, or go back on the lead time. Neither happens without you.',
+    chips: [{ target: 'head', text: 'With a person · 08:04' }],
+  },
+]
+
+/**
+ * The film's sheet, set as a spreadsheet: what the night reads off the request
+ * for each of the matrix's lines, and where each line's rate comes from.
+ *
+ * The categories and quantities are the request's own and are written here,
+ * because the request is a PDF no page draws. The rates are not: each names the
+ * document row it is read from — the supplier's price list, or the agreed
+ * rates in schedule B for the two lines the matrix prices from the agreement —
+ * and the component reads the figure there, so the sheet and the documents on
+ * the desk cannot disagree. The held lines have no rate, because nothing is
+ * guessed. A test holds every line to the matrix and every rate to a row.
+ */
+const glassSheet = {
+  columns: {
+    line: 'Line',
+    item: 'Item',
+    category: 'Category',
+    quantity: 'Qty',
+    rate: 'Rate',
+    status: 'Status',
+  },
+  /** The name box's name for the selection that takes the whole sheet, at 08:04. */
+  all: 'Quote',
+  lines: {
+    '01': { category: 'Machined', quantity: '400', rate: { from: 'agreement', part: 'BR-6061' } },
+    '02': { category: 'Cast', quantity: '250', rate: { from: 'prices', part: 'CH-A380' } },
+    '04': { category: 'Catalogue', quantity: '600' },
+    '05': { category: 'Sealing', quantity: '1,000', rate: { from: 'agreement', part: 'GS-12' } },
+    '06': { category: 'Sheet metal', quantity: '300', rate: { from: 'prices', part: 'CP-LC3' } },
+    '11': { category: 'Machined', quantity: '150' },
+    '14': { category: 'Machined', quantity: '1,200', rate: { from: 'prices', part: 'FH-6082' } },
+  },
+} as const satisfies {
+  columns: Record<string, string>
+  all: string
+  lines: Record<
+    string,
+    { category: string; quantity: string; rate?: { from: 'prices' | 'agreement'; part: string } }
+  >
+}
+
+/**
+ * The six documents, as they lie on the desk before anything reads them.
+ *
+ * Drawn from their own contents rather than from grey bars: a reader who leans
+ * in finds a real subject line, a title block with the revision cell empty, the
+ * three catalogue entries a tolerance apart, the cost the supplier is about to
+ * change. All of it is the same invented quotation, and it reconciles — the
+ * held lines are held for the reasons the matrix gives, and the confirmation
+ * moves line 14's cost by exactly six per cent and its lead time by exactly
+ * three weeks, from the evidence document's own figures. The floor in the
+ * agreement is not written here: the component reads it off the ledger, so the
+ * clause and the figure cannot disagree.
+ *
+ * Each carries the one question a person would ask of it at 23:47. They are the
+ * same questions the held lines are narrowed to, asked by hand.
+ */
+const glassDocuments = {
+  request: {
+    title: 'Shared mailbox',
+    at: '23:47',
+    subject: 'RFQ 8841 — framework agreement',
+    from: 'Purchasing',
+    address: 'rfq@customer.example',
+    body: 'Please quote the twenty lines attached, against our framework agreement. We need your response by Thursday.',
+    attachments: [
+      { name: 'RFQ-8841.pdf', format: 'PDF' },
+      { name: 'Drawings-8841.zip', format: 'ZIP' },
+    ],
+    question: 'Due Thursday. Who has it?',
+  },
+  drawing: {
+    title: 'Sensor mount',
+    number: 'DWG 8841-11',
+    revision: 'Rev',
+    blank: '—',
+    scale: 'Scale 1:1',
+    material: '6061-T6',
+    dimensions: { width: '120', height: '70', hole: 'Ø8', count: '2×' },
+    question: 'Which revision?',
+  },
+  catalogue: {
+    title: 'Bearing seats',
+    page: 'p. 112',
+    entries: [
+      { part: 'BS-2210-H6', name: 'Bearing seat, Ø20', fit: 'h6' },
+      { part: 'BS-2210-H7', name: 'Bearing seat, Ø20', fit: 'h7' },
+      { part: 'BS-2210-K6', name: 'Bearing seat, Ø20', fit: 'k6' },
+    ],
+    question: 'Which of the three?',
+  },
+  prices: {
+    file: 'supplier-prices.xlsx',
+    columns: ['Part', 'Description', 'Unit cost', 'Lead time'],
+    rows: [
+      { part: 'CH-A380', description: 'Cast housing, A380', cost: '18.40', lead: '21 d' },
+      { part: 'FH-6082', description: 'Flanged housing, machined', cost: '128.00', lead: '21 d' },
+      { part: 'CP-LC3', description: 'Cover plate, laser cut', cost: '6.90', lead: '10 d' },
+      { part: 'SR-20', description: 'Spacer ring', cost: '1.85', lead: '7 d' },
+      { part: 'LP-6', description: 'Locating pin', cost: '0.62', lead: '7 d' },
+    ],
+    /** The row the supplier is about to change. A test holds it to the confirmation. */
+    moving: 'FH-6082',
+    /** The second tab is drawn open, and it is the one the moving row is kept on. */
+    tabs: ['Shafts', 'Housings', 'Plates'],
+    question: 'Still this price?',
+  },
+  agreement: {
+    title: 'Framework agreement',
+    schedule: 'Schedule B · Commercial terms',
+    clauses: [
+      { number: 'B.1', text: 'Prices hold for twelve months from signature.' },
+      { number: 'B.2', text: 'Quotations stay open for thirty days.' },
+      { number: 'B.3', text: 'Payment falls due sixty days after invoice.' },
+      { number: 'B.4', text: 'No quotation is issued below a margin of', floor: true },
+      { number: 'B.5', text: 'Lead times are confirmed in writing.' },
+      /** The agreed unit rates the sheet reads for lines 01 and 05, which the matrix prices from schedule B. */
+      {
+        number: 'B.6',
+        text: 'Agreed unit rates:',
+        rates: [
+          { part: 'BR-6061', item: 'Machined bracket, 6061-T6', rate: '21.60' },
+          { part: 'GS-12', item: 'Gasket set', rate: '3.15' },
+        ],
+      },
+    ],
+    signatures: ['For the customer', 'For the supplier'],
+    question: 'What is their floor?',
+  },
+  supplier: {
+    title: 'Supplier confirmation SC-4471',
+    at: '03:42',
+    item: 'Flanged housing, machined',
+    changes: [
+      { term: 'Unit cost', was: '128.00', now: '135.68' },
+      { term: 'Lead time', was: '21 days', now: '42 days' },
+    ],
+    note: 'Supersedes the price list for this part.',
+    question: 'Who saw this at 03:42?',
+  },
+} as const satisfies Record<GlassSource, unknown>
+
+/**
+ * What each source becomes on the sheet.
+ *
+ * The line numbers and states are the matrix's, and a test holds them to it:
+ * the catalogue and the drawing hold lines 04 and 11, and the supplier answer
+ * moves line 14. Declared rather than inferred, for the reason `ThreadBeat`
+ * is: only some rows carry a line, and reading `row.line` should type-check
+ * against the shape of a row, not against six literals.
+ */
+export interface GlassThreadRow {
+  key: GlassSource
+  title: string
+  line?: string
+  text: string
+  status?: MatrixStatus
+  /** Set on the agreement's row, which ends on the floor read from the ledger. */
+  floor?: boolean
+}
+
+const glassThread: ReadonlyArray<GlassThreadRow> = [
+  { key: 'request', title: 'Shared mailbox', text: 'Twenty line items, due Thursday' },
+  { key: 'drawing', title: 'Drawing pack', line: '11', text: 'No revision on the drawing', status: 'held' },
+  { key: 'catalogue', title: 'Catalogue', line: '04', text: 'Three entries match the part', status: 'held' },
+  { key: 'prices', title: 'Supplier price list', text: 'Unit costs for the priced lines', status: 'priced' },
+  { key: 'agreement', title: 'Framework agreement', text: 'Margin floor', floor: true },
+  { key: 'supplier', title: 'Supplier confirmation', line: '14', text: 'Six per cent up, three weeks later', status: 'changed' },
+]
+
+export const glass = {
+  title: 'Incillum — one request, one night',
+  description:
+    'One request for quotation, carried through one night and handed back to a person by morning: a short, illustrative presentation of what Incillum is being built to do.',
+
+  /**
+   * The opening: two beats, then the page.
+   *
+   * The first is the world as it is — the tools got faster, at the desk. The
+   * second is the hour this company exists for. It is a sentence about people,
+   * which is the house rule, and it leaves the argument to the hero rather than
+   * spending it in the dark.
+   */
+  opening: ['AI made every desk faster.', 'Then everyone went home.'],
+
+  nav: { contact: home.nav.contact },
+
+  hero: {
+    headlineStart: hero.headlineStart,
+    headlineEnd: hero.headlineEnd,
+    lede: hero.lede,
+    assurance: hero.assurance,
+    watch: 'Watch one night',
+  },
+
+  film: {
+    /** The licence, as the frame's first line: a sentence, not a label. */
+    licence: 'One quotation, invented for this page, followed through one night.',
+    title: home.matrix.title,
+    statusLabels: { ...home.matrix.statusLabels, read: 'Read' } satisfies Record<GlassStatus, string>,
+    more: 'more lines',
+    controls: {
+      play: 'Play the night',
+      pause: 'Pause',
+      replay: 'Watch it again',
+      chapters: 'Hours of the night',
+    },
+    frames: glassFrames,
+    floor: 'Floor',
+    sheet: glassSheet,
+  },
+
+  sources: {
+    scattered: {
+      headline: 'Six sources that never meet.',
+      /** Ends on the licence for everything drawn below it. */
+      lede: 'Everything one quotation needs is already written down, in six places that do not talk to each other. The six on this page are invented.',
+    },
+    gathered: {
+      headline: 'Now they meet.',
+      lede: 'Incillum is being built to read all six onto one sheet, with every figure still tied to the page it came from.',
+    },
+    documents: glassDocuments,
+    thread: glassThread,
+    line: 'Line',
+    priced: 'priced',
+    held: 'held',
+    against: 'against a floor of',
+  },
+
+  closing: {
+    headline: home.closing.headline,
+    body: home.closing.body,
+    action: home.closing.action,
+    writeTo: 'Or write to',
+    /**
+     * The morning plate: the night plate's own room at 08:04, where the film
+     * ends. Described the way `nightfall.alt` describes the night — the
+     * composition, not the argument — so the two read as one room, twice.
+     */
+    morning:
+      'The same office at 08:04, photographed from inside. Grey morning daylight comes through the glass wall; the desk lamp is still on over the printed quotation, the chair behind it is empty and pushed back, and the monitor is still switched off.',
+  },
+
+  /**
+   * Where the build stands, as one plain paragraph rather than three labelled
+   * columns: each stage's title and its state, read off `standing` so the two
+   * pages cannot disagree about what exists.
+   */
+  standing: standing.stages.map(({ state, title }) => `${title} is ${state.toLowerCase()}.`).join(' '),
+} as const
+
+/**
+ * The contact page — a memo, not a form.
+ *
+ * `/contact` is where somebody who has decided to say more goes, so it can ask
+ * for more than the address the home page asks for. It posts to the same
+ * waitlist function and keeps the same promise: only the address is required,
+ * nothing is sent to the person who wrote, and the success state says we have
+ * it and will write once.
+ *
+ * It carries no logos, no quotations from customers and no figures, because
+ * there are none. Where the page it is modelled on spends a column on proof,
+ * this one spends it on what happens next — which is the only thing a stranger
+ * needs before deciding to write.
+ *
+ * The motto is deliberately absent from this object. The success state renders
+ * `brand.motto` itself, which is one of its two permitted placements.
+ */
+export const contact = {
+  title: 'Contact — Incillum',
+  description:
+    'Tell us about the commercial work you carry. If it looks like a fit, we will write to arrange a call. Incillum is being built; early access is not open yet.',
+  heading: 'Tell us about the work that outlasts the day.',
+  steps: [
+    {
+      icon: 'quotation',
+      text: 'We start with one job: a request for quotation, carried to a commercial decision.',
+    },
+    {
+      icon: 'call',
+      text: 'If it looks like a fit, we write once to arrange a call.',
+    },
+    {
+      icon: 'case',
+      text: 'Then one real case, run beside the way your team works today.',
+    },
+  ],
+  status: 'In progress. Carefully built.',
+  alternative: 'Prefer email?',
+  back: 'Incillum',
+  memo: {
+    formLabel: 'Contact Incillum',
+    description: 'Tell us about the work you quote. If it looks like a fit, we’ll write to set up a call.',
+    requiredNote: 'Only your email is required.',
+    fields: {
+      email: 'Work email',
+      company: 'Company',
+      role: 'Your role',
+      commercialWork: 'Kind of commercial work',
+      quoteVolume: 'RFQs a month',
+      erp: 'Current ERP',
+      pain: 'What costs you most in quoting?',
+    },
+    skip: 'Skip this',
+    submit: 'Send to Incillum',
+    sending: 'Sending',
+    stillSending: 'Still sending. Thanks for your patience.',
+    privacy: 'Nothing is sent to you until we write. We will write once.',
+    failure: {
+      title: 'We couldn’t confirm delivery.',
+      body: 'Your note may have arrived. Your details are still here if you need to retry or email us.',
+      action: 'Email us',
+    },
+  },
+  receipt: {
+    kicker: 'Copy for your records',
+    heading: 'Received.',
+    body: 'We have your note. If the work looks like a fit, we’ll write once to arrange a call, and then one real case run beside the way your team works today. Nothing is sent before then.',
+    reference: 'Reference',
+    stamp: 'Received',
+    another: 'Write another',
+    home: 'Back to home',
+    lead: 'Until then:',
+  },
 } as const

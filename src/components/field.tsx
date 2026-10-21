@@ -22,10 +22,13 @@ export function Field({
   hint,
   error,
   required = false,
+  labelHidden = false,
   children,
   className,
 }: {
   label: string
+  /** Visually hidden, still the field's accessible name. See `WaitlistForm`. */
+  labelHidden?: boolean
   hint?: string
   error?: string
   required?: boolean
@@ -41,7 +44,10 @@ export function Field({
 
   return (
     <div className={cn('flex flex-col gap-2', className)}>
-      <label htmlFor={id} className="text-small font-medium text-ink">
+      <label
+        htmlFor={id}
+        className={cn('text-small font-medium text-ink', labelHidden && 'sr-only')}
+      >
         {label}
         {required ? null : (
           <span className="ml-1.5 font-normal text-ink-400">optional</span>

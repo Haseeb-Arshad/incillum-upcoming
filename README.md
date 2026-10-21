@@ -3,13 +3,16 @@
 The pre-launch site for **incillum.com**.
 
 Its argument is *the unattended hours*: commercial work keeps mattering after
-the people carrying it have gone home. One page — the thesis, a night the reader
-scrolls through, where the software is built to stop, one line of a quotation
-with its arithmetic shown, and a form that asks for one email address.
+the people carrying it have gone home. One page, one invented quotation, told
+in eight acts: the night plate and a form that asks for one email address; the
+night played on one sheet; the six documents the quotation is made of; four tabs
+that each end where the software stops; what is built; what is promised about
+the data; the questions a buyer asks; and the morning.
 
-The page goes dark where the office empties and returns to paper at 08:04, where
-a person picks the work back up. That band is the design; read
-[AGENTS.md](AGENTS.md) §4 before changing anything inside it.
+The page opens in the night and returns to paper at 08:04, where a person picks
+the work back up. That band is the design, and the honest substitutes for logo
+walls, metrics, testimonials and certification badges are the rest of it; read
+[AGENTS.md](AGENTS.md) §4 and §5 before changing anything.
 
 ## Running it
 
@@ -24,8 +27,8 @@ pnpm dev            # http://localhost:3200
 pnpm typecheck      # tsc --noEmit
 pnpm lint           # eslint
 pnpm test           # vitest — the schema and spam rules
-pnpm test:e2e       # playwright, three viewports, against the production build
-                    # (96 tests: landmarks, claims, the night, the clock, the form)
+pnpm test:e2e       # playwright, four viewports, against the production build
+                    # (landmarks, claims, the film, the tabs, trust, the form)
 pnpm build
 ```
 

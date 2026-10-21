@@ -75,7 +75,15 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
-  const isLaunch = useRouterState({ select: (state) => state.location.pathname === '/' })
+  /**
+   * Pages that draw their own header and footer. The home page, the contact memo, the
+   * presentation and the private particle page each carry a masthead designed into their
+   * first screen, and a second one above it would be the site's chrome printed twice.
+   */
+  const ownsChrome = useRouterState({
+    select: (state) =>
+      ['/', '/contact', '/glass', '/lab/particles'].includes(state.location.pathname),
+  })
   useEffect(() => {
     /**
      * Hydration marker.
@@ -98,13 +106,13 @@ function RootComponent() {
         Skip to main content
       </a>
 
-      {!isLaunch && <Masthead />}
+      {!ownsChrome && <Masthead />}
 
       <main id="main" tabIndex={-1}>
         <Outlet />
       </main>
 
-      {!isLaunch && <Colophon />}
+      {!ownsChrome && <Colophon />}
     </>
   )
 }
