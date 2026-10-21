@@ -15,7 +15,7 @@ on the desk — six sources, four tabs that end where the work stops, the build'
 states, a trust grid, the questions — and the morning. It moved to `/` from
 `/glass`, which now redirects there. Its acts on the desk are specified in §4
 *The acts on the desk*; the eight-act page they were first built for
-(`components/home-page.tsx`) is no longer routed. Every act is the same
+has been retired; its component and its styles are gone. Every act is the same
 invented quotation, and every proof device the reference pages use (Harvey,
 Hebbia) is replaced by an honest one.
 
@@ -133,8 +133,17 @@ are two things. Anything that is not one of the four above uses ink.
 
 ### The night
 
-The home page opens in the night and ends at 08:04, back on paper, where a
+The front page opens in the night and ends at 08:04, back on paper, where a
 person picks the work back up. A reader scrolls out of a night.
+
+> **History.** Most of this section was written for the photo-led page that
+> stood at `/` before the presentation: its night plate, its mirrored
+> photograph and its in-flow masthead are retired with it, and the
+> photographs in `public/night/` stay in the repository but are no longer
+> shown on any routed page. The rules that follow — one `[data-inverted]` region, no hairline
+> at its seams, the desk after it, the texture, the motion discipline and
+> reduced motion — are the presentation's rules too. Its own specifics are in
+> *The presentation* below.
 
 It used to open on paper and go dark further down. It opens dark now because
 the commissioned photograph — an empty office, one lamp, a quotation under it —
