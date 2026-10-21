@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
 /**
- * The presentation at /glass.
+ * The presentation, which is the front page (`/`).
  *
  * The rules under test are the home page's, carried onto a page that moves
  * more: one dark region; the invented material says so first, in a sentence;
@@ -17,7 +17,8 @@ import type { Page } from '@playwright/test'
  * Most tests read the page under reduced motion, which is its final frame and
  * the quickest way to the content. The ones about motion turn it back on.
  */
-const GLASS = '/glass'
+/** The front page. It was `/glass`, which now redirects here. */
+const GLASS = '/'
 const base = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3210'
 
 test.beforeEach(async ({ page }) => {
@@ -566,17 +567,21 @@ test('server HTML carries the headline, the form, the whole night and the licenc
   await context.close()
 })
 
-test('stays off the spine: noindex, unlisted, and linked from nowhere public', async ({
+test('is the front page: indexable, canonical at the root, and where /glass now lands', async ({
   page,
   request,
 }) => {
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
-    'content',
-    'noindex, nofollow',
-  )
-  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/glass$/)
+  await expect(page.locator('meta[name="robots"]')).toHaveCount(0)
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/$/)
+  await expect(page).toHaveTitle(/intelligence for commercial work/i)
   const sitemap = await (await request.get('/sitemap.xml')).text()
-  expect(sitemap).not.toContain(GLASS)
-  await page.goto('/')
-  await expect(page.locator(`a[href="${GLASS}"]`)).toHaveCount(0)
+  expect(sitemap).not.toContain('/glass')
+
+  // The old address is a permanent redirect, not a second copy of the page.
+  const moved = await request.get('/glass', { maxRedirects: 0 })
+  expect(moved.status()).toBe(301)
+  expect(new URL(moved.headers()['location'] ?? '', 'http://x').pathname).toBe('/')
+  await page.goto('/glass')
+  await expect(page).toHaveURL(/\/$/)
+  await expect(page.locator('a[href="/glass"]')).toHaveCount(0)
 })
