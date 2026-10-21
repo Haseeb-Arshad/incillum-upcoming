@@ -451,7 +451,7 @@ test('the documents carry their own contents, and the part lies on bare desk', a
 test('reduced motion renders the final frame', async ({ page }) => {
   await expect(page.locator('.glass-opening')).toBeHidden()
   for (const selector of [
-    '.glass-header',
+    '.glass-bar',
     '.glass-title',
     '.glass-form',
     '.glass-film-enter',
@@ -659,6 +659,29 @@ test('questions are answered in full, with nothing folded away', async ({ page }
   for (const answer of await answers.all()) await expect(answer).toBeVisible()
   await expect(page.locator('details')).toHaveCount(0)
   await expect(section.locator('[hidden]')).toHaveCount(0)
+})
+
+test('the masthead stays with the reader, and its links land somewhere real', async ({
+  page,
+}) => {
+  const banner = page.getByRole('banner')
+  await expect(banner).toHaveAttribute('data-scrolled', 'false')
+  await page.locator('#trust').evaluate((element) => element.scrollIntoView({ behavior: 'instant' }))
+  await expect(banner).toHaveAttribute('data-scrolled', 'true')
+  expect((await banner.boundingBox())?.y).toBe(0)
+  await expect(banner.getByRole('link', { name: 'Request early access' })).toBeInViewport()
+
+  // Every in-page link names a section that exists, once.
+  const anchors = await page
+    .locator('a[href^="#"]')
+    .evaluateAll((links) => links.map((link) => link.getAttribute('href')!.slice(1)))
+  for (const id of new Set(anchors)) {
+    await expect(page.locator(`[id="${id}"]`), `#${id}`).toHaveCount(1)
+  }
+
+  // The button puts the cursor in the field.
+  await banner.getByRole('link', { name: 'Request early access' }).click()
+  await expect(page.getByRole('textbox', { name: /^Work email/ })).toBeFocused()
 })
 
 test('is the front page: indexable, canonical at the root, and where /glass now lands', async ({
