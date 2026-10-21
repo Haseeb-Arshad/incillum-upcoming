@@ -20,9 +20,12 @@ invented quotation, and every proof device the reference pages use (Harvey,
 Hebbia) is replaced by an honest one.
 
 It is deliberately **not** a marketing site with the product pages removed. Its
-navigation is links to sections of the one page and to the contact memo; there
-is no pricing, no demo, no blog and no product page, because a pre-launch site
-that offers a full product menu is advertising a product it has not shipped.
+navigation is three menus (`components/masthead-bar.tsx`, the reference pages'
+dropdown boxes) over sections of the front page and three more pages: Charlie
+(`/charlie`), security (`/security`) and the contact memo. There is no pricing,
+no demo and no blog, because a pre-launch site that offers a full product menu
+is advertising a product it has not shipped; each page that exists explains one
+thing, and says what state that thing is in.
 
 ### The positioning
 
@@ -249,6 +252,27 @@ each says so in its component's header:
   behind a click; three answers are read from copy the site has already
   committed to, so they cannot drift.
 
+### Charlie and security
+
+- **`/charlie`** (`components/charlie-page.tsx`, `charlie.tsx`): what Charlie is,
+  beside one invented morning set as a team channel — Charlie, an inside sales
+  person and a sales director, from the 03:42 supplier answer to the 08:14
+  approval — then seven abilities, each with its state, then one invitation.
+  The scene's licence is its first line; its figures are tokens the component
+  fills from the evidence document and the 06:50 ledger; the two answers on its
+  request card are drawn, not buttons. Its first four messages are also an act
+  on the front page, after the tabs, with the way to the page.
+- **`/security`** (`components/security-page.tsx`): the controls an enterprise
+  team expects, each with its state from the trust grid's closed set plus
+  *Planned*; the frameworks, each as not held (§5); the front page's own trust
+  grid; and one invitation. *Built* is used only for what the build says is
+  built or what exists in the platform's code with its tests; nothing that
+  needs a hosted environment is called built.
+- **Both pages** are laid in `components/page-frame.tsx`: the masthead filled
+  from the start in its own `[data-inverted]` scope (the one dark region on the
+  page), the desk, and the front page's footer without the motto. Both are in
+  the sitemap.
+
 ### The contact memo
 
 `/contact` is the waitlist form on a sheet of continuous-feed paper: a perforated
@@ -403,18 +427,28 @@ volume figures · "trusted by" · security certifications or compliance claims �
 integration availability · a launch date or quarter · the name of any ERP, CRM
 or mail client (the form asks; the page does not claim).
 
-**A certification appears only once it is held, and only with its report.**
-Not as "in progress", not as a badge, not as a framework name in a sentence.
-The trust grid is built to take one (`trust.certifications`, whose type requires
-a report link) on the day it exists; until then the page says plainly that none
-is claimed. A certification shown before it is held is the one claim a buyer's
-procurement team can check in an afternoon.
+**A certification is claimed only once it is held, and only with its report.**
+The owner asked, on 22 October 2026, for the frameworks a buyer looks for to be
+on the site, because a buyer will look for them. So they are named on
+`/security` and nowhere else, each in its own card whose first line is its
+status at reading size — *Not held · planned* or *Not yet assessed* — never as a
+badge, a seal or an "in progress". The front page names none, and says plainly
+that none is claimed. The trust grid takes a held one (`trust.certifications`,
+whose type requires a report link) on the day it exists. A certification shown
+as held before it is held is the one claim a buyer's procurement team can
+check in an afternoon. `site.test.ts` and `e2e/pages.spec.ts` hold all of it.
 
-**Never claim outbound supplier contact.** Reading a mailbox is a thing software
-does. Contacting somebody's suppliers on their behalf is a different promise,
-and the moment this page makes it, the first conversation with every design
-partner opens with a correction. On this page a supplier answer *arrives* and is
-read. It is not requested, chased or negotiated. Both suites test for it.
+**Outbound supplier contact is planned, never claimed, and always behind a
+person.** This rule used to be absolute. The owner decided, on 22 October 2026,
+that Charlie is being built to ask approved suppliers for a firm price, to tell
+a team's channel what changed, and to call and book a meeting. So the Charlie
+page describes those abilities — as *Planned*, in the future tense, and each
+with the approval it waits for — and the front page's answer to "does it
+contact our suppliers?" says *not today* and what is planned. What is true
+today is still the rule everywhere: a supplier answer *arrives* and is read;
+nothing is requested, chased or negotiated yet. Nothing outward may be called
+built until it is, and nothing outward may ever be described as happening
+without an approval. `site.test.ts` holds both.
 
 **The instrument's mark is a measurement, never a verb.** It says *this is your
 hour*. It may never say "working now", carry a counter, or pulse — that would be
