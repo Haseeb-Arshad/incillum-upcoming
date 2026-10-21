@@ -364,7 +364,7 @@ test('nothing is claimed, nothing pulses, and the signal stays where it is licen
   const strays = await page.evaluate(() => {
     const signal = new Set(['rgb(154, 85, 24)', 'rgb(228, 160, 70)'])
     const licensed =
-      '.matrix-status--held, .glass-sheet-short, .glass-thread-short, .glass-handover-short'
+      '.matrix-status--held, .glass-sheet-short, .glass-thread-short, .glass-handover-short, .how-card-short, .how-decide-short'
     return [...document.querySelectorAll('body *')]
       .filter((element) => element.childElementCount === 0 && element.textContent?.trim())
       .filter((element) => signal.has(getComputedStyle(element).color))
@@ -564,7 +564,70 @@ test('server HTML carries the headline, the form, the whole night and the licenc
   await expect(staticPage.getByText('Six sources that never meet.')).toBeVisible()
   await expect(staticPage.getByText('Now they meet.')).toBeVisible()
   await expect(staticPage.getByText(/The six on this page are invented/)).toBeVisible()
+  // Without a script the four steps are simply listed, each with its heading.
+  await expect(staticPage.locator('#how .how-panel-heading')).toHaveCount(4)
+  for (const panel of await staticPage.locator('#how .how-panel').all()) {
+    await expect(panel).toBeVisible()
+  }
   await context.close()
+})
+
+test('how it works is a real tablist, and each step ends where it stops', async ({ page }) => {
+  const section = page.locator('#how')
+  await expect(section.getByText(/invented quotation/)).toBeVisible()
+  const tabs = section.getByRole('tab')
+  await expect(tabs).toHaveCount(4)
+  await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true')
+  await expect(section.getByRole('tabpanel')).toHaveCount(1)
+
+  // The keyboard moves the selection and the focus together, and wraps.
+  await tabs.nth(0).focus()
+  await page.keyboard.press('ArrowDown')
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true')
+  await expect(tabs.nth(1)).toBeFocused()
+  await page.keyboard.press('End')
+  await expect(tabs.nth(3)).toHaveAttribute('aria-selected', 'true')
+  await page.keyboard.press('ArrowRight')
+  await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true')
+  await page.keyboard.press('ArrowUp')
+  await expect(tabs.nth(3)).toBeFocused()
+  await page.keyboard.press('Home')
+  await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true')
+
+  // Every step names one of the four limits, and the four are each used once.
+  const limits: string[] = []
+  for (let index = 0; index < 4; index += 1) {
+    await tabs.nth(index).click()
+    const panel = section.getByRole('tabpanel')
+    await expect(panel).toHaveAttribute('aria-labelledby', (await tabs.nth(index).getAttribute('id'))!)
+    limits.push((await panel.locator('.how-stops-line strong').innerText()).replace(/\.$/, ''))
+  }
+  expect([...limits].sort()).toEqual(['Ambiguity', 'Approval', 'Commercial policy', 'Missing evidence'])
+})
+
+test('the tabs’ figures are the evidence document’s and the ledger’s, and a change is a swap', async ({
+  page,
+}) => {
+  const section = page.locator('#how')
+  await section.getByRole('tab', { name: /Hold/ }).click()
+  await expect(section.getByRole('tabpanel').locator('.matrix-status--held')).toHaveCount(2)
+
+  await section.getByRole('tab', { name: /Price/ }).click()
+  const price = section.getByRole('tabpanel')
+  for (const figure of ['20.0%', '15.2%', 'EUR 160.00', 'EUR 11,520.00']) {
+    await expect(price).toContainText(figure)
+  }
+  // Under reduced motion nothing fades: nothing longer than the site's 0.01ms backstop.
+  const durations = await price.evaluate((element) =>
+    getComputedStyle(element).transitionDuration.split(',').map((value) => parseFloat(value)),
+  )
+  for (const seconds of durations) expect(seconds).toBeLessThan(0.001)
+
+  await section.getByRole('tab', { name: /Decide/ }).click()
+  const decide = section.getByRole('tabpanel')
+  for (const figure of ['EUR 169.60', '16.4%', 'EUR 10,638.00']) {
+    await expect(decide).toContainText(figure)
+  }
 })
 
 test('is the front page: indexable, canonical at the root, and where /glass now lands', async ({

@@ -4,6 +4,7 @@ import { GlassField } from '#/components/glass-field.tsx'
 import { GlassFilm } from '#/components/glass-film.tsx'
 import { GlassHandover } from '#/components/glass-handover.tsx'
 import { GlassSources } from '#/components/glass-sources.tsx'
+import { HowItWorks } from '#/components/how-it-works.tsx'
 import { ButtonLink, Container, TextLink } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { SiteBrand } from '#/components/site-brand.tsx'
@@ -25,7 +26,10 @@ import { contactEmail } from '#/env.ts'
  *    sheet changing state as the hours pass (`glass-film.tsx`).
  * 4. **Six sources.** The documents a quotation is assembled from, lying on a
  *    desk, then gathered onto one sheet (`glass-sources.tsx`).
- * 5. **The close.** The same office at 08:04 with what is waiting in it
+ * 5. **How it works.** Four tabs — read, hold, price, decide — each one line of
+ *    the quotation laid on the desk under the lamp, each ending where the work
+ *    stops (`how-it-works.tsx`).
+ * 6. **The close.** The same office at 08:04 with what is waiting in it
  *    (`glass-handover.tsx`), the night's dust settled around it, one
  *    invitation, and one sentence about what exists.
  *
@@ -183,6 +187,9 @@ export function GlassPage() {
       </div>
 
       <GlassSources />
+      <div className="desk glass-acts">
+        <HowItWorks />
+      </div>
       <Close />
     </div>
   )

@@ -941,7 +941,6 @@ const howSteps: ReadonlyArray<HowStep> = [
 
 export const how = {
   anchor: 'how',
-  label: 'How it works',
   headline: 'From request to decision.',
   lede: 'Four steps through one invented quotation. Each is being built to stop exactly where a person should take over.',
   tabsLabel: 'Steps of one quotation',

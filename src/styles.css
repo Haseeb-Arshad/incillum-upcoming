@@ -1566,12 +1566,11 @@
   padding-left: 1rem;
   border-left: 2px solid var(--ic-ink-900);
 }
+/* Sentence case: the presentation sets no tracked capitals anywhere. */
 .how-stops-label {
-  font-size: var(--text-label);
+  font-size: var(--text-small);
   font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  line-height: 1.2;
   color: var(--ic-ink-400);
 }
 .how-stops-line {
@@ -4291,8 +4290,9 @@
   display: grid;
   grid-template-areas: 'scattered' 'desk' 'gathered' 'sheet';
 }
-/* The headline left and its paragraph beside it, on one baseline: a page, not a slide. */
-.glass-sources-title {
+/* The headline left and its paragraph beside it, on one baseline: a page, not a slide. Every act's opening. */
+.glass-sources-title,
+.glass-act-title {
   display: grid;
   align-items: end;
   gap: 1.25rem 4rem;
@@ -5325,7 +5325,8 @@
   }
 }
 @media (min-width: 48rem) {
-  .glass-sources-title {
+  .glass-sources-title,
+  .glass-act-title {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   }
 }

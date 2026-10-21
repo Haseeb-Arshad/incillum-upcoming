@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 
 import { DocumentQuestion, SourceDocument } from '#/components/glass-documents.tsx'
-import { Container, Label } from '#/components/primitives.tsx'
+import { Container } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { boundary, evidence, glass, home, how, thread } from '#/content/site.ts'
 import { useHydrated } from '#/lib/motion.ts'
@@ -10,7 +10,8 @@ import type { HowKey, HowStep } from '#/content/site.ts'
 import type { KeyboardEvent } from 'react'
 
 /**
- * How it works — four tabs, one quotation.
+ * How it works — four tabs, one quotation, on the presentation after the six
+ * sources.
  *
  * ── The shape it borrows ───────────────────────────────────────────────────
  *
@@ -87,12 +88,15 @@ export function HowItWorks() {
   return (
     <section id={how.anchor} aria-labelledby="how-title" className="how">
       <Container>
-        <Reveal className="how-intro">
-          <Label>{how.label}</Label>
-          <h2 id="how-title" className="how-title">
+        {/*
+          The presentation's own opening for a section: the headline and its
+          paragraph on one baseline, and no label over either.
+        */}
+        <Reveal className="glass-act-title">
+          <h2 id="how-title" className="glass-heading">
             {how.headline}
           </h2>
-          <p className="how-lede">{how.lede}</p>
+          <p className="glass-sources-lede">{how.lede}</p>
         </Reveal>
 
         <div className="how-body" data-enhanced={hydrated ? 'true' : 'false'}>
