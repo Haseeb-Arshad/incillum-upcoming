@@ -263,9 +263,9 @@ export function GlassPage() {
  * the same words. Where the build stands is a sentence read off `standing`, set
  * as quietly as the footer it sits above.
  *
- * The motto is the page's last line. This is the front page, and its close is
- * one of the motto's two placements; the other is the success state of the
- * form above.
+ * The motto signs the page off at the head of the footer. This is the front
+ * page, and its close is one of the motto's two placements; the other is the
+ * success state of the form above.
  */
 function Close() {
   const { closing } = glass
@@ -309,6 +309,12 @@ function Close() {
 
       <footer className="glass-footer" role="contentinfo">
         <Container>
+          {/*
+            The motto: one of its two placements on the whole site, and the
+            page's sign-off. It is not extended and not repeated — see
+            `brand.motto`.
+          */}
+          <p className="glass-motto">{brand.motto}</p>
           <nav aria-label="Sections" className="glass-footer-nav">
             <a href={`#${how.anchor}`}>{glass.nav.how}</a>
             <a href={`#${trust.anchor}`}>{glass.nav.trust}</a>
@@ -322,12 +328,6 @@ function Close() {
               © {new Date().getFullYear()} {brand.name}
             </p>
           </div>
-          {/*
-            The motto: one of its two placements on the whole site, and the last
-            thing on the page. It is not extended and not repeated — see
-            `brand.motto`.
-          */}
-          <p className="glass-motto">{brand.motto}</p>
         </Container>
       </footer>
     </div>
