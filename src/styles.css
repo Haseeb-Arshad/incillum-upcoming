@@ -1963,15 +1963,14 @@
   margin-bottom: 0.75rem;
   color: var(--ic-ink-600);
 }
+/* Sentence case, like everything on the presentation: a word and a mark, never a badge. */
 .trust-state {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: var(--text-label);
+  font-size: var(--text-small);
   font-weight: 500;
   line-height: 1;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
   color: var(--ic-ink-600);
 }
 .trust-state::before {
@@ -2268,7 +2267,7 @@
   }
   .questions-intro {
     position: sticky;
-    top: calc(var(--home-bar) + 2rem);
+    top: calc(var(--glass-bar, 0px) + 2rem);
   }
   .home-closing-grid {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);

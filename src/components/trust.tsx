@@ -1,4 +1,4 @@
-import { Container, Label } from '#/components/primitives.tsx'
+import { Container } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { trust } from '#/content/site.ts'
 
@@ -16,7 +16,7 @@ import type { TrustGlyph, TrustState } from '#/content/site.ts'
  * set — so a reader sees in one pass what is decided, what is built, and what
  * is still in build, in the same ink and at the same size.
  *
- * The states are words with a mark, never colours. *Decided* and *Built* take
+ * The states are words with a mark, in sentence case, never colours. *Decided* and *Built* take
  * a filled mark; *In build* an open one. The signal is not spent here: nothing
  * in this section is waiting on a person.
  *
@@ -35,12 +35,11 @@ export function Trust() {
       className="trust ic-textured"
     >
       <Container>
-        <Reveal className="trust-intro">
-          <Label>{trust.label}</Label>
-          <h2 id="trust-title" className="trust-title">
+        <Reveal className="glass-act-title">
+          <h2 id="trust-title" className="glass-heading">
             {trust.headline}
           </h2>
-          <p className="trust-lede">{trust.lede}</p>
+          <p className="glass-sources-lede">{trust.lede}</p>
         </Reveal>
 
         <Reveal delay={80}>

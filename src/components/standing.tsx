@@ -1,4 +1,4 @@
-import { Container, Label } from '#/components/primitives.tsx'
+import { Container } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { standing } from '#/content/site.ts'
 
@@ -23,9 +23,8 @@ export function Standing() {
   return (
     <section aria-labelledby="standing-title" className="standing">
       <Container>
-        <Reveal className="standing-intro">
-          <Label>{standing.label}</Label>
-          <h2 id="standing-title" className="standing-title">
+        <Reveal className="glass-act-title">
+          <h2 id="standing-title" className="glass-heading">
             {standing.headline}
           </h2>
         </Reveal>

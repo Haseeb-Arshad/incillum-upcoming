@@ -1,4 +1,4 @@
-import { Container, Label } from '#/components/primitives.tsx'
+import { Container } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { questions } from '#/content/site.ts'
 
@@ -19,8 +19,7 @@ export function Questions() {
     <section id={questions.anchor} aria-labelledby="questions-title" className="questions">
       <Container className="questions-grid">
         <Reveal className="questions-intro">
-          <Label>{questions.label}</Label>
-          <h2 id="questions-title" className="questions-title">
+          <h2 id="questions-title" className="glass-heading">
             {questions.headline}
           </h2>
         </Reveal>

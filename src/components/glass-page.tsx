@@ -6,8 +6,11 @@ import { GlassHandover } from '#/components/glass-handover.tsx'
 import { GlassSources } from '#/components/glass-sources.tsx'
 import { HowItWorks } from '#/components/how-it-works.tsx'
 import { ButtonLink, Container, TextLink } from '#/components/primitives.tsx'
+import { Questions } from '#/components/questions.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { SiteBrand } from '#/components/site-brand.tsx'
+import { Standing } from '#/components/standing.tsx'
+import { Trust } from '#/components/trust.tsx'
 import { WaitlistForm } from '#/components/waitlist-form.tsx'
 import { brand, glass, instrument, thread } from '#/content/site.ts'
 import { contactEmail } from '#/env.ts'
@@ -29,7 +32,11 @@ import { contactEmail } from '#/env.ts'
  * 5. **How it works.** Four tabs — read, hold, price, decide — each one line of
  *    the quotation laid on the desk under the lamp, each ending where the work
  *    stops (`how-it-works.tsx`).
- * 6. **The close.** The same office at 08:04 with what is waiting in it
+ * 6. **Where this stands, data and trust, questions.** What is built; six
+ *    commitments with their real state, where the reference pages put their
+ *    certification badges; and what a buyer asks, answered in full
+ *    (`standing.tsx`, `trust.tsx`, `questions.tsx`).
+ * 7. **The close.** The same office at 08:04 with what is waiting in it
  *    (`glass-handover.tsx`), the night's dust settled around it, one
  *    invitation, and one sentence about what exists.
  *
@@ -189,6 +196,9 @@ export function GlassPage() {
       <GlassSources />
       <div className="desk glass-acts">
         <HowItWorks />
+        <Standing />
+        <Trust />
+        <Questions />
       </div>
       <Close />
     </div>

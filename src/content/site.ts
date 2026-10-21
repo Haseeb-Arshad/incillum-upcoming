@@ -1017,7 +1017,6 @@ const certifications: ReadonlyArray<Certification> = []
 
 export const trust = {
   anchor: 'trust',
-  label: 'Data and trust',
   headline: 'What happens to your figures.',
   lede: 'Prices, costs and margins are the numbers a business guards most. Each commitment below carries its real state: decided, built, or still in build.',
   commitments: [
@@ -1078,7 +1077,6 @@ export const trust = {
  */
 export const questions = {
   anchor: 'questions',
-  label: 'Questions',
   headline: 'Before you ask.',
   items: [
     {

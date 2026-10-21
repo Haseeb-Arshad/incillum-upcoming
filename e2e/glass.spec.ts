@@ -569,6 +569,8 @@ test('server HTML carries the headline, the form, the whole night and the licenc
   for (const panel of await staticPage.locator('#how .how-panel').all()) {
     await expect(panel).toBeVisible()
   }
+  await expect(staticPage.locator('#trust .trust-cell')).toHaveCount(6)
+  await expect(staticPage.locator('#questions .questions-answer').first()).toBeVisible()
   await context.close()
 })
 
@@ -628,6 +630,33 @@ test('the tabs’ figures are the evidence document’s and the ledger’s, and 
   for (const figure of ['EUR 169.60', '16.4%', 'EUR 10,638.00']) {
     await expect(decide).toContainText(figure)
   }
+})
+
+test('where this stands is three states, never a date', async ({ page }) => {
+  const states = page.locator('.standing-state')
+  await expect(states).toHaveText(['Built', 'In build', 'Opening'])
+  await expect(page.locator('.standing')).not.toContainText(/\b(20\d\d|Q[1-4])\b/)
+})
+
+test('trust: six commitments with their real state, and no certification named', async ({
+  page,
+}) => {
+  const section = page.locator('#trust')
+  await expect(section.locator('.trust-cell')).toHaveCount(6)
+  for (const state of await section.locator('.trust-state').allInnerTexts()) {
+    expect(['Decided', 'Built', 'In build']).toContain(state.trim())
+  }
+  await expect(section).toContainText('No certification is claimed on this page.')
+  await expect(section).not.toContainText(/SOC|ISO|GDPR|CCPA|HIPAA|certified|compliant/)
+})
+
+test('questions are answered in full, with nothing folded away', async ({ page }) => {
+  const section = page.locator('#questions')
+  const answers = section.locator('.questions-answer')
+  expect(await answers.count()).toBeGreaterThanOrEqual(5)
+  for (const answer of await answers.all()) await expect(answer).toBeVisible()
+  await expect(page.locator('details')).toHaveCount(0)
+  await expect(section.locator('[hidden]')).toHaveCount(0)
 })
 
 test('is the front page: indexable, canonical at the root, and where /glass now lands', async ({
