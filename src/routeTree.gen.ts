@@ -14,7 +14,6 @@ import { Route as CharlieRouteImport } from './routes/charlie'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as GlassRouteImport } from './routes/glass'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
-import { Route as SecurityRouteImport } from './routes/security'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as LabParticlesRouteImport } from './routes/lab.particles'
 import { Route as WorkJanusRouteImport } from './routes/work.janus'
@@ -44,11 +43,6 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SecurityRoute = SecurityRouteImport.update({
-  id: '/security',
-  path: '/security',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -71,7 +65,6 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/glass': typeof GlassRoute
   '/robots.txt': typeof RobotsDottxtRoute
-  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/lab/particles': typeof LabParticlesRoute
   '/work/janus': typeof WorkJanusRoute
@@ -82,7 +75,6 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/glass': typeof GlassRoute
   '/robots.txt': typeof RobotsDottxtRoute
-  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/lab/particles': typeof LabParticlesRoute
   '/work/janus': typeof WorkJanusRoute
@@ -94,7 +86,6 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/glass': typeof GlassRoute
   '/robots.txt': typeof RobotsDottxtRoute
-  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/lab/particles': typeof LabParticlesRoute
   '/work/janus': typeof WorkJanusRoute
@@ -107,7 +98,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/glass'
     | '/robots.txt'
-    | '/security'
     | '/sitemap.xml'
     | '/lab/particles'
     | '/work/janus'
@@ -118,7 +108,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/glass'
     | '/robots.txt'
-    | '/security'
     | '/sitemap.xml'
     | '/lab/particles'
     | '/work/janus'
@@ -129,7 +118,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/glass'
     | '/robots.txt'
-    | '/security'
     | '/sitemap.xml'
     | '/lab/particles'
     | '/work/janus'
@@ -141,7 +129,6 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   GlassRoute: typeof GlassRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
-  SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   LabParticlesRoute: typeof LabParticlesRoute
   WorkJanusRoute: typeof WorkJanusRoute
@@ -184,13 +171,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/security': {
-      id: '/security'
-      path: '/security'
-      fullPath: '/security'
-      preLoaderRoute: typeof SecurityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -221,7 +201,6 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   GlassRoute: GlassRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
-  SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   LabParticlesRoute: LabParticlesRoute,
   WorkJanusRoute: WorkJanusRoute,

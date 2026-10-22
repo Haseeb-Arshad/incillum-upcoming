@@ -1021,7 +1021,6 @@
   transform-origin: left;
 }
 
-
 /*
  * The field: a rule, not a box — the same underline the contact memo uses.
  * The label is visually hidden, not absent, so the placeholder can be a
@@ -1117,13 +1116,11 @@
  * share one size so the acts read as one document rather than as slides.
  */
 .how,
-.standing,
 .trust,
 .questions {
   padding-block: clamp(5rem, 10vw, 8.5rem);
 }
 .how-intro,
-.standing-intro,
 .trust-intro,
 .questions-intro {
   display: flex;
@@ -1132,7 +1129,6 @@
   max-width: 46rem;
 }
 .how-title,
-.standing-title,
 .trust-title,
 .questions-title {
   font-size: var(--glass-heading);
@@ -1667,55 +1663,6 @@
   }
 }
 
-/* ── Act five: where this stands (`standing.tsx`) ─────────────────────── */
-/*
- * The reference pages' band of figures, answered with the build's three states
- * at the size they give their numbers.
- */
-.standing {
-  border-top: 1px solid var(--ic-line);
-}
-.standing-stages {
-  display: grid;
-  gap: 0 clamp(2rem, 4vw, 3.5rem);
-  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
-  padding: 0;
-  list-style: none;
-}
-.standing-stage {
-  display: grid;
-  align-content: start;
-  gap: 0.75rem;
-  padding-block: 1.75rem 2rem;
-  border-top: 1px solid var(--ic-line-strong);
-}
-.standing-number {
-  font-size: var(--text-label);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: var(--ic-ink-400);
-}
-.standing-state {
-  font-family: var(--font-display);
-  font-size: clamp(2.75rem, 5.2vw, 4.75rem);
-  line-height: 0.95;
-  letter-spacing: -0.025em;
-  color: var(--ic-ink-900);
-}
-.standing-stage-title {
-  margin-top: 0.75rem;
-  font-family: var(--font-sans);
-  font-size: var(--text-body);
-  font-weight: 500;
-  color: var(--ic-ink-900);
-}
-.standing-stage-body {
-  max-width: 34ch;
-  font-size: var(--text-small);
-  line-height: 1.55;
-  color: var(--ic-ink-600);
-}
-
 /* ── Act six: data and trust (`trust.tsx`) ────────────────────────────── */
 /*
  * Six cells on one hairline grid, the shape the reference pages give their
@@ -1813,6 +1760,29 @@
   color: var(--ic-ink-900);
 }
 
+/* The contact link beside the Product menu, set like the menu's own button. */
+.site-menu-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.375rem;
+  padding: 0 0.625rem;
+  border-radius: var(--radius-control);
+  color: var(--ic-ink-900);
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color var(--ic-fast) var(--ic-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .site-menu-link:hover {
+    background-color: var(--ic-line);
+  }
+}
+@media (max-width: 59.99rem) {
+  .site-menu-link {
+    display: none;
+  }
+}
+
 /* ── Act seven: questions (`questions.tsx`) ───────────────────────────── */
 .questions {
   border-top: 1px solid var(--ic-line);
@@ -1890,9 +1860,6 @@
   }
   .trust-cell:nth-child(even) {
     border-left: 1px solid var(--ic-line);
-  }
-  .standing-stages {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -5066,19 +5033,14 @@
   padding-top: 2rem;
   border-top: 1px solid var(--ic-line-strong);
 }
-.glass-standing,
 .glass-copyright {
   font-size: var(--text-small);
   line-height: 1.5;
   color: var(--ic-ink-600);
 }
-.glass-standing {
-  max-width: 44rem;
-}
-
 /* ══════════════════════════════════════════════════════════════════════════
-   Charlie (`components/charlie.tsx`), the inner pages' frame
-   (`page-frame.tsx`) and security (`security-page.tsx`).
+   Charlie (`components/charlie.tsx`) and the inner pages' frame
+   (`page-frame.tsx`).
 
    The scene is a team channel on a lit panel, in the site's two typefaces and
    its two inks: the held signal is not spent here, because nothing in the
@@ -5330,40 +5292,6 @@
 }
 
 /* ── Security ─────────────────────────────────────────────────────────── */
-.security-section {
-  padding-block: clamp(4rem, 8vw, 6.5rem);
-  border-top: 1px solid var(--ic-line);
-}
-.security-controls {
-  display: grid;
-  margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--ic-line-strong);
-}
-.security-control {
-  display: grid;
-  gap: 0.375rem 2rem;
-  padding-block: 1.25rem;
-  border-bottom: 1px solid var(--ic-line);
-}
-.security-control-title {
-  font-size: var(--text-heading);
-  line-height: 1.2;
-  letter-spacing: -0.012em;
-}
-.security-control-body {
-  max-width: 44rem;
-  font-size: var(--text-body);
-  line-height: 1.55;
-  color: var(--ic-ink-600);
-}
-@media (min-width: 48rem) {
-  .security-control {
-    grid-template-columns: 8rem minmax(0, 18rem) minmax(0, 1fr);
-    align-items: baseline;
-  }
-}
 @media (min-width: 64rem) {
   .page-hero-grid {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -5371,43 +5299,24 @@
 }
 
 /*
- * The security page in the reference page's bands: a large statement, six
- * cards of protection on glyph tiles, a dark band of certifications in rows
- * whose right-hand cell is the status where the reference page has *Details*,
- * the controls, the questions, and one invitation.
+ * Cards of protection (`ProtectionCards` in `trust.tsx`), in the reference
+ * page's shape: a glyph on a tile, a title, one line. The trust section and
+ * Charlie's abilities share them.
  */
-.security-hero {
-  padding-block: clamp(5rem, 11vw, 8.5rem) clamp(4rem, 8vw, 6rem);
-}
-.security-label {
-  font-size: var(--text-ui);
-  font-weight: 500;
-  color: var(--ic-ink-600);
-}
-.security-title {
-  font-size: clamp(2.75rem, 6.2vw, 5.75rem);
-  line-height: 0.98;
-  letter-spacing: -0.024em;
-  color: var(--ic-ink-900);
-  text-wrap: balance;
-}
-.security-lede {
-  max-width: 34rem;
-}
-.security-principles {
+.protect-grid {
   display: grid;
   gap: clamp(2.25rem, 4vw, 3.25rem) clamp(2rem, 4vw, 3.5rem);
   margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
   padding: 0;
   list-style: none;
 }
-.security-principle {
+.protect-card {
   display: grid;
   align-content: start;
   justify-items: start;
   gap: 0.625rem;
 }
-.security-tile {
+.protect-tile {
   display: grid;
   place-items: center;
   width: 2.75rem;
@@ -5417,18 +5326,18 @@
   border-radius: var(--radius-control);
   background-color: var(--ic-paper-raised);
 }
-.security-tile .trust-glyph {
+.protect-tile .trust-glyph {
   width: 1.375rem;
   height: 1.375rem;
   margin: 0;
   color: var(--ic-ink-900);
 }
-.security-principle-title {
+.protect-title {
   font-size: var(--text-heading);
   line-height: 1.2;
   letter-spacing: -0.012em;
 }
-.security-principle-body {
+.protect-body {
   max-width: 38ch;
   font-size: var(--text-body);
   line-height: 1.6;
@@ -5436,93 +5345,14 @@
 }
 
 /* The band: this page's night, grained by its own scope. */
-.security-band {
-  padding-block: clamp(5rem, 10vw, 8rem);
-}
-.security-band-grid {
-  display: grid;
-  gap: clamp(2.5rem, 5vw, 4rem);
-}
-.security-band-copy {
-  display: grid;
-  align-content: start;
-  gap: 1.5rem;
-}
-.security-band-action {
-  border-color: var(--ic-line-strong);
-  background-color: transparent;
-}
-.security-frameworks {
-  display: grid;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--ic-line-strong);
-}
-.security-framework {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas: 'name status' 'covers status';
-  gap: 0.25rem 2rem;
-  align-items: center;
-  padding-block: 1.375rem;
-  border-bottom: 1px solid var(--ic-line);
-}
-.security-framework-status {
-  grid-area: status;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: var(--text-small);
-  font-weight: 500;
-  white-space: nowrap;
-  color: var(--ic-ink-600);
-}
-.security-framework-status::before {
-  content: '';
-  width: 0.5rem;
-  height: 0.5rem;
-  border: 1px dashed currentColor;
-  border-radius: 50%;
-}
-.security-framework-name {
-  grid-area: name;
-  font-family: var(--font-sans);
-  font-size: clamp(1.125rem, 1.5vw, 1.375rem);
-  font-weight: 500;
-  letter-spacing: -0.006em;
-  color: var(--ic-ink-900);
-}
-.security-framework-covers {
-  grid-area: covers;
-  max-width: 44ch;
-  font-size: var(--text-small);
-  line-height: 1.5;
-  color: var(--ic-ink-400);
-}
-.security-framework-note {
-  margin-top: 1.5rem;
-  font-size: var(--text-small);
-  color: var(--ic-ink-600);
-}
 @media (min-width: 48rem) {
-  .security-principles {
+  .protect-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (min-width: 64rem) {
-  .security-principles {
+  .protect-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .security-band-grid {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    gap: clamp(3rem, 6vw, 6rem);
-  }
-}
-@media (max-width: 39.99rem) {
-  .security-framework {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: 'status' 'name' 'covers';
   }
 }
 

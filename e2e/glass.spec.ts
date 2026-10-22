@@ -6,7 +6,7 @@ import type { Page } from '@playwright/test'
  * The presentation, which is the front page (`/`).
  *
  * The rules under test are the home page's, carried onto a page that moves
- * more: one dark region; the invented material says so first, in a sentence;
+ * more: one dark region; the film opens on one sentence, never a label;
  * the money is the thread's; nothing is claimed, nothing pulses, and the motto
  * is not spent; one form, which is never submitted here. And the
  * presentation's own: no tracked capitals anywhere, the opening gets out of the
@@ -82,13 +82,13 @@ test('first screen: the headline, one form, one dark region, and no horizontal o
   ).toBe(true)
 })
 
-test('the film says it is invented first, and its chapters are the thread’s hours', async ({
+test('the film opens on one sentence, and its chapters are the thread’s hours', async ({
   page,
 }) => {
   const film = page.locator('#film')
   // The licence is the frame's first line and its name: a sentence, not a label.
-  await expect(film.getByRole('heading', { level: 2 })).toHaveText(/invented/i)
-  await expect(film).toHaveAccessibleName(/invented/i)
+  await expect(film.getByRole('heading', { level: 2 })).toHaveText(/^One quotation/)
+  await expect(film).toHaveAccessibleName(/^One quotation/)
 
   const chapters = film
     .getByRole('group', { name: 'Hours of the night' })
@@ -557,20 +557,20 @@ test('server HTML carries the headline, the form, the whole night and the licenc
   await staticPage.goto(`${base}${GLASS}`)
   await expect(staticPage.getByRole('heading', { level: 1 })).toBeVisible()
   await expect(staticPage.getByRole('textbox', { name: /^Work email/ })).toBeAttached()
-  await expect(staticPage.locator('#film h2')).toHaveText(/invented/i)
+  await expect(staticPage.locator('#film h2')).toHaveText(/^One quotation/)
   await expect(staticPage.locator('.glass-beat')).toHaveCount(6)
   for (const hour of ['23:47', '00:06', '01:18', '03:42', '06:50', '08:04']) {
     await expect(staticPage.locator('.glass-beat', { hasText: hour })).toBeVisible()
   }
   await expect(staticPage.getByText('Six sources that never meet.')).toBeVisible()
   await expect(staticPage.getByText('Now they meet.')).toBeVisible()
-  await expect(staticPage.getByText(/The six on this page are invented/)).toBeVisible()
+  await expect(staticPage.getByText(/^Everything one quotation needs/)).toBeVisible()
   // Without a script the four steps are simply listed, each with its heading.
   await expect(staticPage.locator('#how .how-panel-heading')).toHaveCount(4)
   for (const panel of await staticPage.locator('#how .how-panel').all()) {
     await expect(panel).toBeVisible()
   }
-  await expect(staticPage.locator('#trust .trust-cell')).toHaveCount(6)
+  await expect(staticPage.locator('#trust .protect-card')).toHaveCount(6)
   await expect(staticPage.locator('#questions .questions-answer').first()).toBeVisible()
   await context.close()
 })
@@ -616,7 +616,7 @@ test('where the stage pins, the scroll walks the four steps, and a tab scrolls t
 
 test('how it works is a real tablist, and each step ends where it stops', async ({ page }) => {
   const section = page.locator('#how')
-  await expect(section.getByText(/invented quotation/)).toBeVisible()
+  await expect(section.getByText(/^Four steps through one quotation/)).toBeVisible()
   const tabs = section.getByRole('tab')
   await expect(tabs).toHaveCount(4)
   await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true')
@@ -675,22 +675,24 @@ test('the tabs’ figures are the evidence document’s and the ledger’s, and 
   }
 })
 
-test('where this stands is three states, never a date', async ({ page }) => {
-  const states = page.locator('.standing-state')
-  await expect(states).toHaveText(['Built', 'In build', 'Opening'])
-  await expect(page.locator('.standing')).not.toContainText(/\b(20\d\d|Q[1-4])\b/)
-})
-
-test('trust: six commitments with their real state, and no certification named', async ({
+test('trust: six cards of protection, no state labels, and no certification named', async ({
   page,
 }) => {
   const section = page.locator('#trust')
-  await expect(section.locator('.trust-cell')).toHaveCount(6)
-  for (const state of await section.locator('.trust-state').allInnerTexts()) {
-    expect(['Decided', 'Built', 'In build']).toContain(state.trim())
+  await expect(section.getByRole('heading', { level: 2 })).toHaveText(
+    'Built for the figures you guard most.',
+  )
+  const cards = section.locator('.protect-card')
+  await expect(cards).toHaveCount(6)
+  for (const card of await cards.all()) {
+    await expect(card.locator('.protect-tile svg')).toBeAttached()
+    await expect(card.getByRole('heading', { level: 3 })).toBeVisible()
   }
-  await expect(section).toContainText('No certification is claimed on this page.')
-  await expect(section).not.toContainText(/SOC|ISO|GDPR|CCPA|HIPAA|certified|compliant/)
+  await expect(section).not.toContainText(/Decided|In build|Planned|Not held/)
+  // The build's own progress is kept for the owner, off the page.
+  await expect(page.locator('body')).not.toContainText(
+    /SOC 2|ISO\/IEC|GDPR|CCPA|HIPAA|certified|compliant|Honest about what exists/,
+  )
 })
 
 test('questions are answered in full, with nothing folded away', async ({ page }) => {

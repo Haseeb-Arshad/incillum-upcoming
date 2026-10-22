@@ -8,7 +8,7 @@ import { cn } from '#/lib/cn.ts'
 import type { KeyboardEvent, MouseEvent } from 'react'
 
 /**
- * The masthead: the brand, three menus, and the one button.
+ * The masthead: the brand, the Product menu, the contact link, and the one button.
  *
  * ── The shape it borrows ───────────────────────────────────────────────────
  *
@@ -72,6 +72,11 @@ export function MastheadBar({
                 setOpen((current) => (current === group.key ? null : current))
               }
             />
+          ))}
+          {menu.links.map((link) => (
+            <a key={link.href} href={link.href} className="site-menu-link">
+              {link.title}
+            </a>
           ))}
           <ButtonLink
             href={onFront ? '#early-access' : '/#early-access'}

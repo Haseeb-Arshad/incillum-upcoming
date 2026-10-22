@@ -1,7 +1,7 @@
 import { MastheadBar } from '#/components/masthead-bar.tsx'
 import { Container } from '#/components/primitives.tsx'
 import { SiteBrand } from '#/components/site-brand.tsx'
-import { brand, glass, menu } from '#/content/site.ts'
+import { brand, menu } from '#/content/site.ts'
 
 import type { ReactNode } from 'react'
 
@@ -25,17 +25,14 @@ export function PageFrame({ children }: { children: ReactNode }) {
         <footer className="glass-footer" role="contentinfo">
           <Container>
             <nav aria-label="Sections" className="glass-footer-nav">
-              {menu.groups.flatMap((group) =>
-                group.items.map((item) => (
-                  <a key={item.href} href={item.href}>
-                    {item.title}
-                  </a>
-                )),
-              )}
+              {[...menu.groups.flatMap((group) => group.items), ...menu.links].map((item) => (
+                <a key={item.href} href={item.href}>
+                  {item.title}
+                </a>
+              ))}
             </nav>
             <div className="glass-footer-inner">
               <SiteBrand />
-              <p className="glass-standing">{glass.standing}</p>
               <p className="glass-copyright">
                 © {new Date().getFullYear()} {brand.name}
               </p>

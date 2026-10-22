@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -17,8 +19,6 @@ import {
   menu,
   nightfall,
   questions,
-  security,
-  standing,
   thread,
   trust,
 } from '#/content/site.ts'
@@ -250,8 +250,7 @@ describe('nothing claims outbound supplier contact', () => {
     firstBuild,
     boundary,
     hero,
-    standing,
-    how,
+      how,
     trust,
     questions,
   ])
@@ -291,8 +290,7 @@ describe('no system is named on the page', () => {
     boundary,
     evidence,
     firstBuild,
-    standing,
-    access,
+      access,
     earlyAccess,
     contact,
     home,
@@ -339,8 +337,7 @@ describe('the motto', () => {
       boundary,
       evidence,
       firstBuild,
-      standing,
-      access,
+          access,
       earlyAccess,
       contact,
       home,
@@ -360,9 +357,9 @@ describe('the hero', () => {
     expect(thread.beats[0]!.at).toBe(hour)
   })
 
-  it('keeps the claim in the future', () => {
-    expect(hero.lede).toMatch(/being built/i)
-    expect(hero.proofTail).toMatch(/should be/i)
+  it('says what Incillum does, in the present tense', () => {
+    expect(hero.lede).toMatch(/Incillum carries the work forward/)
+    expect(hero.lede).not.toMatch(/being built|will be/i)
   })
 
   it('promises no confirmation email', () => {
@@ -384,8 +381,8 @@ describe('where it stops', () => {
     }
   })
 
-  it('keeps the boundary in the future tense', () => {
-    expect(boundary.lede).toMatch(/being built/i)
+  it('states the boundary in the present tense', () => {
+    expect(boundary.lede).toMatch(/^Incillum moves the work forward within the limits you set\./)
   })
 })
 
@@ -411,28 +408,6 @@ describe('data and access', () => {
 
   it('keeps saying that the rest is open', () => {
     expect(access.open.body).toMatch(/being settled/i)
-  })
-})
-
-describe('where this stands', () => {
-  it('describes progress as states, never as a date', () => {
-    for (const stage of standing.stages) {
-      expect(stage.state).toMatch(/^(Built|In build|Opening)$/)
-    }
-    const text = JSON.stringify(standing)
-    for (const calendar of [
-      'Q1',
-      'Q2',
-      'Q3',
-      'Q4',
-      'January',
-      'February',
-      'March',
-      '2026',
-      '2027',
-    ]) {
-      expect(text).not.toContain(calendar)
-    }
   })
 })
 
@@ -491,8 +466,8 @@ describe('the contact page', () => {
     expect(everything.toLowerCase()).not.toContain('stay with the work')
   })
 
-  it('describes the stage as a state, never as an opening', () => {
-    expect(contact.description.toLowerCase()).toContain('early access is not open yet')
+  it('describes the next step, never an opening date', () => {
+    expect(contact.description).toMatch(/we will write to arrange a call/)
     expect(contact.status).toMatch(/in progress/i)
   })
 })
@@ -595,10 +570,9 @@ describe('the presentation', () => {
     expect(clause?.text).not.toMatch(/\d/)
   })
 
-  it('says it is invented, in a sentence, before anything invented is shown', () => {
-    expect(glass.film.licence).toMatch(/invented/i)
-    expect(glass.sources.scattered.lede).toMatch(/invented/i)
-    // And never as a tracked label: the labels were what read as assembled.
+  it('opens the film on one quotation, in a sentence, never a tracked label', () => {
+    expect(glass.film.licence).toMatch(/^One quotation/)
+    // The labels were what read as assembled.
     expect(everything).not.toMatch(/Illustrative ·/)
   })
 
@@ -713,11 +687,9 @@ describe('the presentation', () => {
     }
   })
 
-  it('keeps what the product will do in the future tense, and the stage as states', () => {
-    expect(glass.sources.gathered.lede).toMatch(/being built/i)
-    for (const stage of standing.stages) {
-      expect(glass.standing).toContain(`${stage.title} is ${stage.state.toLowerCase()}.`)
-    }
+  it('says what Incillum does with the six, in the present tense', () => {
+    expect(glass.sources.gathered.lede).toMatch(/^Incillum reads all six/)
+    expect(JSON.stringify(glass)).not.toMatch(/being built|is in build|not yet/i)
   })
 
   it('leaves the call to a person', () => {
@@ -1027,9 +999,9 @@ describe('how it works', () => {
     expect(words(how.lede)).toBeLessThanOrEqual(30)
   })
 
-  it('says the quotation is invented, and keeps the product in the future tense', () => {
-    expect(how.lede).toMatch(/invented/i)
-    expect(how.lede).toMatch(/being built/i)
+  it('walks one quotation, in the present tense', () => {
+    expect(how.lede).toMatch(/one quotation/)
+    expect(how.lede).not.toMatch(/being built|invented/i)
   })
 
   it('writes no figure: the panels read every one off the evidence and the ledger', () => {
@@ -1053,61 +1025,32 @@ describe('how it works', () => {
 })
 
 /**
- * Data and trust — the grid that stands where the badges would.
+ * Data and trust — six cards of protection.
  *
- * Its states come from a closed set, each Decided entry is a promise already
- * on the record, each Built entry is something `standing` already says is
- * built, and no certification is named while none is held.
+ * Present tense, on the owner's decision of 22 October 2026. Two lines hold
+ * whatever the tense: no certification is named, and nothing claims a
+ * customer, a figure about usage, or a date.
  */
 describe('data and trust', () => {
-  it('gives every commitment one of three states', () => {
+  it('shows six cards, each a short title and one line', () => {
+    expect(trust.commitments).toHaveLength(6)
     for (const commitment of trust.commitments) {
-      expect(['Decided', 'Built', 'In build']).toContain(commitment.state)
-      expect(words(commitment.title), commitment.title).toBeLessThanOrEqual(6)
+      expect(words(commitment.title), commitment.title).toBeLessThanOrEqual(5)
+      expect(words(commitment.body), commitment.body).toBeLessThanOrEqual(24)
     }
-    expect(new Set(trust.commitments.map((commitment) => commitment.glyph)).size).toBe(
-      trust.commitments.length,
-    )
+    expect(new Set(trust.commitments.map((commitment) => commitment.glyph)).size).toBe(6)
   })
 
-  it('decides only what is already decided', () => {
-    const decided = trust.commitments.filter((commitment) => commitment.state === 'Decided')
-    expect(decided.map((commitment) => commitment.body)).toContain(access.decided.body)
-    // The other decided promise is the approval boundary's own first clause.
-    const approval = boundary.points.find((point) => point.title === 'Approval')!
-    const promise = /^No quotation is sent, no price is committed and no order is confirmed\b/
-    expect(approval.body).toMatch(promise)
-    for (const commitment of decided) {
-      const onRecord = commitment.body === access.decided.body || promise.test(commitment.body)
-      expect(onRecord, commitment.title).toBe(true)
-    }
+  it('keeps the two commitments that are already on the record in the same words', () => {
+    const training = trust.commitments.find((commitment) => commitment.glyph === 'training')!
+    expect(training.body).toMatch(/never used to train or fine-tune a model/)
+    const sending = trust.commitments.find((commitment) => commitment.glyph === 'sending')!
+    expect(sending.body).toMatch(/until a person approves it/)
   })
 
-  it('calls built only what the build already says is built', () => {
-    const built = standing.stages.find((stage) => stage.state === 'Built')!
-    expect(built.body).toMatch(/approval routing/)
-    expect(built.body).toMatch(/audit record/)
-    const claimed = trust.commitments.filter((commitment) => commitment.state === 'Built')
-    expect(claimed.map((commitment) => commitment.glyph).sort()).toEqual(['approval', 'record'])
-  })
-
-  it('keeps the open arrangements open, encryption among them', () => {
-    expect(trust.open).toBe(access.open)
-    expect(trust.open.body).toMatch(/being settled/i)
-    expect(trust.open.body).toMatch(/encryption/i)
-  })
-
-  it('lists a certification only with its report, and says so while there are none', () => {
-    for (const certification of trust.certifications) {
-      expect(certification.report).toMatch(/^https:\/\/\S+$/)
-    }
-    if (trust.certifications.length === 0) {
-      expect(trust.noCertification).toMatch(/^No certification is claimed/)
-    }
-  })
-
-  it('claims nothing, names no framework and spends no motto', () => {
-    claimsNothing({ ...trust, certifications: [] })
+  it('carries no state labels, and claims nothing', () => {
+    expect(JSON.stringify(trust)).not.toMatch(/Decided|In build|Planned|not held/)
+    claimsNothing(trust)
   })
 })
 
@@ -1123,19 +1066,11 @@ describe('questions', () => {
     }
   })
 
-  /**
-   * The owner decided on 22 October 2026 that Charlie is being built to ask
-   * approved suppliers for a price. So the answers say what is true today —
-   * nothing is sent on its own — and what is planned, gated by an approval.
-   */
-  it('says nothing is sent on its own, and that supplier contact is planned behind an approval', () => {
+  it('puts every outward step behind a person’s approval', () => {
     expect(answer(/send quotations/)).toMatch(/^Not on its own\./)
-    expect(answer(/send quotations/)).toMatch(/being built/)
     expect(answer(/send quotations/)).toMatch(/approves/)
-    expect(answer(/suppliers/)).toMatch(/^Not today\./)
-    expect(answer(/suppliers/)).toMatch(/arrives/)
-    expect(answer(/suppliers/)).toMatch(/planned/)
-    expect(answer(/suppliers/)).toMatch(/approval/)
+    expect(answer(/suppliers/)).toMatch(/^Only with your approval\./)
+    expect(answer(/suppliers/)).toMatch(/until a person approves/)
   })
 
   it('reads the commitments from where they already live', () => {
@@ -1161,18 +1096,13 @@ describe('the home page’s navigation', () => {
   })
 })
 
-describe('the masthead’s menus', () => {
-  const pages = new Set(['/', '/contact', charlie.path, security.path])
-  const sections = new Set(['film', how.anchor, trust.anchor, questions.anchor])
-
-  it('land every item on a page or a front-page section that exists', () => {
-    for (const group of menu.groups) {
-      for (const item of group.items) {
-        const [path, hash] = item.href.split('#')
-        expect(pages.has(path || '/'), item.href).toBe(true)
-        if (hash) expect(sections.has(hash), item.href).toBe(true)
-        expect(words(item.line), item.line).toBeLessThanOrEqual(10)
-      }
+describe('the masthead', () => {
+  it('has one menu, Product, with Charlie in it, and a link to the memo', () => {
+    expect(menu.groups.map((group) => group.label)).toEqual(['Product'])
+    expect(menu.groups[0]!.items.map((item) => item.href)).toEqual([charlie.path])
+    expect(menu.links.map((link) => link.href)).toEqual(['/contact'])
+    for (const item of menu.groups[0]!.items) {
+      expect(words(item.line), item.line).toBeLessThanOrEqual(12)
     }
   })
 
@@ -1182,21 +1112,11 @@ describe('the masthead’s menus', () => {
 })
 
 /**
- * Charlie.
- *
- * Its scene is invented and says so first; its figures are tokens the
- * component fills from the evidence and the ledger; and every outward ability
- * — a request to a supplier, a call — is planned and waits for a person.
+ * Charlie — present tense, on the owner's decision of 22 October 2026, with
+ * every outward step described with the approval it waits for. The scene's
+ * figures are tokens the component fills from the evidence and the ledger.
  */
 describe('Charlie', () => {
-  const states = ['Decided', 'Built', 'In build', 'Planned']
-
-  it('says the conversation is invented and not yet built, in its first line', () => {
-    expect(charlie.scene.licence).toMatch(/^Invented/)
-    expect(charlie.scene.licence).toMatch(/not yet built/)
-    expect(charlie.film.licence).toMatch(/invented/i)
-  })
-
   it('writes no figure of its own: the scene reads them from the evidence and the ledger', () => {
     expect(JSON.stringify(charlie.scene)).not.toMatch(/EUR|\d+(\.\d+)?\s?%|\d+\.\d{2}|\d,\d{3}/)
     for (const message of charlie.scene.messages) {
@@ -1209,7 +1129,7 @@ describe('Charlie', () => {
     }
   })
 
-  it('tells the night in order, starting at the hour the supplier answer arrives', () => {
+  it('tells the morning in order, starting at the hour the supplier answer arrives', () => {
     const hours = charlie.scene.messages.map((message) => message.at)
     expect([...hours].sort()).toEqual(hours)
     expect(hours[0]).toBe(glass.sources.documents.supplier.at)
@@ -1222,21 +1142,14 @@ describe('Charlie', () => {
     for (const message of asks) expect(message.decided).toMatch(/^Approved by /)
   })
 
-  it('gives every ability a real state, and keeps every outward one planned and behind a person', () => {
+  it('describes every outward ability with the approval it waits for', () => {
+    const ask = charlie.abilities.items.find((ability) => ability.glyph === 'ask')!
+    expect(ask.body).toMatch(/once someone approves/)
+    const approve = charlie.abilities.items.find((ability) => ability.glyph === 'approve')!
+    expect(approve.body).toMatch(/without a person’s approval/)
     for (const ability of charlie.abilities.items) {
-      expect(states).toContain(ability.state)
       expect(words(ability.title), ability.title).toBeLessThanOrEqual(5)
     }
-    const outward = charlie.abilities.items.filter((ability) => ['ask', 'call'].includes(ability.glyph))
-    expect(outward).toHaveLength(2)
-    for (const ability of outward) expect(ability.state).toBe('Planned')
-    const ask = charlie.abilities.items.find((ability) => ability.glyph === 'ask')!
-    expect(ask.body).toMatch(/only once someone approves/)
-    const approve = charlie.abilities.items.find((ability) => ability.glyph === 'approve')!
-    expect(approve.state).toBe('Decided')
-    // Nothing Charlie does is called built yet: widen to the type's own set to check.
-    const claimed: ReadonlyArray<string> = charlie.abilities.items.map((ability) => ability.state)
-    expect(claimed).not.toContain('Built')
   })
 
   it('films six abilities in a few words each, and writes no figure', () => {
@@ -1246,83 +1159,40 @@ describe('Charlie', () => {
       expect(words(step.line), step.line).toBeLessThanOrEqual(10)
     }
     expect(JSON.stringify(charlie.film)).not.toMatch(/EUR|\d+(\.\d+)?\s?%|\d+\.\d{2}/)
-    // The beat that ends the film is the approval.
     expect(charlie.film.steps.at(-1)?.line).toMatch(/approves/)
   })
 
-  it('keeps the product in the future tense', () => {
-    expect(charlie.hero.lede).toMatch(/being built/)
-    expect(charlie.act.lede).toMatch(/being built/i)
-  })
-
-  it('claims nothing, names no ERP or mail client, and spends no motto', () => {
+  it('carries no state labels, claims nothing, names no ERP or mail client, and spends no motto', () => {
+    expect(JSON.stringify(charlie)).not.toMatch(/Decided|In build|Planned|not yet built|being built/)
     claimsNothing({ ...charlie, scene: { ...charlie.scene, messages: [] } })
     claimsNothing(charlie.scene.messages)
   })
 })
 
 /**
- * Security.
- *
- * The frameworks a buyer looks for are named here, and only here, each with
- * its real status in its own card: not held. Controls carry a state from the
- * closed set, and the ones that need a hosted environment are not called built.
+ * What the site describes in the present tense and the platform does not do
+ * yet is kept in `requirements/README.md`, for the owner, not on the page.
+ * These hold the file to the outward abilities the site names.
  */
-describe('security', () => {
-  it('names each framework with a status that says it is not held', () => {
-    expect(security.frameworks.items.length).toBeGreaterThanOrEqual(4)
-    for (const framework of security.frameworks.items) {
-      expect(['Not held · planned', 'Not yet assessed']).toContain(framework.status)
+describe('the requirements file', () => {
+  const file = readFileSync(new URL('../../requirements/README.md', import.meta.url), 'utf-8')
+
+  it('exists, and lists every outward ability the site describes', () => {
+    for (const ability of ['asks your approved suppliers', 'calls a supplier', 'Slack, Teams or email', 'sends the quotation to the customer']) {
+      expect(file.toLowerCase(), ability).toContain(ability.toLowerCase())
     }
-    expect(security.frameworks.lede).toMatch(/None is held today/)
-    expect(security.frameworks.note).toMatch(/^Not held means not held/)
   })
 
-  it('gives every control a real state, and calls nothing hosted built', () => {
-    for (const control of security.controls.items) {
-      expect(['Decided', 'Built', 'In build', 'Planned']).toContain(control.state)
-      if (/hosted/i.test(control.body)) expect(control.state).not.toBe('Built')
+  it('keeps the certifications the site no longer names', () => {
+    for (const name of ['SOC 2', 'ISO/IEC 27001', 'GDPR']) expect(file, name).toContain(name)
+  })
+})
+
+describe('no certification is named anywhere on the site', () => {
+  it('names no framework in any section', () => {
+    const everything = JSON.stringify([home, glass, how, trust, questions, menu, charlie, contact, access])
+    for (const name of ['SOC 2', 'SOC2', 'ISO/IEC', 'ISO 27001', 'GDPR', 'CCPA', 'HIPAA']) {
+      expect(everything, name).not.toContain(name)
     }
-    const titles = (state: string) =>
-      security.controls.items.filter((control) => control.state === state).map((control) => control.title)
-    expect(titles('Built')).toEqual(
-      expect.arrayContaining(['Approval routing', 'Audit record']),
-    )
-    expect(titles('Planned')).toEqual(expect.arrayContaining(['SAML single sign-on', 'Encryption at rest and in transit']))
-  })
-
-  it('gives every card of protection a real state, and decides only what is on the record', () => {
-    for (const principle of security.principles.items) {
-      expect(['Decided', 'Built', 'In build', 'Planned']).toContain(principle.state)
-      expect(words(principle.title), principle.title).toBeLessThanOrEqual(6)
-    }
-    const decided = security.principles.items.filter((principle) => principle.state === 'Decided')
-    expect(decided.map((principle) => principle.glyph).sort()).toEqual(['sending', 'training'])
-    const tested = security.principles.items.find((principle) => principle.glyph === 'test')!
-    expect(tested.state).toBe('Planned')
-  })
-
-  it('answers the security questions in the tense of what exists', () => {
-    const answer = (question: RegExp) =>
-      security.questions.items.find((item) => question.test(item.question))?.answer ?? ''
-    expect(security.questions.items.length).toBeGreaterThanOrEqual(5)
-    for (const item of security.questions.items) expect(item.question.endsWith('?')).toBe(true)
-    expect(answer(/hosted/)).toMatch(/being set up/)
-    expect(answer(/leave/)).toMatch(/being built/)
-    expect(answer(/tested/)).toMatch(/planned/)
-    expect(answer(/trained/)).toMatch(/^No\./)
-  })
-
-  it('keeps the framework names off every front-page section', () => {
-    const front = JSON.stringify([home, glass, how, trust, questions, standing, menu, charlie])
-    for (const name of ['SOC 2', 'ISO/IEC', 'GDPR', 'CCPA']) expect(front, name).not.toContain(name)
-  })
-
-  it('claims no customer, no metric and no date, and spends no motto', () => {
-    const text = JSON.stringify(security)
-    for (const forbidden of ['trusted by', 'customers include', 'testimonial', 'certified', 'compliant', 'stay with the work']) {
-      expect(text.toLowerCase()).not.toContain(forbidden)
-    }
-    for (const date of calendar) expect(text, date).not.toContain(date)
   })
 })

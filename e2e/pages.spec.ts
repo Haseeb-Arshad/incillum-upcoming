@@ -3,14 +3,14 @@ import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
 /**
- * The pages after the front page — Charlie and security — and the masthead's
- * menus that reach them.
+ * The page after the front page — Charlie — and the masthead that reaches it.
  *
- * The rules under test: each page is in the sitemap and draws its own chrome
- * once; Charlie's conversation is invented and says so first, and every
- * outward ability is planned; security names the frameworks a buyer looks for
- * only with a status that says they are not held; the menus open by pointer
- * and by keyboard, close on Escape, and every item lands somewhere real.
+ * The rules under test: the page is in the sitemap and draws its own chrome
+ * once; Charlie's abilities carry no state labels, and every outward one is
+ * described with the approval it waits for; no certification is named; the
+ * masthead has one menu, Product, and a link to the contact memo; the menu
+ * opens by pointer and by keyboard, closes on Escape, and every item lands
+ * somewhere real. There is no security page.
  */
 
 async function open(page: Page, path: string) {
@@ -21,7 +21,7 @@ async function open(page: Page, path: string) {
 const noOverflow = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
 
-test('Charlie: one page, its own chrome, the invented conversation first, nothing outward built', async ({
+test('Charlie: one page, its own chrome, the team’s channel, every outward step approved', async ({
   page,
 }) => {
   await open(page, '/charlie')
@@ -33,11 +33,8 @@ test('Charlie: one page, its own chrome, the invented conversation first, nothin
   await expect(page.locator('[data-inverted]')).toHaveCount(1)
   expect(await noOverflow(page)).toBe(true)
 
-  // The scene says what it is before anything in it is shown.
   const scene = page.locator('.charlie-scene')
-  await expect(scene.locator('.charlie-licence')).toHaveText(
-    /^Invented, and not yet built/,
-  )
+  await expect(scene.locator('.charlie-licence')).toHaveText(/^One quotation/)
   await expect(scene.locator('.charlie-message')).toHaveCount(5)
   // Its figures are the night's.
   for (const figure of ['128.00', '135.68', '16.4%', '20.0%', '1,200']) {
@@ -45,111 +42,67 @@ test('Charlie: one page, its own chrome, the invented conversation first, nothin
   }
   await expect(scene).toContainText('Approved by')
 
-  // Every ability has a state, and the outward ones are planned.
+  // The abilities are cards, without a state on any of them.
   const ability = (title: string) =>
-    page.locator('.trust-cell', { has: page.getByRole('heading', { name: title }) })
-  await expect(page.locator('.trust-cell')).toHaveCount(7)
-  for (const title of ['Asks approved suppliers', 'Calls and books']) {
-    await expect(ability(title).locator('.trust-state')).toHaveText('Planned')
-  }
-  await expect(ability('Asks before anything leaves').locator('.trust-state')).toHaveText(
-    'Decided',
-  )
-  for (const state of await page.locator('.trust-state').allInnerTexts()) {
-    expect(state.trim()).not.toBe('Built')
-  }
+    page.locator('.protect-card', { has: page.getByRole('heading', { name: title }) })
+  await expect(page.locator('.protect-card')).toHaveCount(7)
+  await expect(ability('Asks approved suppliers')).toContainText(/once someone approves/)
+  await expect(page.locator('body')).not.toContainText(/Decided|In build|Planned|Not held/)
 
   await expect(page.locator('body')).not.toContainText(
-    /trusted by|customers include|testimonial|SOC 2|ISO|GDPR|stay with the work/i,
+    /trusted by|customers include|testimonial|SOC 2|ISO\/IEC|GDPR|stay with the work/i,
   )
 })
 
-test('security: controls with their state, and every framework named as not held', async ({
-  page,
-}) => {
-  await open(page, '/security')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'For the figures a business guards most.',
-  )
-  expect(await noOverflow(page)).toBe(true)
-
-  const controls = page.locator('.security-control')
-  expect(await controls.count()).toBeGreaterThanOrEqual(8)
-  for (const state of await controls.locator('.trust-state').allInnerTexts()) {
-    expect(['Decided', 'Built', 'In build', 'Planned']).toContain(state.trim())
-  }
-
-  // A framework's card opens on its status, so it is never read as a badge.
-  const frameworks = page.locator('.security-framework')
-  expect(await frameworks.count()).toBeGreaterThanOrEqual(4)
-  for (const card of await frameworks.all()) {
-    const first = card.locator(':scope > *').first()
-    await expect(first).toHaveText(/^(Not held · planned|Not yet assessed)$/)
-  }
-  await expect(page.getByText(/^Not held means not held/)).toBeVisible()
-  await expect(page.locator('body')).not.toContainText(
-    /\bcertified\b|\bcompliant\b|trusted by/i,
-  )
-
-  // Six cards of protection, each with its state; the band of certifications is the page's night.
-  await expect(page.locator('.security-principle')).toHaveCount(6)
-  for (const state of await page.locator('.security-principle .trust-state').allInnerTexts()) {
-    expect(['Decided', 'Built', 'In build', 'Planned']).toContain(state.trim())
-  }
-  await expect(page.locator('.security-band[data-inverted] .security-framework').first()).toBeVisible()
-  // Every security question is answered in the page, not behind a click.
-  await expect(page.locator('details')).toHaveCount(0)
-  expect(await page.locator('.questions-answer').count()).toBeGreaterThanOrEqual(5)
-})
-
-test('both pages are in the sitemap, and the front page links to them', async ({
+test('Charlie is in the sitemap and the front page links to it; there is no security page', async ({
   page,
   request,
 }) => {
   const sitemap = await (await request.get('/sitemap.xml')).text()
   expect(sitemap).toContain('/charlie</loc>')
-  expect(sitemap).toContain('/security</loc>')
+  expect(sitemap).not.toContain('/security</loc>')
   await open(page, '/')
   await expect(page.locator('a[href="/charlie"]').first()).toBeAttached()
-  await expect(page.locator('a[href="/security"]').first()).toBeAttached()
+  await expect(page.locator('a[href="/security"]')).toHaveCount(0)
 })
 
-test('every menu item lands somewhere real', async ({ page, request }) => {
+test('the masthead has one menu, Product, with Charlie in it, and a link to the memo', async ({
+  page,
+  request,
+}) => {
   await open(page, '/')
+  await expect(page.locator('.site-menu-button')).toHaveText(['Product'])
   const hrefs = await page
     .locator('.site-menu-item')
     .evaluateAll((links) => links.map((link) => link.getAttribute('href')!))
-  expect(hrefs.length).toBeGreaterThanOrEqual(6)
-  for (const href of new Set(hrefs)) {
-    const [path, hash] = href.split('#')
-    expect((await request.get(path || '/')).status(), href).toBe(200)
-    if (hash) await expect(page.locator(`[id="${hash}"]`), href).toHaveCount(1)
+  expect(hrefs).toEqual(['/charlie'])
+  await expect(page.locator('.site-menu-link')).toHaveText(['Contact'])
+  for (const href of ['/charlie', '/contact']) {
+    expect((await request.get(href)).status(), href).toBe(200)
   }
 })
 
-test('a menu opens from the keyboard, moves with the arrows and closes on Escape', async ({
+test('the menu opens from the keyboard, moves with the arrows and closes on Escape', async ({
   page,
 }) => {
-  await open(page, '/security')
-  const button = page.getByRole('button', { name: 'Trust' })
+  await open(page, '/charlie')
+  const button = page.getByRole('button', { name: 'Product' })
   test.skip(!(await button.isVisible()), 'the menus show from a laptop’s width')
   await expect(button).toHaveAttribute('aria-expanded', 'false')
   await button.focus()
   await page.keyboard.press('ArrowDown')
   await expect(button).toHaveAttribute('aria-expanded', 'true')
-  await expect(
-    page.locator('.site-menu-item').filter({ hasText: 'Security' }),
-  ).toBeFocused()
+  const charlie = page.locator('.site-menu-item').filter({ hasText: 'Charlie' })
+  await expect(charlie).toBeFocused()
+  // One item: the arrows wrap onto it.
   await page.keyboard.press('ArrowDown')
-  await expect(
-    page.locator('.site-menu-item').filter({ hasText: 'Your figures' }),
-  ).toBeFocused()
+  await expect(charlie).toBeFocused()
   await page.keyboard.press('Escape')
   await expect(button).toHaveAttribute('aria-expanded', 'false')
   await expect(button).toBeFocused()
 })
 
-test('a menu opens on hover where a pointer hovers, and closes when it leaves', async ({
+test('the menu opens on hover where a pointer hovers, and closes when it leaves', async ({
   page,
 }) => {
   await open(page, '/charlie')

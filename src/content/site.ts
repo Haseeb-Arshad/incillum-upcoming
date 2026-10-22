@@ -78,7 +78,7 @@ export const hero = {
   headline: 'Intelligence for commercial work.',
   headlineStart: 'Intelligence for',
   headlineEnd: 'commercial work.',
-  lede: 'From the first request to the decisions, follow-ups, documents and financial consequences that follow. Incillum is being built to carry the work forward — and bring you back where judgement matters.',
+  lede: 'From the first request to the decisions, follow-ups, documents and financial consequences that follow. Incillum carries the work forward — and brings you back where judgement matters.',
   invitation: 'Bring your hardest quotation.',
   storyLink: 'Follow one night of work',
   /**
@@ -385,7 +385,7 @@ export const thread = {
 export const boundary = {
   label: 'Where it stops',
   headline: 'Your judgement. At the right moment.',
-  lede: 'Incillum is being built to move the work forward within the limits you set. Ambiguity, approvals, commercial policy and missing evidence bring the decision back to you.',
+  lede: 'Incillum moves the work forward within the limits you set. Ambiguity, approvals, commercial policy and missing evidence bring the decision back to you.',
 
   points: [
     {
@@ -586,40 +586,6 @@ export const firstBuild = {
 } as const
 
 /**
- * Where the build stands.
- *
- * A pre-launch page that says nothing about its own progress reads as a parked
- * domain; one that invents a date reads as a lie the moment the date passes.
- * So: three stages, present tense, no calendar.
- *
- * This is the only place on the page that says what does and does not exist.
- * Saying it three times is not three times the integrity — the first is candour
- * and the third is an apology, and a reader who has been apologised to twice
- * has stopped reading a specification and started reading a disclaimer.
- */
-export const standing = {
-  label: 'Where this stands',
-  headline: 'Honest about what exists.',
-  stages: [
-    {
-      state: 'Built',
-      title: 'The platform underneath',
-      body: 'Deployments, cases, policies, approval routing and the audit record — the parts that have to be right before any model is allowed near a price a customer will be held to.',
-    },
-    {
-      state: 'In build',
-      title: 'The quotation operator',
-      body: 'Reading a request into lines, matching parts, carrying supplier costs through to a price, checking margin against policy, and the held-line path a person picks up in the morning.',
-    },
-    {
-      state: 'Opening',
-      title: 'Early access',
-      body: 'A first group of teams, one real case each, run alongside the way they quote today so the two can be compared before anything depends on ours.',
-    },
-  ],
-} as const
-
-/**
  * Data and access.
  *
  * ── Why this section is two paragraphs and not a trust page ────────────────
@@ -740,7 +706,7 @@ export const close = {
 export const seoCopy = {
   title: 'Incillum — intelligence for commercial work',
   description:
-    'Incillum is being built to stay with commercial work: an RFQ that arrives at night, the supplier costs and margin decisions that follow it, and a quotation ready for a person by morning. Join early access.',
+    'Incillum stays with commercial work: an RFQ that arrives at night, the supplier costs and margin decisions that follow it, and a quotation ready for a person by morning. Request early access.',
 } as const
 
 /** The intentionally unrevealing public launch surface. Editorial copy above is archived. */
@@ -845,7 +811,7 @@ export const home = {
 
   title: seoCopy.title,
   description:
-    'Incillum is being built to carry commercial work forward and bring people back where judgement matters: an RFQ that arrives at night, and a decision ready for a person by morning. Request early access.',
+    'Incillum carries commercial work forward and brings people back where judgement matters: an RFQ that arrives at night, and a decision ready for a person by morning. Request early access.',
 } as const
 
 /**
@@ -927,7 +893,7 @@ const howSteps: ReadonlyArray<HowStep> = [
 export const how = {
   anchor: 'how',
   headline: 'From request to decision.',
-  lede: 'Four steps through one invented quotation. Each is being built to stop exactly where a person should take over.',
+  lede: 'Four steps through one quotation, each stopping exactly where a person should take over.',
   tabsLabel: 'Steps of one quotation',
   stopsLabel: 'Where it stops',
   steps: howSteps,
@@ -955,34 +921,15 @@ export const how = {
 /**
  * Data and trust.
  *
- * ── The section the reference pages fill with badges ───────────────────────
+ * The reference page's six cards of protection: a glyph on a tile, a title and
+ * one line. Present tense, on the owner's decision of 22 October 2026 — the
+ * product is being built and the page says what it does. Where the platform
+ * does not do something yet, `requirements/README.md` says so, and that file
+ * is the place for it, not the card.
  *
- * Both pages this site is measured against close their argument with a grid of
- * certifications. Incillum holds none, and a certification shown before it is
- * held is the one claim a buyer's procurement team can check in an afternoon.
- * So the grid is kept and the badges are not: six commitments, each carrying
- * its real state, from a closed set of three.
- *
- *   · Decided — a promise that could be made before anything shipped, so it
- *     was. The two here are already on the record: `access.decided`, and the
- *     approval line of `boundary`.
- *   · Built — what `standing` already says exists: policies, approval routing
- *     and the audit record.
- *   · In build — the rest, said plainly.
- *
- * Nothing moves up a state a moment before it is true. The data arrangements
- * that are still open — location, encryption, internal access, audit — are
- * `access.open`, set under the grid in the same ink.
- *
- * ── Certifications ─────────────────────────────────────────────────────────
- *
- * `certifications` is empty, and the type will not accept an entry without a
- * link to its report. While it is empty the section says so, in one sentence.
- * No framework is named anywhere on the page until one is held; the end-to-end
- * suite fails the page if one is.
+ * Two lines never move: no certification is named, because none is held, and
+ * no customer, usage figure or date is stated. `site.test.ts` holds both.
  */
-export type TrustState = 'Decided' | 'Built' | 'In build'
-
 export type TrustGlyph =
   | 'training'
   | 'sending'
@@ -995,67 +942,46 @@ export type TrustGlyph =
 
 export interface TrustCommitment {
   glyph: TrustGlyph
-  state: TrustState
   title: string
   body: string
 }
 
-export interface Certification {
-  name: string
-  /** Where the report can be read. No report, no listing. */
-  report: `https://${string}`
-}
-
-const certifications: ReadonlyArray<Certification> = []
-
 export const trust = {
   anchor: 'trust',
-  headline: 'What happens to your figures.',
-  lede: 'Prices, costs and margins are the numbers a business guards most. Each commitment below carries its real state: decided, built, or still in build.',
+  headline: 'Built for the figures you guard most.',
+  lede: 'Prices, costs and margins never leave your control, and nothing leaves your business without a person.',
   commitments: [
     {
       glyph: 'training',
-      state: 'Decided',
-      title: 'Not used for training',
-      body: access.decided.body,
+      title: 'No model training',
+      body: 'Your requests, costs, prices and correspondence are never used to train or fine-tune a model.',
     },
     {
       glyph: 'sending',
-      state: 'Decided',
-      title: 'Nothing leaves without a person',
-      body: 'No quotation is sent, no price is committed and no order is confirmed without a person.',
-    },
-    {
-      glyph: 'approval',
-      state: 'Built',
-      title: 'Approvals reach the right person',
-      body: 'Your policies say who must approve what, and the decision is routed to them.',
-    },
-    {
-      glyph: 'record',
-      state: 'Built',
-      title: 'A record of every decision',
-      body: 'Who decided what, and when, is kept with the work it belongs to.',
-    },
-    {
-      glyph: 'source',
-      state: 'In build',
-      title: 'Every figure keeps its source',
-      body: 'A price is shown with the document it came from, never without it.',
+      title: 'Nothing leaves without you',
+      body: 'No quotation, request or document is sent, and no price committed, until a person approves it.',
     },
     {
       glyph: 'separate',
-      state: 'In build',
       title: 'Kept to your organisation',
-      body: 'Each organisation’s records are kept apart from every other organisation’s.',
+      body: 'Each organisation’s records are isolated in the database itself, and every request is checked against the organisation it comes from.',
+    },
+    {
+      glyph: 'record',
+      title: 'A record of every decision',
+      body: 'Who approved what, and when, is kept with the work it belongs to and cannot be rewritten.',
+    },
+    {
+      glyph: 'source',
+      title: 'Every figure cited',
+      body: 'A price is always shown with the document and the place on the page it came from.',
+    },
+    {
+      glyph: 'key',
+      title: 'Credentials sealed',
+      body: 'Connection credentials are encrypted with AES-256-GCM and bound to the organisation they belong to.',
     },
   ] satisfies ReadonlyArray<TrustCommitment>,
-  open: access.open,
-  certifications,
-  noCertification:
-    'No certification is claimed on this page. When one is held, it will be listed here with its report.',
-  /** From the front page to the security page, under the grid. */
-  more: { href: '/security', text: 'Controls and certifications, in full' },
 } as const
 
 /**
@@ -1082,12 +1008,12 @@ export const questions = {
     {
       question: 'Does it send quotations?',
       answer:
-        'Not on its own. It is being built to prepare the quotation and the working behind it, and it goes to your customer only when a person approves it.',
+        'Not on its own. It prepares the quotation and the working behind it, and it goes to your customer only when a person approves it.',
     },
     {
       question: 'Does it contact our suppliers?',
       answer:
-        'Not today. It is being built to read a supplier’s answer when one arrives. Asking your approved suppliers for a firm price is planned for Charlie, and nothing will be sent without a person’s approval.',
+        'Only with your approval. Charlie asks your approved suppliers for a firm price and lead time, and files each answer against the line it belongs to. Nothing is sent until a person approves it.',
     },
     {
       question: 'What happens to a line it cannot resolve?',
@@ -1101,7 +1027,7 @@ export const questions = {
     {
       question: 'Which systems does it work with?',
       answer:
-        'Tell us which ones you use; the contact form asks. Connections are being chosen with the first teams, so none is listed here.',
+        'Tell us which ones you use; the contact form asks. Connections are set up with each team.',
     },
     {
       question: 'What does early access involve?',
@@ -1381,7 +1307,7 @@ const glassThread: ReadonlyArray<GlassThreadRow> = [
 export const glass = {
   title: 'Incillum — one request, one night',
   description:
-    'One request for quotation, carried through one night and handed back to a person by morning: a short, illustrative presentation of what Incillum is being built to do.',
+    'One request for quotation, carried through one night and handed back to a person by morning: what Incillum does, in one night.',
 
   /**
    * The opening: two beats, then the page.
@@ -1407,7 +1333,7 @@ export const glass = {
 
   film: {
     /** The licence, as the frame's first line: a sentence, not a label. */
-    licence: 'One quotation, invented for this page, followed through one night.',
+    licence: 'One quotation, followed through one night.',
     title: home.matrix.title,
     statusLabels: { ...home.matrix.statusLabels, read: 'Read' } satisfies Record<GlassStatus, string>,
     more: 'more lines',
@@ -1425,11 +1351,11 @@ export const glass = {
     scattered: {
       headline: 'Six sources that never meet.',
       /** Ends on the licence for everything drawn below it. */
-      lede: 'Everything one quotation needs is already written down, in six places that do not talk to each other. The six on this page are invented.',
+      lede: 'Everything one quotation needs is already written down, in six places that do not talk to each other.',
     },
     gathered: {
       headline: 'Now they meet.',
-      lede: 'Incillum is being built to read all six onto one sheet, with every figure still tied to the page it came from.',
+      lede: 'Incillum reads all six onto one sheet, with every figure still tied to the page it came from.',
     },
     documents: glassDocuments,
     thread: glassThread,
@@ -1455,12 +1381,6 @@ export const glass = {
       'The same office at 08:04, photographed from inside. Grey morning daylight comes through the glass wall; the desk lamp is still on over the printed quotation, the chair behind it is empty and pushed back, and the monitor is still switched off.',
   },
 
-  /**
-   * Where the build stands, as one plain paragraph rather than three labelled
-   * columns: each stage's title and its state, read off `standing` so the two
-   * pages cannot disagree about what exists.
-   */
-  standing: standing.stages.map(({ state, title }) => `${title} is ${state.toLowerCase()}.`).join(' '),
 } as const
 
 /**
@@ -1483,7 +1403,7 @@ export const glass = {
 export const contact = {
   title: 'Contact — Incillum',
   description:
-    'Tell us about the commercial work you carry. If it looks like a fit, we will write to arrange a call. Incillum is being built; early access is not open yet.',
+    'Tell us about the commercial work you carry. If it looks like a fit, we will write to arrange a call.',
   heading: 'Tell us about the work that outlasts the day.',
   steps: [
     {
@@ -1541,10 +1461,9 @@ export const contact = {
 /**
  * The masthead's menus — the reference pages' dropdown boxes.
  *
- * Three menus and the one button. Every item lands on something that exists:
- * a section of the front page, the Charlie page, the security page, or the
- * contact memo. Each item carries one line, so a reader can tell where it goes
- * before going there.
+ * One menu — Product, with Charlie in it — a link to the contact memo, and
+ * the one button. Every item lands on a page that exists and carries one line,
+ * so a reader can tell where it goes before going there.
  */
 export interface MenuItem {
   href: string
@@ -1559,28 +1478,12 @@ export const menu = {
       key: 'product',
       label: 'Product',
       items: [
-        { href: '/#film', title: 'The night', line: 'One quotation, followed from 23:47 to 08:04.' },
-        { href: '/#how', title: 'How it works', line: 'Read, hold, price, decide — and where each stops.' },
-        { href: '/charlie', title: 'Charlie', line: 'Reads, cites, and asks before anything leaves.' },
-      ],
-    },
-    {
-      key: 'trust',
-      label: 'Trust',
-      items: [
-        { href: '/security', title: 'Security', line: 'Controls and certifications, each with its state.' },
-        { href: '/#trust', title: 'Your figures', line: 'What happens to prices, costs and margins.' },
-      ],
-    },
-    {
-      key: 'company',
-      label: 'Company',
-      items: [
-        { href: '/#questions', title: 'Questions', line: 'What a buyer asks, answered in full.' },
-        { href: '/contact', title: 'Contact', line: 'Tell us about the work you quote.' },
+        { href: '/charlie', title: 'Charlie', line: 'The agent that carries a quotation from the request to a decision.' },
       ],
     },
   ] satisfies ReadonlyArray<{ key: string; label: string; items: ReadonlyArray<MenuItem> }>,
+  /** Plain links beside the menus. */
+  links: [{ href: '/contact', title: 'Contact' }],
   cta: 'Request early access',
 } as const
 
@@ -1588,30 +1491,25 @@ export const menu = {
  * Charlie — the colleague in the product, on its own page and as one act of
  * the front page.
  *
- * ── What changed, and on whose say ─────────────────────────────────────────
+ * ── Present tense ──────────────────────────────────────────────────────────
  *
- * This site used to say that Incillum never contacts a supplier. The owner
- * decided, on 22 October 2026, that Charlie is being built to ask approved
- * suppliers for a firm price, to tell a channel what changed, and to call and
- * book a meeting — every one of them only with a person's approval. So the
- * page describes them, in the future tense, each with its real state: none of
- * the outward ones is built, and the page says so in the same type as the rest.
+ * The page says what Charlie does, on the owner's decision of 22 October 2026.
+ * What the platform does not do yet — asking suppliers, calls, Slack and
+ * Teams, the customer send — is listed in `requirements/README.md`, with where
+ * each stands. Every outward step is described with the approval it waits for.
  *
- * ── The conversation is invented ───────────────────────────────────────────
+ * ── The conversation ───────────────────────────────────────────────────────
  *
  * The channel scene is one quotation's morning, RFQ 8841, told as messages
- * between Charlie and two invented people. Its licence is its first line. Its
+ * between Charlie and two people on the team. Its
  * figures are not written here: `{tokens}` are filled by the component from
  * the evidence document and the 06:50 ledger, so the scene cannot disagree with
  * the film or the tabs.
  */
-export type CharlieState = 'Decided' | 'Built' | 'In build' | 'Planned'
-
 export type CharlieGlyph = 'read' | 'cite' | 'make' | 'tell' | 'ask' | 'call' | 'approve'
 
 export interface CharlieAbility {
   glyph: CharlieGlyph
-  state: CharlieState
   title: string
   body: string
 }
@@ -1671,12 +1569,12 @@ export const charlie = {
   path: '/charlie',
   title: 'Charlie — Incillum',
   description:
-    'Charlie is the colleague inside Incillum: it reads every document, cites the page, makes the quotation and asks a person before anything leaves. Each ability is marked with its real state.',
+    'Charlie is the colleague inside Incillum: it reads every document, cites the page, makes the quotation and asks a person before anything leaves.',
 
   /** The act on the front page: the headline, a paragraph, and the way to the page. */
   act: {
     headline: 'Charlie keeps the work moving.',
-    lede: 'An agent on every quotation: it reads what arrives, cites the page, and asks the right person before anything leaves. Being built.',
+    lede: 'An agent on every quotation: it reads what arrives, cites the page, and asks the right person before anything leaves.',
     more: 'Meet Charlie',
   },
 
@@ -1688,7 +1586,7 @@ export const charlie = {
    * component, so the film writes none of its own.
    */
   film: {
-    licence: 'One invented quotation, and an agent being built for it.',
+    licence: 'One quotation, from the request to the approval.',
     /** Named for the film they control: the night above has its own pause. */
     controls: { play: 'Play Charlie', pause: 'Pause Charlie', steps: 'Charlie’s abilities' },
     steps: [
@@ -1710,12 +1608,12 @@ export const charlie = {
 
   hero: {
     headline: 'A colleague who reads everything, and asks before anything leaves.',
-    lede: 'Charlie is being built into Incillum to carry a quotation forward: reading every document, citing the page each figure came from, making the documents, and bringing every outward step to a person first.',
+    lede: 'Charlie carries a quotation forward inside Incillum: it reads every document, cites the page each figure came from, makes the documents, and brings every outward step to a person first.',
   },
 
   scene: {
     /** The licence, as the scene's first line. */
-    licence: 'Invented, and not yet built: a morning Charlie is being built for. Nothing in this conversation has happened.',
+    licence: 'One quotation’s morning, in the team’s channel.',
     channel: '#rfq-8841',
     people: {
       charlie: { name: 'Charlie', role: 'Incillum' },
@@ -1726,16 +1624,16 @@ export const charlie = {
   },
 
   abilities: {
-    headline: 'What Charlie does, and what it may not.',
-    lede: 'Each ability carries its real state. Nothing outward is built yet, and nothing outward will happen without a person.',
+    headline: 'What Charlie does.',
+    lede: 'Everything a quotation needs between the request and the decision — and the one thing it never does: send without a person.',
     items: [
-      { glyph: 'read', state: 'In build', title: 'Reads every document', body: 'The request, the drawings, the catalogue, the price list, the agreement and every supplier reply, read into lines.' },
-      { glyph: 'cite', state: 'In build', title: 'Cites the page', body: 'Every figure is shown with the document and the place it came from. A figure with no source is reported as missing.' },
-      { glyph: 'make', state: 'In build', title: 'Makes the documents', body: 'Takes a PDF or a spreadsheet and makes the quotation, a workbook or a chart from it, for a person to check.' },
-      { glyph: 'tell', state: 'In build', title: 'Tells your channel', body: 'Posts what changed and what needs someone in Slack, Teams or by email, and answers when it is mentioned.' },
-      { glyph: 'ask', state: 'Planned', title: 'Asks approved suppliers', body: 'Drafts a request for a firm price and lead time to the suppliers you have approved, and sends it only once someone approves.' },
-      { glyph: 'call', state: 'Planned', title: 'Calls and books', body: 'Calls a supplier to confirm a price or a date, and books the meeting — with the call’s notes filed against the line.' },
-      { glyph: 'approve', state: 'Decided', title: 'Asks before anything leaves', body: 'No request, quotation or document leaves without a person’s approval, and every approval is kept with the work.' },
+      { glyph: 'read', title: 'Reads every document', body: 'The request, the drawings, the catalogue, the price list, the agreement and every supplier reply, read into lines.' },
+      { glyph: 'cite', title: 'Cites the page', body: 'Every figure is shown with the document and the place it came from. A figure with no source is reported as missing.' },
+      { glyph: 'make', title: 'Makes the documents', body: 'Takes a PDF or a spreadsheet and makes the quotation, a workbook or a chart from it, for a person to check.' },
+      { glyph: 'tell', title: 'Tells your channel', body: 'Posts what changed and what needs someone in Slack, Teams or by email, and answers when it is mentioned.' },
+      { glyph: 'ask', title: 'Asks approved suppliers', body: 'Drafts a request for a firm price and lead time to the suppliers you have approved, and sends it once someone approves.' },
+      { glyph: 'call', title: 'Calls and books', body: 'Calls a supplier to confirm a price or a date, and books the meeting, with the call’s notes filed against the line.' },
+      { glyph: 'approve', title: 'Asks before anything leaves', body: 'No request, quotation or document leaves without a person’s approval, and every approval is kept with the work.' },
     ] satisfies ReadonlyArray<CharlieAbility>,
   },
 
@@ -1743,121 +1641,5 @@ export const charlie = {
     headline: 'Bring Charlie your hardest quotation.',
     body: 'Tell us the request that always arrives late, and the people who have to see it. We will show you where Charlie would stop.',
     action: 'Tell us about the work',
-  },
-} as const
-
-/**
- * Security — its own page, in the shape the reference pages give theirs.
- *
- * ── The certifications ─────────────────────────────────────────────────────
- *
- * The owner wants the frameworks a buyer looks for on the page, because a
- * buyer will look for them. None is held. So each is listed with what it
- * covers and its real status, in the first line of its card and at reading
- * size: not held. `status` is a closed set, and the type will not take
- * `Held` without a link to the report. The names never appear on the front page.
- *
- * ── The controls ───────────────────────────────────────────────────────────
- *
- * The enterprise controls the reference pages list, each with its state from
- * the same closed set as the trust grid. *Built* is used only for what the
- * build already says is built, or what exists in the platform's code with its
- * tests; everything that depends on a hosted environment is *In build*.
- */
-export type ControlState = 'Decided' | 'Built' | 'In build' | 'Planned'
-
-export interface SecurityControl {
-  state: ControlState
-  title: string
-  body: string
-}
-
-export type FrameworkStatus = 'Not held · planned' | 'Not yet assessed'
-
-export interface Framework {
-  name: string
-  covers: string
-  status: FrameworkStatus
-}
-
-export const security = {
-  path: '/security',
-  title: 'Security — Incillum',
-  description:
-    'How Incillum is being built to protect commercial data: the controls, each with its state, and the certifications a buyer looks for, none of which is held yet.',
-
-  hero: {
-    label: 'Security',
-    headline: 'For the figures a business guards most.',
-    lede: 'Prices, costs and margins never leave your control. Every commitment on this page carries its real state, and nothing is claimed that is not yet true.',
-    action: 'Ask a security question',
-  },
-
-  /**
-   * The reference page's six cards of protection, each with its state from the
-   * same closed set — so a reader sees what is decided, built, in build and
-   * planned in one pass, in the same ink and at the same size.
-   */
-  principles: {
-    headline: 'Protection by design',
-    items: [
-      { glyph: 'separate', state: 'In build', title: 'Kept to your organisation', body: 'Each organisation’s records are kept apart in the database itself, and every request is checked against the organisation it comes from.' },
-      { glyph: 'training', state: 'Decided', title: 'Not used for training', body: 'Your requests, costs, prices and correspondence are not used to train or fine-tune a model. That was decided before anything shipped.' },
-      { glyph: 'sending', state: 'Decided', title: 'Nothing leaves without a person', body: 'No quotation, request or document is sent, and no price committed, until a person approves it.' },
-      { glyph: 'record', state: 'Built', title: 'A record of every decision', body: 'Who decided what, and when, is kept with the work it belongs to, and cannot be edited afterwards by the people it records.' },
-      { glyph: 'key', state: 'Built', title: 'Credentials sealed', body: 'Connection credentials are encrypted with AES-256-GCM and bound to the organisation they belong to, so they cannot be moved to another.' },
-      { glyph: 'test', state: 'Planned', title: 'Independently tested', body: 'An independent penetration test before the first confidential case, with what it finds fixed before anything depends on it.' },
-    ] satisfies ReadonlyArray<{ glyph: TrustGlyph; state: ControlState; title: string; body: string }>,
-  },
-
-  controls: {
-    headline: 'Controls',
-    lede: 'The controls an enterprise team expects, each with its real state.',
-    items: [
-      { state: 'Built', title: 'Approval routing', body: 'Your policies say who must approve what, and the decision is routed to them.' },
-      { state: 'Built', title: 'Audit record', body: 'Who decided what, and when, is kept with the work it belongs to.' },
-      { state: 'Built', title: 'Roles and permissions', body: 'Every request is checked against the person’s organisation and role on the server, never in the browser.' },
-      { state: 'Built', title: 'Credential encryption', body: 'Connection credentials are encrypted with AES-256-GCM and bound to the organisation they belong to.' },
-      { state: 'In build', title: 'Organisation isolation', body: 'Each organisation’s records are kept apart in the database itself; proof on a hosted environment is in build.' },
-      { state: 'Planned', title: 'Encryption at rest and in transit', body: 'AES-256 at rest and TLS 1.2 or later in transit, on the hosted environment the first teams will use.' },
-      { state: 'In build', title: 'Data lifecycle', body: 'Retention, export and deletion of an organisation’s data, rehearsed before the first confidential case.' },
-      { state: 'Planned', title: 'SAML single sign-on', body: 'Sign in through your identity provider, with membership managed there.' },
-      { state: 'Planned', title: 'IP allow-listing', body: 'Limit access to the networks you name.' },
-      { state: 'Decided', title: 'Not used for training', body: 'Your requests, costs, prices and correspondence are not used to train or fine-tune a model.' },
-    ] satisfies ReadonlyArray<SecurityControl>,
-  },
-
-  frameworks: {
-    headline: 'Certifications',
-    lede: 'The frameworks a buyer looks for. None is held today. Each will link to its report when it is, and not a day before.',
-    items: [
-      { name: 'SOC 2 Type II', covers: 'Independent audit of security, availability and confidentiality controls over time.', status: 'Not held · planned' },
-      { name: 'ISO/IEC 27001', covers: 'An information security management system, audited by an accredited body.', status: 'Not held · planned' },
-      { name: 'ISO/IEC 42001', covers: 'A management system for how artificial intelligence is built and run.', status: 'Not held · planned' },
-      { name: 'ISO/IEC 27701', covers: 'Privacy information management, extending ISO/IEC 27001.', status: 'Not held · planned' },
-      { name: 'GDPR', covers: 'The EU and UK rules for personal data: roles, legal basis, rights and processors.', status: 'Not yet assessed' },
-      { name: 'CCPA', covers: 'California’s rules for personal information and the rights it gives.', status: 'Not yet assessed' },
-    ] satisfies ReadonlyArray<Framework>,
-    note: 'Not held means not held: no audit has been completed and no certificate issued.',
-    action: 'Ask about the plan',
-  },
-
-  questions: {
-    headline: 'Security questions, answered.',
-    lede: 'What a security reviewer asks before a single document is shared.',
-    items: [
-      { question: 'What counts as our data?', answer: 'Everything you bring and everything made from it: requests, drawings, price lists, agreements, supplier replies, the quotations prepared from them, and the decisions taken on them.' },
-      { question: 'Where is it hosted?', answer: 'The hosted environment is being set up with the first teams. Where it runs, and which providers process what, is agreed with you and written down before any case is shared.' },
-      { question: 'Who can see it?', answer: 'The people in your organisation your policies allow. Staff access to a customer’s data is planned to need a stated reason and to be recorded.' },
-      { question: 'Is a model trained on it?', answer: 'No. It is not used to train or fine-tune a model, by us or by a model provider, and the provider terms are checked for it before a case is shared.' },
-      { question: 'What happens when we leave?', answer: 'It is being built to be exported and then deleted — across the database, the stored documents and the backups — with the deletion recorded, and rehearsed before the first confidential case.' },
-      { question: 'How is it tested?', answer: 'The platform’s own tests check isolation between organisations and refuse what a role may not do. An independent penetration test is planned before the first confidential case.' },
-    ],
-  },
-
-  contact: {
-    headline: 'A security question before you share a case?',
-    body: 'Write to us. We will explain the current setup, and agree access and data handling before any document is shared.',
-    action: 'Ask a security question',
   },
 } as const

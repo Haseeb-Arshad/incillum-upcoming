@@ -1,40 +1,24 @@
-import { Container, TextLink } from '#/components/primitives.tsx'
+import { Container } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { trust } from '#/content/site.ts'
 
-import type { TrustGlyph, TrustState } from '#/content/site.ts'
+import type { TrustGlyph } from '#/content/site.ts'
+import type { ReactNode } from 'react'
 
 /**
- * Data and trust — the grid that stands where the badges would.
+ * Data and trust — six cards of protection, in the reference page's shape.
  *
- * ── The shape it borrows ───────────────────────────────────────────────────
+ * A glyph on a tile, a title and one line: the reference page closes its
+ * argument this way, and so does this one. The cards say what Incillum does
+ * with a business's figures, in the present tense; what the platform does not
+ * do yet lives in `requirements/README.md`, not on the card.
  *
- * Both reference pages end their argument on a grid of certifications: six
- * cells, a glyph and a name in each. The shape is kept because it answers a
- * real question a buyer has; the badges are not, because none is held. Each
- * cell is a commitment instead, and each carries its real state, from a closed
- * set — so a reader sees in one pass what is decided, what is built, and what
- * is still in build, in the same ink and at the same size.
- *
- * The states are words with a mark, in sentence case, never colours. *Decided* and *Built* take
- * a filled mark; *In build* an open one. The signal is not spent here: nothing
- * in this section is waiting on a person.
- *
- * ── Under the grid ─────────────────────────────────────────────────────────
- *
- * What is still open about the data is said in the same type as what is
- * settled (`access.open`), and so is the plain sentence about certification —
- * which is replaced by the list of held certifications, each linked to its
- * report, the day one exists.
+ * `ProtectionCards` is shared with the Charlie page, whose abilities are the
+ * same shape.
  */
-/** `more` adds the way to the security page, which the front page needs and the security page does not. */
-export function Trust({ more = false }: { more?: boolean }) {
+export function Trust() {
   return (
-    <section
-      id={trust.anchor}
-      aria-labelledby="trust-title"
-      className="trust ic-textured"
-    >
+    <section id={trust.anchor} aria-labelledby="trust-title" className="trust ic-textured">
       <Container>
         <Reveal className="glass-act-title">
           <h2 id="trust-title" className="glass-heading">
@@ -44,52 +28,38 @@ export function Trust({ more = false }: { more?: boolean }) {
         </Reveal>
 
         <Reveal delay={80}>
-          <ul className="trust-grid">
-            {trust.commitments.map((commitment) => (
-              <li key={commitment.glyph} className="trust-cell">
-                <TrustGlyphIcon glyph={commitment.glyph} />
-                <State state={commitment.state} />
-                <h3 className="trust-cell-title">{commitment.title}</h3>
-                <p className="trust-cell-body">{commitment.body}</p>
-              </li>
-            ))}
-          </ul>
-        </Reveal>
-
-        <Reveal delay={120} className="trust-foot">
-          <div className="trust-open">
-            <h3 className="trust-open-title">{trust.open.title}</h3>
-            <p className="trust-open-body">{trust.open.body}</p>
-          </div>
-          {trust.certifications.length ? (
-            <ul className="trust-certifications">
-              {trust.certifications.map((certification) => (
-                <li key={certification.name}>
-                  <a href={certification.report}>{certification.name}</a>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="trust-certification">{trust.noCertification}</p>
-          )}
-          {more ? (
-            <p className="trust-more">
-              <TextLink href={trust.more.href} className="text-ink">
-                {trust.more.text}
-              </TextLink>
-            </p>
-          ) : null}
+          <ProtectionCards
+            items={trust.commitments.map((commitment) => ({
+              key: commitment.glyph,
+              glyph: <TrustGlyphIcon glyph={commitment.glyph} />,
+              title: commitment.title,
+              body: commitment.body,
+            }))}
+          />
         </Reveal>
       </Container>
     </section>
   )
 }
 
-function State({ state }: { state: TrustState }) {
+/** Cards on a hairline grid: a glyph on its tile, a title, one line. */
+export function ProtectionCards({
+  items,
+}: {
+  items: ReadonlyArray<{ key: string; glyph: ReactNode; title: string; body: string }>
+}) {
   return (
-    <p className="trust-state" data-state={state === 'In build' ? 'building' : 'settled'}>
-      {state}
-    </p>
+    <ul className="protect-grid">
+      {items.map((item) => (
+        <li key={item.key} className="protect-card">
+          <span className="protect-tile" aria-hidden="true">
+            {item.glyph}
+          </span>
+          <h3 className="protect-title">{item.title}</h3>
+          <p className="protect-body">{item.body}</p>
+        </li>
+      ))}
+    </ul>
   )
 }
 

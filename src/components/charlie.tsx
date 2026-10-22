@@ -3,9 +3,10 @@ import { SourceIcon } from '#/components/glass-documents.tsx'
 import { OrbitMark } from '#/components/orbit-mark.tsx'
 import { ButtonLink, Container } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
+import { ProtectionCards } from '#/components/trust.tsx'
 import { charlie, glass, home, thread } from '#/content/site.ts'
 
-import type { CharlieGlyph, CharlieMessage, CharlieState } from '#/content/site.ts'
+import type { CharlieGlyph, CharlieMessage } from '#/content/site.ts'
 import type { ReactNode } from 'react'
 
 /**
@@ -187,7 +188,7 @@ export function CharlieAct() {
   )
 }
 
-/** Charlie's abilities, each with its real state, on the trust grid's hairlines. */
+/** Charlie's abilities, on the same cards as the trust section. */
 export function CharlieAbilities() {
   const { abilities } = charlie
   return (
@@ -200,30 +201,17 @@ export function CharlieAbilities() {
           <p className="glass-sources-lede">{abilities.lede}</p>
         </Reveal>
         <Reveal delay={80}>
-          <ul className="trust-grid">
-            {abilities.items.map((ability) => (
-              <li key={ability.glyph} className="trust-cell">
-                <AbilityGlyph glyph={ability.glyph} />
-                <StateMark state={ability.state} />
-                <h3 className="trust-cell-title">{ability.title}</h3>
-                <p className="trust-cell-body">{ability.body}</p>
-              </li>
-            ))}
-          </ul>
+          <ProtectionCards
+            items={abilities.items.map((ability) => ({
+              key: ability.glyph,
+              glyph: <AbilityGlyph glyph={ability.glyph} />,
+              title: ability.title,
+              body: ability.body,
+            }))}
+          />
         </Reveal>
       </Container>
     </section>
-  )
-}
-
-/** A state as a word and a mark: filled when settled, open in build, dashed when planned. */
-export function StateMark({ state }: { state: CharlieState }) {
-  const kind =
-    state === 'Planned' ? 'planned' : state === 'In build' ? 'building' : 'settled'
-  return (
-    <p className="trust-state" data-state={kind}>
-      {state}
-    </p>
   )
 }
 

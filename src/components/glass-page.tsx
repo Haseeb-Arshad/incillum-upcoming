@@ -11,7 +11,6 @@ import { ButtonLink, Container, TextLink } from '#/components/primitives.tsx'
 import { Questions } from '#/components/questions.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { SiteBrand } from '#/components/site-brand.tsx'
-import { Standing } from '#/components/standing.tsx'
 import { StepIcon } from '#/components/step-icon.tsx'
 import { Trust } from '#/components/trust.tsx'
 import { WaitlistForm } from '#/components/waitlist-form.tsx'
@@ -44,13 +43,11 @@ import { contactEmail } from '#/env.ts'
  * 5. **How it works.** Four tabs — read, hold, price, decide — each one line of
  *    the quotation laid on the desk under the lamp, each ending where the work
  *    stops (`how-it-works.tsx`).
- * 6. **Where this stands, data and trust, questions.** What is built; six
- *    commitments with their real state, where the reference pages put their
- *    certification badges; and what a buyer asks, answered in full
- *    (`standing.tsx`, `trust.tsx`, `questions.tsx`).
+ * 6. **Data and trust, questions.** Six cards of protection, and what a
+ *    buyer asks, answered in full (`trust.tsx`, `questions.tsx`).
  * 7. **The close.** The same office at 08:04 with what is waiting in it
- *    (`glass-handover.tsx`), the night's dust settled around it, one
- *    invitation, and one sentence about what exists.
+ *    (`glass-handover.tsx`), the night's dust settled around it, and one
+ *    invitation.
  *
  * Acts one to three are the page's one `[data-inverted]` region. The film ends
  * at 08:04 and the page turns to paper with it.
@@ -232,8 +229,7 @@ export function GlassPage() {
       <GlassSources />
       <div className="desk glass-acts">
         <HowItWorks />
-        <Standing />
-        <Trust more />
+        <Trust />
         <Questions />
       </div>
       <Close />
@@ -252,8 +248,7 @@ export function GlassPage() {
  * Left-aligned, one statement, one action and an address — no label over it —
  * and under them what happens after somebody writes: the contact memo's own
  * three steps, read from `contact`, so the two pages promise the same thing in
- * the same words. Where the build stands is a sentence read off `standing`, set
- * as quietly as the footer it sits above.
+ * the same words.
  *
  * The motto signs the page off at the head of the footer. This is the front
  * page, and its close is one of the motto's two placements; the other is the
@@ -315,7 +310,6 @@ function Close() {
           </nav>
           <div className="glass-footer-inner">
             <SiteBrand />
-            <p className="glass-standing">{glass.standing}</p>
             <p className="glass-copyright">
               © {new Date().getFullYear()} {brand.name}
             </p>
