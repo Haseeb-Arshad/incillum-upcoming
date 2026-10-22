@@ -69,7 +69,7 @@ test('security: controls with their state, and every framework named as not held
 }) => {
   await open(page, '/security')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Security, stated plainly.',
+    'For the figures a business guards most.',
   )
   expect(await noOverflow(page)).toBe(true)
 
@@ -91,8 +91,15 @@ test('security: controls with their state, and every framework named as not held
     /\bcertified\b|\bcompliant\b|trusted by/i,
   )
 
-  // The data commitments are the front page's own grid.
-  await expect(page.locator('#trust .trust-cell')).toHaveCount(6)
+  // Six cards of protection, each with its state; the band of certifications is the page's night.
+  await expect(page.locator('.security-principle')).toHaveCount(6)
+  for (const state of await page.locator('.security-principle .trust-state').allInnerTexts()) {
+    expect(['Decided', 'Built', 'In build', 'Planned']).toContain(state.trim())
+  }
+  await expect(page.locator('.security-band[data-inverted] .security-framework').first()).toBeVisible()
+  // Every security question is answered in the page, not behind a click.
+  await expect(page.locator('details')).toHaveCount(0)
+  expect(await page.locator('.questions-answer').count()).toBeGreaterThanOrEqual(5)
 })
 
 test('both pages are in the sitemap, and the front page links to them', async ({

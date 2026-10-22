@@ -5354,69 +5354,171 @@
   line-height: 1.55;
   color: var(--ic-ink-600);
 }
-.security-frameworks {
-  display: grid;
-  gap: 1rem;
-  margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
-  padding: 0;
-  list-style: none;
-}
-.security-framework {
-  display: grid;
-  align-content: start;
-  gap: 0.625rem;
-  padding: 1.5rem;
-  border: 1px solid var(--ic-line-strong);
-  border-radius: var(--radius-panel);
-  background-color: var(--ic-paper-raised);
-}
-.security-framework-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: var(--text-small);
-  font-weight: 500;
-  color: var(--ic-ink-900);
-}
-.security-framework-status::before {
-  content: '';
-  width: 0.5rem;
-  height: 0.5rem;
-  border: 1px dashed var(--ic-ink-900);
-  border-radius: 50%;
-}
-.security-framework-name {
-  font-size: var(--text-heading);
-  line-height: 1.2;
-  letter-spacing: -0.012em;
-}
-.security-framework-covers {
-  font-size: var(--text-small);
-  line-height: 1.55;
-  color: var(--ic-ink-600);
-}
-.security-framework-note {
-  margin-top: 1.5rem;
-  padding-left: 1rem;
-  border-left: 2px solid var(--ic-ink-900);
-  font-size: var(--text-body);
-  color: var(--ic-ink-900);
-}
 @media (min-width: 48rem) {
   .security-control {
     grid-template-columns: 8rem minmax(0, 18rem) minmax(0, 1fr);
     align-items: baseline;
-  }
-  .security-frameworks {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (min-width: 64rem) {
   .page-hero-grid {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
   }
-  .security-frameworks {
+}
+
+/*
+ * The security page in the reference page's bands: a large statement, six
+ * cards of protection on glyph tiles, a dark band of certifications in rows
+ * whose right-hand cell is the status where the reference page has *Details*,
+ * the controls, the questions, and one invitation.
+ */
+.security-hero {
+  padding-block: clamp(5rem, 11vw, 8.5rem) clamp(4rem, 8vw, 6rem);
+}
+.security-label {
+  font-size: var(--text-ui);
+  font-weight: 500;
+  color: var(--ic-ink-600);
+}
+.security-title {
+  font-size: clamp(2.75rem, 6.2vw, 5.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.024em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.security-lede {
+  max-width: 34rem;
+}
+.security-principles {
+  display: grid;
+  gap: clamp(2.25rem, 4vw, 3.25rem) clamp(2rem, 4vw, 3.5rem);
+  margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.security-principle {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 0.625rem;
+}
+.security-tile {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper-raised);
+}
+.security-tile .trust-glyph {
+  width: 1.375rem;
+  height: 1.375rem;
+  margin: 0;
+  color: var(--ic-ink-900);
+}
+.security-principle-title {
+  font-size: var(--text-heading);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+}
+.security-principle-body {
+  max-width: 38ch;
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+}
+
+/* The band: this page's night, grained by its own scope. */
+.security-band {
+  padding-block: clamp(5rem, 10vw, 8rem);
+}
+.security-band-grid {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+}
+.security-band-copy {
+  display: grid;
+  align-content: start;
+  gap: 1.5rem;
+}
+.security-band-action {
+  border-color: var(--ic-line-strong);
+  background-color: transparent;
+}
+.security-frameworks {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.security-framework {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'name status' 'covers status';
+  gap: 0.25rem 2rem;
+  align-items: center;
+  padding-block: 1.375rem;
+  border-bottom: 1px solid var(--ic-line);
+}
+.security-framework-status {
+  grid-area: status;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-small);
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--ic-ink-600);
+}
+.security-framework-status::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px dashed currentColor;
+  border-radius: 50%;
+}
+.security-framework-name {
+  grid-area: name;
+  font-family: var(--font-sans);
+  font-size: clamp(1.125rem, 1.5vw, 1.375rem);
+  font-weight: 500;
+  letter-spacing: -0.006em;
+  color: var(--ic-ink-900);
+}
+.security-framework-covers {
+  grid-area: covers;
+  max-width: 44ch;
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ic-ink-400);
+}
+.security-framework-note {
+  margin-top: 1.5rem;
+  font-size: var(--text-small);
+  color: var(--ic-ink-600);
+}
+@media (min-width: 48rem) {
+  .security-principles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 64rem) {
+  .security-principles {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .security-band-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(3rem, 6vw, 6rem);
+  }
+}
+@media (max-width: 39.99rem) {
+  .security-framework {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'status' 'name' 'covers';
   }
 }
 

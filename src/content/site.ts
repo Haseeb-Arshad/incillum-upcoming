@@ -983,7 +983,15 @@ export const how = {
  */
 export type TrustState = 'Decided' | 'Built' | 'In build'
 
-export type TrustGlyph = 'training' | 'sending' | 'approval' | 'record' | 'source' | 'separate'
+export type TrustGlyph =
+  | 'training'
+  | 'sending'
+  | 'approval'
+  | 'record'
+  | 'source'
+  | 'separate'
+  | 'key'
+  | 'test'
 
 export interface TrustCommitment {
   glyph: TrustGlyph
@@ -1751,8 +1759,27 @@ export const security = {
     'How Incillum is being built to protect commercial data: the controls, each with its state, and the certifications a buyer looks for, none of which is held yet.',
 
   hero: {
-    headline: 'Security, stated plainly.',
-    lede: 'Prices, costs and margins are what a business guards most. Here is what protects them, what is still in build, and what is planned — with nothing claimed that is not yet true.',
+    label: 'Security',
+    headline: 'For the figures a business guards most.',
+    lede: 'Prices, costs and margins never leave your control. Every commitment on this page carries its real state, and nothing is claimed that is not yet true.',
+    action: 'Ask a security question',
+  },
+
+  /**
+   * The reference page's six cards of protection, each with its state from the
+   * same closed set — so a reader sees what is decided, built, in build and
+   * planned in one pass, in the same ink and at the same size.
+   */
+  principles: {
+    headline: 'Protection by design',
+    items: [
+      { glyph: 'separate', state: 'In build', title: 'Kept to your organisation', body: 'Each organisation’s records are kept apart in the database itself, and every request is checked against the organisation it comes from.' },
+      { glyph: 'training', state: 'Decided', title: 'Not used for training', body: 'Your requests, costs, prices and correspondence are not used to train or fine-tune a model. That was decided before anything shipped.' },
+      { glyph: 'sending', state: 'Decided', title: 'Nothing leaves without a person', body: 'No quotation, request or document is sent, and no price committed, until a person approves it.' },
+      { glyph: 'record', state: 'Built', title: 'A record of every decision', body: 'Who decided what, and when, is kept with the work it belongs to, and cannot be edited afterwards by the people it records.' },
+      { glyph: 'key', state: 'Built', title: 'Credentials sealed', body: 'Connection credentials are encrypted with AES-256-GCM and bound to the organisation they belong to, so they cannot be moved to another.' },
+      { glyph: 'test', state: 'Planned', title: 'Independently tested', body: 'An independent penetration test before the first confidential case, with what it finds fixed before anything depends on it.' },
+    ] satisfies ReadonlyArray<{ glyph: TrustGlyph; state: ControlState; title: string; body: string }>,
   },
 
   controls: {
@@ -1784,6 +1811,20 @@ export const security = {
       { name: 'CCPA', covers: 'California’s rules for personal information and the rights it gives.', status: 'Not yet assessed' },
     ] satisfies ReadonlyArray<Framework>,
     note: 'Not held means not held: no audit has been completed and no certificate issued.',
+    action: 'Ask about the plan',
+  },
+
+  questions: {
+    headline: 'Security questions, answered.',
+    lede: 'What a security reviewer asks before a single document is shared.',
+    items: [
+      { question: 'What counts as our data?', answer: 'Everything you bring and everything made from it: requests, drawings, price lists, agreements, supplier replies, the quotations prepared from them, and the decisions taken on them.' },
+      { question: 'Where is it hosted?', answer: 'The hosted environment is being set up with the first teams. Where it runs, and which providers process what, is agreed with you and written down before any case is shared.' },
+      { question: 'Who can see it?', answer: 'The people in your organisation your policies allow. Staff access to a customer’s data is planned to need a stated reason and to be recorded.' },
+      { question: 'Is a model trained on it?', answer: 'No. It is not used to train or fine-tune a model, by us or by a model provider, and the provider terms are checked for it before a case is shared.' },
+      { question: 'What happens when we leave?', answer: 'It is being built to be exported and then deleted — across the database, the stored documents and the backups — with the deletion recorded, and rehearsed before the first confidential case.' },
+      { question: 'How is it tested?', answer: 'The platform’s own tests check isolation between organisations and refuse what a role may not do. An independent penetration test is planned before the first confidential case.' },
+    ],
   },
 
   contact: {

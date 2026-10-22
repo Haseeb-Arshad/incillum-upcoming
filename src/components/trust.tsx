@@ -99,7 +99,7 @@ function State({ state }: { state: TrustState }) {
  * No shields, locks-on-globes or stars: they are the badge vocabulary, and
  * this section's whole point is that it is not a badge row.
  */
-function TrustGlyphIcon({ glyph }: { glyph: TrustGlyph }) {
+export function TrustGlyphIcon({ glyph }: { glyph: TrustGlyph }) {
   const common = {
     viewBox: '0 0 24 24',
     fill: 'none',
@@ -162,6 +162,24 @@ function TrustGlyphIcon({ glyph }: { glyph: TrustGlyph }) {
           <path d="M5 8.5h4.5M5 11h3" {...stroke} />
           <path d="M11.75 10.25h2.5a1.5 1.5 0 0 1 1.5 1.5v3" {...stroke} />
           <rect x="12.75" y="14.75" width="8.5" height="5.5" rx="0.75" {...stroke} />
+        </svg>
+      )
+    // A key: what seals a credential to the organisation it belongs to.
+    case 'key':
+      return (
+        <svg {...common}>
+          <circle cx="8" cy="12" r="4.25" {...stroke} />
+          <path d="M12.25 12h9M18.5 12v3.25M21.25 12v2.25" {...stroke} />
+        </svg>
+      )
+    // A magnifier over a ruled page: looked at by somebody else.
+    case 'test':
+      return (
+        <svg {...common}>
+          <path d="M4.25 3.25h9.5l3 3v6" {...stroke} />
+          <path d="M4.25 3.25v17.5h7M7 8h6.5M7 11h4" {...stroke} />
+          <circle cx="16.25" cy="16.25" r="3.5" {...stroke} />
+          <path d="M18.75 18.75l2.5 2.5" {...stroke} />
         </svg>
       )
     // Two organisations, each in its own box, with clear space between.

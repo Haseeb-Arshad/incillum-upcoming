@@ -1280,6 +1280,28 @@ describe('security', () => {
     expect(titles('Planned')).toEqual(expect.arrayContaining(['SAML single sign-on', 'Encryption at rest and in transit']))
   })
 
+  it('gives every card of protection a real state, and decides only what is on the record', () => {
+    for (const principle of security.principles.items) {
+      expect(['Decided', 'Built', 'In build', 'Planned']).toContain(principle.state)
+      expect(words(principle.title), principle.title).toBeLessThanOrEqual(6)
+    }
+    const decided = security.principles.items.filter((principle) => principle.state === 'Decided')
+    expect(decided.map((principle) => principle.glyph).sort()).toEqual(['sending', 'training'])
+    const tested = security.principles.items.find((principle) => principle.glyph === 'test')!
+    expect(tested.state).toBe('Planned')
+  })
+
+  it('answers the security questions in the tense of what exists', () => {
+    const answer = (question: RegExp) =>
+      security.questions.items.find((item) => question.test(item.question))?.answer ?? ''
+    expect(security.questions.items.length).toBeGreaterThanOrEqual(5)
+    for (const item of security.questions.items) expect(item.question.endsWith('?')).toBe(true)
+    expect(answer(/hosted/)).toMatch(/being set up/)
+    expect(answer(/leave/)).toMatch(/being built/)
+    expect(answer(/tested/)).toMatch(/planned/)
+    expect(answer(/trained/)).toMatch(/^No\./)
+  })
+
   it('keeps the framework names off every front-page section', () => {
     const front = JSON.stringify([home, glass, how, trust, questions, standing, menu, charlie])
     for (const name of ['SOC 2', 'ISO/IEC', 'GDPR', 'CCPA']) expect(front, name).not.toContain(name)
