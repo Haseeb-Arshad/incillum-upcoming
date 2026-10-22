@@ -87,12 +87,18 @@ relative import across repositories.
 TanStack Start · React 19 · strict TypeScript · TanStack Router · Tailwind CSS
 v4 · React Hook Form · Zod · Vitest · Playwright.
 
-No component library, no icon package, no animation library, no state manager,
-no analytics SDK, no email SDK. Each was considered and each would be a
-dependency carried to solve a problem one page does not have — the reveal is
-eleven lines of CSS and one IntersectionObserver, the GTM loader is Google's own
-nine lines, and the mail is one `fetch`. Adding a dependency requires a reason
-written into the file that needs it.
+No component library, no animation library, no state manager, no analytics
+SDK, no email SDK. Each was considered and each would be a dependency carried to
+solve a problem one page does not have — the reveal is eleven lines of CSS and
+one IntersectionObserver, the GTM loader is Google's own nine lines, and the
+mail is one `fetch`. Adding a dependency requires a reason written into the file
+that needs it.
+
+**Icons are Lucide**, the set Studio draws with (`@incillum/icons`), pinned to
+the same release, on the owner's decision of 23 October 2026: an icon on the
+site is the icon in the product, not one drawn for the page. They are imported
+by name in `components/icons.tsx` and nowhere else, one stroke for all of them,
+in `currentColor`. No vendor's mark is shown: the site names no system (§5).
 
 ---
 
@@ -239,7 +245,7 @@ each says so in its component's header:
   in them is legible because nothing is on them: the documents laid on them are
   built, in the site's type, from `glass.sources.documents`. The light turns to
   morning on the last tab, and that is the only thing the photographs say.
-- **Trust is six cards, with no state on any of them.** A glyph on a tile, a
+- **Trust is six cards, with no state on any of them.** An icon on a tile, a
   title and one line (`ProtectionCards`, shared with the Charlie page), each
   saying what Incillum does with a business's figures, in the present tense.
   The two commitments already on the record — `access.decided` and the
