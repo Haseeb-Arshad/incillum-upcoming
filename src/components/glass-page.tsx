@@ -221,10 +221,17 @@ export function GlassPage() {
         </div>
       </div>
 
+      {/*
+        The agent first, as features: what Charlie does, in a few words a beat.
+        The quotation's own detail — its sources and its four steps — follows
+        for the reader who wants it.
+      */}
+      <div className="desk glass-acts">
+        <CharlieAct />
+      </div>
       <GlassSources />
       <div className="desk glass-acts">
         <HowItWorks />
-        <CharlieAct />
         <Standing />
         <Trust more />
         <Questions />

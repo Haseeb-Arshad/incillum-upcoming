@@ -5089,6 +5089,10 @@
   padding-block: clamp(5rem, 10vw, 8.5rem);
   border-top: 1px solid var(--ic-line);
 }
+/* Straight after the night there is no hairline: the change of ground is the edge. */
+.glass-night + .glass-acts .charlie-act {
+  border-top: 0;
+}
 .charlie-act-side {
   display: grid;
   justify-items: start;
