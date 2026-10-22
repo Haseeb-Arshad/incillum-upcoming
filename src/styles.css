@@ -5522,6 +5522,675 @@
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   Charlie, at work — the film on the front page (`charlie-film.tsx`).
+
+   Six beats on three scenes over the desk photographed in the morning: the
+   sheet (reads, cites, holds), the document (makes) and the channel (tells,
+   asks). Each beat runs for `--cf-beat`, timed by the hairline under its name
+   in the rail; the film goes round, by the owner's choice, and only while it
+   is on screen. Every animation runs from its first frame to the resting
+   state the rule describes, so with animation removed — reduced motion — each
+   beat is simply its final frame.
+
+   Only opacity and transform move. The signal is spent on the held lines and
+   the figure under the floor, as everywhere.
+   ══════════════════════════════════════════════════════════════════════════ */
+.cf {
+  --cf-beat: 3600ms;
+  --cf-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  display: grid;
+  gap: clamp(2rem, 4vw, 3rem);
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+/* ── The rail ─────────────────────────────────────────────────────────── */
+.cf-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+.cf-licence {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--ic-ink-600);
+}
+.cf-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ic-line);
+}
+.cf-step {
+  position: relative;
+  border-bottom: 1px solid var(--ic-line);
+}
+.cf-step-button {
+  display: grid;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0.875rem 0 1rem;
+  border: 0;
+  background: none;
+  color: var(--ic-ink-400);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--ic-fast) var(--ic-ease);
+}
+.cf-step[data-active='true'] .cf-step-button,
+.cf[data-enhanced='false'] .cf-step-button {
+  color: var(--ic-ink-900);
+}
+.cf-step-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 1.45vw, 1.3125rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.cf-step-line {
+  font-size: var(--text-small);
+  line-height: 1.45;
+  color: var(--ic-ink-600);
+}
+.cf-step-track {
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 2px;
+  overflow: hidden;
+}
+.cf-step-fill {
+  position: absolute;
+  inset: 0;
+  background-color: var(--ic-ink-900);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.cf-step[data-active='true'] .cf-step-fill:not(.cf-step-fill--live) {
+  transform: none;
+}
+.cf-step-fill--live {
+  animation: cf-progress var(--cf-beat) linear both;
+  animation-play-state: paused;
+}
+/* The last beat holds a little longer before the film goes round. */
+.cf-step:last-child .cf-step-fill--live {
+  animation-duration: calc(var(--cf-beat) * 1.35);
+}
+.cf[data-running='true'] .cf-step-fill--live {
+  animation-play-state: running;
+}
+.cf-play {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0 0.875rem 0 0.75rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ic-ink-900);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: 500;
+  cursor: pointer;
+}
+.cf-play svg {
+  width: 1rem;
+  height: 1rem;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cf-step-button:hover {
+    color: var(--ic-ink-900);
+  }
+}
+
+/* ── The stage ────────────────────────────────────────────────────────── */
+.cf-stage {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  overflow: hidden;
+  aspect-ratio: 16 / 11;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-ink-900);
+  color: var(--ic-ink-900);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+.cf-desk img {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+.cf-scene {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 420ms var(--cf-ease),
+    visibility 0s linear 420ms;
+}
+.cf-stage[data-scene='sheet'] .cf-scene--sheet,
+.cf-stage[data-scene='document'] .cf-scene--document,
+.cf-stage[data-scene='channel'] .cf-scene--channel {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 420ms var(--cf-ease),
+    visibility 0s;
+}
+.cf-card {
+  position: absolute;
+  overflow: hidden;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+}
+.cf-card-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--ic-line);
+  background-color: var(--ic-paper);
+  font-weight: 500;
+}
+.cf-card-bar > :last-child:not(:first-child) {
+  margin-left: auto;
+}
+.cf-card-bar .gd-icon {
+  width: 1rem;
+  height: 1rem;
+}
+.cf-quiet {
+  color: var(--ic-ink-400);
+}
+/* The paper lands on the sheet's corner, the way documents pile on a desk. */
+.cf-mail,
+.cf-confirmation {
+  top: 12%;
+  left: 5%;
+  z-index: 1;
+  width: 40%;
+  transform: rotate(-1.5deg);
+}
+.cf-mail > p:not(.cf-card-bar),
+.cf-confirmation > p:not(.cf-card-bar) {
+  padding-inline: 0.75rem;
+}
+.cf-mail-subject {
+  padding-top: 0.625rem;
+  font-weight: 500;
+}
+.cf-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding-block: 0.5rem 0.75rem;
+}
+.cf-files span {
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-control);
+  color: var(--ic-ink-600);
+}
+.cf-change {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-block: 0.25rem 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.cf-change s {
+  color: var(--ic-ink-400);
+}
+.cf-sheet {
+  top: 50%;
+  right: 5%;
+  width: 64%;
+  transform: translateY(-38%);
+}
+.cf-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+/* Columns of figures line up; the item names are prose and keep their own spacing. */
+.cf-line,
+.cf-qty,
+.cf-rate {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+.cf-table td {
+  overflow: hidden;
+  padding: 0.5rem 0.625rem;
+  border-top: 1px solid var(--ic-line);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cf-table tr:first-child td {
+  border-top: 0;
+}
+.cf-line {
+  width: 2.25rem;
+  color: var(--ic-ink-400);
+}
+.cf-qty {
+  width: 3.75rem;
+  text-align: right;
+}
+.cf-rate {
+  width: 8.25rem;
+  text-align: right;
+}
+.cf-rate-moved s {
+  color: var(--ic-ink-400);
+}
+/* Clipped, not ellipsed: a pill waiting to appear must not leave dots behind it. */
+.cf-status {
+  width: 7.25rem;
+  text-overflow: clip;
+}
+.cf-status .matrix-status {
+  font-size: 0.6875rem;
+}
+
+/* Reads: the request arrives and is read into lines, one at a time. */
+.cf-stage:not([data-step='reads']) .cf-mail,
+.cf-stage:not([data-step='cites']) .cf-confirmation {
+  opacity: 0;
+}
+.cf-stage[data-step='reads'] .cf-mail,
+.cf-stage[data-step='cites'] .cf-confirmation {
+  animation: cf-arrive 640ms var(--cf-ease) both;
+}
+.cf-stage[data-step='reads'] .cf-table tr {
+  animation: cf-in 420ms var(--cf-ease) both;
+  animation-delay: calc(700ms + var(--cf-row) * 280ms);
+}
+.cf-stage[data-step='reads'] :is(.cf-rate, .cf-status) > * {
+  opacity: 0;
+}
+/* Cites: the supplier's answer lands on the line it changes, and the rate moves. */
+.cf-stage[data-step='cites'] .cf-status > * {
+  opacity: 0;
+}
+.cf-stage[data-step='cites'] .cf-rate > * {
+  animation: cf-in 420ms var(--cf-ease) both;
+  animation-delay: 300ms;
+}
+.cf-stage[data-step='cites'] tr[data-status='changed'] td {
+  background-color: var(--ic-paper-sunken);
+}
+.cf-stage[data-step='cites'] tr[data-status='changed'] .cf-rate-moved {
+  animation: cf-in 520ms var(--cf-ease) both;
+  animation-delay: 1100ms;
+}
+/* Holds: every line has its state, and the two it cannot settle wait in the signal. */
+.cf-stage[data-step='holds'] .cf-status > * {
+  animation: cf-pop 420ms var(--cf-ease) both;
+  animation-delay: calc(300ms + var(--cf-row) * 160ms);
+}
+
+/* Makes: the quotation is drafted, its working laid out, and stamped for review. */
+.cf-page {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  gap: 0.875rem;
+  width: min(60%, 26rem);
+  padding: 1.375rem 1.5rem 1.5rem;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  transform: translate(-50%, -50%) rotate(-1deg);
+}
+.cf-page-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+.cf-page-head .cf-quiet {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+}
+.cf-page-to {
+  color: var(--ic-ink-600);
+}
+.cf-page-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  margin: 0;
+  padding-block: 0.875rem;
+  border-block: 1px solid var(--ic-line);
+}
+.cf-page-figures dt {
+  color: var(--ic-ink-400);
+}
+.cf-page-figures dd {
+  margin: 0.125rem 0 0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.cf-held,
+.cf-short {
+  color: var(--ic-signal);
+}
+.cf-short {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.cf-short strong {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 400;
+}
+.cf-stamp {
+  justify-self: end;
+  padding: 0.25rem 0.75rem;
+  border: 1.5px solid var(--ic-ink-900);
+  border-radius: var(--radius-control);
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  transform: rotate(-4deg);
+}
+.cf-stage[data-step='makes'] .cf-page > * {
+  animation: cf-in 420ms var(--cf-ease) both;
+}
+.cf-stage[data-step='makes'] .cf-page > :nth-child(2) {
+  animation-delay: 200ms;
+}
+.cf-stage[data-step='makes'] .cf-page > :nth-child(3) {
+  animation-delay: 450ms;
+}
+.cf-stage[data-step='makes'] .cf-page > :nth-child(4) {
+  animation-delay: 800ms;
+}
+.cf-stage[data-step='makes'] .cf-stamp {
+  animation: cf-stamp 420ms var(--cf-ease) both;
+  animation-delay: 1600ms;
+}
+
+/* Tells, asks: the channel, a message, and a request that waits for an approval. */
+.cf-channel {
+  top: 50%;
+  left: 50%;
+  width: min(80%, 34rem);
+  transform: translate(-50%, -50%);
+}
+.cf-hash {
+  font-weight: 500;
+}
+.cf-message {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.625rem;
+  padding: 0.75rem 0.875rem;
+}
+.cf-message + .cf-message {
+  border-top: 1px solid var(--ic-line);
+}
+.cf-avatar {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+}
+.cf-avatar--charlie {
+  background-color: var(--ic-ink-900);
+  color: var(--ic-paper-raised);
+}
+.cf-avatar-mark {
+  width: 70%;
+  height: 70%;
+}
+.cf-message-head {
+  font-weight: 500;
+}
+.cf-message-text {
+  margin-top: 0.125rem;
+  color: var(--ic-ink-900);
+}
+.cf-typing {
+  display: none;
+  gap: 0.25rem;
+  padding-block: 0.5rem;
+}
+.cf-typing span {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background-color: var(--ic-ink-400);
+}
+.cf-ask {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.375rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--ic-line-strong);
+  border-left: 2px solid var(--ic-ink-900);
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper);
+}
+.cf-ask-title {
+  font-weight: 500;
+}
+.cf-ask-answers {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.375rem;
+}
+.cf-approve,
+.cf-other {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.875rem;
+  padding: 0 0.75rem;
+  border-radius: var(--radius-control);
+  font-weight: 500;
+}
+.cf-approve {
+  background-color: var(--ic-ink-900);
+  color: var(--ic-paper-raised);
+}
+.cf-other {
+  border: 1px solid var(--ic-line-strong);
+}
+.cf-decided {
+  margin-top: 0.375rem;
+  color: var(--ic-ink-600);
+}
+.cf-pointer {
+  position: absolute;
+  bottom: 2.75rem;
+  left: 5.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: var(--ic-ink-900);
+  stroke: var(--ic-paper-raised);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+}
+.cf-stage[data-step='tells'] .cf-message--ask {
+  display: none;
+}
+.cf-stage[data-step='tells'] .cf-typing {
+  display: flex;
+  animation: cf-gone 0s 1100ms both;
+}
+.cf-stage[data-step='tells'] .cf-typing span {
+  animation: cf-dot 600ms ease-in-out both;
+  animation-iteration-count: 2;
+}
+.cf-stage[data-step='tells'] .cf-typing span:nth-child(2) {
+  animation-delay: 120ms;
+}
+.cf-stage[data-step='tells'] .cf-typing span:nth-child(3) {
+  animation-delay: 240ms;
+}
+.cf-stage[data-step='tells'] .cf-message-text {
+  animation: cf-in 420ms var(--cf-ease) both;
+  animation-delay: 1100ms;
+}
+.cf-stage[data-step='asks'] .cf-message--ask {
+  animation: cf-in 520ms var(--cf-ease) both;
+}
+.cf-stage[data-step='asks'] .cf-pointer {
+  animation: cf-point 900ms var(--cf-ease) both;
+  animation-delay: 900ms;
+}
+.cf-stage[data-step='asks'] .cf-approve {
+  animation: cf-press 260ms var(--cf-ease) both;
+  animation-delay: 1900ms;
+}
+.cf-stage[data-step='asks'] .cf-decided {
+  animation: cf-in 420ms var(--cf-ease) both;
+  animation-delay: 2200ms;
+}
+.cf-stage:not([data-step='asks']) .cf-pointer {
+  opacity: 0;
+}
+
+@keyframes cf-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes cf-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+}
+@keyframes cf-arrive {
+  from {
+    opacity: 0;
+    transform: translate3d(-12px, 0, 0) rotate(-1.5deg);
+  }
+}
+@keyframes cf-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+@keyframes cf-stamp {
+  from {
+    opacity: 0;
+    transform: rotate(-4deg) scale(1.3);
+  }
+}
+@keyframes cf-point {
+  from {
+    opacity: 0;
+    transform: translate3d(9rem, 2.5rem, 0);
+  }
+}
+@keyframes cf-press {
+  50% {
+    transform: translate3d(0, 1px, 0) scale(0.97);
+  }
+}
+@keyframes cf-dot {
+  50% {
+    transform: translate3d(0, -3px, 0);
+  }
+}
+@keyframes cf-gone {
+  to {
+    visibility: hidden;
+    position: absolute;
+  }
+}
+
+@media (min-width: 64rem) {
+  .cf {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    align-items: center;
+  }
+}
+/* Stacked, the film comes first and its abilities follow it. */
+@media (max-width: 63.99rem) {
+  .cf-stage {
+    order: -1;
+  }
+}
+@media (max-width: 47.99rem) {
+  .cf-stage {
+    aspect-ratio: 4 / 5;
+    font-size: 0.75rem;
+  }
+  .cf-mail,
+  .cf-confirmation {
+    left: 4%;
+    right: 4%;
+    width: auto;
+    top: 4%;
+  }
+  .cf-sheet {
+    top: auto;
+    left: 4%;
+    right: 4%;
+    bottom: 4%;
+    width: auto;
+    transform: none;
+  }
+  .cf-qty,
+  .cf-line {
+    display: none;
+  }
+  .cf-rate {
+    width: 4.25rem;
+  }
+  .cf-rate-moved s {
+    display: none;
+  }
+  .cf-status {
+    width: 6.5rem;
+  }
+  .cf-page {
+    width: 88%;
+  }
+  .cf-channel {
+    width: 92%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cf-stage *,
+  .cf-scene,
+  .cf-step-button {
+    animation: none !important;
+    transition: none !important;
+  }
+  .cf-typing {
+    display: none !important;
+  }
+}
+
 /* ── Keyframes ────────────────────────────────────────────────────────── */
 @keyframes glass-rule {
   from {

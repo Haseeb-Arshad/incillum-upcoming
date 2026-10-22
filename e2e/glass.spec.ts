@@ -251,14 +251,14 @@ test('the film plays in order, holds the morning, and goes round again', async (
     .toBe(true)
   expect(seen).toEqual(['0', '1', '2', '3', '4', '5', '0'])
   // It keeps playing: the reader is offered a pause, not a replay.
-  await expect(page.getByRole('button', { name: 'Pause' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible()
 })
 
 test('the reader can pause the film, and it holds where it was', async ({ page }) => {
   await watchTheFilm(page, '1500ms')
   const film = page.locator('.glass-film')
   await expect(film).toHaveAttribute('data-running', 'true')
-  await page.getByRole('button', { name: 'Pause' }).click()
+  await page.getByRole('button', { name: 'Pause', exact: true }).click()
   await expect(film).toHaveAttribute('data-running', 'false')
   const held = await film.getAttribute('data-stage')
   await page.waitForTimeout(2200)
@@ -365,7 +365,7 @@ test('nothing is claimed, nothing pulses, and the signal stays where it is licen
   const strays = await page.evaluate(() => {
     const signal = new Set(['rgb(154, 85, 24)', 'rgb(228, 160, 70)'])
     const licensed =
-      '.matrix-status--held, .glass-sheet-short, .glass-thread-short, .glass-handover-short, .how-card-short, .how-decide-short'
+      '.matrix-status--held, .glass-sheet-short, .glass-thread-short, .glass-handover-short, .how-card-short, .how-decide-short, .cf-held, .cf-short'
     return [...document.querySelectorAll('body *')]
       .filter((element) => element.childElementCount === 0 && element.textContent?.trim())
       .filter((element) => signal.has(getComputedStyle(element).color))
@@ -723,6 +723,56 @@ test('the masthead stays with the reader, and its links land somewhere real', as
   // The button puts the cursor in the field.
   await banner.getByRole('link', { name: 'Request early access' }).click()
   await expect(page.getByRole('textbox', { name: /^Work email/ })).toBeFocused()
+})
+
+test('Charlie’s film plays its six beats in order while on screen, and goes round', async ({
+  page,
+}) => {
+  test.slow()
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto(GLASS)
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await page.addStyleTag({ content: '.cf { --cf-beat: 500ms; }' })
+  await page.keyboard.press('Shift')
+  const film = page.locator('.cf')
+  await film.evaluate((element) => element.scrollIntoView({ block: 'center', behavior: 'instant' }))
+  await expect(film).toHaveAttribute('data-running', 'true')
+
+  const stage = page.locator('.cf-stage')
+  const seen: string[] = []
+  await expect
+    .poll(
+      async () => {
+        const step = (await stage.getAttribute('data-step')) ?? ''
+        if (seen.at(-1) !== step) seen.push(step)
+        return seen.length >= 7
+      },
+      { intervals: [80], timeout: 15_000 },
+    )
+    .toBe(true)
+  expect(seen.slice(0, 7)).toEqual(['reads', 'cites', 'holds', 'makes', 'tells', 'asks', 'reads'])
+  // The frame restates the list, so it is hidden from a screen reader; the list is not.
+  await expect(stage).toHaveAttribute('aria-hidden', 'true')
+  await expect(page.locator('.cf-step-button')).toHaveCount(6)
+
+  // Paused, it holds where it was.
+  await page.getByRole('button', { name: 'Pause Charlie' }).click()
+  const held = await stage.getAttribute('data-step')
+  await page.waitForTimeout(1500)
+  await expect(stage).toHaveAttribute('data-step', held!)
+})
+
+test('under reduced motion Charlie’s film never plays, and a beat is chosen by hand', async ({
+  page,
+}) => {
+  const film = page.locator('.cf')
+  await film.evaluate((element) => element.scrollIntoView({ block: 'center', behavior: 'instant' }))
+  await expect(page.locator('.cf-step-fill--live')).toHaveCount(0)
+  await expect(page.locator('.cf-play')).toHaveCount(0)
+  await page.locator('.cf-step-button').filter({ hasText: 'Makes the documents' }).click()
+  await expect(page.locator('.cf-stage')).toHaveAttribute('data-step', 'makes')
+  await page.waitForTimeout(1200)
+  await expect(page.locator('.cf-stage')).toHaveAttribute('data-step', 'makes')
 })
 
 test('is the front page: indexable, canonical at the root, and where /glass now lands', async ({

@@ -1,3 +1,4 @@
+import { CharlieFilm } from '#/components/charlie-film.tsx'
 import { SourceIcon } from '#/components/glass-documents.tsx'
 import { OrbitMark } from '#/components/orbit-mark.tsx'
 import { ButtonLink, Container } from '#/components/primitives.tsx'
@@ -150,8 +151,8 @@ function Message({ message }: { message: CharlieMessage }) {
 }
 
 /**
- * The act on the front page: a headline, a paragraph, the first four messages
- * of the scene, and the way to the whole page.
+ * The act on the front page: a headline, a paragraph, the way to the whole
+ * page, and the film of Charlie at work (`charlie-film.tsx`).
  */
 export function CharlieAct() {
   const { act } = charlie
@@ -178,8 +179,8 @@ export function CharlieAct() {
             </ButtonLink>
           </div>
         </Reveal>
-        <Reveal delay={80} className="charlie-act-scene">
-          <CharlieScene count={4} />
+        <Reveal delay={80}>
+          <CharlieFilm />
         </Reveal>
       </Container>
     </section>

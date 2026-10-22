@@ -1676,8 +1676,36 @@ export const charlie = {
   /** The act on the front page: the headline, a paragraph, and the way to the page. */
   act: {
     headline: 'Charlie keeps the work moving.',
-    lede: 'It reads what arrived, cites the page, and asks the right person before anything leaves. Being built; invented conversation below.',
+    lede: 'An agent on every quotation: it reads what arrives, cites the page, and asks the right person before anything leaves. Being built.',
     more: 'Meet Charlie',
+  },
+
+  /**
+   * The film on the front page: six of Charlie's abilities, one beat each,
+   * played round in a frame while it is on screen. Each beat is a title of a
+   * few words and one line — the feature, not the mechanism. Every figure in
+   * the frame is read from the documents, the matrix and the ledger by the
+   * component, so the film writes none of its own.
+   */
+  film: {
+    licence: 'One invented quotation, and an agent being built for it.',
+    /** Named for the film they control: the night above has its own pause. */
+    controls: { play: 'Play Charlie', pause: 'Pause Charlie', steps: 'Charlie’s abilities' },
+    steps: [
+      { key: 'reads', title: 'Reads what arrives', line: 'Mail, PDFs, drawings and price lists, read into lines.' },
+      { key: 'cites', title: 'Cites the page', line: 'Every figure keeps the document it came from.' },
+      { key: 'holds', title: 'Holds what it can’t settle', line: 'A line it cannot settle waits for a person.' },
+      { key: 'makes', title: 'Makes the documents', line: 'The quotation, ready for someone to check.' },
+      { key: 'tells', title: 'Tells your team', line: 'Posts what changed in your channel.' },
+      { key: 'asks', title: 'Asks before anything leaves', line: 'Nothing is sent until a person approves.' },
+    ],
+    stage: {
+      sheet: 'Read into lines',
+      quotation: 'Quotation · draft',
+      prepared: 'Prepared for review',
+      typing: 'Charlie is writing',
+      sent: 'Sent',
+    },
   },
 
   hero: {

@@ -1194,7 +1194,7 @@ describe('Charlie', () => {
   it('says the conversation is invented and not yet built, in its first line', () => {
     expect(charlie.scene.licence).toMatch(/^Invented/)
     expect(charlie.scene.licence).toMatch(/not yet built/)
-    expect(charlie.act.lede).toMatch(/invented/i)
+    expect(charlie.film.licence).toMatch(/invented/i)
   })
 
   it('writes no figure of its own: the scene reads them from the evidence and the ledger', () => {
@@ -1237,6 +1237,17 @@ describe('Charlie', () => {
     // Nothing Charlie does is called built yet: widen to the type's own set to check.
     const claimed: ReadonlyArray<string> = charlie.abilities.items.map((ability) => ability.state)
     expect(claimed).not.toContain('Built')
+  })
+
+  it('films six abilities in a few words each, and writes no figure', () => {
+    expect(charlie.film.steps.map((step) => step.key)).toEqual(['reads', 'cites', 'holds', 'makes', 'tells', 'asks'])
+    for (const step of charlie.film.steps) {
+      expect(words(step.title), step.title).toBeLessThanOrEqual(5)
+      expect(words(step.line), step.line).toBeLessThanOrEqual(10)
+    }
+    expect(JSON.stringify(charlie.film)).not.toMatch(/EUR|\d+(\.\d+)?\s?%|\d+\.\d{2}/)
+    // The beat that ends the film is the approval.
+    expect(charlie.film.steps.at(-1)?.line).toMatch(/approves/)
   })
 
   it('keeps the product in the future tense', () => {
