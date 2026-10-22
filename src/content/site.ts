@@ -1609,13 +1609,15 @@ export const charlie = {
     controls: { play: 'Play Charlie', pause: 'Pause Charlie', steps: 'Charlie’s abilities' },
     steps: [
       { key: 'reads', title: 'Reads what arrives', line: 'Mail, PDFs, drawings and price lists, read into lines.' },
-      { key: 'cites', title: 'Cites the page', line: 'Every figure keeps the document it came from.' },
+      { key: 'cites', title: 'Cites every source', line: 'Each figure links back to the page it came from.' },
       { key: 'holds', title: 'Holds what it can’t settle', line: 'A line it cannot settle waits for a person.' },
       { key: 'makes', title: 'Makes the documents', line: 'The quotation, ready for someone to check.' },
       { key: 'tells', title: 'Tells your team', line: 'Posts what changed in your channel.' },
       { key: 'asks', title: 'Asks before anything leaves', line: 'Nothing is sent until a person approves.' },
     ],
     stage: {
+      reading: 'Reading',
+      read: 'lines read',
       sheet: 'Read into lines',
       quotation: 'Quotation · draft',
       prepared: 'Prepared for review',

@@ -5,6 +5,7 @@ import { SourceIcon } from '#/components/glass-documents.tsx'
 import { charlie, glass, home, thread } from '#/content/site.ts'
 import { useHydrated, useInView, useReducedMotion } from '#/lib/motion.ts'
 
+import type { GlassSource } from '#/content/site.ts'
 import type { AnimationEvent } from 'react'
 
 /**
@@ -13,7 +14,7 @@ import type { AnimationEvent } from 'react'
  * ── What it is ─────────────────────────────────────────────────────────────
  *
  * Six of Charlie's abilities, one beat each, played round in a frame: reads
- * what arrives, cites the page, holds what it cannot settle, makes the
+ * what arrives, cites every source, holds what it cannot settle, makes the
  * documents, tells the team, asks before anything leaves. Beside the frame the
  * six are listed, a title and one line each, and the one playing fills its
  * hairline — the reference pages' product rail, set going.
@@ -244,10 +245,30 @@ function StepText({ step }: { step: (typeof steps)[number] }) {
   )
 }
 
-/** Reads, cites, holds: the request arrives, is read into lines, a cost moves, two lines are held. */
+/** Where a line's rate was read from, as the sheet cites it. */
+function source(line: string): GlassSource | null {
+  const from = (sheet.lines as Record<string, { rate?: { from: string } }>)[line]?.rate?.from
+  return from === 'prices' || from === 'agreement' ? from : null
+}
+
+/** A citation: the icon of the document a figure was read from, set after the figure. */
+function Cite({ from }: { from: GlassSource }) {
+  return (
+    <span className="cf-cite" data-source={from}>
+      <SourceIcon source={from} />
+    </span>
+  )
+}
+
+/**
+ * Reads, cites, holds. The request's PDF is read and its lines are written into
+ * the sheet; every rate is written with the page it came from; the supplier's
+ * answer moves one, and its page opens on the line; two lines are held.
+ */
 function SheetScene() {
   const request = documents.request
   const supplier = documents.supplier
+  const pdf = request.attachments.find((file) => file.format === 'PDF') ?? request.attachments[0]
   return (
     <div className="cf-scene cf-scene--sheet">
       <div className="cf-card cf-mail">
@@ -258,6 +279,28 @@ function SheetScene() {
         </p>
         <p className="cf-mail-subject">{request.subject}</p>
         <p className="cf-quiet">{request.address}</p>
+        <div className="cf-reading">
+          <span className="cf-pdf">
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <span className="cf-scan" />
+          </span>
+          <span className="cf-reading-text">
+            <span className="cf-reading-now">
+              {film.stage.reading} {pdf?.name}
+            </span>
+            <span className="cf-reading-done">
+              {home.matrix.lines.total} {film.stage.read}
+            </span>
+            <span className="cf-reading-bar">
+              <span />
+            </span>
+          </span>
+        </div>
         <p className="cf-files">
           {request.attachments.map((file) => (
             <span key={file.name}>{file.name}</span>
@@ -273,9 +316,10 @@ function SheetScene() {
         </p>
         <p className="cf-mail-subject">{supplier.item}</p>
         <p className="cf-change">
+          <span className="cf-quiet">{cost?.term}</span>
           <s>{cost?.was}</s>
           <span aria-hidden="true">→</span>
-          <strong>{cost?.now}</strong>
+          <mark className="cf-mark">{cost?.now}</mark>
         </p>
       </div>
 
@@ -290,6 +334,7 @@ function SheetScene() {
             {rows.map((row, number) => {
               const moved = row.status === 'changed'
               const value = rate(row.line)
+              const from = source(row.line)
               return (
                 <tr
                   key={row.line}
@@ -297,15 +342,29 @@ function SheetScene() {
                   style={{ ['--cf-row' as string]: number }}
                 >
                   <td className="cf-line">{row.line}</td>
-                  <td className="cf-item">{row.item}</td>
-                  <td className="cf-qty">{quantity(row.line)}</td>
+                  <td className="cf-item">
+                    <span className="cf-write">{row.item}</span>
+                  </td>
+                  <td className="cf-qty">
+                    <span className="cf-write">{quantity(row.line)}</span>
+                  </td>
                   <td className="cf-rate">
                     {moved ? (
-                      <span className="cf-rate-moved">
-                        <s>{cost?.was}</s> {cost?.now}
+                      <span className="cf-rate-swap">
+                        <span className="cf-rate-before">
+                          {cost?.was}
+                          {from ? <Cite from={from} /> : null}
+                        </span>
+                        <span className="cf-rate-moved">
+                          <s>{cost?.was}</s> {cost?.now}
+                          <Cite from="supplier" />
+                        </span>
                       </span>
                     ) : (
-                      <span>{value ?? '—'}</span>
+                      <span>
+                        {value ?? '—'}
+                        {value && from ? <Cite from={from} /> : null}
+                      </span>
                     )}
                   </td>
                   <td className="cf-status">
@@ -318,6 +377,26 @@ function SheetScene() {
             })}
           </tbody>
         </table>
+
+        {/* The page the moved figure was read from, opened on the line it changed. */}
+        <div className="cf-source">
+          <p className="cf-source-bar">
+            <SourceIcon source="supplier" />
+            <span>{supplier.title}</span>
+            <span className="cf-quiet">{supplier.at}</span>
+          </p>
+          <p className="cf-source-line">
+            <span className="cf-quiet">{cost?.term}</span>
+            <span>
+              <s>{cost?.was}</s> <span aria-hidden="true">→</span>{' '}
+              <mark className="cf-mark">{cost?.now}</mark>
+            </span>
+          </p>
+          <p className="cf-quiet">{supplier.note}</p>
+        </div>
+        <svg className="cf-cursor" viewBox="0 0 20 20" focusable="false">
+          <path d="M4 2.5l11 8.25-5 .75 2.75 5.75-2.25 1-2.75-5.75-3.75 3.25z" />
+        </svg>
       </div>
     </div>
   )

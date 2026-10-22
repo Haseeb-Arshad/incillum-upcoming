@@ -5542,8 +5542,8 @@
   animation: cf-progress var(--cf-beat) linear both;
   animation-play-state: paused;
 }
-/* The last beat holds a little longer before the film goes round. */
-.cf-step:last-child .cf-step-fill--live {
+/* Reading, citing and the last beat hold a little longer: there is more to watch in them. */
+.cf-step:is(:nth-child(1), :nth-child(2), :last-child) .cf-step-fill--live {
   animation-duration: calc(var(--cf-beat) * 1.35);
 }
 .cf[data-running='true'] .cf-step-fill--live {
@@ -5733,36 +5733,281 @@
   font-size: 0.6875rem;
 }
 
-/* Reads: the request arrives and is read into lines, one at a time. */
-.cf-stage:not([data-step='reads']) .cf-mail,
-.cf-stage:not([data-step='cites']) .cf-confirmation {
+/* The PDF being read, inside the mail: a page of grey lines, a band passing down it, a bar filling. */
+.cf-reading {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0.5rem 0.75rem 0;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper);
+}
+.cf-pdf {
+  position: relative;
+  display: grid;
+  flex: none;
+  align-content: start;
+  gap: 3px;
+  width: 2.125rem;
+  height: 2.75rem;
+  padding: 0.375rem 0.3125rem;
+  overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: 3px;
+  background-color: var(--ic-paper-raised);
+}
+.cf-pdf > span:not(.cf-scan) {
+  height: 2px;
+  border-radius: 1px;
+  background-color: var(--ic-line-strong);
+}
+.cf-pdf > span:nth-child(3n) {
+  width: 64%;
+}
+.cf-scan {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 0.75rem;
+  border-bottom: 1px solid var(--ic-ink-900);
+  background-color: var(--ic-line);
   opacity: 0;
 }
-.cf-stage[data-step='reads'] .cf-mail,
-.cf-stage[data-step='cites'] .cf-confirmation {
+.cf-reading-text {
+  display: grid;
+  flex: 1;
+  gap: 0.375rem;
+  min-width: 0;
+}
+.cf-reading-now,
+.cf-reading-done {
+  grid-area: 1 / 1;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* At rest the reading is done: the name of the file gives way to the count of its lines. */
+.cf-reading-now {
+  opacity: 0;
+}
+.cf-reading-bar {
+  display: block;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 1px;
+  background-color: var(--ic-line);
+}
+.cf-reading-bar > span {
+  display: block;
+  height: 100%;
+  background-color: var(--ic-ink-900);
+  transform-origin: left;
+}
+/* A figure or a name written into a cell: a cover the colour of the sheet slides off it. */
+.cf-write {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+.cf-write::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--ic-paper-raised);
+  transform: scaleX(0);
+  transform-origin: right;
+}
+/* A citation: the icon of the document the figure came from, on its own small tile. */
+.cf-cite {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-left: 0.375rem;
+  vertical-align: -0.4rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: 0.375rem;
+  background-color: var(--ic-paper);
+  color: var(--ic-ink-900);
+}
+.cf-cite .gd-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+.cf-rate-swap {
+  display: inline-grid;
+}
+.cf-rate-swap > * {
+  grid-area: 1 / 1;
+  justify-self: end;
+}
+.cf-rate-before {
+  opacity: 0;
+}
+/* A highlighter's stroke behind a figure: what Charlie read, on the page it read it from. */
+.cf-mark {
+  position: relative;
+  z-index: 0;
+  background: none;
+  color: inherit;
+  font-weight: 500;
+}
+.cf-mark::before {
+  content: '';
+  position: absolute;
+  inset: -0.125em -0.25em;
+  z-index: -1;
+  border-radius: 2px;
+  background-color: var(--ic-line-strong);
+  transform-origin: left;
+}
+/* The cited page, opened over the sheet just above the line it changed. */
+.cf-source {
+  position: absolute;
+  right: 6.75rem;
+  bottom: 2.625rem;
+  display: grid;
+  gap: 0.375rem;
+  width: min(16.5rem, 64%);
+  padding: 0 0 0.625rem;
+  overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+}
+.cf-source > p {
+  padding-inline: 0.75rem;
+}
+.cf-source-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block: 0.5rem;
+  border-bottom: 1px solid var(--ic-line);
+  background-color: var(--ic-paper);
+  font-weight: 500;
+}
+.cf-source-bar > :last-child {
+  margin-left: auto;
+}
+.cf-source-bar .gd-icon {
+  width: 1rem;
+  height: 1rem;
+}
+.cf-source-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.cf-source-line s {
+  color: var(--ic-ink-400);
+}
+.cf-cursor {
+  position: absolute;
+  right: 7.5rem;
+  bottom: 0.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: var(--ic-ink-900);
+  stroke: var(--ic-paper-raised);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+}
+
+/* Reads: the request arrives, its PDF is read, and its lines are written into the sheet one by one. */
+.cf-stage:not([data-step='reads']) .cf-mail,
+.cf-stage:not([data-step='cites']) :is(.cf-confirmation, .cf-source, .cf-cursor) {
+  opacity: 0;
+}
+.cf-stage[data-step='reads'] .cf-mail {
   animation: cf-arrive 640ms var(--cf-ease) both;
 }
+.cf-stage[data-step='reads'] .cf-scan {
+  animation: cf-scan 1300ms ease-in-out 600ms 2 both;
+}
+.cf-stage[data-step='reads'] .cf-reading-bar > span {
+  animation: cf-progress 2700ms var(--cf-ease) 600ms both;
+}
+.cf-stage[data-step='reads'] .cf-reading-now {
+  animation: cf-read 3500ms linear both;
+}
+.cf-stage[data-step='reads'] .cf-reading-done {
+  animation: cf-in 360ms var(--cf-ease) both;
+  animation-delay: 3500ms;
+}
 .cf-stage[data-step='reads'] .cf-table tr {
-  animation: cf-in 420ms var(--cf-ease) both;
-  animation-delay: calc(700ms + var(--cf-row) * 280ms);
+  animation: cf-in 360ms var(--cf-ease) both;
+  animation-delay: calc(900ms + var(--cf-row) * 440ms);
+}
+.cf-stage[data-step='reads'] .cf-write::after {
+  animation: cf-unveil 520ms var(--cf-ease) both;
+  animation-delay: calc(1000ms + var(--cf-row) * 440ms);
+}
+.cf-stage[data-step='reads'] .cf-qty .cf-write::after {
+  animation-delay: calc(1250ms + var(--cf-row) * 440ms);
 }
 .cf-stage[data-step='reads'] :is(.cf-rate, .cf-status) > * {
   opacity: 0;
 }
-/* Cites: the supplier's answer lands on the line it changes, and the rate moves. */
+/*
+ * Cites: each rate is written with the page it came from. The supplier's answer
+ * lands, its figure is marked, the line's rate moves to it and cites it; then
+ * the citation is opened, and the page shows the figure where it was read.
+ */
 .cf-stage[data-step='cites'] .cf-status > * {
   opacity: 0;
 }
 .cf-stage[data-step='cites'] .cf-rate > * {
   animation: cf-in 420ms var(--cf-ease) both;
-  animation-delay: 300ms;
+  animation-delay: calc(200ms + var(--cf-row) * 120ms);
+}
+.cf-stage[data-step='cites'] .cf-cite {
+  animation: cf-pop 360ms var(--cf-ease) both;
+  animation-delay: calc(420ms + var(--cf-row) * 120ms);
+}
+.cf-stage[data-step='cites'] .cf-confirmation {
+  animation: cf-arrive 640ms var(--cf-ease) both;
+  animation-delay: 800ms;
+}
+.cf-stage[data-step='cites'] .cf-confirmation .cf-mark::before {
+  animation: cf-sweep 520ms var(--cf-ease) both;
+  animation-delay: 1450ms;
 }
 .cf-stage[data-step='cites'] tr[data-status='changed'] td {
   background-color: var(--ic-paper-sunken);
 }
-.cf-stage[data-step='cites'] tr[data-status='changed'] .cf-rate-moved {
-  animation: cf-in 520ms var(--cf-ease) both;
-  animation-delay: 1100ms;
+.cf-stage[data-step='cites'] .cf-rate-before {
+  animation: cf-pass 2100ms var(--cf-ease) both;
+  animation-delay: 200ms;
+}
+.cf-stage[data-step='cites'] .cf-rate-moved {
+  animation: cf-in 460ms var(--cf-ease) both;
+  animation-delay: 2150ms;
+}
+.cf-stage[data-step='cites'] .cf-rate-moved .cf-cite {
+  animation-delay: 2400ms;
+}
+.cf-stage[data-step='cites'] .cf-cursor {
+  animation:
+    cf-point 640ms var(--cf-ease) 2700ms both,
+    cf-press 240ms var(--cf-ease) 3360ms both;
+}
+.cf-stage[data-step='cites'] .cf-source {
+  transform-origin: 70% 100%;
+  animation: cf-pop 380ms var(--cf-ease) both;
+  animation-delay: 3450ms;
+}
+.cf-stage[data-step='cites'] .cf-source .cf-mark::before {
+  animation: cf-sweep 520ms var(--cf-ease) both;
+  animation-delay: 3800ms;
 }
 /* Holds: every line has its state, and the two it cannot settle wait in the signal. */
 .cf-stage[data-step='holds'] .cf-status > * {
@@ -6017,6 +6262,48 @@
     transform: translate3d(-12px, 0, 0) rotate(-1.5deg);
   }
 }
+@keyframes cf-scan {
+  from {
+    opacity: 1;
+    transform: translate3d(0, -0.75rem, 0);
+  }
+  90% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, 2.75rem, 0);
+  }
+}
+/* The file's name while it is read, gone once it has been. */
+@keyframes cf-read {
+  from,
+  92% {
+    opacity: 1;
+  }
+}
+/* Shown, then given way: the rate the price list gave, before the supplier's answer moved it. */
+@keyframes cf-pass {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  12%,
+  82% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes cf-unveil {
+  from {
+    transform: none;
+  }
+}
+@keyframes cf-sweep {
+  from {
+    transform: scaleX(0);
+  }
+}
 @keyframes cf-pop {
   from {
     opacity: 0;
@@ -6097,6 +6384,14 @@
   .cf-status {
     width: 6.5rem;
   }
+  .cf-source {
+    right: 4%;
+    left: 4%;
+    width: auto;
+  }
+  .cf-cursor {
+    right: 6.75rem;
+  }
   .cf-page {
     width: 88%;
   }
@@ -6106,6 +6401,8 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .cf-stage *,
+  .cf-stage *::before,
+  .cf-stage *::after,
   .cf-scene,
   .cf-step-button {
     animation: none !important;
