@@ -343,6 +343,46 @@ test('the opening plays once a visit: not on a return from another page, and aga
   await expect(page.locator('.glass-opening')).toBeVisible()
 })
 
+test('a reload below the first screen keeps the reader’s place, with nothing over it', async ({
+  page,
+}) => {
+  // Four page loads, each waited out to hydration.
+  test.slow()
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await holdTheOpening(page)
+  await page.goto(GLASS)
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await page.keyboard.press('Shift')
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'skipped')
+
+  await page
+    .locator('#questions')
+    .evaluate((element) => element.scrollIntoView({ block: 'start', behavior: 'instant' }))
+  await page.reload()
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await expect(page.locator('html')).toHaveAttribute('data-opened', '')
+  await expect(page.locator('.glass-opening')).toBeHidden()
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+
+  // At the top, a reload plays it as before.
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.reload()
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'playing')
+})
+
+test('an address that names a section opens on it, with nothing over it', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await holdTheOpening(page)
+  // A new document, not the fragment navigation a hash on the open front page would be.
+  await page.goto('about:blank')
+  await page.goto(`${GLASS}#questions`)
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await expect(page.locator('html')).toHaveAttribute('data-opened', '')
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'seen')
+  await expect(page.locator('.glass-opening')).toBeHidden()
+})
+
 test('the opening is three beats, and the dust keeps the opening’s time', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await holdTheOpening(page)

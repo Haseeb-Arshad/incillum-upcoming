@@ -1312,15 +1312,15 @@ export const glass = {
   /**
    * The opening: three beats, then the page.
    *
-   * The first is the world as it is — the tools got faster, at the desk. The
-   * second is the hour this company exists for, a sentence about people, which
-   * is the house rule. The third is the business: what did not go home with
-   * them is the commercial work itself. The hero then names what carries it.
+   * The business in three sentences, at the hour it exists for. The team goes
+   * home at the hour the instrument's office empties; the requests do not stop
+   * for it; and Charlie carries them to the morning. The hero then names what
+   * Incillum is.
    */
   opening: [
-    'AI made every desk faster.',
-    'Then everyone went home.',
-    'Requests, prices and deadlines kept moving.',
+    'Your team logs off at six.',
+    'The requests keep coming.',
+    'Charlie works them until morning.',
   ],
 
   /** The masthead's links: this page's own sections and the contact memo, and the one button. */

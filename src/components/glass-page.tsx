@@ -25,7 +25,7 @@ import {
   trust,
 } from '#/content/site.ts'
 import { contactEmail } from '#/env.ts'
-import { markOpeningSeen, openingSeen } from '#/lib/opening.ts'
+import { markOpeningSeen, openingSeen, rememberPlace } from '#/lib/opening.ts'
 
 /**
  * /glass — the presentation.
@@ -116,10 +116,19 @@ export function GlassPage() {
   const returned = useSyncExternalStore(stay, openingSeen, () => false)
   const opening: Opening = returned && played === 'playing' ? 'seen' : played
 
+  /**
+   * Whether the opening could play, read once as the page mounts: a preference
+   * changed later does not turn an opening that never played into one seen.
+   */
+  const stillRef = useRef(true)
+  useEffect(() => {
+    stillRef.current = matchMedia('(prefers-reduced-motion: reduce)').matches
+  }, [])
+
   // Played to its end or ended early, it has been seen. Under reduced motion it never played.
   useEffect(() => {
     if (played !== 'ended' && played !== 'skipped') return
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) markOpeningSeen()
+    if (!stillRef.current) markOpeningSeen()
   }, [played])
 
   /**
@@ -138,10 +147,20 @@ export function GlassPage() {
     return () => observer.disconnect()
   }, [])
 
+  // Where the reader was when they left, so a reload below the first screen does not replay the opening over the page.
+  useEffect(() => {
+    window.addEventListener('pagehide', rememberPlace)
+    return () => window.removeEventListener('pagehide', rememberPlace)
+  }, [])
+
+  /**
+   * Any input ends the opening early — and so does a scroll, which is how a
+   * restored position the head script could not foresee shows itself.
+   */
   useEffect(() => {
     if (opening !== 'playing') return
     const skip = () => setOpening('skipped')
-    const inputs = ['keydown', 'pointerdown', 'wheel', 'touchstart'] as const
+    const inputs = ['keydown', 'pointerdown', 'wheel', 'touchstart', 'scroll'] as const
     for (const input of inputs) window.addEventListener(input, skip, { passive: true })
     return () => {
       for (const input of inputs) window.removeEventListener(input, skip)

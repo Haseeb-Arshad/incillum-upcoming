@@ -291,9 +291,10 @@ have it and will write once.
 
 The front page (`/`) is the night told as a film, for somebody who wants to be
 shown rather than read to. Three beats of type over a field of hour rules —
-played once a visit, and again on a reload, never on a return from another
-page (`lib/opening.ts`) — a
-centred hero with the form, then the quotation played hour by hour in a frame;
+played once a visit, and again on a reload at the top, never on a return from
+another page, a reload further down or an address with a section in it — it
+belongs over the first screen and nowhere else (`lib/opening.ts`) — a centred
+hero with the form, then the quotation played hour by hour in a frame;
 after it, the six documents a quotation is assembled from lie on a desk with the
 part itself among them, and gather onto one sheet; then the acts on the desk —
 Charlie, the four tabs, data and trust, the questions — and the
