@@ -11,8 +11,8 @@ page, one argument, one conversion: an email address for the waitlist.
 
 **The front page is the presentation** (`components/glass-page.tsx`, §4 *The
 presentation*): the night told as a film, then the same quotation taken apart
-on the desk — six sources, four tabs that end where the work stops, the build's
-states, a trust grid, the questions — and the morning. It moved to `/` from
+on the desk — six sources, Charlie's film, four tabs that end where the work
+stops, six cards of protection, the questions — and the morning. It moved to `/` from
 `/glass`, which now redirects there. Its acts on the desk are specified in §4
 *The acts on the desk*; the eight-act page they were first built for
 has been retired; its component and its styles are gone. Every act is the same
@@ -20,12 +20,11 @@ invented quotation, and every proof device the reference pages use (Harvey,
 Hebbia) is replaced by an honest one.
 
 It is deliberately **not** a marketing site with the product pages removed. Its
-navigation is three menus (`components/masthead-bar.tsx`, the reference pages'
-dropdown boxes) over sections of the front page and three more pages: Charlie
-(`/charlie`), security (`/security`) and the contact memo. There is no pricing,
-no demo and no blog, because a pre-launch site that offers a full product menu
-is advertising a product it has not shipped; each page that exists explains one
-thing, and says what state that thing is in.
+navigation is one menu, Product, with Charlie in it (`/charlie`), and a link to
+the contact memo (`components/masthead-bar.tsx`, the reference pages' dropdown
+box). There is no pricing, no blog and no security page — the owner removed the
+last, and the Trust and Company menus, on 22 October 2026. Each page that
+exists explains one thing.
 
 ### The positioning
 
@@ -165,7 +164,7 @@ and the film says what happened in it.
   inside the band, because the one lit thing in the photograph is paper. It
   plays the night from 23:47 to 08:04 once while it is on screen, the reader
   can pause it or pick an hour, and it stops at 08:04 — where the band ends and
-  the page turns to paper. It is invented and says so in its first line, its
+  the page turns to paper. Its first line names what it follows, its
   rows are the matrix's (`home.matrix`, tested against the thread's prose), and
   it carries no money of its own: it reads the thread's 06:50 ledger. It is the
   honest substitute for the product video and the logo wall enterprise pages
@@ -223,8 +222,8 @@ each says so in its component's header:
 | --- | --- | --- |
 | Six sources, scattered then gathered | the logo wall | `glass-sources.tsx` |
 | How it works — four tabs | the product modules | `how-it-works.tsx` |
-| Where this stands — *Built · In build · Opening* | the band of usage figures | `standing.tsx` |
-| Data and trust — six commitments | the certification badges | `trust.tsx` |
+| Charlie keeps the work moving — a six-beat film | the product video | `charlie.tsx`, `charlie-film.tsx` |
+| Data and trust — six cards of protection | the certification badges | `trust.tsx` |
 | Questions, answered in full | the testimonials | `questions.tsx` |
 | The morning — the 08:04 room, the handover, the ask, the next steps | the closing band | `glass-page.tsx` |
 
@@ -240,38 +239,30 @@ each says so in its component's header:
   in them is legible because nothing is on them: the documents laid on them are
   built, in the site's type, from `glass.sources.documents`. The light turns to
   morning on the last tab, and that is the only thing the photographs say.
-- **Trust states come from a closed set.** *Decided* only for promises already
-  on the record (`access.decided`, the approval boundary); *Built* only for what
-  `standing` already says is built; everything else *In build*. What is still
-  open about the data is `access.open`, set in the same ink. A certification
-  can be listed only with a link to its report — the type will not accept one
-  without — and until one is held the section says no certification is
-  claimed. No framework is named anywhere on the page; both suites fail if one
-  is.
+- **Trust is six cards, with no state on any of them.** A glyph on a tile, a
+  title and one line (`ProtectionCards`, shared with the Charlie page), each
+  saying what Incillum does with a business's figures, in the present tense.
+  The two commitments already on the record — `access.decided` and the
+  approval boundary — keep their words. No framework is named anywhere on the
+  site (§5); both suites fail if one is.
 - **Questions are open.** A real `<dl>`, every answer in the HTML, nothing
   behind a click; three answers are read from copy the site has already
   committed to, so they cannot drift.
 
-### Charlie and security
+### Charlie
 
 - **`/charlie`** (`components/charlie-page.tsx`, `charlie.tsx`): what Charlie is,
-  beside one invented morning set as a team channel — Charlie, an inside sales
-  person and a sales director, from the 03:42 supplier answer to the 08:14
-  approval — then seven abilities, each with its state, then one invitation.
+  beside one morning set as a team channel — Charlie, an inside sales person
+  and a sales director, from the 03:42 supplier answer to the 08:14 approval —
+  then seven abilities, as cards without states, then one invitation.
   The scene's licence is its first line; its figures are tokens the component
   fills from the evidence document and the 06:50 ledger; the two answers on its
   request card are drawn, not buttons. Its first four messages are also an act
   on the front page, after the tabs, with the way to the page.
-- **`/security`** (`components/security-page.tsx`): the controls an enterprise
-  team expects, each with its state from the trust grid's closed set plus
-  *Planned*; the frameworks, each as not held (§5); the front page's own trust
-  grid; and one invitation. *Built* is used only for what the build says is
-  built or what exists in the platform's code with its tests; nothing that
-  needs a hosted environment is called built.
-- **Both pages** are laid in `components/page-frame.tsx`: the masthead filled
+- **The page** is laid in `components/page-frame.tsx`: the masthead filled
   from the start in its own `[data-inverted]` scope (the one dark region on the
-  page), the desk, and the front page's footer without the motto. Both are in
-  the sitemap.
+  page), the desk, and the front page's footer without the motto. It is in the
+  sitemap.
 
 ### The contact memo
 
@@ -303,7 +294,7 @@ shown rather than read to. Two beats of type over a field of hour rules, a
 centred hero with the form, then the quotation played hour by hour in a frame;
 after it, the six documents a quotation is assembled from lie on a desk with the
 part itself among them, and gather onto one sheet; then the acts on the desk —
-the four tabs, where the build stands, data and trust, the questions — and the
+Charlie, the four tabs, data and trust, the questions — and the
 morning, one invitation, and the motto. It carries the front page's head — the
 title, description and canonical at `/` — and `/glass`, where it used to live
 off the spine, is a permanent redirect to it. `e2e/glass.spec.ts` holds both.
@@ -317,8 +308,8 @@ off the spine, is a permanent redirect to it. `e2e/glass.spec.ts` holds both.
 
 - **No labels over headings.** No tracked capitals anywhere on it — not over a
   title, not inside a document — and no title in two tones. The first version
-  had both and read as assembled. The licence for invented material is a
-  sentence at reading size; `e2e/glass.spec.ts` fails on any uppercase text.
+  had both and read as assembled. What a block follows is said in a sentence
+  at reading size; `e2e/glass.spec.ts` fails on any uppercase text.
 - **The documents are built, not pictured** (`components/glass-documents.tsx`):
   real contents from the same quotation, in the site's own type, because a
   generated document's text is nonsense and the reader zooms in. The part on
@@ -403,11 +394,13 @@ Two rules go with it:
 
 ### Illustrative material
 
-Three blocks on the home page are invented in detail: the film, the six
-sources and the tabs. Each is allowed to exist **only** while its own first
-lines say so, at reading size, in the server's HTML — not in small print
-underneath and not as a watermark across the figures. `site.test.ts` and
-`home.spec.ts` both assert it.
+The film, the six sources, Charlie and the tabs all follow one example
+quotation, RFQ 8841, for an example customer at `customer.example`. Each opens
+on a sentence that names what it follows — one quotation, one night — in the
+server's HTML. On the owner's decision of 22 October 2026 they no longer carry
+the word *invented*, a state label or a licence line: the copy describes the
+product as it works, in the present tense. Nothing in them names a real
+customer, supplier or figure, and that does not change.
 
 The figures in them are exact and they **reconcile across every section**, to
 the cent, because they are one quotation at several magnifications — the
@@ -427,28 +420,30 @@ volume figures · "trusted by" · security certifications or compliance claims �
 integration availability · a launch date or quarter · the name of any ERP, CRM
 or mail client (the form asks; the page does not claim).
 
-**A certification is claimed only once it is held, and only with its report.**
-The owner asked, on 22 October 2026, for the frameworks a buyer looks for to be
-on the site, because a buyer will look for them. So they are named on
-`/security` and nowhere else, each in its own card whose first line is its
-status at reading size — *Not held · planned* or *Not yet assessed* — never as a
-badge, a seal or an "in progress". The front page names none, and says plainly
-that none is claimed. The trust grid takes a held one (`trust.certifications`,
-whose type requires a report link) on the day it exists. A certification shown
-as held before it is held is the one claim a buyer's procurement team can
-check in an afternoon. `site.test.ts` and `e2e/pages.spec.ts` hold all of it.
+**No certification is named — held or not.** On 22 October 2026 the owner
+first asked for the frameworks a buyer looks for to be named on a security
+page as not held, then removed the page. So no framework is named anywhere on
+the site, not as held, not as planned. One is named only once it is held, and
+only with its report: a certification shown before it is held is the one
+claim a buyer's procurement team can check in an afternoon. The frameworks are
+listed for the owner in `requirements/README.md`. `site.test.ts` and both e2e
+suites hold it.
 
-**Outbound supplier contact is planned, never claimed, and always behind a
-person.** This rule used to be absolute. The owner decided, on 22 October 2026,
-that Charlie is being built to ask approved suppliers for a firm price, to tell
-a team's channel what changed, and to call and book a meeting. So the Charlie
-page describes those abilities — as *Planned*, in the future tense, and each
-with the approval it waits for — and the front page's answer to "does it
-contact our suppliers?" says *not today* and what is planned. What is true
-today is still the rule everywhere: a supplier answer *arrives* and is read;
-nothing is requested, chased or negotiated yet. Nothing outward may be called
-built until it is, and nothing outward may ever be described as happening
-without an approval. `site.test.ts` holds both.
+**The site is written in the present tense; what is not built is kept off it.**
+The owner decided, on 22 October 2026, that the site describes the product as
+it works, because it is being built — no *being built*, *planned*, *in build*
+or *not yet* on any page. What the copy describes and the platform does not do
+yet is listed in `requirements/README.md`, with the platform's status beside
+each line. Change a claim on the site and change that file in the same
+commit; `site.test.ts` checks it lists every outward ability the site names.
+
+**Outbound contact is always behind a person.** This rule used to forbid
+describing it at all. The owner decided, on 22 October 2026, that Charlie asks
+approved suppliers for a firm price, tells a team's channel what changed, and
+calls and books a meeting. So the Charlie page describes those abilities, each
+with the approval it waits for, and the front page's answer to "does it
+contact our suppliers?" opens *Only with your approval*. Nothing outward may
+ever be described as happening without an approval. `site.test.ts` holds it.
 
 **The instrument's mark is a measurement, never a verb.** It says *this is your
 hour*. It may never say "working now", carry a counter, or pulse — that would be
@@ -457,9 +452,8 @@ a claim made simultaneously to every visitor about work nobody is doing.
 **Never write:** *magic* · *revolutionary* · *fully autonomous* · *replaces your
 team* · *one-click automation of everything* · *AGI*.
 
-Progress is described in present-tense states — Built, In build, Opening — never
-on a calendar. A date is a promise made by whoever wrote it to whoever has to
-keep it, and it becomes a lie on a fixed schedule.
+Progress is never put on a calendar. A date is a promise made by whoever wrote
+it to whoever has to keep it, and it becomes a lie on a fixed schedule.
 
 `e2e/site.spec.ts` enforces the worst of these. The test is a backstop, not the
 rule.
