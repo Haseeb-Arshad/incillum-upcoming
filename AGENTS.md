@@ -290,7 +290,9 @@ have it and will write once.
 ### The presentation
 
 The front page (`/`) is the night told as a film, for somebody who wants to be
-shown rather than read to. Two beats of type over a field of hour rules, a
+shown rather than read to. Three beats of type over a field of hour rules —
+played once a visit, and again on a reload, never on a return from another
+page (`lib/opening.ts`) — a
 centred hero with the form, then the quotation played hour by hour in a frame;
 after it, the six documents a quotation is assembled from lie on a desk with the
 part itself among them, and gather onto one sheet; then the acts on the desk —
@@ -338,7 +340,9 @@ off the spine, is a permanent redirect to it. `e2e/glass.spec.ts` holds both.
   (`components/glass-field.tsx`, drawn by `lib/dust.ts` in WebGL with no
   library). Under the opening it is a landscape that is not there when the page
   opens: it unrolls out of one thin slit of light on the horizon, far ridge
-  first, across the two beats. Round the morning plate it is a different
+  first, across the beats, on the opening's own clock (read off its CSS
+  animations), so it settles with the type rather than after it. Round the
+  morning plate it is a different
   formation on purpose — two twisted ribbons framing the room, the night's dust
   put in order. It is ink, never the signal; it stops off screen, in a hidden
   tab and once it has faded on scroll; it clears a space behind the hero's

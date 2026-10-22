@@ -1310,14 +1310,18 @@ export const glass = {
     'One request for quotation, carried through one night and handed back to a person by morning: what Incillum does, in one night.',
 
   /**
-   * The opening: two beats, then the page.
+   * The opening: three beats, then the page.
    *
    * The first is the world as it is — the tools got faster, at the desk. The
-   * second is the hour this company exists for. It is a sentence about people,
-   * which is the house rule, and it leaves the argument to the hero rather than
-   * spending it in the dark.
+   * second is the hour this company exists for, a sentence about people, which
+   * is the house rule. The third is the business: what did not go home with
+   * them is the commercial work itself. The hero then names what carries it.
    */
-  opening: ['AI made every desk faster.', 'Then everyone went home.'],
+  opening: [
+    'AI made every desk faster.',
+    'Then everyone went home.',
+    'Requests, prices and deadlines kept moving.',
+  ],
 
   /** The masthead's links: this page's own sections and the contact memo, and the one button. */
   nav: home.nav,

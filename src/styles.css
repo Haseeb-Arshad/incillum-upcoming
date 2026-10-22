@@ -2925,9 +2925,9 @@
   --glass-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
   --glass-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --glass-arrive: 900ms;
-  /* The opening: two beats, then the page. */
-  --glass-beat: 1900ms;
-  --glass-opening: calc(var(--glass-beat) * 2);
+  /* The opening: its beats (`--glass-beats`, set from the copy), then the page. */
+  --glass-beat: 1700ms;
+  --glass-opening: calc(var(--glass-beat) * var(--glass-beats, 3));
   /* One hour of the film, timed by its chapter's hairline. */
   --glass-frame: 3400ms;
   /* The documents gathering onto one sheet. */
@@ -3062,9 +3062,7 @@
   text-wrap: balance;
   color: var(--ic-ink-900);
   animation: glass-beat var(--glass-beat) var(--glass-ease) both;
-}
-.glass-opening p + p {
-  animation-delay: var(--glass-beat);
+  animation-delay: calc(var(--glass-beat) * var(--beat, 0));
 }
 
 /* The page assembles as the second beat leaves; ended early, it assembles at once. */
@@ -3096,6 +3094,20 @@
 .glass[data-opening='skipped'] .glass-enter {
   animation-name: glass-enter-now;
   animation-delay: var(--glass-enter-delay, 0ms);
+}
+/*
+ * A return this visit (`lib/opening.ts`): the page is simply there. The head
+ * script marks the document before the first paint; the state keeps it so.
+ */
+:root[data-opened] .glass .glass-opening,
+.glass[data-opening='seen'] .glass-opening {
+  display: none;
+}
+:root[data-opened] .glass .glass-enter,
+:root[data-opened] .glass .glass-hours > span,
+.glass[data-opening='seen'] .glass-enter,
+.glass[data-opening='seen'] .glass-hours > span {
+  animation: none;
 }
 
 /*

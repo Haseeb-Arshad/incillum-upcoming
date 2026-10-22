@@ -307,6 +307,51 @@ test('any key ends the opening early, and the page arrives at once', async ({ pa
   )
 })
 
+test('the opening plays once a visit: not on a return from another page, and again on a reload', async ({
+  page,
+}) => {
+  // Three page loads, each waited out to hydration.
+  test.slow()
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await holdTheOpening(page)
+  await page.goto(GLASS)
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'playing')
+  await page.keyboard.press('Shift')
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'skipped')
+
+  // Back from another page, the page is simply there: marked before the first paint, and kept so.
+  await page.goto('/charlie')
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await page.locator('.site-brand').first().click()
+  await page.waitForURL(/\/$/)
+  await expect(page.locator('html')).toHaveAttribute('data-opened', '')
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'seen')
+  await expect(page.locator('.glass-opening')).toBeHidden()
+  const title = page.getByRole('heading', { level: 1 })
+  await expect(title).toHaveCSS('animation-name', 'none')
+  await expect(title).toHaveCSS('opacity', '1')
+  await expect(page.locator('.glass-field[data-tone="night"]')).toHaveAttribute('data-formed', 'true')
+
+  // A reload plays it again.
+  await page.reload()
+  await page.waitForSelector('html[data-hydrated="true"]')
+  expect(await page.locator('html').getAttribute('data-opened')).toBeNull()
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'playing')
+  await expect(page.locator('.glass-opening')).toBeVisible()
+})
+
+test('the opening is three beats, and the dust keeps the opening’s time', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await holdTheOpening(page)
+  await page.goto(GLASS)
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await expect(page.locator('.glass-opening p')).toHaveCount(3)
+  // Fifteen seconds a beat: well inside the first, the landscape is still unrolling.
+  await expect(page.locator('.glass-field[data-tone="night"]')).toHaveAttribute('data-formed', 'false')
+})
+
 test('six sources gather into one thread as the reader scrolls, and come apart again', async ({
   page,
 }, testInfo) => {

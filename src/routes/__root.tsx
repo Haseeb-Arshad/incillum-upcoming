@@ -11,6 +11,7 @@ import appCss from '#/styles.css?url'
 import { Colophon } from '#/components/colophon.tsx'
 import { Masthead } from '#/components/masthead.tsx'
 import { gtmHeadScript, gtmNoScriptSrc, posthogHeadScript } from '#/lib/analytics.ts'
+import { openingHeadScript } from '#/lib/opening.ts'
 import { organizationJsonLd, seoTags } from '#/lib/seo.ts'
 
 import type { ReactNode } from 'react'
@@ -61,11 +62,13 @@ export const Route = createRootRoute({
        * (`dataLayer`, the `posthog` stub) exist before anything else on the
        * page could push to them, and `.filter` removes each one entirely when
        * its key is unset — an empty inline script tag on every page of an
-       * unconfigured deployment is litter.
+       * unconfigured deployment is litter. The front page's once-a-visit mark
+       * has to be set before the first paint, so it is in the head as well.
        */
       scripts: [
         gtmHeadScript(),
         posthogHeadScript(),
+        { children: openingHeadScript },
         { type: 'application/ld+json', children: organizationJsonLd() },
       ].filter((script) => script !== null),
     }

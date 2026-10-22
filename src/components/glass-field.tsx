@@ -17,20 +17,31 @@ import type { Dust, DustScene, DustTone } from '#/lib/dust.ts'
  *   - **The night.** Under the opening and the hero, as a landscape. It is not
  *     there when the page opens: one thin slit of light appears on the horizon
  *     under the first beat, and the landscape unrolls out of it — the far ridge
- *     first, the near dunes last — across the opening's two beats. When the
- *     page assembles it sinks a little, dims, and clears a space behind the
- *     centred type, so the form is never read through it. As the reader
+ *     first, the near dunes last — across the opening's beats. As the page
+ *     assembles it sinks a little, dims, and clears a space behind the centred
+ *     type, so the form is never read through it. As the reader
  *     scrolls it falls behind at a little under half the page's speed, and it
  *     has faded out by the time the film is on screen.
  *   - **The morning.** Around the photograph at the close, on the desk: the
  *     same dust put in order, as two ribbons framing the room, one above it
  *     and one below.
  *
+ * ── How it keeps time with the type ────────────────────────────────────────
+ *
+ * The night follows the opening's own clock, read off its CSS animations: it
+ * forms across the beats and begins to settle just before the page assembles,
+ * so the dust and the type arrive as one movement. It does not wait for the
+ * page to say the opening has ended — that arrives a render late, and the field
+ * would lurch to catch up. Both movements ease in and out. Ended early, it
+ * finishes from wherever it was; on a return this visit there is no opening to
+ * follow, and it is simply formed.
+ *
  * ── How it moves, and when it stops ────────────────────────────────────────
  *
- * Its own drift, thirty frames a second, only while it is on screen, not faded
- * out, and the tab is visible; and the scroll, written straight to the element
- * on an animation frame so scrolling never re-renders anything. Under reduced
+ * Every frame while it forms or settles, then its own drift at thirty frames a
+ * second; only while it is on screen, not faded out, and the tab is visible.
+ * The scroll is written straight to the element on an animation frame so
+ * scrolling never re-renders anything. Under reduced
  * motion it draws one still frame of its final state and does neither. Without
  * a script or without WebGL it is simply absent — it is decoration, and the page
  * reads the same without it. The renderer is `lib/dust.ts`.
@@ -63,16 +74,46 @@ const scenes = {
 /** The moment of the swells the scene was composed at, so the first frame and the still frame are that one. */
 const START = 12
 /** How long the night takes to settle from the opening into the hero. */
-const SETTLE = 1600
-/** How long the landscape takes to unroll from its opening, inside the opening's two beats. */
-const FORM = 2600
-/** How quickly it finishes forming once the reader has skipped the opening. */
-const FORM_SKIPPED = 450
+const SETTLE = 2000
+/** How long before the page assembles the night begins to settle, so the two read as one movement. */
+const SETTLE_LEAD = 500
+/** The share of the opening the landscape takes to unroll: formed before the last beat leaves. */
+const FORM_SHARE = 0.72
+/** How quickly it finishes forming, and settling, once the opening has ended early. */
+const FORM_SKIPPED = 600
+const SETTLE_SKIPPED = 1100
+/** The drift's frame interval, once nothing is forming or settling. */
+const DRIFT = 1000 / 30
 
 /** A scene without the formation, which is the field's own state rather than a composition. */
 type Composition = Omit<DustScene, 'form'>
 
 const mix = (from: number, to: number, amount: number) => from + (to - from) * amount
+
+/** Ease in and out, so a movement neither starts with a jolt nor stops with one. */
+function smooth(amount: number): number {
+  const x = Math.min(1, Math.max(0, amount))
+  return x * x * (3 - 2 * x)
+}
+
+/**
+ * The opening's own clock, read off its animations: when its first beat began
+ * and when the page assembles, on the timeline `requestAnimationFrame` reports.
+ * Null when there is nothing left to follow.
+ */
+function openingClock(element: HTMLElement | null | undefined): { start: number; end: number } | null {
+  if (!element || typeof element.getAnimations !== 'function') return null
+  const now = performance.now()
+  let start = Infinity
+  let end = 0
+  for (const animation of element.getAnimations({ subtree: true })) {
+    // Still pending, it starts on the next frame, which is now as near as matters.
+    const began = typeof animation.startTime === 'number' ? animation.startTime : now
+    start = Math.min(start, began)
+    end = Math.max(end, began + Number(animation.effect?.getComputedTiming().endTime ?? 0))
+  }
+  return end > now && end > start ? { start, end } : null
+}
 
 function blend(from: Composition, to: Composition, amount: number): Composition {
   return {
@@ -92,24 +133,27 @@ const wideness = (width: number, height: number) =>
 
 export function GlassField({
   tone = 'night',
-  settled = true,
+  opening,
+  skipped = false,
   until,
 }: {
   tone?: DustTone
-  /** The night only: whether the opening has given way to the hero. */
-  settled?: boolean
+  /** The night only: the opening whose clock it keeps. */
+  opening?: RefObject<HTMLElement | null>
+  /** The night only: whether the reader ended the opening early. */
+  skipped?: boolean
   /** The night only: what it has faded out for by the time it is on screen. */
   until?: RefObject<HTMLElement | null>
 }) {
   const rootRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const settledRef = useRef(settled)
+  const skippedRef = useRef(skipped)
   const wakeRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
-    settledRef.current = settled
+    skippedRef.current = skipped
     wakeRef.current?.()
-  }, [settled])
+  }, [skipped])
 
   useEffect(() => {
     const root = rootRef.current
@@ -125,20 +169,43 @@ export function GlassField({
     let previous = 0
     let intersecting = true
     let faded = false
-    /** The night, from the opening (0) to the hero (1). */
-    let settle = settledRef.current ? 1 : 0
     let wide = 1
     /**
      * The night, from every grain inside its opening (0) to every grain in
-     * place (1). It forms once, during the opening; arriving after the opening
-     * has already ended, or under reduced motion, it is simply formed.
+     * place (1), and from the opening's composition (0) to the hero's (1).
+     * It forms once, during the opening, on the opening's clock.
      */
-    let form = tone === 'night' && !settledRef.current && !motion.matches ? 0 : 1
+    let form = 1
+    let settle = 1
+    const clock = tone === 'night' && !motion.matches ? openingClock(opening?.current) : null
+    /** When the opening was cut short, and where the night was when it was. */
+    let cut: { at: number; form: number; settle: number } | null = null
+    if (clock) {
+      form = 0
+      settle = 0
+    } else if (tone === 'night' && !motion.matches && opening?.current?.getClientRects().length) {
+      // The opening ran its course before the page could follow it: unroll quickly into the hero.
+      form = 0
+      cut = { at: performance.now(), form: 0, settle: 1 }
+    }
+
+    /** Where the night is at this moment: on the opening's clock, or catching up after a cut. */
+    function advance(now: number) {
+      if (form >= 1 && settle >= 1) return
+      if (!cut && skippedRef.current) cut = { at: now, form, settle }
+      if (cut) {
+        form = mix(cut.form, 1, smooth((now - cut.at) / FORM_SKIPPED))
+        settle = mix(cut.settle, 1, smooth((now - cut.at) / SETTLE_SKIPPED))
+      } else if (clock) {
+        form = Math.min(1, Math.max(0, (now - clock.start) / ((clock.end - clock.start) * FORM_SHARE)))
+        settle = smooth((now - (clock.end - SETTLE_LEAD)) / SETTLE)
+      }
+    }
 
     function scene(): DustScene {
       const at = (pair: Record<'wide' | 'narrow', Composition>) => blend(pair.narrow, pair.wide, wide)
       if (tone === 'morning') return { ...at(scenes.morning), form: 1 }
-      return { ...blend(at(scenes.opening), at(scenes.hero), 1 - Math.pow(1 - settle, 3)), form }
+      return { ...blend(at(scenes.opening), at(scenes.hero), settle), form }
     }
 
     function render() {
@@ -161,11 +228,11 @@ export function GlassField({
         return
       }
       const elapsed = now - previous
-      if (elapsed >= 1000 / 30) {
+      // Every frame while it forms or settles; the drift alone is slow enough for thirty.
+      if (form < 1 || settle < 1 || elapsed >= DRIFT) {
         time += Math.min(elapsed / 1000, 0.06)
         previous = now
-        if (settledRef.current && settle < 1) settle = Math.min(1, settle + elapsed / SETTLE)
-        if (form < 1) form = Math.min(1, form + elapsed / (settledRef.current ? FORM_SKIPPED : FORM))
+        advance(now)
         render()
       }
       frame = requestAnimationFrame(tick)
@@ -181,8 +248,10 @@ export function GlassField({
       }
       if (motion.matches) {
         time = START
-        settle = settledRef.current ? 1 : 0
+        settle = 1
         form = 1
+      } else {
+        advance(performance.now())
       }
       place()
       const flowing = running()
@@ -276,7 +345,7 @@ export function GlassField({
       canvas.removeEventListener('webglcontextrestored', restored)
       dust?.dispose()
     }
-  }, [tone, until])
+  }, [tone, opening, until])
 
   return (
     <div ref={rootRef} className="glass-field" data-tone={tone} aria-hidden="true">

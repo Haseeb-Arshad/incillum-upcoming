@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 import { GlassField } from '#/components/glass-field.tsx'
 import { GlassFilm } from '#/components/glass-film.tsx'
@@ -25,6 +25,7 @@ import {
   trust,
 } from '#/content/site.ts'
 import { contactEmail } from '#/env.ts'
+import { markOpeningSeen, openingSeen } from '#/lib/opening.ts'
 
 /**
  * /glass — the presentation.
@@ -32,7 +33,7 @@ import { contactEmail } from '#/env.ts'
  * ── The acts ───────────────────────────────────────────────────────────────
  *
  * 1. **The opening.** The night, a field of hour rules drawing down it, a
- *    landscape of dust under it (`glass-field.tsx`), and two beats of type.
+ *    landscape of dust under it (`glass-field.tsx`), and three beats of type.
  *    Then the page assembles: the dust sinks, dims and clears a space for the
  *    type, and falls behind as the page scrolls.
  * 2. **The hero.** Centred: the headline and the home page's form.
@@ -75,9 +76,14 @@ import { contactEmail } from '#/env.ts'
  * a key, a click, a wheel, a touch — ends it early and the page arrives at
  * once. The film waits for it either way, so the first hour is never spent
  * behind the dark.
+ *
+ * It plays once a visit (`lib/opening.ts`): the first time the page is opened
+ * in a tab, and again on a reload. Back from another page of the site, the page
+ * is simply there — `seen`, drawn assembled by the stylesheet before hydration
+ * and kept so by the state after it.
  */
 
-type Opening = 'playing' | 'skipped' | 'ended'
+type Opening = 'playing' | 'skipped' | 'ended' | 'seen'
 
 /** Minutes after the office empties, wrapping past midnight. */
 function minutesAfter(start: string, at: string): number {
@@ -93,12 +99,28 @@ const morning = thread.beats[thread.beats.length - 1]?.at ?? officeEmpties
 /** One rule per whole hour of the night, from the hour the office empties to the morning. */
 const nightHours = Math.floor(minutesAfter(officeEmpties, morning) / 60) + 1
 
+/** Whether the opening has been seen does not change under a mounted page, so there is nothing to subscribe to. */
+const stay = () => () => {}
+
 export function GlassPage() {
   const openingRef = useRef<HTMLDivElement>(null)
   const filmRef = useRef<HTMLDivElement>(null)
   const sentinelRef = useRef<HTMLSpanElement>(null)
-  const [opening, setOpening] = useState<Opening>('playing')
+  const [played, setOpening] = useState<Exclude<Opening, 'seen'>>('playing')
   const [scrolled, setScrolled] = useState(false)
+  /**
+   * A return this visit. False on the server and while hydrating, so the markup
+   * matches; then read from the document, which the head script has already
+   * marked — or from this page's own memory, after a client-side return.
+   */
+  const returned = useSyncExternalStore(stay, openingSeen, () => false)
+  const opening: Opening = returned && played === 'playing' ? 'seen' : played
+
+  // Played to its end or ended early, it has been seen. Under reduced motion it never played.
+  useEffect(() => {
+    if (played !== 'ended' && played !== 'skipped') return
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) markOpeningSeen()
+  }, [played])
 
   /**
    * Whether the first screen has scrolled away, as one boolean from an
@@ -153,7 +175,11 @@ export function GlassPage() {
   }, [opening])
 
   return (
-    <div className="glass" data-opening={opening}>
+    <div
+      className="glass"
+      data-opening={opening}
+      style={{ ['--glass-beats' as string]: glass.opening.length }}
+    >
       <span ref={sentinelRef} className="glass-sentinel" aria-hidden="true" />
       <div data-inverted="" className="glass-night">
         <div className="glass-hours" aria-hidden="true">
@@ -162,15 +188,17 @@ export function GlassPage() {
           ))}
         </div>
 
-        <GlassField settled={opening !== 'playing'} until={filmRef} />
+        <GlassField opening={openingRef} skipped={opening === 'skipped'} until={filmRef} />
 
         {/*
-          Decoration, as far as a screen reader is concerned: the two beats set
-          a scene the hero then states, and they are gone within seconds.
+          Decoration, as far as a screen reader is concerned: the beats set a
+          scene the hero then states, and they are gone within seconds.
         */}
         <div ref={openingRef} className="glass-opening" aria-hidden="true">
-          {glass.opening.map((line) => (
-            <p key={line}>{line}</p>
+          {glass.opening.map((line, index) => (
+            <p key={line} style={{ ['--beat' as string]: index }}>
+              {line}
+            </p>
           ))}
         </div>
 
