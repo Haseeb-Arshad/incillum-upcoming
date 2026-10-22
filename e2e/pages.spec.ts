@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+
 import { expect, test } from '@playwright/test'
 
 import type { Page } from '@playwright/test'
@@ -6,9 +8,10 @@ import type { Page } from '@playwright/test'
  * The page after the front page — Charlie — and the masthead that reaches it.
  *
  * The rules under test: the page is in the sitemap and draws its own chrome
- * once; Charlie's abilities carry no state labels, and every outward one is
- * described with the approval it waits for; no certification is named; the
- * masthead has one menu, Product, and a link to the contact memo; the menu
+ * once; its film has a chapter for each step, and a chapter or a step's link
+ * plays it from there; Charlie's abilities carry no state labels, and every
+ * outward one is described with the approval it waits for; no certification is
+ * named; the masthead has one menu, Product, and a link to the contact memo; the menu
  * opens by pointer and by keyboard, closes on Escape, and every item lands
  * somewhere real. There is no security page.
  */
@@ -18,29 +21,68 @@ async function open(page: Page, path: string) {
   await page.waitForSelector('html[data-hydrated="true"]')
 }
 
+/**
+ * Serves the film in byte ranges, as the CDN in front of the site does. The
+ * local preview (Nitro's node server) sends a file whole, and a browser cannot
+ * seek a film sent whole — so without this no chapter could be shown to play
+ * from its step here, though it does on the site.
+ */
+async function serveFilmInRanges(page: Page) {
+  const film = readFileSync(new URL('../public/charlie/charlie-at-work.mp4', import.meta.url))
+  await page.route('**/charlie/charlie-at-work.mp4', async (route) => {
+    const range = /bytes=(\d+)-(\d*)/.exec(route.request().headers()['range'] ?? '')
+    const start = range ? Number(range[1]) : 0
+    const end = range?.[2] ? Number(range[2]) : film.length - 1
+    await route.fulfill({
+      status: range ? 206 : 200,
+      headers: {
+        'Content-Type': 'video/mp4',
+        'Accept-Ranges': 'bytes',
+        'Content-Length': String(end - start + 1),
+        ...(range ? { 'Content-Range': `bytes ${start}-${end}/${film.length}` } : {}),
+      },
+      body: film.subarray(start, end + 1),
+    })
+  })
+}
+
 const noOverflow = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
 
-test('Charlie: one page, its own chrome, the team’s channel, every outward step approved', async ({
+test('Charlie: one page, its own chrome, the film of Charlie at work, every outward step approved', async ({
   page,
 }) => {
+  await serveFilmInRanges(page)
   await open(page, '/charlie')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    /asks before anything leaves/,
-  )
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Every decision yours/)
   await expect(page.getByRole('banner')).toHaveCount(1)
   await expect(page.getByRole('contentinfo')).toHaveCount(1)
   await expect(page.locator('[data-inverted]')).toHaveCount(1)
   expect(await noOverflow(page)).toBe(true)
 
-  const scene = page.locator('.charlie-scene')
-  await expect(scene.locator('.charlie-licence')).toHaveText(/^One quotation/)
-  await expect(scene.locator('.charlie-message')).toHaveCount(5)
-  // Its figures are the night's.
-  for (const figure of ['128.00', '135.68', '16.4%', '20.0%', '1,200']) {
-    await expect(scene).toContainText(figure)
+  // The film, cut from Studio's own pages, with a chapter for each step.
+  const video = page.locator('video.reel-video')
+  await expect(video).toHaveAttribute('src', '/charlie/charlie-at-work.mp4')
+  await expect(video).toHaveAttribute('poster', '/charlie/charlie-at-work.webp')
+  const chapters = page.locator('.reel-chapter')
+  await expect(chapters).toHaveCount(6)
+
+  // Six steps, each with its still of the Studio page it happens on.
+  await expect(page.locator('.cp-step')).toHaveCount(6)
+  for (const still of await page.locator('.cp-step-still img').all()) {
+    await still.scrollIntoViewIfNeeded()
+    await expect.poll(() => still.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0)
   }
-  await expect(scene).toContainText('Approved by')
+
+  // A chapter plays the film from its step, and is marked as the one playing.
+  await chapters.nth(2).scrollIntoViewIfNeeded()
+  await chapters.nth(2).click()
+  await expect(chapters.nth(2)).toHaveAttribute('aria-current', 'step')
+  expect(await video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThanOrEqual(20.9)
+  // So does a step's own link, which brings the film back on screen.
+  await page.locator('.cp-step').nth(4).getByRole('button', { name: 'Watch this step' }).click()
+  await expect(chapters.nth(4)).toHaveAttribute('aria-current', 'step')
+  await expect(video).toBeInViewport()
 
   // The abilities are cards, without a state on any of them.
   const ability = (title: string) =>
@@ -52,6 +94,16 @@ test('Charlie: one page, its own chrome, the team’s channel, every outward ste
   await expect(page.locator('body')).not.toContainText(
     /trusted by|customers include|testimonial|SOC 2|ISO\/IEC|GDPR|stay with the work/i,
   )
+})
+
+test('under reduced motion the Charlie film never starts by itself', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await open(page, '/charlie')
+  const video = page.locator('video.reel-video')
+  await video.scrollIntoViewIfNeeded()
+  await page.waitForTimeout(800)
+  expect(await video.evaluate((element: HTMLVideoElement) => element.paused)).toBe(true)
+  await expect(page.getByRole('button', { name: 'Play the film' }).first()).toBeVisible()
 })
 
 test('Charlie is in the sitemap and the front page links to it; there is no security page', async ({

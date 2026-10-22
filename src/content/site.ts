@@ -1504,13 +1504,27 @@ export const menu = {
  *
  * ── The conversation ───────────────────────────────────────────────────────
  *
- * The channel scene is one quotation's morning, RFQ 8841, told as messages
- * between Charlie and two people on the team. Its
- * figures are not written here: `{tokens}` are filled by the component from
- * the evidence document and the 06:50 ledger, so the scene cannot disagree with
- * the film or the tabs.
+ * The channel is one quotation's morning, RFQ 8841, told as messages between
+ * Charlie and two people on the team; the front page's film plays it
+ * (`charlie-film.tsx`). Its figures are not written here: `{tokens}` are filled
+ * by the component from the evidence document and the 06:50 ledger, so the
+ * channel cannot disagree with the film or the tabs.
  */
 export type CharlieGlyph = 'read' | 'cite' | 'make' | 'tell' | 'ask' | 'call' | 'approve'
+
+/** A step of Charlie's work on the request, and the chapter of the film that shows it. */
+export interface CharlieStep {
+  key: string
+  /** The second of the film the chapter starts at. */
+  at: number
+  /** One word, for the film's chapter rail. */
+  label: string
+  title: string
+  body: string
+  /** A still of the step, cut from the same Studio page as the film. */
+  still: string
+  alt: string
+}
 
 export interface CharlieAbility {
   glyph: CharlieGlyph
@@ -1573,7 +1587,7 @@ export const charlie = {
   path: '/charlie',
   title: 'Charlie — Incillum',
   description:
-    'Charlie is the colleague inside Incillum: it reads every document, cites the page, makes the quotation and asks a person before anything leaves.',
+    'Charlie, in Incillum: reads every request as it lands, puts it on one sheet, cites every figure, costs the supplier quotes, and asks a person before anything leaves.',
 
   /** The act on the front page: the headline, a paragraph, and the way to the page. */
   act: {
@@ -1611,8 +1625,96 @@ export const charlie = {
   },
 
   hero: {
-    headline: 'A colleague who reads everything, and asks before anything leaves.',
-    lede: 'Charlie carries a quotation forward inside Incillum: it reads every document, cites the page each figure came from, makes the documents, and brings every outward step to a person first.',
+    eyebrow: 'Charlie, in Incillum',
+    headline: 'Every request worked. Every decision yours.',
+    lede: 'Charlie reads what arrives, puts it on one sheet, cites the page each figure came from and costs the supplier quotes — then stops, and asks the person who decides.',
+    watch: 'Watch Charlie at work',
+    contact: 'Tell us about the work',
+  },
+
+  /**
+   * The film: Charlie at work on one request, cut from Incillum Studio's own
+   * pages (`video/charlie`, rendered to `public/charlie`). It shows Studio's
+   * sample workspace — Halvorsen Marine's RFQ 1907 — not the front page's RFQ
+   * 8841, and its figures are Studio's. Each step below is also a chapter of
+   * the film: `at` is the second it starts, and agrees with
+   * `video/charlie/cues.js`.
+   */
+  reel: {
+    src: '/charlie/charlie-at-work.mp4',
+    poster: '/charlie/charlie-at-work.webp',
+    duration: 50,
+    label:
+      'Charlie at work in Incillum Studio. A request for quotation arrives by email at 23:47. Charlie reads the email and its attachments, puts twenty lines onto one sheet, cites the source of every figure, costs five supplier quotes, stops below the commercial floor to ask a person, and sends the quotation once it is approved.',
+    controls: {
+      play: 'Play the film',
+      pause: 'Pause the film',
+      soundOn: 'Turn the sound on',
+      soundOff: 'Turn the sound off',
+      chapters: 'Chapters of the film',
+      watch: 'Watch this step',
+    },
+  },
+
+  steps: {
+    headline: 'One request, start to finish.',
+    lede: 'A request for quotation from Halvorsen Marine, in Incillum Studio: twenty lines, five supplier quotes, and one decision that belongs to a person.',
+    items: [
+      {
+        key: 'reads',
+        at: 5.7,
+        label: 'Reads',
+        title: 'Reads it the moment it lands',
+        body: 'The email, the PDF and the spreadsheet are read as they arrive, at 23:47 as readily as at noon. A change in the covering note is found, not missed.',
+        still: '/charlie/steps/reads.webp',
+        alt: 'The request’s PDF in Incillum Studio: the text Incillum extracted, and each fact it read with the page it came from.',
+      },
+      {
+        key: 'populates',
+        at: 15.4,
+        label: 'Populates',
+        title: 'Every line onto one sheet',
+        body: 'Part, manufacturer, quantity and date for all twenty lines, each cell tied to the row of the bill of materials it was read from.',
+        still: '/charlie/steps/populates.webp',
+        alt: 'The review of the request in Incillum Studio: twenty lines with part, manufacturer, description, quantity and date.',
+      },
+      {
+        key: 'cites',
+        at: 20.9,
+        label: 'Cites',
+        title: 'Every figure cites its source',
+        body: 'Open any cell to see where it came from: the sheet and the cell, the email and the sentence. When two sources disagree, Charlie says so and asks.',
+        still: '/charlie/steps/cites.webp',
+        alt: 'A finding in Incillum Studio: the sheet says 84 and the covering email says 60, each with its source.',
+      },
+      {
+        key: 'costs',
+        at: 26.6,
+        label: 'Costs',
+        title: 'Supplier quotes, compared and costed',
+        body: 'Five supplier quotations, compared for the lines each one covers, the quantity it assumes and what it costs — and the one it could not read, named.',
+        still: '/charlie/steps/costs.webp',
+        alt: 'Supplier intelligence in Incillum Studio: five supplier sources, their coverage and the current cost basis.',
+      },
+      {
+        key: 'asks',
+        at: 31.0,
+        label: 'Asks',
+        title: 'Stops at your floor, and asks',
+        body: 'Below your commercial floor, Charlie stops and asks the person with the authority, with the margin, the gap and the total in front of them.',
+        still: '/charlie/steps/asks.webp',
+        alt: 'An approval in Incillum Studio: the margin against the floor, the gap, and the reason the approver gives.',
+      },
+      {
+        key: 'sends',
+        at: 38.3,
+        label: 'Sends',
+        title: 'Sends once you approve',
+        body: 'The approved quotation goes out with its record: what arrived, what was read, what was asked, and who decided, when.',
+        still: '/charlie/steps/sends.webp',
+        alt: 'The quotation delivered, with the record of the night: each step and its time.',
+      },
+    ] satisfies ReadonlyArray<CharlieStep>,
   },
 
   scene: {

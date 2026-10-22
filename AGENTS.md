@@ -257,14 +257,31 @@ each says so in its component's header:
 
 ### Charlie
 
-- **`/charlie`** (`components/charlie-page.tsx`, `charlie.tsx`): what Charlie is,
-  beside one morning set as a team channel — Charlie, an inside sales person
-  and a sales director, from the 03:42 supplier answer to the 08:14 approval —
-  then seven abilities, as cards without states, then one invitation.
-  The scene's licence is its first line; its figures are tokens the component
-  fills from the evidence document and the 06:50 ledger; the two answers on its
-  request card are drawn, not buttons. Its first four messages are also an act
-  on the front page, after the tabs, with the way to the page.
+- **`/charlie`** (`components/charlie-page.tsx`, `charlie-reel.tsx`): a
+  headline and the two ways on; the film of Charlie at work; the same six steps
+  again, each with a still of the Studio page it happens on and a link that
+  plays the film from that step; seven abilities, as cards without states; one
+  invitation. The film plays muted while half of it is on screen, never by
+  itself under reduced motion, and the reader's play or pause outranks the
+  scroll.
+- **The film is Studio's own pages** (`video/charlie`), not a drawing of them:
+  stills captured from Incillum Studio's sample workspace (`capture.mjs`, at
+  twice the density), cut into a HyperFrames composition (`index.html`, its
+  clock in `cues.js`), scored with sounds made from sines and noise
+  (`sound.py`), and rendered to `public/charlie/`. Its request is Studio's —
+  Halvorsen Marine's RFQ 1907 — not the front page's RFQ 8841, and its figures
+  are Studio's. Two things in it are not Studio pages: the email arriving at
+  23:47, and the send with the night's record after the approval, because
+  Studio does not send yet (`requirements/README.md`). Each step's `at` is a
+  moment of `cues.js`; `site.test.ts` fails if they part. To change the film:
+  run Studio in demo mode, `node video/charlie/capture.mjs <studio url>`,
+  convert the captures to `stills/`, `python video/charlie/sound.py`, then
+  `npx hyperframes render` in `video/charlie` and encode for the web, as the
+  commit that added it records.
+- **The front page's act** is Charlie's film in the site's type
+  (`charlie-film.tsx`), after the night; its channel beats read their messages
+  from `charlie.scene`, whose figures are tokens the component fills from the
+  evidence document and the 06:50 ledger.
 - **The page** is laid in `components/page-frame.tsx`: the masthead filled
   from the start in its own `[data-inverted]` scope (the one dark region on the
   page), the desk, and the front page's footer without the motto. It is in the

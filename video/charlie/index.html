@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Charlie at work</title>
+    <script src="vendor/gsap.min.js"></script>
+    <script src="icons.js"></script>
+    <script src="cues.js"></script>
+    <style>
+      /* The site's own faces, copied in by render.sh (they are licensed: never edited, never committed twice). */
+      @font-face {
+        font-family: 'Incillum Sans';
+        src: url('fonts/sans.woff2') format('woff2');
+        font-weight: 100 900;
+      }
+      @font-face {
+        font-family: 'Incillum Serif';
+        src: url('fonts/serif.woff2') format('woff2');
+      }
+
+      :root {
+        --paper: #f7f7f5;
+        --raised: #ffffff;
+        --ink: #111110;
+        --ink-800: #1c1c1a;
+        --ink-600: #45453f;
+        --ink-400: #6e6e66;
+        --line: rgba(17, 17, 16, 0.12);
+        --line-strong: rgba(17, 17, 16, 0.22);
+        --signal: #9a5518;
+        --signal-soft: rgba(154, 85, 24, 0.16);
+        --night: #131312;
+        --night-raised: #1d1d1b;
+        --night-ink: #f2f2ee;
+        --night-ink-400: #9c9c93;
+        --night-line: rgba(242, 242, 238, 0.14);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--paper);
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--paper);
+        font-family: 'Incillum Sans', system-ui, sans-serif;
+        color: var(--ink);
+      }
+      .tnum {
+        font-feature-settings: 'tnum' 1;
+      }
+      /* A strip of paper across the top: the brand and the hour stay legible over a zoomed page. */
+      #strip {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 76px;
+        background: var(--paper);
+        border-bottom: 1px solid var(--line);
+        opacity: 0;
+      }
+      .abs {
+        position: absolute;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .serif {
+        font-family: 'Incillum Serif', Georgia, serif;
+        font-weight: 400;
+      }
+
+      /* ── The window and its camera ─────────────────────────────── */
+      #cam {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: 0 0;
+      }
+      #win {
+        position: absolute;
+        left: 180px;
+        top: 84px;
+        width: 1560px;
+        height: 975px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: var(--raised);
+        outline: 1px solid var(--line-strong);
+      }
+      #page {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1440px;
+        height: 900px;
+        transform: scale(1.0833333);
+        transform-origin: 0 0;
+      }
+      .shot {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+      }
+      .shot > img {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1440px;
+        height: 900px;
+      }
+      .cover {
+        position: absolute;
+        background: #ffffff;
+        transform-origin: right center;
+      }
+      .mark {
+        position: absolute;
+        background: var(--signal-soft);
+        mix-blend-mode: multiply;
+        border-radius: 3px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+      .ring {
+        position: absolute;
+        border: 2px solid var(--signal);
+        border-radius: 8px;
+        opacity: 0;
+      }
+      .band {
+        position: absolute;
+        height: 30px;
+        background: rgba(154, 85, 24, 0.07);
+        border-bottom: 2px solid rgba(154, 85, 24, 0.55);
+        opacity: 0;
+      }
+      .chip {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        height: 30px;
+        padding: 0 12px 0 9px;
+        border-radius: 999px;
+        background: var(--raised);
+        outline: 1px solid var(--line-strong);
+        font-size: 13px;
+        color: var(--ink-800);
+        white-space: nowrap;
+        opacity: 0;
+      }
+      .chip i {
+        width: 16px;
+        height: 16px;
+        color: var(--signal);
+      }
+      .badge {
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: var(--ink);
+        color: #fff;
+        padding: 5px;
+        opacity: 0;
+      }
+      .cursor {
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        opacity: 0;
+        transform-origin: 4px 4px;
+      }
+      .cursor path {
+        fill: var(--ink);
+        stroke: #ffffff;
+        stroke-width: 1.4;
+      }
+
+      /* ── Captions ──────────────────────────────────────────────── */
+      .cap {
+        position: absolute;
+        left: 96px;
+        bottom: 64px;
+        max-width: 820px;
+        padding: 22px 30px 26px;
+        border-radius: 18px;
+        background: var(--raised);
+        outline: 1px solid var(--line-strong);
+        opacity: 0;
+      }
+      .cap-step {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 19px;
+        color: var(--ink-400);
+        letter-spacing: 0.01em;
+      }
+      .cap-step i {
+        width: 22px;
+        height: 22px;
+        color: var(--signal);
+      }
+      .cap-title {
+        margin-top: 10px;
+        font-family: 'Incillum Serif', Georgia, serif;
+        font-size: 46px;
+        line-height: 1.12;
+        letter-spacing: -0.012em;
+        color: var(--ink);
+      }
+      .w {
+        display: inline-block;
+        overflow: hidden;
+        vertical-align: bottom;
+        padding-bottom: 0.08em;
+        margin-bottom: -0.08em;
+      }
+      .w > span {
+        display: inline-block;
+      }
+
+      /* ── Brand and clock ───────────────────────────────────────── */
+      #brand {
+        left: 96px;
+        top: 26px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 20px;
+        color: var(--ink-600);
+        opacity: 0;
+      }
+      #brand .m {
+        width: 30px;
+        height: 30px;
+        color: var(--ink);
+      }
+      #clock {
+        right: 96px;
+        top: 24px;
+        width: 220px;
+        height: 36px;
+      }
+      #clock span {
+        position: absolute;
+        right: 0;
+        top: 0;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 22px;
+        color: var(--ink-600);
+        opacity: 0;
+      }
+      #clock i {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* ── Night ─────────────────────────────────────────────────── */
+      #night {
+        position: absolute;
+        inset: 0;
+        background: var(--night);
+        color: var(--night-ink);
+        clip-path: circle(76% at 960px 420px);
+      }
+      #lockup {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 330px;
+        text-align: center;
+      }
+      #lockup .m {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto;
+        color: var(--night-ink);
+      }
+      #lockup .t {
+        margin-top: 26px;
+        font-size: 132px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+      }
+      #lockup .s {
+        margin-top: 22px;
+        font-size: 28px;
+        color: var(--night-ink-400);
+      }
+      #notice {
+        position: absolute;
+        left: 560px;
+        top: 250px;
+        width: 800px;
+        padding: 28px 32px 30px;
+        border-radius: 20px;
+        background: var(--night-raised);
+        outline: 1px solid var(--night-line);
+        opacity: 0;
+      }
+      #notice .head {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      #notice .tile {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: var(--night-ink);
+        color: var(--night);
+        padding: 13px;
+        flex: none;
+      }
+      #notice .from {
+        font-size: 22px;
+        color: var(--night-ink);
+      }
+      #notice .meta {
+        margin-top: 3px;
+        font-size: 18px;
+        color: var(--night-ink-400);
+      }
+      #notice .at {
+        margin-left: auto;
+        align-self: flex-start;
+        font-size: 20px;
+        color: var(--night-ink-400);
+      }
+      #notice .subject {
+        margin-top: 22px;
+        font-family: 'Incillum Serif', Georgia, serif;
+        font-size: 38px;
+        line-height: 1.15;
+      }
+      #notice .body {
+        margin-top: 10px;
+        font-size: 20px;
+        line-height: 1.5;
+        color: var(--night-ink-400);
+      }
+      #notice .files {
+        display: flex;
+        gap: 12px;
+        margin-top: 22px;
+      }
+      .file {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 46px;
+        padding: 0 16px 0 12px;
+        border-radius: 12px;
+        outline: 1px solid var(--night-line);
+        font-size: 18px;
+        color: var(--night-ink);
+        opacity: 0;
+      }
+      .file i {
+        width: 22px;
+        height: 22px;
+        color: var(--night-ink-400);
+      }
+      .file small {
+        font-size: 16px;
+        color: var(--night-ink-400);
+      }
+      #nightline {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 720px;
+        text-align: center;
+        font-family: 'Incillum Serif', Georgia, serif;
+        font-size: 60px;
+        letter-spacing: -0.015em;
+        color: var(--night-ink);
+      }
+
+      /* ── The message going out ─────────────────────────────────── */
+      #send {
+        position: absolute;
+        left: 520px;
+        top: 170px;
+        width: 880px;
+        border-radius: 20px;
+        background: var(--raised);
+        outline: 1px solid var(--line-strong);
+        overflow: hidden;
+        opacity: 0;
+      }
+      #send .bar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 22px 30px;
+        border-bottom: 1px solid var(--line);
+        font-size: 21px;
+        color: var(--ink-800);
+      }
+      #send .bar i {
+        width: 24px;
+        height: 24px;
+        color: var(--ink-600);
+      }
+      #send .bar .at {
+        margin-left: auto;
+        color: var(--ink-400);
+      }
+      #send .row {
+        display: flex;
+        gap: 18px;
+        padding: 16px 30px;
+        border-bottom: 1px solid var(--line);
+        font-size: 20px;
+      }
+      #send .row b {
+        width: 86px;
+        font-weight: 400;
+        color: var(--ink-400);
+      }
+      #send .msg {
+        padding: 24px 30px 8px;
+        font-size: 21px;
+        line-height: 1.55;
+        color: var(--ink-800);
+      }
+      #send .att {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 14px 30px 26px;
+        height: 60px;
+        padding: 0 18px 0 14px;
+        border-radius: 12px;
+        outline: 1px solid var(--line-strong);
+        font-size: 19px;
+        width: fit-content;
+      }
+      #send .att i {
+        width: 26px;
+        height: 26px;
+        color: var(--signal);
+      }
+      #send .att small {
+        color: var(--ink-400);
+        font-size: 17px;
+      }
+      #send .foot {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 30px;
+        border-top: 1px solid var(--line);
+        background: var(--paper);
+        font-size: 18px;
+        color: var(--ink-600);
+      }
+      #send .foot i {
+        width: 22px;
+        height: 22px;
+        color: var(--ink-600);
+      }
+      #sendBtn {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 48px;
+        padding: 0 22px;
+        border-radius: 12px;
+        background: var(--ink);
+        color: #fff;
+        font-size: 20px;
+      }
+      #sendBtn i {
+        width: 20px;
+        height: 20px;
+        color: #fff;
+      }
+      #delivered {
+        position: absolute;
+        left: 520px;
+        top: 200px;
+        width: 880px;
+        border-radius: 20px;
+        background: var(--raised);
+        outline: 1px solid var(--line-strong);
+        overflow: hidden;
+        opacity: 0;
+      }
+      #delivered .top {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 24px 30px;
+        border-bottom: 1px solid var(--line);
+        font-size: 24px;
+        color: var(--ink);
+      }
+      #delivered .top i {
+        width: 30px;
+        height: 30px;
+        color: var(--ink);
+      }
+      #delivered .top small {
+        margin-left: auto;
+        font-size: 20px;
+        color: var(--ink-400);
+      }
+      #delivered ol {
+        list-style: none;
+        padding: 14px 30px 20px;
+      }
+      #delivered li {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        height: 50px;
+        font-size: 20px;
+        color: var(--ink-800);
+        opacity: 0;
+      }
+      #delivered li b {
+        width: 64px;
+        font-weight: 400;
+        color: var(--ink-400);
+      }
+      #delivered li i {
+        width: 22px;
+        height: 22px;
+        color: var(--signal);
+      }
+      #frameCursor {
+        position: absolute;
+        width: 34px;
+        height: 34px;
+        opacity: 0;
+        transform-origin: 5px 5px;
+      }
+      #frameCursor path {
+        fill: var(--ink);
+        stroke: #ffffff;
+        stroke-width: 1.4;
+      }
+
+      /* ── The close ─────────────────────────────────────────────── */
+      #end {
+        position: absolute;
+        inset: 0;
+        text-align: center;
+        opacity: 0;
+      }
+      #end .m {
+        width: 104px;
+        height: 104px;
+        margin: 300px auto 0;
+        color: var(--ink);
+      }
+      #end .t {
+        margin-top: 26px;
+        font-size: 120px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+      }
+      #end .s {
+        margin-top: 22px;
+        font-size: 34px;
+        color: var(--ink-600);
+      }
+      #end .u {
+        margin-top: 46px;
+        font-size: 24px;
+        color: var(--ink-400);
+        letter-spacing: 0.02em;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="50" data-fps="30" data-width="1920" data-height="1080">
+      <audio id="soundtrack" src="soundtrack.wav" data-start="0" data-duration="50" data-track-index="0" data-volume="1"></audio>
+      <div id="cam">
+        <div id="win">
+          <div id="page">
+            <div class="shot" id="shot-email"><img src="stills/email.webp" alt="" /></div>
+            <div class="shot" id="shot-pdf"><img src="stills/pdf.webp" alt="" /></div>
+            <div class="shot" id="shot-matrix"><img src="stills/matrix.webp" alt="" /></div>
+            <div class="shot" id="shot-finding"><img src="stills/finding.webp" alt="" /></div>
+            <div class="shot" id="shot-suppliers"><img src="stills/suppliers.webp" alt="" /></div>
+            <div class="shot" id="shot-approve"><img src="stills/approve.webp" alt="" /></div>
+            <div class="shot" id="shot-typed"><img src="stills/approve-typed.webp" alt="" /></div>
+            <div id="overlays" class="abs" style="inset: 0"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="night">
+        <div id="lockup">
+          <div class="m" data-mark data-draw></div>
+          <div class="t serif">Charlie</div>
+          <div class="s">The colleague in Incillum for commercial work.</div>
+        </div>
+        <div id="notice">
+          <div class="head">
+            <span class="tile"><i data-icon="mail"></i></span>
+            <div>
+              <div class="from">Pernille Halvorsen</div>
+              <div class="meta">Procurement, Halvorsen Marine · to the shared operations mailbox</div>
+            </div>
+            <span class="at">23:47</span>
+          </div>
+          <div class="subject">RFQ 1907 — 20 items for Ålesund</div>
+          <div class="body">Attached is RFQ 1907. Twenty items, all for the Ålesund facility. On line 09 we now need 60 rather than the 84 shown on the sheet…</div>
+          <div class="files">
+            <span class="file"><i data-icon="file-text"></i>RFQ_1907.pdf <small>6 pages</small></span>
+            <span class="file"><i data-icon="file-spreadsheet"></i>Halvorsen_RFQ_1907.xlsx <small>20 lines</small></span>
+          </div>
+        </div>
+        <div id="nightline"></div>
+      </div>
+
+      <div id="strip"></div>
+      <div id="brand" class="abs"><span class="m" data-mark></span><span>Charlie, in Incillum Studio</span></div>
+      <div id="clock" class="abs"></div>
+
+      <div id="send">
+        <div class="bar"><i data-icon="mail"></i><span>New message</span><span class="at">08:14</span></div>
+        <div class="row"><b>To</b><span>Pernille Halvorsen · Procurement, Halvorsen Marine</span></div>
+        <div class="row"><b>Subject</b><span>Re: RFQ 1907 — 20 items for Ålesund</span></div>
+        <div class="msg">Pernille, our quotation for RFQ 1907 is attached: twenty lines, delivery from 19 September, EUR 236,400.00.</div>
+        <div class="att"><i data-icon="file-text"></i><span>Halvorsen_quotation_v3.pdf</span><small>PDF · 6 pages</small></div>
+        <div class="foot"><i data-icon="user-check"></i><span>Approved by Avery Lindqvist · 08:14</span><span id="sendBtn"><span>Send</span><i data-icon="send-horizontal"></i></span></div>
+      </div>
+      <div id="delivered">
+        <div class="top"><i data-icon="circle-check"></i><span>Delivered to Halvorsen Marine</span><small>08:14</small></div>
+        <ol>
+          <li><b>23:47</b><i data-icon="mail"></i><span>The request arrives in the shared mailbox</span></li>
+          <li><b>23:48</b><i data-icon="scan-text"></i><span>The email and both attachments, read</span></li>
+          <li><b>01:18</b><i data-icon="table"></i><span>Twenty lines onto one sheet</span></li>
+          <li><b>03:42</b><i data-icon="link-2"></i><span>Line 09: two sources disagree, both cited</span></li>
+          <li><b>06:50</b><i data-icon="sheet"></i><span>Five supplier quotes, costed</span></li>
+          <li><b>08:04</b><i data-icon="scale"></i><span>Under the floor: Avery is asked</span></li>
+          <li><b>08:14</b><i data-icon="send-horizontal"></i><span>Approved, and sent</span></li>
+        </ol>
+      </div>
+      <svg id="frameCursor" viewBox="0 0 24 24"><path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z" /></svg>
+
+      <div id="captions"></div>
+
+      <div id="end">
+        <div class="m" data-mark></div>
+        <div class="t serif">Charlie</div>
+        <div class="s">Intelligence for commercial work.</div>
+        <div class="u">incillum.com</div>
+      </div>
+
+    </div>
+
+    <script>
+      ;(function () {
+        const M = window.CUES.moments
+        const S = 1.0833333
+        const WX = 180
+        const WY = 84
+        const $ = (selector) => document.querySelector(selector)
+        const overlays = $('#overlays')
+
+        // ── Building blocks ─────────────────────────────────────────
+        for (const node of document.querySelectorAll('[data-icon]')) node.innerHTML = window.ICONS[node.dataset.icon]
+        const orbit = (draw) =>
+          `<svg viewBox="0 0 100 100" fill="none">${[0, 45, 90, 135]
+            .map((angle) => `<ellipse cx="50" cy="50" rx="43" ry="20.5" transform="rotate(${angle} 50 50)" stroke="currentColor" stroke-width="2.4" ${draw ? 'pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"' : ''}/>`)
+            .join('')}</svg>`
+        for (const node of document.querySelectorAll('[data-mark]')) node.innerHTML = orbit(node.hasAttribute('data-draw'))
+
+        function box(className, rect, html = '') {
+          const element = document.createElement('div')
+          element.className = className
+          Object.assign(element.style, { left: `${rect[0]}px`, top: `${rect[1]}px`, width: `${rect[2]}px`, height: `${rect[3]}px` })
+          element.innerHTML = html
+          overlays.append(element)
+          return element
+        }
+        function chip(x, y, icon, text) {
+          const element = document.createElement('div')
+          element.className = 'chip'
+          Object.assign(element.style, { left: `${x}px`, top: `${y}px` })
+          element.innerHTML = `<i>${window.ICONS[icon]}</i><span>${text}</span>`
+          overlays.append(element)
+          return element
+        }
+        const pointer = '<path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z" />'
+        const cursor = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+        cursor.setAttribute('viewBox', '0 0 24 24')
+        cursor.setAttribute('class', 'cursor')
+        cursor.innerHTML = pointer
+
+        // Captions: one card a beat, each word in its own mask.
+        const captions = {}
+        function caption(key, icon, step, title) {
+          const element = document.createElement('div')
+          element.className = 'cap'
+          element.innerHTML = `<div class="cap-step"><i>${window.ICONS[icon]}</i><span>${step}</span></div><div class="cap-title">${title
+            .split(' ')
+            .map((word) => `<span class="w"><span>${word}</span></span>`)
+            .join(' ')}</div>`
+          $('#captions').append(element)
+          captions[key] = element
+        }
+        caption('email', 'scan-text', '01 · Reads', 'Charlie reads it the moment it lands.')
+        caption('pdf', 'scan-text', '01 · Reads', 'Every attachment, with the page each fact came from.')
+        caption('matrix', 'table', '02 · Populates', 'Twenty lines, onto one sheet.')
+        caption('finding', 'link-2', '03 · Cites', 'Every figure cites its source. When two disagree, it asks.')
+        caption('suppliers', 'sheet', '04 · Costs', 'Five supplier quotes, compared and costed.')
+        caption('approve', 'scale', '05 · Stops', 'Under your floor, Charlie stops and asks.')
+        caption('reason', 'user-check', '05 · Asks', 'You decide. It records why, under your name.')
+        caption('send', 'send-horizontal', '06 · Sends', 'Approved at 08:14, and on its way.')
+
+        // The clock in the corner: the night's hours, then the morning.
+        const hours = [
+          [0, '23:47'], [M.email, '23:48'], [M.toPdf, '00:06'], [M.toMatrix, '01:18'],
+          [M.click1, '03:42'], [M.toSuppliers, '06:50'], [M.toApprove, '08:04'], [M.toSend, '08:14'],
+        ]
+        const clockSpans = hours.map(([, text]) => {
+          const span = document.createElement('span')
+          span.innerHTML = `<i>${window.ICONS.clock}</i>${text}`
+          $('#clock').append(span)
+          return span
+        })
+
+        // ── The camera ──────────────────────────────────────────────
+        const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.inOut' } })
+        /** Puts a rectangle of the page (its own pixels) at the frame's centre, `z` times larger. */
+        function focus(rect, z, at, duration = 1.1, cy = 470) {
+          const fx = WX + (rect[0] + rect[2] / 2) * S
+          const fy = WY + (rect[1] + rect[3] / 2) * S
+          tl.to('#cam', { x: 960 - z * fx, y: cy - z * fy, scale: z, duration }, at)
+        }
+        const wide = (at, duration = 1.0) => tl.to('#cam', { x: 0, y: 0, scale: 1, duration }, at)
+        /**
+         * A cut between pages is a dip through the window's white: the old page
+         * goes, then the new one arrives, never both at once — two pages of text
+         * laid over each other read as neither.
+         */
+        function show(shot, at, duration = 0.4) {
+          tl.fromTo(shot, { opacity: 0, scale: 1.012, transformOrigin: '50% 40%' }, { opacity: 1, scale: 1, duration, ease: 'power2.out' }, at + 0.2)
+        }
+        const hide = (shot, at) => tl.to(shot, { opacity: 0, duration: 0.2, ease: 'power1.in' }, at)
+        function captionIn(key, at) {
+          const element = captions[key]
+          tl.fromTo(element, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, at)
+          tl.fromTo(element.querySelectorAll('.w > span'), { yPercent: 105 }, { yPercent: 0, duration: 0.7, ease: 'power3.out', stagger: 0.045 }, at + 0.08)
+        }
+        const captionOut = (key, at) => tl.to(captions[key], { opacity: 0, y: -10, duration: 0.35, ease: 'power2.in' }, at)
+        /** A cover over part of a page from `from`, wiped away at `at`: the part arriving. */
+        function reveal(rect, from, at, duration = 0.45) {
+          const cover = box('cover', rect)
+          gsap.set(cover, { opacity: 0 })
+          tl.set(cover, { opacity: 1 }, from)
+          tl.fromTo(cover, { scaleX: 1 }, { scaleX: 0, duration, ease: 'power2.inOut' }, at)
+          return cover
+        }
+        function highlight(rect, at, duration = 0.5) {
+          const mark = box('mark', rect)
+          tl.fromTo(mark, { scaleX: 0 }, { scaleX: 1, duration, ease: 'power2.out' }, at)
+          return mark
+        }
+        function ring(rect, at, until, pad = 6) {
+          const element = box('ring', [rect[0] - pad, rect[1] - pad, rect[2] + pad * 2, rect[3] + pad * 2])
+          tl.fromTo(element, { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(2)' }, at)
+          if (until) tl.to(element, { opacity: 0, duration: 0.3 }, until)
+          return element
+        }
+        function pop(element, at, until) {
+          tl.fromTo(element, { opacity: 0, y: 8, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'back.out(1.8)' }, at)
+          if (until) tl.to(element, { opacity: 0, duration: 0.3 }, until)
+        }
+        function scan(rect, at, duration) {
+          const band = box('band', [rect[0], rect[1], rect[2], 30])
+          tl.fromTo(band, { opacity: 0, y: 0 }, { opacity: 1, duration: 0.2, ease: 'none' }, at)
+          tl.fromTo(band, { y: 0 }, { y: rect[3] - 30, duration, ease: 'none', immediateRender: false }, at)
+          tl.to(band, { opacity: 0, duration: 0.25 }, at + duration - 0.1)
+        }
+
+        // ── 0 · The night, and the request ──────────────────────────
+        tl.to('#lockup ellipse', { strokeDashoffset: 0, duration: 1.3, ease: 'power2.inOut', stagger: 0.08 }, 0.1)
+        tl.fromTo('#lockup .t', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' }, 0.45)
+        tl.fromTo('#lockup .s', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, 0.75)
+        tl.to('#lockup', { opacity: 0, y: -40, duration: 0.6, ease: 'power2.in' }, M.lockupOut)
+
+        tl.fromTo('#notice', { opacity: 0, y: -60, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'back.out(1.4)' }, M.arrive)
+        tl.fromTo('#notice .file', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.14 }, M.arrive + 0.55)
+        $('#nightline').innerHTML = 'A request arrives after hours.'.split(' ').map((word) => `<span class="w"><span>${word}</span></span>`).join(' ')
+        tl.fromTo('#nightline .w > span', { yPercent: 105, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.05 }, M.arrive + 0.5)
+        tl.to('#nightline', { opacity: 0, duration: 0.3 }, M.iris - 0.35)
+        // The card goes into Studio: the night closes on it, and the email it was is underneath.
+        tl.to('#notice', { x: -61, y: -85, scale: 0.9, duration: 0.95, ease: 'power3.inOut' }, M.iris)
+        tl.to('#notice', { opacity: 0, duration: 0.3, ease: 'power1.in' }, M.iris + 0.62)
+        tl.fromTo('#night', { clipPath: 'circle(76% at 960px 420px)' }, { clipPath: 'circle(0% at 899px 337px)', duration: 0.95, ease: 'power3.inOut' }, M.iris)
+        tl.set('#night', { display: 'none' }, M.iris + 1)
+        tl.fromTo('#cam', { scale: 0.93, x: 67, y: 38 }, { scale: 1, x: 0, y: 0, duration: 1.1, ease: 'power3.out' }, M.iris)
+        tl.fromTo('#brand', { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'none' }, M.email)
+        tl.fromTo('#strip', { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'none' }, M.emailZoom)
+        tl.set('#shot-email', { opacity: 1 }, M.iris)
+
+        hours.forEach(([at], index) => {
+          tl.fromTo(clockSpans[index], { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }, index ? at + 0.2 : 0.01)
+          if (index > 0) tl.to(clockSpans[index - 1], { opacity: 0, y: -6, duration: 0.18, ease: 'power2.in' }, at)
+        })
+        gsap.set(clockSpans[0], { color: 'rgba(242, 242, 238, 0.7)' })
+        tl.to(clockSpans[0], { color: '#45453f', duration: 0.6 }, M.iris + 0.3)
+
+        // ── 1 · Reads the email ─────────────────────────────────────
+        captionIn('email', M.email)
+        focus([332, 146, 664, 176], 1.75, M.emailZoom, 1.2, 440)
+        scan([332, 176, 664, 128], M.emailScan, 1.0)
+        highlight([592, 208, 357, 24], M.emailMark, 0.45)
+        highlight([361, 236, 89, 24], M.emailMark + 0.4, 0.2)
+        pop(chip(592, 334, 'quote', 'Line 09 changed: 84 → 60, in the covering email'), M.emailChip)
+        captionOut('email', M.toPdf - 0.1)
+
+        // ── 1 · Reads the attachments ───────────────────────────────
+        hide('#shot-email', M.toPdf)
+        tl.to('#overlays > *', { opacity: 0, duration: 0.2 }, M.toPdf)
+        show('#shot-pdf', M.toPdf)
+        focus([332, 140, 1098, 470], 1.22, M.toPdf, 0.22, 480)
+        captionIn('pdf', M.toPdf + 0.3)
+        scan([332, 176, 664, 150], M.pdfScan, 0.9)
+        const items = [355, 405, 455, 505, 555]
+        items.forEach((top, index) => reveal([1097, top, 336, 48], M.toPdf + 0.31, M.pdfItems + index * 0.45, 0.4))
+        focus([1080, 330, 360, 290], 1.9, M.pdfItems + 0.2, 1.4, 470)
+        captionOut('pdf', M.toMatrix - 0.1)
+
+        // ── 2 · Populates the sheet ─────────────────────────────────
+        hide('#shot-pdf', M.toMatrix)
+        tl.to('#overlays > *', { opacity: 0, duration: 0.2 }, M.toMatrix)
+        show('#shot-matrix', M.toMatrix)
+        wide(M.toMatrix, 0.22)
+        captionIn('matrix', M.toMatrix + 0.3)
+        for (let row = 0; row < 13; row += 1) reveal([274, 298 + row * 48, 1140, 46], M.toMatrix + 0.2, M.rows + row * 0.18, 0.42)
+        const counterCover = box('cover', [818, 84, 114, 22])
+        gsap.set(counterCover, { opacity: 0 })
+        tl.set(counterCover, { opacity: 1 }, M.toMatrix + 0.2)
+        const counter = box('abs', [818, 84, 110, 22], '<span>0 of 20 lines</span>')
+        Object.assign(counter.style, { textAlign: 'right', whiteSpace: 'nowrap', fontSize: '14.4px', lineHeight: '22px', color: '#1c1c1a', opacity: 0 })
+        tl.set(counter, { opacity: 1 }, M.toMatrix + 0.2)
+        const count = { n: 0 }
+        tl.fromTo(count, { n: 0 }, { n: 20, duration: 2.6, ease: 'none', onUpdate: () => { counter.firstChild.textContent = `${Math.round(count.n)} of 20 lines` } }, M.rows)
+        tl.set([counter, counterCover], { opacity: 0 }, M.rows + 2.7)
+        reveal([272, 114, 1146, 12], M.toMatrix + 0.2, M.rows, 2.6)
+        tl.to('#cam', { x: -60, y: -40, scale: 1.06, duration: 3.0, ease: 'power1.inOut' }, M.rows + 0.4)
+
+        // The conflict on line 09, and the click that opens it.
+        focus([1093, 682, 119, 47], 2.3, M.toCell, 1.2, 470)
+        const conflict = ring([1093, 682, 119, 47], M.toCell + 0.9, M.click1 + 0.2)
+        overlays.append(cursor)
+        tl.fromTo(cursor, { opacity: 0, x: 1290, y: 820 }, { opacity: 1, x: 1290, y: 820, duration: 0.2 }, M.cursorIn)
+        tl.to(cursor, { x: 1160, y: 708, duration: 0.85, ease: 'power2.inOut' }, M.cursorIn + 0.1)
+        tl.to(cursor, { scale: 0.8, duration: 0.08, ease: 'power1.in' }, M.click1)
+        tl.to(cursor, { scale: 1, duration: 0.16, ease: 'power1.out' }, M.click1 + 0.08)
+        captionOut('matrix', M.click1 + 0.1)
+
+        // ── 3 · Cites ───────────────────────────────────────────────
+        const panel = box('abs', [1030, 148, 410, 752], '<img src="stills/finding.webp" alt="" style="position:absolute;left:-1030px;top:-148px;width:1440px;height:900px" />')
+        panel.style.overflow = 'hidden'
+        gsap.set(panel, { opacity: 0 })
+        tl.fromTo(panel, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: 'none' }, M.click1 + 0.12)
+        tl.fromTo(panel, { x: 60 }, { x: 0, duration: 0.45, ease: 'power3.out' }, M.click1 + 0.12)
+        tl.set('#shot-finding', { opacity: 1 }, M.click1 + 0.6)
+        tl.set('#shot-matrix', { opacity: 0 }, M.click1 + 0.62)
+        tl.set(panel, { opacity: 0 }, M.click1 + 0.64)
+        tl.to(cursor, { opacity: 0, duration: 0.3 }, M.click1 + 0.4)
+        focus([880, 160, 560, 360], 1.95, M.findTop - 0.3, 1.1, 470)
+        captionIn('finding', M.findTop)
+        focus([880, 500, 560, 300], 1.95, M.findSources, 1.0, 470)
+        ring([1045, 520, 365, 112], M.citeA, M.toSuppliers - 0.3)
+        const badgeA = box('badge', [1022, 560, 26, 26], window.ICONS['link-2'])
+        pop(badgeA, M.citeA + 0.1, M.toSuppliers - 0.3)
+        ring([1045, 642, 365, 148], M.citeB, M.toSuppliers - 0.3)
+        const badgeB = box('badge', [1022, 700, 26, 26], window.ICONS.quote)
+        pop(badgeB, M.citeB + 0.1, M.toSuppliers - 0.3)
+        highlight([1062, 721, 326, 19], M.citeB + 0.3, 0.45)
+        highlight([1062, 740, 64, 19], M.citeB + 0.7, 0.15)
+        captionOut('finding', M.toSuppliers - 0.1)
+
+        // ── 4 · Costs ───────────────────────────────────────────────
+        tl.to('#overlays > *', { opacity: 0, duration: 0.2 }, M.toSuppliers)
+        hide('#shot-finding', M.toSuppliers)
+        show('#shot-suppliers', M.toSuppliers)
+        focus([272, 84, 1146, 440], 1.22, M.toSuppliers, 0.22, 480)
+        captionIn('suppliers', M.toSuppliers + 0.3)
+        const supplierRows = [[405, 108], [516, 108], [628, 108], [740, 108]]
+        supplierRows.forEach(([top, height], index) => reveal([562, top + 2, 852, height], M.toSuppliers + 0.26, M.supRows + index * 0.35))
+        focus([900, 84, 520, 120], 2.1, M.supCost - 0.2, 1.0, 470)
+        ring([934, 94, 214, 21], M.supCost, M.toApprove - 0.3, 3)
+        captionOut('suppliers', M.toApprove - 0.1)
+
+        // ── 5 · Stops at the floor, and asks ────────────────────────
+        tl.to('#overlays > *', { opacity: 0, duration: 0.2 }, M.toApprove)
+        hide('#shot-suppliers', M.toApprove)
+        show('#shot-approve', M.toApprove)
+        focus([441, 189, 558, 522], 1.45, M.toApprove, 0.22, 480)
+        captionIn('approve', M.toApprove + 0.3)
+        focus([441, 189, 558, 160], 2.1, M.approveNums + 0.1, 1.0, 470)
+        ring([455, 284, 345, 44], M.approveNums + 0.6, M.toReason)
+        captionOut('approve', M.toReason - 0.1)
+        focus([441, 500, 558, 200], 2.0, M.toReason, 1.0, 470)
+        captionIn('reason', M.toReason + 0.2)
+        // The reason, typed: the real typed page shown a letter at a time over the empty one.
+        const typed = box('abs', [470, 532, 0, 28], '<img src="stills/approve-typed.webp" alt="" style="position:absolute;left:-470px;top:-532px;width:1440px;height:900px" />')
+        typed.style.overflow = 'hidden'
+        const caret = box('abs', [471, 535, 1.5, 21])
+        caret.style.background = '#111110'
+        gsap.set([typed, caret], { opacity: 0 })
+        tl.set([typed, caret], { opacity: 1 }, M.typeStart)
+        tl.fromTo(typed, { width: 0 }, { width: 312, duration: M.typeEnd - M.typeStart, ease: 'steps(51)' }, M.typeStart)
+        tl.fromTo(caret, { x: 0 }, { x: 310, duration: M.typeEnd - M.typeStart, ease: 'steps(51)' }, M.typeStart)
+        tl.set('#shot-typed', { opacity: 1 }, M.typeEnd + 0.05)
+        tl.set([typed, caret], { opacity: 0 }, M.typeEnd + 0.08)
+        tl.set('#shot-approve', { opacity: 0 }, M.typeEnd + 0.1)
+        overlays.append(cursor)
+        tl.fromTo(cursor, { opacity: 0, x: 980, y: 720, scale: 1 }, { opacity: 1, duration: 0.2 }, M.typeEnd + 0.1)
+        tl.to(cursor, { x: 905, y: 660, duration: 0.75, ease: 'power2.inOut' }, M.typeEnd + 0.15)
+        tl.to(cursor, { scale: 0.8, duration: 0.08, ease: 'power1.in' }, M.click2)
+        tl.to(cursor, { scale: 1, duration: 0.16, ease: 'power1.out' }, M.click2 + 0.08)
+        const pressed = box('ring', [844, 643, 134, 32])
+        pressed.style.borderColor = '#111110'
+        tl.fromTo(pressed, { opacity: 0, scale: 1 }, { opacity: 0.9, scale: 1.12, duration: 0.25, ease: 'power2.out' }, M.click2)
+        tl.to(pressed, { opacity: 0, duration: 0.3 }, M.click2 + 0.25)
+        captionOut('reason', M.toSend - 0.1)
+
+        // ── 6 · Sends ───────────────────────────────────────────────
+        tl.to('#cam', { x: 960 * 0.12, y: 540 * 0.12, scale: 0.88, duration: 0.8, ease: 'power3.in' }, M.toSend)
+        tl.to('#win', { opacity: 0, duration: 0.55, ease: 'power1.in' }, M.toSend + 0.25)
+        tl.fromTo('#send', { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, M.toSend + 0.5)
+        tl.fromTo('#send .att', { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.5, ease: 'power3.out' }, M.toSend + 1.0)
+        captionIn('send', M.toSend + 0.7)
+        tl.fromTo('#frameCursor', { opacity: 0, x: 1500, y: 860 }, { opacity: 1, duration: 0.25 }, M.click3 - 1.0)
+        tl.to('#frameCursor', { x: 1302, y: 592, duration: 0.8, ease: 'power2.inOut' }, M.click3 - 0.9)
+        tl.to('#frameCursor', { scale: 0.8, duration: 0.08 }, M.click3)
+        tl.to('#frameCursor', { scale: 1, duration: 0.16 }, M.click3 + 0.08)
+        tl.to('#sendBtn', { scale: 0.95, duration: 0.08 }, M.click3)
+        tl.to('#sendBtn', { scale: 1, duration: 0.2 }, M.click3 + 0.08)
+        tl.to('#frameCursor', { opacity: 0, duration: 0.3 }, M.click3 + 0.4)
+        // The message folds up and leaves; what stays is the record that it went.
+        tl.to('#send', { y: -70, scale: 0.9, opacity: 0, duration: 0.6, ease: 'power3.in' }, M.delivered - 0.2)
+        tl.fromTo('#delivered', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, M.delivered + 0.2)
+        tl.fromTo('#delivered .top i', { scale: 0.4 }, { scale: 1, duration: 0.6, ease: 'back.out(3)' }, M.delivered + 0.35)
+        tl.fromTo('#delivered li', { opacity: 0, x: -12 }, { opacity: 1, x: 0, duration: 0.45, ease: 'power3.out', stagger: 0.16 }, M.delivered + 0.6)
+        captionOut('send', M.toEnd - 0.1)
+
+        // ── The close ───────────────────────────────────────────────
+        tl.to(['#delivered', '#brand', '#clock', '#strip'], { opacity: 0, duration: 0.5, ease: 'power1.in' }, M.toEnd)
+        tl.fromTo('#end', { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'none' }, M.toEnd + 0.3)
+        tl.fromTo('#end .m', { scale: 0.85, rotate: -20 }, { scale: 1, rotate: 0, duration: 1.4, ease: 'power3.out' }, M.toEnd + 0.3)
+        tl.fromTo('#end .t', { y: 24 }, { y: 0, duration: 1.0, ease: 'power3.out' }, M.toEnd + 0.4)
+        tl.fromTo(['#end .s', '#end .u'], { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', stagger: 0.2 }, M.toEnd + 0.8)
+        tl.to('#end', { opacity: 1, duration: 0.01 }, window.CUES.duration - 0.01)
+
+        window.__timelines = window.__timelines || {}
+        window.__timelines.main = tl
+        tl.seek(0)
+      })()
+    </script>
+  </body>
+</html>

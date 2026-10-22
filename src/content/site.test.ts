@@ -1162,9 +1162,29 @@ describe('Charlie', () => {
     expect(charlie.film.steps.at(-1)?.line).toMatch(/approves/)
   })
 
+  it('works one request in six steps, each a chapter of the film, in the film’s own seconds', () => {
+    const { items } = charlie.steps
+    expect(items.map((step) => step.key)).toEqual(['reads', 'populates', 'cites', 'costs', 'asks', 'sends'])
+    // The film's clock (video/charlie/cues.js): a chapter starts on the moment its scene does.
+    const cues = JSON.parse(
+      /window\.CUES = (\{[\s\S]*\})/.exec(readFileSync(new URL('../../video/charlie/cues.js', import.meta.url), 'utf8'))![1]!,
+    ) as { duration: number; moments: Record<string, number> }
+    expect(charlie.reel.duration).toBe(cues.duration)
+    const moments = { reads: 'email', populates: 'toMatrix', cites: 'click1', costs: 'toSuppliers', asks: 'toApprove', sends: 'toSend' } as const
+    for (const step of items) expect(step.at, step.key).toBe(cues.moments[moments[step.key as keyof typeof moments]])
+    for (const step of items) {
+      expect(words(step.label), step.label).toBe(1)
+      expect(words(step.title), step.title).toBeLessThanOrEqual(6)
+      expect(words(step.body), step.body).toBeLessThanOrEqual(30)
+      expect(step.still).toMatch(/^\/charlie\/steps\/[a-z]+\.webp$/)
+      expect(step.alt.length, step.key).toBeGreaterThan(20)
+    }
+  })
+
   it('carries no state labels, claims nothing, names no ERP or mail client, and spends no motto', () => {
     expect(JSON.stringify(charlie)).not.toMatch(/Decided|In build|Planned|not yet built|being built/)
     claimsNothing({ ...charlie, scene: { ...charlie.scene, messages: [] } })
+    claimsNothing({ hero: charlie.hero, reel: charlie.reel, steps: charlie.steps })
     claimsNothing(charlie.scene.messages)
   })
 })
