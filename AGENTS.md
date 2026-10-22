@@ -343,8 +343,11 @@ off the spine, is a permanent redirect to it. `e2e/glass.spec.ts` holds both.
   first, across the beats, on the opening's own clock (read off its CSS
   animations), so it settles with the type rather than after it. Round the
   morning plate it is a different
-  formation on purpose — two twisted ribbons framing the room, the night's dust
-  put in order. It is ink, never the signal; it stops off screen, in a hidden
+  formation on purpose — the night's dust let loose in the room: motes
+  scattered at random, each wandering on its own unrelated path, catching a
+  soft band of daylight from the glass wall. The owner rejected the twisted
+  ribbons that stood there first, on 22 October 2026. It is ink, never the
+  signal; it stops off screen, in a hidden
   tab and once it has faded on scroll; it clears a space behind the hero's
   type; and without WebGL it is simply absent. The home page's night plate
   still does not move — this is a different page making a different argument.

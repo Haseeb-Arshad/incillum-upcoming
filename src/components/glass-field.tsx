@@ -23,8 +23,8 @@ import type { Dust, DustScene, DustTone } from '#/lib/dust.ts'
  *     scrolls it falls behind at a little under half the page's speed, and it
  *     has faded out by the time the film is on screen.
  *   - **The morning.** Around the photograph at the close, on the desk: the
- *     same dust put in order, as two ribbons framing the room, one above it
- *     and one below.
+ *     same dust let loose in the room, motes scattered at random, each
+ *     wandering on its own path, catching a soft band of daylight.
  *
  * ── How it keeps time with the type ────────────────────────────────────────
  *
@@ -64,7 +64,7 @@ const scenes = {
     wide: { horizon: 0.56, camera: 1.4, swell: 1.4, level: 0.62, clear: 0.85, flank: 1, fade: [0.04, 0.9] },
     narrow: { horizon: 0.64, camera: 2, swell: 1.4, level: 0.62, clear: 0.85, flank: 0.25, fade: [0.04, 0.86] },
   },
-  // The ribbons read only the level and the fade.
+  // The motes read only the level and the fade.
   morning: {
     wide: { horizon: 0.3, camera: 1.6, swell: 1, level: 0.9, clear: 0, flank: 1, fade: [0.03, 0.98] },
     narrow: { horizon: 0.3, camera: 2, swell: 1, level: 0.7, clear: 0, flank: 0.25, fade: [0.03, 0.98] },
@@ -263,7 +263,7 @@ export function GlassField({
       }
     }
 
-    /** The parallax. The night falls behind and fades; the morning's ribbons drift slowly against the page. */
+    /** The parallax. The night falls behind and fades; the morning's motes drift slowly against the page. */
     function place() {
       scrollFrame = 0
       if (!root) return

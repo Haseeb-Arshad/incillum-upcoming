@@ -41,7 +41,8 @@ async function holdTheOpening(page: Page) {
       if (!document.head) return
       observer.disconnect()
       const style = document.createElement('style')
-      style.textContent = '.glass { --glass-beat: 15s; }'
+      // Above the stylesheet's own rule by specificity, so it wins wherever in the head it lands.
+      style.textContent = ':root .glass { --glass-beat: 15s; }'
       document.head.append(style)
     }).observe(document, { childList: true, subtree: true })
   })
