@@ -53,9 +53,13 @@ for name, at in cues["moments"].items():
     for axis in (top, bottom):
         axis.axvline(at, color="white" if axis is top else "#888", lw=0.6, alpha=0.7)
     top.text(at, 11000, name, rotation=90, color="white", fontsize=7, va="top")
-for section in cues.get("score", {}).get("sections", []):
-    if "at" in section:
-        bottom.axvline(section["at"], color="#c60", lw=1.2)
+# Section starts, laid end to end as the score engine lays them.
+score = cues.get("score", {})
+cursor = 0.0
+for section in score.get("sections", []):
+    start = float(section.get("at", cursor))
+    bottom.axvline(start, color="#c60", lw=1.2)
+    cursor = start + (float(section["seconds"]) if "seconds" in section else float(section.get("bars", 0)) * float(score.get("bar", 0)))
 bottom.plot(np.arange(len(levels)) / 2 + 0.25, levels, color="#222")
 bottom.set_ylabel("dBFS")
 bottom.set_xlabel("seconds")

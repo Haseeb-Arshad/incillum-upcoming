@@ -9,7 +9,7 @@ film and its stills live in `public/charlie/`; this folder is how they are made.
 | `stills/` | The captures as WebP, which the composition reads |
 | `index.html` | The composition: one GSAP timeline, the camera, overlays and captions |
 | `cues.js` | The film's clock, read by the composition and the soundtrack |
-| `sound.py` | The soundtrack: an original score written on the film's clock (`cues.js` → `score`), and a sound for every cue — synthesised from sines and noise, nothing sampled |
+| `sound.py` | The soundtrack: one piece played on the film's clock (`cues.js` → `score`, Bach's Prelude in C), and a sound for every cue — synthesised from sines and noise, nothing sampled |
 | `qc_audio.py` | Loudness, a level curve and a spectrogram with the cues drawn on it (`frames/soundtrack.png`) |
 | `mux_audio.py` | Lays a new soundtrack under the finished film, copying the picture untouched |
 | `icons.js` | Lucide icons as SVG strings, written by `build-icons.mjs` |
@@ -35,13 +35,18 @@ picture as it is, so nothing is rendered again.
 
 ## The score
 
-`cues.js` carries the music as `score`: a bar of 2.6 s (92 BPM), and seven sections laid on the
-film's cuts — the night (a felt piano over Am9), reads (the groove comes in on the iris at 5.0),
-populates-cites-costs (the full groove and the melody, from the sheet at 15.4), stops and asks (the
-drums drop out at the approval, 31.0), approved (a build into the send), sends (full again from 38.8)
-and the morning (Cmaj9, from the end card at 45.3). Its chords, melodies and arrangement are data;
-the instruments are `sound.py`'s. A moment moved in `cues.js` is not followed by the score: move the
-section with it.
+`cues.js` carries the music as `score`: one piece from the first frame to the last, so nothing
+drops out and the music never starts again. It is J. S. Bach's Prelude in C major (BWV 846, the first
+of *The Well-Tempered Clavier*): bars 1–19 and its last chord, note for note, played on `sound.py`'s
+felt piano. The composition is three centuries out of copyright and the playing is synthesised here,
+so there is no recording in it and nothing to license.
+
+A bar is 2.6 s (92 BPM), so the cuts land on its downbeats, and what plays under the figure changes
+there: the piano alone in the night; a bass and a light beat from the iris (5.0); the full beat and a
+pluck an octave over the piano from the sheet (15.4); the light beat again while Charlie stops and
+asks (31.0); the full beat for the send (38.8); and the Prelude's return to C on the end card (46.6),
+with its last chord rolled under the fade. The notes and the arrangement are data; the instruments
+are `sound.py`'s. A moment moved in `cues.js` is not followed by the score: move the section with it.
 
 If a moment in `cues.js` moves, move the matching step's `at` in
 `src/content/site.ts`; `site.test.ts` fails until they agree.

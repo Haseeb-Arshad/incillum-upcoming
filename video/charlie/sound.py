@@ -155,6 +155,27 @@ def bass_note(pc):
     return 36 + (pc - 36) % 12  # C2..B2
 
 
+def chord(symbol, previous):
+    """A chord and its bass: a symbol voiced and led from `previous`, or the notes
+    themselves ("C4 E4 G4 C5 E5"), which keep their own voicing, with the lowest
+    one as the bass, folded into A1..G#2."""
+    if " " in symbol.strip():
+        notes = sorted(midi(note) for note in symbol.split())
+        return notes, 33 + (notes[0] - 33) % 12
+    root, intervals, bass_pc = parse_chord(symbol)
+    return voice(root, intervals, previous), bass_note(bass_pc)
+
+
+def raised(notes, floor=52):
+    """The notes moved up by octaves to E3 or above, for the pad and the keys, which muddy below it."""
+    out = set()
+    for n in notes:
+        while n < floor:
+            n += 12
+        out.add(n)
+    return sorted(out)
+
+
 # ── Instruments ────────────────────────────────────────────────────────────
 TABLE = 4096
 _tables = {}
@@ -201,9 +222,10 @@ def electric_piano(f, length, velocity):
     return tone * env
 
 
-def felt_piano(f, length, velocity):
-    """Seven slightly stretched partials, the high ones dying first, a soft hammer, felt on top."""
-    t = seconds(length + 1.6)
+def felt_piano(f, length, velocity, damp=None):
+    """Seven slightly stretched partials, the high ones dying first, a soft hammer, felt on top.
+    With `damp`, the note is let go at `length` and stops within `damp` seconds, as when the pedal changes."""
+    t = seconds(length + (damp if damp else 1.6))
     tone = np.zeros_like(t)
     for n in range(1, 8):
         partial = n * f * np.sqrt(1 + 0.00035 * n * n)
@@ -212,7 +234,10 @@ def felt_piano(f, length, velocity):
         tone += n ** -1.4 * np.sin(2 * np.pi * partial * t + rng.random() * 6.28) * np.exp(-t * (0.7 + 0.8 * n))
     tone = lowpass(tone, 1800 + 2600 * velocity)
     hammer = lowpass(rng.standard_normal(len(t)), 1100) * np.exp(-t * 80) * 0.18
-    env = (1 - np.exp(-t * 300)) * np.clip((length + 1.6 - t) / 1.2, 0, 1)
+    if damp:
+        env = (1 - np.exp(-t * 300)) * np.clip((length + damp - t) / damp, 0, 1)
+    else:
+        env = (1 - np.exp(-t * 300)) * np.clip((length + 1.6 - t) / 1.2, 0, 1)
     return (tone + hammer) * env * velocity
 
 
@@ -322,14 +347,26 @@ ENERGY = {
     "breakdown": dict(pad=1.0, cutoff=1300, keys="hold", bass="sub", drums=None, arp=None),
     "build": dict(pad=0.85, cutoff=1900, keys=None, bass="pulse", drums="build", arp="rise"),
     "end": dict(pad=1.0, cutoff=2200, keys="hold", bass="sub", drums=None, arp=None),
+    # One continuous piece: the figure plays throughout and these only add or thin
+    # what is under it, so nothing drops out and the music never starts again.
+    "glow": dict(pad=0.8, cutoff=1300, keys=None, bass=None, drums=None, arp=None),
+    "groove": dict(pad=0.65, cutoff=1900, keys=None, bass="pedal", drums="verse", arp=None),
+    "lift": dict(pad=0.6, cutoff=2600, keys=None, bass="lift", drums="chorus", arp="figure"),
+    "settle": dict(pad=0.9, cutoff=1800, keys=None, bass="sub", drums=None, arp=None),
 }
-RANK = {"intro": 0, "breakdown": 1, "end": 1, "verse": 2, "build": 3, "chorus": 4}
+RANK = {"intro": 0, "glow": 0, "breakdown": 1, "end": 1, "settle": 1, "verse": 2, "groove": 2, "build": 3, "chorus": 4, "lift": 4}
 # How loud each kind of section plays, so the piece has an arc: quiet at night, full when the work runs.
-LOUDNESS = {"intro": (0.42, 0.42), "verse": (0.66, 0.7), "chorus": (1.0, 1.0), "breakdown": (0.5, 0.5), "build": (0.55, 0.95), "end": (0.62, 0.62)}
+LOUDNESS = {
+    "intro": (0.42, 0.42), "verse": (0.66, 0.7), "chorus": (1.0, 1.0), "breakdown": (0.5, 0.5), "build": (0.55, 0.95), "end": (0.62, 0.62),
+    "glow": (0.52, 0.56), "groove": (0.78, 0.82), "lift": (1.0, 1.0), "settle": (0.74, 0.74),
+}
 KEYS_RHYTHM = [(0.0, 1.5), (2.5, 1.0)]
 BASS_RHYTHM = {
     "verse": [(0.0, 1.5, 0), (2.5, 1.0, 0), (3.5, 0.5, 12)],
     "chorus": [(0.0, 0.75, 0), (1.5, 0.5, 0), (2.0, 0.5, 12), (2.5, 0.75, 0), (3.5, 0.5, 7)],
+    # Octaves only: a fifth over the bass clashes with the diminished chords a borrowed piece passes through.
+    "pedal": [(0.0, 1.9, 0), (2.0, 1.9, 0)],
+    "lift": [(0.0, 0.75, 0), (1.5, 0.5, 0), (2.0, 0.5, 12), (2.5, 0.75, 0), (3.5, 0.5, 12)],
 }
 ARP_ORDER = [0, 1, 2, 3, 4, 3, 2, 1]
 
@@ -339,6 +376,8 @@ def build_score(score, buses):
     beat = bar / 4
     swing = float(score.get("swing", 0.55))
     kicks = []
+    # A figure: the order a bar's notes are played in, a step at a time, for a piece built on one.
+    figure_step = float(score.get("figureStep", 0.25))
 
     def at_beat(start, position):
         """A position in beats from `start`, with the off sixteenths pushed late by the swing."""
@@ -375,17 +414,17 @@ def build_score(score, buses):
                     spans.append((s, e, symbol))
 
         bars_in_section = int(np.ceil((end - start) / bar - 1e-6))
+        figure = section.get("figure", score.get("figure"))
         for s, e, symbol in spans:
-            root, intervals, bass_pc = parse_chord(symbol)
-            voicing = voice(root, intervals, previous_voicing)
+            voicing, low = chord(symbol, previous_voicing)
             previous_voicing = voicing
-            low = bass_note(bass_pc)
+            upper = raised(voicing)
             # Pad: the voicing and the root an octave under it, overlapping the next chord as it fades.
             attack = 0.25 if style["drums"] else 0.8
-            buses["pad"].add(pad_chord(voicing + [low + 12], e - s, style["cutoff"], attack), s, style["pad"])
+            buses["pad"].add(pad_chord(upper + [low + 12], e - s, style["cutoff"], attack), s, style["pad"])
             # Keys.
             if style["keys"] == "hold":
-                for n in voicing:
+                for n in upper:
                     buses["keys"].add(electric_piano(hz(n), e - s, 0.55), s + rng.uniform(0, 0.012), 1.0, (n - 64) / 24)
             elif style["keys"] in ("comp", "soft"):
                 level = 1.0 if style["keys"] == "comp" else 0.55
@@ -393,8 +432,20 @@ def build_score(score, buses):
                     t0 = at_beat(s, position)
                     if t0 >= e - 0.05:
                         continue
-                    for n in voicing:
+                    for n in upper:
                         buses["keys"].add(electric_piano(hz(n), min(length * beat, e - t0), 0.6), t0 + rng.uniform(0, 0.01), level, (n - 64) / 24)
+            # The figure, on the felt piano: every note held to the chord's end, as under the pedal,
+            # and let go as the next chord comes. In a `lift` a pluck doubles it an octave up.
+            if figure:
+                count = int(round((e - s) / (figure_step * beat)))
+                for k in range(count):
+                    t0 = at_beat(s, k * figure_step) + rng.uniform(-0.003, 0.003)
+                    i = figure[k % len(figure)]
+                    n = voicing[i % len(voicing)] + 12 * (i // len(voicing))
+                    accent = (0.82 if k % 8 == 0 else 0.7 if k % 8 == 1 else 0.6) + rng.uniform(-0.04, 0.04)
+                    buses["piano"].add(felt_piano(hz(n), max(0.05, e - t0), accent, damp=0.16), t0, 1.0, (n - 64) / 30)
+                    if style["arp"] == "figure":
+                        buses["arp"].add(pluck(hz(n + 12), accent, 0.45), t0, 1.0, 0.35 if k % 2 else -0.35)
             # Bass.
             if style["bass"] in BASS_RHYTHM:
                 for position, length, step in BASS_RHYTHM[style["bass"]]:
@@ -408,11 +459,11 @@ def build_score(score, buses):
                 for k in range(eighths):
                     buses["bass"].add(bass(hz(low), beat / 2 * 0.8, 0.35 + 0.55 * k / max(1, eighths - 1)), s + k * beat / 2)
             # Arpeggio: sixteenths through the voicing, an octave up.
-            if style["arp"]:
+            if style["arp"] and style["arp"] != "figure":
                 bar_index = int(round((s - start) / bar))
                 if style["arp"] == "late" and bar_index < max(1, bars_in_section // 2):
                     continue
-                notes = voicing + [voicing[0] + 12]
+                notes = upper + [upper[0] + 12]
                 steps = int(round((e - s) / (beat / 4)))
                 for k in range(steps):
                     t0 = at_beat(s, k / 4)
@@ -456,7 +507,7 @@ def build_score(score, buses):
                     hit(hat(0.5, open_=position == 3.5), at_beat(b0, position) + rng.uniform(-0.004, 0.004), 0.7, 0.25)
                 for k in range(16):
                     hit(shaker((0.6, 0.3, 0.45, 0.3)[k % 4] * rng.uniform(0.85, 1.1)), at_beat(b0, k / 4), 0.5, -0.4)
-                if last and index + 1 < len(sections) and sections[index + 1]["energy"] != "chorus":
+                if last and index + 1 < len(sections) and ENERGY[sections[index + 1]["energy"]]["drums"] != "chorus":
                     for k, position in enumerate((3.0, 3.25, 3.5, 3.75)):
                         hit(snap(0.3 + 0.12 * k), at_beat(b0, position), 1.0, 0.1)
             elif kind == "build":
@@ -471,7 +522,8 @@ def build_score(score, buses):
             buses["piano"].add(felt_piano(hz(midi(note)), length * beat, 0.7), start + position * beat, 1.0, (midi(note) - 64) / 30)
 
         # Arrivals: a riser into a section with more energy than the last, and a hit on its downbeat.
-        if index > 0:
+        # A continuous piece turns them off (`arrivals: false`) and places its own `hits`.
+        if index > 0 and score.get("arrivals", True):
             before = sections[index - 1]
             rise = RANK[section["energy"]] - RANK[before["energy"]]
             if rise > 0 and "build" not in (before["energy"], section["energy"]):
@@ -483,17 +535,21 @@ def build_score(score, buses):
                 buses["fx"].add(impact(0.9), start)
                 if section["energy"] != "verse":
                     buses["fx"].add(crash(0.5 if section["energy"] == "chorus" else 0.35), start, 1.0, 0.2)
+    # Hits placed by hand: [kind, seconds or a moment, gain].
+    for kind, when, gain in score.get("hits", []):
+        at = MOMENTS[when] if isinstance(when, str) else float(when)
+        buses["fx"].add({"crash": crash, "impact": impact}[kind](gain), at, 1.0, 0.2 if kind == "crash" else 0.0)
     return kicks, arc
 
 
-def envelope(arc, fade_in=1.2):
-    """The arc as a gain curve, eased over a quarter second at each section's edge, and faded in from silence."""
+def envelope(arc, fade_in=1.2, ease=0.25):
+    """The arc as a gain curve, eased over `ease` seconds at each section's edge, and faded in from silence."""
     gain = np.ones(N, np.float32)
     t = np.arange(N) / RATE
     for start, end, first, last in arc:
         inside = (t >= start) & (t < end)
         gain[inside] = first + (last - first) * (t[inside] - start) / max(end - start, 1e-6)
-    width = int(0.25 * RATE)
+    width = int(ease * RATE)
     smooth = oaconvolve(np.pad(gain, width, mode="edge"), np.hanning(width) / np.hanning(width).sum(), mode="same")[width:-width]
     return (smooth * np.minimum(1, t / fade_in))[:, None].astype(np.float32)
 
@@ -609,6 +665,17 @@ def bloom():
 
 SOUNDS = {"chime": chime, "whoosh": whoosh, "tick": tick, "pop": pop, "click": click, "swell": swell, "alert": alert, "sent": sent, "bloom": bloom}
 PANS = {"whoosh": 0.25, "pop": 0.15, "tick": 0.1}
+# The cues with a pitch. A fifth entry moves one by semitones, into the chord it lands on.
+TONAL = {"chime", "alert", "sent", "bloom"}
+
+
+def transpose(sound, semitones):
+    """A cue sound moved by semitones: resampled, so it is shorter as it goes up, as a tape would be."""
+    if not semitones:
+        return sound
+    ratio = 2 ** (semitones / 12)
+    positions = np.arange(0, len(sound) - 1, ratio)
+    return np.interp(positions, np.arange(len(sound)), sound)
 
 
 def lay_sounds(bus):
@@ -629,7 +696,10 @@ def lay_sounds(bus):
                 key += rng.uniform(0.032, 0.05)
         else:
             gain = entry[3] if len(entry) > 3 else 1.0
-            bus.add(SOUNDS[kind](), at, gain, PANS.get(kind, 0.0))
+            sound = SOUNDS[kind]()
+            if kind in TONAL and len(entry) > 4:
+                sound = transpose(sound, entry[4])
+            bus.add(sound, at, gain, PANS.get(kind, 0.0))
 
 
 def licensed_track(path, fade_in=0.0, fade_out=2.5):
@@ -664,9 +734,11 @@ elif score:
     for name in ("pad", "keys", "arp", "bass"):
         buses[name].x *= duck
     send = buses["pad"].x * 0.35 + buses["keys"].x * 0.3 + buses["piano"].x * 0.45 + buses["lead"].x * 0.45 + buses["arp"].x * 0.3 + buses["drums"].x * 0.08 + sfx.x * 0.15
-    echoes = delay(buses["lead"].x * 0.5 + buses["arp"].x * 0.35 + buses["piano"].x * 0.3, 0.75 * float(score["bar"]) / 4)
+    # The dotted-eighth echo, per bus; a figure of running sixteenths wants little of it, or it smears.
+    echo = {"lead": 0.5, "arp": 0.35, "piano": 0.3, **score.get("echo", {})}
+    echoes = delay(sum(buses[name].x * amount for name, amount in echo.items()), 0.75 * float(score["bar"]) / 4)
     music = sum(bus.x for name, bus in buses.items() if name != "fx") + reverb(send - sfx.x * 0.15) * db(-4) + echoes * db(-6)
-    music = music * envelope(arc) + buses["fx"].x
+    music = music * envelope(arc, ease=float(score.get("ease", 0.25))) + buses["fx"].x
     # A little out of the low mids, where pad, keys and bass pile up into mud.
     music = music - 0.3 * bandpass(music, 180, 400)
     mix = music + sfx.x + reverb(sfx.x) * db(-14)

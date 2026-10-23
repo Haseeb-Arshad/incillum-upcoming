@@ -283,9 +283,10 @@ each says so in its component's header:
 - **The film is Studio's own pages** (`video/charlie`), not a drawing of them:
   stills captured from Incillum Studio's sample workspace (`capture.mjs`, at
   twice the density), cut into a HyperFrames composition (`index.html`, its
-  clock in `cues.js`), scored with an original piece written on that clock
-  and a sound for every cue, all made from sines and noise (`sound.py`: no
-  sampled or licensed music), and rendered to `public/charlie/`. Its request is Studio's —
+  clock in `cues.js`), scored with one continuous piece played on that clock
+  — Bach's Prelude in C, a public-domain composition — and a sound for every
+  cue, all made from sines and noise (`sound.py`: no recording, nothing
+  sampled or licensed), and rendered to `public/charlie/`. Its request is Studio's —
   Halvorsen Marine's RFQ 1907 — not the front page's RFQ 8841, and its figures
   are Studio's. Two things in it are not Studio pages: the email arriving at
   23:47, and the send with the night's record after the approval, because

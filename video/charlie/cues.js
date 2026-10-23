@@ -1,6 +1,7 @@
 // The film's clock, in seconds. Read by index.html for the picture and by
 // sound.py for the soundtrack, so a moment moved here moves in both. The
-// score is written on the same clock: its sections change on the cuts.
+// score is one piece on the same clock: Bach's Prelude in C, played in code,
+// with what plays under it changing on the cuts and nothing dropping out.
 window.CUES = {
   "duration": 50,
   "fps": 30,
@@ -40,7 +41,7 @@ window.CUES = {
     "toEnd": 45.2
   },
   "sounds": [
-    ["chime", "arrive", 0.25],
+    ["chime", "arrive", 0.25, 1.0, -2],
     ["whoosh", "iris", -0.15],
     ["tick", "emailMark", 0.05],
     ["pop", "emailChip", 0.0],
@@ -68,20 +69,28 @@ window.CUES = {
     ["click", "click2", 0.0],
     ["whoosh", "toSend", 0.0],
     ["click", "click3", 0.0],
-    ["sent", "delivered", 0.0]
+    ["sent", "delivered", 0.0, 1.0, -7]
   ],
   "score": {
+    "piece": "J. S. Bach, Prelude in C major, BWV 846 (1722): bars 1-19 and its last chord, played here in code",
     "bar": 2.6,
-    "swing": 0.56,
+    "swing": 0.5,
     "fadeOut": 2.0,
+    "ease": 0.8,
+    "arrivals": false,
+    "figure": [0, 1, 2, 3, 4, 2, 3, 4, 0, 1, 2, 3, 4, 2, 3, 4],
+    "echo": {"piano": 0.05, "arp": 0.2},
+    "levels": {"piano": -20, "pad": -28, "arp": -31, "drums": -23, "bass": -22},
+    "hits": [["crash", 15.4, 0.3], ["crash", 38.8, 0.3], ["crash", 46.6, 0.35]],
     "sections": [
-      {"name": "the night", "energy": "intro", "at": 0, "seconds": 5.0, "chords": ["Am9"], "piano": [[0.5, "E4", 1], [1.25, "A4", 1], [2.0, "B4", 1], [2.75, "C5", 2], [5.0, "E5", 1], [5.75, "D5", 1], [6.5, "C5", 0.75], [7.0, "B4", 1]]},
-      {"name": "reads", "energy": "verse", "at": 5.0, "bars": 4, "chords": ["Am9", "Fmaj9", "C69", "G6"]},
-      {"name": "populates, cites, costs", "energy": "chorus", "bars": 6, "chords": ["Fmaj7", "G6", "Em7", "Am9", "Fmaj7", "Gsus4|G"], "lead": [[0, "A4", 1], [1.5, "C5", 0.5], [2, "E5", 1.5], [3.5, "D5", 0.5], [4, "D5", 1], [5.5, "B4", 0.5], [6, "G4", 1.5], [7.5, "A4", 0.5], [8, "B4", 1.5], [9.5, "E5", 0.5], [10, "G5", 1], [11, "E5", 1], [12, "A5", 2], [14, "G5", 0.5], [14.5, "E5", 0.5], [15, "C5", 1], [16, "A4", 1], [17.5, "C5", 0.5], [18, "E5", 1.5], [19.5, "F5", 0.5], [20, "D5", 1], [21, "C5", 1], [22, "B4", 2]]},
-      {"name": "stops and asks", "energy": "breakdown", "bars": 2, "chords": ["Dm9", "Fmaj9"], "piano": [[1, "A4", 1], [2, "D5", 1], [3, "E5", 2], [5, "C5", 1], [6, "A4", 1], [7, "G4", 2]]},
-      {"name": "approved", "energy": "build", "bars": 1, "chords": ["E7sus4|E7"]},
-      {"name": "sends", "energy": "chorus", "bars": 2.5, "chords": ["Fmaj7", "Am7", "G6"], "lead": [[0, "A5", 1], [1, "G5", 0.5], [1.5, "A5", 0.5], [2, "C6", 1.5], [3.5, "A5", 0.5], [4, "C6", 1], [5, "B5", 0.5], [5.5, "A5", 0.5], [6, "E5", 2], [8, "D5", 0.5], [8.5, "E5", 0.5], [9, "G5", 1]]},
-      {"name": "morning", "energy": "end", "seconds": 4.7, "chords": ["Cmaj9"], "lead": [[0, "E5", 4]], "piano": [[1.5, "G5", 1], [2.25, "E5", 1], [3, "D5", 1], [3.75, "C5", 3]]}
+      {"name": "the night", "energy": "glow", "at": -0.2, "bars": 2, "chords": ["C4 E4 G4 C5 E5", "C4 D4 A4 D5 F5"]},
+      {"name": "reads", "energy": "groove", "bars": 4, "chords": ["B3 D4 G4 D5 F5", "C4 E4 G4 C5 E5", "C4 E4 A4 E5 A5", "C4 D4 F#4 A4 D5"]},
+      {"name": "populates, cites, costs", "energy": "lift", "bars": 6, "chords": ["B3 D4 G4 D5 G5", "B3 C4 E4 G4 C5", "A3 C4 E4 G4 C5", "D3 A3 D4 F#4 C5", "G3 B3 D4 G4 B4", "G3 Bb3 E4 G4 C#5"]},
+      {"name": "stops, asks, approves", "energy": "groove", "bars": 3, "chords": ["F3 A3 D4 A4 D5", "F3 Ab3 D4 F4 B4", "E3 G3 C4 G4 C5"]},
+      {"name": "sends", "energy": "lift", "bars": 3, "chords": ["E3 F3 A3 C4 F4", "D3 F3 A3 C4 F4", "G2 D3 G3 B3 F4"]},
+      {"name": "morning", "energy": "settle", "bars": 0.5, "chords": ["C3 E3 G3 C4 E4"]},
+      {"name": "the last chord", "energy": "settle", "seconds": 2.1, "chords": ["C3 E3 G3 C4 E4"], "figure": null,
+        "piano": [[0, "C2", 6], [0.06, "G2", 6], [0.12, "C3", 6], [0.18, "E3", 6], [0.24, "G3", 6], [0.3, "C4", 6], [0.36, "E4", 6]]}
     ]
   }
 }
