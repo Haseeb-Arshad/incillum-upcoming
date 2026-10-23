@@ -670,7 +670,7 @@ describe('the presentation', () => {
 
   it('is short: titles of six words, lines of sixteen, ledes of thirty', () => {
     const titles = [
-      ...glass.opening,
+      glass.opening.then,
       glass.sources.scattered.headline,
       glass.sources.gathered.headline,
     ]
@@ -694,6 +694,18 @@ describe('the presentation', () => {
 
   it('leaves the call to a person', () => {
     expect(glass.film.frames.at(-1)?.line).toMatch(/without you/i)
+    expect(glass.opening.then).toMatch(/You decide\.$/)
+  })
+
+  /**
+   * A quotation is a promise about somebody else's words. These are the last
+   * sentence of Turing's 1950 paper, to the letter, and the screen says so.
+   */
+  it('opens on Turing, word for word, and names where the words are from', () => {
+    expect(glass.opening.quote.join(' ')).toBe(
+      '“We can only see a short distance ahead, but we can see plenty there that needs to be done.”',
+    )
+    expect(glass.opening.by).toBe('— Alan Turing, Computing Machinery and Intelligence, 1950')
   })
 
   it('claims nothing, names no system, contacts no supplier, and spends no motto', () => {

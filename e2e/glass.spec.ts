@@ -275,7 +275,7 @@ test('the opening ends on its own, and leaves nothing over the page', async ({
   await page.waitForSelector('html[data-hydrated="true"]')
 
   await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'ended', {
-    timeout: 8_000,
+    timeout: 14_000,
   })
   await expect(page.locator('.glass-opening')).toBeHidden()
   // Nothing transparent left on top: the middle of the screen is the page's own.
@@ -383,12 +383,23 @@ test('an address that names a section opens on it, with nothing over it', async 
   await expect(page.locator('.glass-opening')).toBeHidden()
 })
 
-test('the opening is three beats, and the dust keeps the opening’s time', async ({ page }) => {
+test('the opening is a quotation and its answer, and the dust keeps the opening’s time', async ({
+  page,
+}) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await holdTheOpening(page)
   await page.goto(GLASS)
   await page.waitForSelector('html[data-hydrated="true"]')
-  await expect(page.locator('.glass-opening p')).toHaveCount(3)
+  const opening = page.locator('.glass-opening')
+  await expect(opening.locator('blockquote p')).toHaveCount(2)
+  await expect(opening.locator('blockquote')).toContainText('plenty there that needs to be done')
+  await expect(opening.locator('figcaption')).toHaveText(
+    '— Alan Turing, Computing Machinery and Intelligence, 1950',
+  )
+  await expect(opening.locator('.glass-opening-then')).toHaveText('Charlie does the work. You decide.')
+  // The quotation is set first; its answer waits its turn.
+  await expect(opening.locator('blockquote p').first()).toHaveCSS('opacity', '1')
+  await expect(opening.locator('.glass-opening-then')).toHaveCSS('opacity', '0')
   // Fifteen seconds a beat: well inside the first, the landscape is still unrolling.
   await expect(page.locator('.glass-field[data-tone="night"]')).toHaveAttribute('data-formed', 'false')
 })

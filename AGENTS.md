@@ -332,7 +332,9 @@ have it and will write once.
 ### The presentation
 
 The front page (`/`) is the night told as a film, for somebody who wants to be
-shown rather than read to. Three beats of type over a field of hour rules —
+shown rather than read to. A quotation — Turing's last sentence in
+"Computing Machinery and Intelligence", word for word, with its source on
+screen — and Charlie's one-line answer, over a field of hour rules —
 played once a visit, and again on a reload at the top, never on a return from
 another page, a reload further down or an address with a section in it — it
 belongs over the first screen and nowhere else (`lib/opening.ts`) — a centred

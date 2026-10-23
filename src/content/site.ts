@@ -1310,18 +1310,28 @@ export const glass = {
     'One request for quotation, carried through one night and handed back to a person by morning: what Incillum does, in one night.',
 
   /**
-   * The opening: three beats, then the page.
+   * The opening: a quotation, the line that answers it, then the page.
    *
-   * The business in three sentences, at the hour it exists for. The team goes
-   * home at the hour the instrument's office empties; the requests do not stop
-   * for it; and Charlie carries them to the morning. The hero then names what
-   * Incillum is.
+   * The quotation is the last sentence of Alan Turing's "Computing Machinery
+   * and Intelligence" (Mind, 1950), the paper that asked whether machines can
+   * think. It is about intelligence and about the work still to be done, which
+   * is the page's subject, and it is his, word for word, with its source on
+   * the screen beneath it — a sentence quoted, not an endorsement, and not set
+   * as one. The answer is Charlie's: the work that needs doing is what Charlie
+   * does, and the call stays with a person. The hero then names what Incillum
+   * is.
+   *
+   * It replaced three beats about a team going home at six, which told the
+   * reader about their own hours rather than about the thing being made.
    */
-  opening: [
-    'Your team logs off at six.',
-    'The requests keep coming.',
-    'Charlie works them until morning.',
-  ],
+  opening: {
+    quote: [
+      '“We can only see a short distance ahead,',
+      'but we can see plenty there that needs to be done.”',
+    ],
+    by: '— Alan Turing, Computing Machinery and Intelligence, 1950',
+    then: 'Charlie does the work. You decide.',
+  },
 
   /** The masthead's links: this page's own sections and the contact memo, and the one button. */
   nav: home.nav,
