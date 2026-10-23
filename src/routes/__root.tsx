@@ -42,7 +42,7 @@ export const Route = createRootRoute({
          * cannot take a `var()`. It must be kept equal to `--ic-paper` in
          * styles.css by hand — there is nowhere else to read it from.
          */
-        { name: 'theme-color', content: '#f7f7f5' },
+        { name: 'theme-color', content: '#ffffff' },
         { name: 'color-scheme', content: 'light' },
         ...base.meta,
       ],

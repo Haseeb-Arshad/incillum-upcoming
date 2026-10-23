@@ -50,24 +50,27 @@
  * Declared on `:root` rather than inside `@theme` so the inverted scope below
  * can reference the same values without redeclaring any of them.
  *
- * The paper is warm rather than neutral: #F7F7F5 against a pure-white browser
- * chrome reads as paper, and against #FFFFFF content it gives the one step of
- * elevation this palette can afford. The ink stops short of #000000 for the
+ * The paper is white, by the owner's call (2026-10-23): the warm #F7F7F5 it
+ * used to be read as grey beside the reference pages, which lie on white. So
+ * elevation is no longer a step of paper — a white panel on white paper is
+ * drawn by its hairline, and a tile or a band steps down to the sunken tone
+ * instead. The ink stops short of #000000 for the
  * same reason a printer does — pure black on a light field vibrates at display
  * sizes, and 8% off is invisible as a colour and calmer as a mass.
  *
  * Every text value is measured against the lightest surface it can land on:
  *
- *   ink-900 on paper       17.4:1     display and body
- *   ink-600 on paper        9.1:1     secondary prose
- *   ink-400 on paper        4.8:1     labels and captions — clears AA at 12px
+ *   ink-900 on paper       18.9:1     display and body
+ *   ink-600 on paper        9.7:1     secondary prose
+ *   ink-400 on paper        5.1:1     labels and captions — clears AA at 12px
+ *   ink-400 on sunken       4.6:1     the darkest ground it lands on
  *
  * ink-400 is the floor. Anything quieter than this is a border, never type.
  */
 :root {
-  --ic-paper: #f7f7f5;
+  --ic-paper: #ffffff;
   --ic-paper-raised: #ffffff;
-  --ic-paper-sunken: #efefec;
+  --ic-paper-sunken: #f2f2f0;
 
   --ic-ink-900: #111110;
   --ic-ink-800: #1c1c1a;
@@ -286,9 +289,9 @@
  * `border-line` like everything else and does not know where it landed.
  */
 [data-lit] {
-  --ic-paper: #f7f7f5;
+  --ic-paper: #ffffff;
   --ic-paper-raised: #ffffff;
-  --ic-paper-sunken: #efefec;
+  --ic-paper-sunken: #f2f2f0;
 
   --ic-ink-900: #111110;
   --ic-ink-800: #1c1c1a;
@@ -311,10 +314,9 @@
     scroll-behavior: smooth;
   }
 
+  /* White, and nothing on it: the grain stays in the night, where it reads as dark. */
   body {
     background-color: var(--ic-paper);
-    background-image: var(--ic-grain);
-    background-repeat: repeat;
     color: var(--ic-ink-900);
     font-family: var(--font-sans);
     font-size: 1rem;
@@ -1103,10 +1105,7 @@
 
 /* ── After the night: the desk ────────────────────────────────────────── */
 .desk {
-  /* ink-400 is re-pointed here so muted text clears AA on the darker paper. */
-  --ic-ink-400: #5c5b55;
-  background-color: var(--memo-desk);
-  background-image: var(--ic-grain);
+  background-color: var(--glass-ground);
   color: var(--ic-ink-900);
 }
 
@@ -2920,6 +2919,12 @@
    stays on /glass.
    ══════════════════════════════════════════════════════════════════════════ */
 .glass {
+  /*
+   * The ground after the night: white paper, as the reference pages lie on, by
+   * the owner's call. It was the contact memo's darker desk (`--memo-desk`),
+   * which stays the memo's own.
+   */
+  --glass-ground: var(--ic-paper);
   --glass-display: clamp(2.75rem, 6vw, 5.5rem);
   --glass-heading: clamp(2.25rem, 4.4vw, 4.25rem);
   --glass-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
@@ -3143,9 +3148,9 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  border-bottom: 1px solid var(--ic-line);
-  background-color: var(--ic-paper-sunken);
-  background-image: var(--ic-grain);
+  background-color: color-mix(in srgb, var(--ic-paper) 86%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
   opacity: 0;
   transition: opacity var(--glass-fill) var(--glass-ease);
 }
@@ -4175,8 +4180,7 @@
   height: clamp(30rem, 46vw, 38rem);
   margin-top: clamp(2.5rem, 5vw, 3.5rem);
   container-type: size;
-  background-color: var(--memo-desk);
-  background-image: var(--ic-grain);
+  background-color: var(--glass-ground);
 }
 .glass-tangle {
   position: absolute;
@@ -4710,9 +4714,9 @@
   align-items: center;
   gap: 0.625rem;
   padding: 0.75rem 1.25rem;
-  border: 1px solid var(--ic-line);
+  border: 1px solid var(--ic-line-strong);
   border-radius: var(--radius-panel) var(--radius-panel) 0 0;
-  background-color: var(--ic-paper);
+  background-color: var(--ic-paper-sunken);
   font-size: 0.8125rem;
   font-weight: 500;
 }
@@ -4744,19 +4748,26 @@
   line-height: 1.3;
   text-align: right;
 }
-/* A document at thumbnail size: the same drawing, cropped to its top edge. */
+/*
+ * A document at thumbnail size: the same drawing, cropped to its top edge. The
+ * crop takes the document's own border with it, so the thumbnail draws its
+ * edge itself — on white paper a document with no edge is not there.
+ */
 .glass-thumb {
   display: block;
   flex: none;
   width: 5.75rem;
   height: 3.5rem;
   overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
   border-radius: var(--radius-control);
+  background-color: var(--ic-paper-raised);
   font-size: 2.5px;
   pointer-events: none;
 }
 .glass-thumb > .gd {
   width: 38em;
+  border: 0;
   border-radius: 0;
 }
 .glass-thread-wire {
@@ -4792,7 +4803,7 @@
   gap: 0.375rem 0.75rem;
   min-height: 3.25rem;
   padding: 0.5rem 1.25rem;
-  border-inline: 1px solid var(--ic-line);
+  border-inline: 1px solid var(--ic-line-strong);
   border-top: 1px solid var(--ic-line);
   background-color: var(--ic-paper-raised);
   font-size: 0.875rem;
@@ -4817,10 +4828,9 @@
   grid-column: cell;
   gap: 0.5rem;
   padding: 0.875rem 1.25rem 1rem;
-  border: 1px solid var(--ic-line);
-  border-top-color: var(--ic-line-strong);
+  border: 1px solid var(--ic-line-strong);
   border-radius: 0 0 var(--radius-panel) var(--radius-panel);
-  background-color: var(--ic-paper);
+  background-color: var(--ic-paper-sunken);
 }
 .glass-thread-count {
   font-size: 0.8125rem;
@@ -4844,8 +4854,7 @@
     display: flex;
     height: 100svh;
     padding-block: clamp(3rem, 8vh, 5.5rem) clamp(1.25rem, 4vh, 2.5rem);
-    background-color: var(--memo-desk);
-    background-image: var(--ic-grain);
+    background-color: var(--glass-ground);
   }
   .glass-sources[data-enhanced='true'] .glass-sources-grid {
     flex: 1;
@@ -5391,13 +5400,17 @@
 
 /*
  * Cards of protection (`ProtectionCards` in `trust.tsx`), in the reference
- * page's shape: a glyph on a tile, a title, one line. The trust section and
+ * page's shape, which the owner pointed at: no card around them, white paper
+ * under them, a small sunken tile with the icon in it, a title in the grotesk
+ * at reading size and two or three lines under it in the muted ink. The
+ * grotesk is chosen, not slipped: at this size a serif title shouts over its
+ * own line, and the reference sets these in its sans. The trust section and
  * Charlie's abilities share them.
  */
 .protect-grid {
   display: grid;
-  gap: clamp(2.25rem, 4vw, 3.25rem) clamp(2rem, 4vw, 3.5rem);
-  margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
+  gap: clamp(3rem, 6vw, 4.75rem) clamp(2rem, 5vw, 5rem);
+  margin: clamp(3rem, 6vw, 4.5rem) 0 0;
   padding: 0;
   list-style: none;
 }
@@ -5405,37 +5418,37 @@
   display: grid;
   align-content: start;
   justify-items: start;
-  gap: 0.625rem;
 }
 .protect-tile {
   display: grid;
   place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  margin-bottom: 0.5rem;
-  border: 1px solid var(--ic-line);
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-bottom: 1.5rem;
   border-radius: var(--radius-control);
-  background-color: var(--ic-paper-raised);
+  background-color: var(--ic-paper-sunken);
 }
 .protect-tile .trust-glyph {
-  width: 1.375rem;
-  height: 1.375rem;
+  width: 1.125rem;
+  height: 1.125rem;
   margin: 0;
   color: var(--ic-ink-900);
 }
 .protect-title {
-  font-size: var(--text-heading);
-  line-height: 1.2;
-  letter-spacing: -0.012em;
+  font-family: var(--font-sans);
+  font-size: 1.1875rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ic-ink-900);
 }
 .protect-body {
-  max-width: 38ch;
-  font-size: var(--text-body);
-  line-height: 1.6;
+  max-width: 36ch;
+  margin-top: 0.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
   color: var(--ic-ink-600);
 }
 
-/* The band: this page's night, grained by its own scope. */
 @media (min-width: 48rem) {
   .protect-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -6610,7 +6623,7 @@
     justify-self: stretch;
     gap: 0.75rem;
     padding: 0.75rem 1rem 0.25rem;
-    border-inline: 1px solid var(--ic-line);
+    border-inline: 1px solid var(--ic-line-strong);
     border-top: 1px solid var(--ic-line);
     background-color: var(--ic-paper-raised);
   }

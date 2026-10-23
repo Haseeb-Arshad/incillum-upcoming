@@ -105,7 +105,9 @@ in `currentColor`. No vendor's mark is shown: the site names no system (§5).
 ## 4. Design rules
 
 **Two typefaces, one colour.** A text serif at its single weight does every
-heading; a grotesk does everything a person reads at length or operates. There
+heading but one kind — the titles on the cards of protection, which are the
+grotesk at reading size, as the reference page sets them; a grotesk does
+everything a person reads at length or operates. There
 is no third voice, no shadow, and one gradient: the scrim over the hero
 photograph, which exists to hold the headline at AA and is built from the night
 token. Contrast is still most of the emphasis, which is exactly why spending it
@@ -175,11 +177,17 @@ and the film says what happened in it.
   it carries no money of its own: it reads the thread's 06:50 ledger. It is the
   honest substitute for the product video and the logo wall enterprise pages
   lead with, which §5 forbids.
-- **The desk.** After the band the page returns to the desk tone the contact memo
-  is laid on (`--memo-desk`). The two pages share the brand at the same
-  coordinates (`components/site-brand.tsx`), the pressed-ink button, and the
-  two typefaces; the pressed-ink speckle is for paper only and is dropped in the
-  dark, where its holes would read as dust.
+- **The paper is white.** After the band the page lies on white
+  (`--glass-ground`, which is `--ic-paper`, #FFFFFF), with no grain in it — the
+  owner's call on 2026-10-23, against the reference pages, beside which the old
+  warm #F7F7F5 and the memo's desk tone read as grey. The contact memo keeps
+  its darker desk (`--memo-desk`), because its sheet is paper laid on a desk.
+  With no step of paper left for elevation, a white panel on white is drawn by
+  its `line-strong` hairline, and a tile, a sheet's head or a sheet's foot steps
+  down to `paper-sunken`; `e2e/glass.spec.ts` holds the ground white. The two
+  pages share the brand at the same coordinates (`components/site-brand.tsx`),
+  the pressed-ink button, and the two typefaces; the pressed-ink speckle is for
+  paper only and is dropped in the dark, where its holes would read as dust.
 
 - The dark region is `[data-inverted]`, which re-points the same tokens. It is
   not a second palette, and there is **exactly one** on the page — the
@@ -245,8 +253,11 @@ each says so in its component's header:
   in them is legible because nothing is on them: the documents laid on them are
   built, in the site's type, from `glass.sources.documents`. The light turns to
   morning on the last tab, and that is the only thing the photographs say.
-- **Trust is six cards, with no state on any of them.** An icon on a tile, a
-  title and one line (`ProtectionCards`, shared with the Charlie page), each
+- **Trust is six cards, with no state on any of them**, in the reference
+  page's shape, which the owner pointed at: no box around a card, white paper
+  under it, the icon on a small sunken tile, the title in the grotesk at
+  reading size — not the serif, which shouts at that size — and two or three
+  lines in the muted ink (`ProtectionCards`, shared with the Charlie page), each
   saying what Incillum does with a business's figures, in the present tense.
   The two commitments already on the record — `access.decided` and the
   approval boundary — keep their words. No framework is named anywhere on the

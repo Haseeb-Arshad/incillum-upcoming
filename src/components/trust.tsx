@@ -9,8 +9,9 @@ import type { ReactNode } from 'react'
 /**
  * Data and trust — six cards of protection, in the reference page's shape.
  *
- * A glyph on a tile, a title and one line: the reference page closes its
- * argument this way, and so does this one. The cards say what Incillum does
+ * An icon on a small tile, a title and two or three lines, on white paper with
+ * no card around them: the reference page closes its argument this way, and
+ * so does this one. The cards say what Incillum does
  * with a business's figures, in the present tense; what the platform does not
  * do yet lives in `requirements/README.md`, not on the card.
  *
@@ -19,7 +20,7 @@ import type { ReactNode } from 'react'
  */
 export function Trust() {
   return (
-    <section id={trust.anchor} aria-labelledby="trust-title" className="trust ic-textured">
+    <section id={trust.anchor} aria-labelledby="trust-title" className="trust">
       <Container>
         <Reveal className="glass-act-title">
           <h2 id="trust-title" className="glass-heading">
@@ -43,7 +44,7 @@ export function Trust() {
   )
 }
 
-/** Cards on a hairline grid: a glyph on its tile, a title, one line. */
+/** The cards: an icon on its tile, a title, a few lines — no box around any of them. */
 export function ProtectionCards({
   items,
 }: {
