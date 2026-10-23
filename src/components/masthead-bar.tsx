@@ -25,18 +25,23 @@ import type { KeyboardEvent, MouseEvent } from 'react'
  * there is a pointer that hovers. Without a script, focus inside a menu still
  * shows its box (`:focus-within`), so every item stays reachable by keyboard.
  *
- * It is fixed to the top of the page. On the front page it is transparent over
- * the night and fills in once the first screen has gone (`scrolled`); on the
- * other pages it is filled from the start.
+ * It is fixed to the top of the page and above everything on it. On the front
+ * page it is clear over the first screen and turns to a pane of glass once that
+ * has gone (`scrolled`); on the other pages it is a pane from the start. Its
+ * tokens are those of whatever it is over (`tone`): the night's while the
+ * night is under it, the paper's after — so it is never a dark bar over white.
  */
 export function MastheadBar({
   scrolled,
   onFront,
+  tone = 'day',
   className,
 }: {
   scrolled: boolean
   /** On the front page the button puts the cursor in the hero's field; elsewhere it goes there. */
   onFront: boolean
+  /** What is under it: the night, or the paper. */
+  tone?: 'night' | 'day'
   className?: string
 }) {
   const [open, setOpen] = useState<string | null>(null)
@@ -58,6 +63,7 @@ export function MastheadBar({
       className={cn('glass-bar', className)}
       role="banner"
       data-scrolled={scrolled ? 'true' : 'false'}
+      data-tone={tone}
     >
       <Container className="glass-bar-inner">
         <SiteBrand />

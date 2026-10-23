@@ -6,20 +6,18 @@ import { brand, menu } from '#/content/site.ts'
 import type { ReactNode } from 'react'
 
 /**
- * The frame every page after the front page is laid in: the same masthead,
- * filled from the start, then the page on the desk, then the footer.
+ * The frame every page after the front page is laid in: the same masthead, a
+ * pane of glass from the start, then the page on white paper, then the footer.
  *
- * The masthead is the night's bar, so it sits in its own `[data-inverted]`
- * scope — the one dark region on these pages, as the night is on the front
- * page. The footer is the front page's, without the motto: its two placements
- * are the front page's close and the success state of its form.
+ * These pages have no night, so the masthead takes the paper's tokens and
+ * there is no dark region on them at all. The footer is the front page's,
+ * without the motto: its two placements are the front page's close and the
+ * success state of its form.
  */
 export function PageFrame({ children }: { children: ReactNode }) {
   return (
     <div className="glass page-frame">
-      <div data-inverted="" className="page-frame-bar">
-        <MastheadBar scrolled onFront={false} />
-      </div>
+      <MastheadBar scrolled onFront={false} />
       <div className="desk page-frame-body">
         {children}
         <footer className="glass-footer" role="contentinfo">

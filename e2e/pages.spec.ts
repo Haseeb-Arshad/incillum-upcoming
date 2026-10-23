@@ -57,7 +57,9 @@ test('Charlie: one page, its own chrome, the film of Charlie at work, every outw
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Every decision yours/)
   await expect(page.getByRole('banner')).toHaveCount(1)
   await expect(page.getByRole('contentinfo')).toHaveCount(1)
-  await expect(page.locator('[data-inverted]')).toHaveCount(1)
+  // No night on this page: the masthead is a pane over white paper, not a dark bar.
+  await expect(page.locator('[data-inverted]')).toHaveCount(0)
+  await expect(page.getByRole('banner')).toHaveAttribute('data-tone', 'day')
   expect(await noOverflow(page)).toBe(true)
 
   // The film, cut from Studio's own pages, with a chapter for each step.

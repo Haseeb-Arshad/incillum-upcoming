@@ -248,7 +248,8 @@
  * #9C9C93 (5.2:1 on the panel) because a grey that clears AA on paper does not
  * clear it here.
  */
-[data-inverted] {
+[data-inverted],
+[data-tone='night'] {
   --ic-paper: #131312;
   --ic-paper-raised: #1b1b19;
   --ic-paper-sunken: #0d0d0c;
@@ -274,10 +275,17 @@
   /* The same noise, a little stronger: a dark field shows grain less. */
   --ic-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
 
+  color: var(--ic-ink-900);
+}
+/*
+ * The region paints the night's ground. `[data-tone='night']` takes the tokens
+ * alone: it is for the masthead, which floats over the night and the paper
+ * both and has no ground of its own to paint.
+ */
+[data-inverted] {
   background-color: var(--ic-paper);
   background-image: var(--ic-grain);
   background-repeat: repeat;
-  color: var(--ic-ink-900);
 }
 
 /* ── The lit scope ────────────────────────────────────────────────────────
@@ -2977,16 +2985,24 @@
 
 /* ── The night: hour rules, the opening, the hero ─────────────────────── */
 /*
- * The night is its own stacking layer (`isolation`), and the fixed masthead
- * lives inside it — so the layer is lifted above the acts after it. At `auto`
- * every positioned section further down painted over the masthead as it
- * scrolled under it. Nothing else in the night overlaps what follows.
+ * The night is its own stacking layer (`isolation`), so its dust and hour
+ * rules sit under its own type and nothing else. The masthead is not in it:
+ * from inside a layer lifted by one, it lost to every positioned block further
+ * down that was lifted by one too — the gathered sheet painted over it.
  */
 .glass-night {
   position: relative;
-  z-index: 1;
   isolation: isolate;
   background-color: var(--ic-paper-sunken);
+}
+/* Half a masthead above the night's end: once it has scrolled past the top, the masthead is over paper. */
+.glass-dusk {
+  position: absolute;
+  bottom: calc(var(--glass-bar) / 2);
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
 }
 
 /*
@@ -3116,9 +3132,15 @@
 }
 
 /*
- * The masthead, fixed: transparent over the night, filled with the night's own
- * sunken ground and grain once the first screen has gone. That fill is its one
- * state change. It never shrinks and never gains a shadow.
+ * The masthead, fixed, and above everything on the page: nothing else on it is
+ * lifted past one or two, and it is not inside any layer that could lose to
+ * one. It is see-through, by the owner's call: clear over the first screen,
+ * and once that has gone, a pane of whatever it is over — the night's ground
+ * or the white paper, at three quarters, blurred — so what scrolls under it
+ * reads as passing under glass and the links stay legible. It never turns
+ * into a black bar over the paper: its tokens follow what is under it
+ * (`data-tone`), and that change is a snap at the night's edge. The pane
+ * fading in is its one animation. It never shrinks and never gains a shadow.
  */
 .glass {
   --glass-bar: 4.75rem;
@@ -5350,9 +5372,6 @@
 }
 
 /* ── The inner pages ──────────────────────────────────────────────────── */
-.page-frame-bar {
-  background: transparent;
-}
 .page-frame-body {
   padding-top: var(--glass-bar);
   min-height: 100svh;

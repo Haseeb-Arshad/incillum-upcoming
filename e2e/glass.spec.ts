@@ -781,6 +781,44 @@ test('trust: six cards of protection, no state labels, and no certification name
   )
 })
 
+test('nothing on the page paints over the masthead, from the top to the footer', async ({
+  page,
+}) => {
+  // Every point across the masthead's middle, at every scroll position, belongs to the masthead.
+  const covered = await page.evaluate(() => {
+    const banner = document.querySelector('[role="banner"]')!
+    const box = banner.getBoundingClientRect()
+    const y = box.top + box.height / 2
+    const found: string[] = []
+    const end = document.documentElement.scrollHeight - window.innerHeight
+    for (let top = 0; top <= end; top += 120) {
+      window.scrollTo({ top, behavior: 'instant' })
+      for (let x = 4; x < window.innerWidth; x += 48) {
+        const hit = document.elementFromPoint(x, y)
+        if (hit && !banner.contains(hit)) found.push(`${top}px, x ${x}: ${hit.className}`)
+      }
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    return found.slice(0, 5)
+  })
+  expect(covered).toEqual([])
+})
+
+test('after the night the page lies on white paper, with nothing grained into it', async ({
+  page,
+}) => {
+  for (const selector of ['body', '.glass-acts', '.glass-sources', '.glass-desk']) {
+    const ground = await page
+      .locator(selector)
+      .first()
+      .evaluate((element) => {
+        const style = getComputedStyle(element)
+        return { colour: style.backgroundColor, image: style.backgroundImage }
+      })
+    expect(ground, selector).toEqual({ colour: 'rgb(255, 255, 255)', image: 'none' })
+  }
+})
+
 test('questions are answered in full, with nothing folded away', async ({ page }) => {
   const section = page.locator('#questions')
   const answers = section.locator('.questions-answer')
@@ -795,8 +833,11 @@ test('the masthead stays with the reader, and its links land somewhere real', as
 }) => {
   const banner = page.getByRole('banner')
   await expect(banner).toHaveAttribute('data-scrolled', 'false')
+  // In the night's tokens over the night, and the paper's over the paper: never a dark bar over white.
+  await expect(banner).toHaveAttribute('data-tone', 'night')
   await page.locator('#trust').evaluate((element) => element.scrollIntoView({ behavior: 'instant' }))
   await expect(banner).toHaveAttribute('data-scrolled', 'true')
+  await expect(banner).toHaveAttribute('data-tone', 'day')
   expect((await banner.boundingBox())?.y).toBe(0)
   await expect(banner.getByRole('link', { name: 'Request early access' })).toBeInViewport()
 

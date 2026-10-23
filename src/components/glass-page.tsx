@@ -106,8 +106,10 @@ export function GlassPage() {
   const openingRef = useRef<HTMLDivElement>(null)
   const filmRef = useRef<HTMLDivElement>(null)
   const sentinelRef = useRef<HTMLSpanElement>(null)
+  const duskRef = useRef<HTMLSpanElement>(null)
   const [played, setOpening] = useState<Exclude<Opening, 'seen'>>('playing')
   const [scrolled, setScrolled] = useState(false)
+  const [overNight, setOverNight] = useState(true)
   /**
    * A return this visit. False on the server and while hydrating, so the markup
    * matches; then read from the document, which the head script has already
@@ -144,6 +146,26 @@ export function GlassPage() {
       if (entry) setScrolled(!entry.isIntersecting && entry.boundingClientRect.top < 0)
     })
     observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [])
+
+  /**
+   * Whether the night is still under the masthead: a point half a masthead
+   * above the night's end, against a root that runs from the top of the screen
+   * to far below it — so the point is inside it exactly while it has not
+   * scrolled past the top, and every crossing flips it, however fast.
+   */
+  useEffect(() => {
+    const dusk = duskRef.current
+    if (!dusk || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (entry) setOverNight(entry.boundingClientRect.top >= 0)
+      },
+      { rootMargin: '0px 0px 100000px 0px' },
+    )
+    observer.observe(dusk)
     return () => observer.disconnect()
   }, [])
 
@@ -200,6 +222,19 @@ export function GlassPage() {
       style={{ ['--glass-beats' as string]: glass.opening.length }}
     >
       <span ref={sentinelRef} className="glass-sentinel" aria-hidden="true" />
+
+      {/*
+        The masthead stays with the reader: fixed, clear over the first screen
+        and a pane of glass after it, in the tokens of whatever it is over. It
+        sits outside every section, so none of them can paint over it.
+      */}
+      <MastheadBar
+        scrolled={scrolled}
+        onFront
+        tone={overNight ? 'night' : 'day'}
+        className="glass-enter"
+      />
+
       <div data-inverted="" className="glass-night">
         <div className="glass-hours" aria-hidden="true">
           {Array.from({ length: nightHours }, (_, hour) => (
@@ -220,14 +255,6 @@ export function GlassPage() {
             </p>
           ))}
         </div>
-
-        {/*
-          The masthead stays with the reader: fixed, transparent over the night,
-          and filled with the night's own ground once the first screen has gone.
-          It belongs to the night region, so it is the same night bar over every
-          act on the desk and never changes colour twice a visit.
-        */}
-        <MastheadBar scrolled={scrolled} onFront className="glass-enter" />
 
         <section className="glass-hero" aria-labelledby="glass-title">
           <Container className="glass-hero-inner">
@@ -263,6 +290,7 @@ export function GlassPage() {
         <div ref={filmRef} className="glass-film-enter glass-enter">
           <GlassFilm ready={opening !== 'playing'} />
         </div>
+        <span ref={duskRef} className="glass-dusk" aria-hidden="true" />
       </div>
 
       {/*
