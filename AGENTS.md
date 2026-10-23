@@ -283,8 +283,9 @@ each says so in its component's header:
 - **The film is Studio's own pages** (`video/charlie`), not a drawing of them:
   stills captured from Incillum Studio's sample workspace (`capture.mjs`, at
   twice the density), cut into a HyperFrames composition (`index.html`, its
-  clock in `cues.js`), scored with sounds made from sines and noise
-  (`sound.py`), and rendered to `public/charlie/`. Its request is Studio's —
+  clock in `cues.js`), scored with an original piece written on that clock
+  and a sound for every cue, all made from sines and noise (`sound.py`: no
+  sampled or licensed music), and rendered to `public/charlie/`. Its request is Studio's —
   Halvorsen Marine's RFQ 1907 — not the front page's RFQ 8841, and its figures
   are Studio's. Two things in it are not Studio pages: the email arriving at
   23:47, and the send with the night's record after the approval, because
@@ -292,8 +293,9 @@ each says so in its component's header:
   moment of `cues.js`; `site.test.ts` fails if they part. To change the film:
   run Studio in demo mode, `node video/charlie/capture.mjs <studio url>`,
   convert the captures to `stills/`, `python video/charlie/sound.py`, then
-  `npx hyperframes render` in `video/charlie` and encode for the web, as the
-  commit that added it records.
+  `npx hyperframes render` in `video/charlie` and encode for the web, as
+  `video/charlie/README.md` records; a new soundtrack alone goes under the
+  finished film with `mux_audio.py`, which copies the picture untouched.
 - **The front page's act** is Charlie's film in the site's type
   (`charlie-film.tsx`), after the night; its channel beats read their messages
   from `charlie.scene`, whose figures are tokens the component fills from the

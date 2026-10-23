@@ -1,5 +1,6 @@
 // The film's clock, in seconds. Read by index.html for the picture and by
-// sound.py for the soundtrack, so a moment moved here moves in both.
+// sound.py for the soundtrack, so a moment moved here moves in both. The
+// score is written on the same clock: its sections change on the cuts.
 window.CUES = {
   "duration": 50,
   "fps": 30,
@@ -50,7 +51,7 @@ window.CUES = {
     ["tick", "pdfItems", 1.35],
     ["tick", "pdfItems", 1.8],
     ["whoosh", "toMatrix", -0.1],
-    ["rows", "rows", 0.0],
+    ["ticks", "rows", 0.0, 13, 0.18],
     ["swell", "toCell", 0.0],
     ["click", "click1", 0.0],
     ["pop", "citeA", 0.0],
@@ -63,11 +64,24 @@ window.CUES = {
     ["pop", "supCost", 0.0],
     ["whoosh", "toApprove", -0.1],
     ["alert", "approveNums", 0.2],
-    ["typing", "typeStart", 0.0],
+    ["typing", "typeStart", 0.0, "typeEnd"],
     ["click", "click2", 0.0],
     ["whoosh", "toSend", 0.0],
     ["click", "click3", 0.0],
-    ["sent", "delivered", 0.0],
-    ["bloom", "toEnd", 0.2]
-  ]
+    ["sent", "delivered", 0.0]
+  ],
+  "score": {
+    "bar": 2.6,
+    "swing": 0.56,
+    "fadeOut": 2.0,
+    "sections": [
+      {"name": "the night", "energy": "intro", "at": 0, "seconds": 5.0, "chords": ["Am9"], "piano": [[0.5, "E4", 1], [1.25, "A4", 1], [2.0, "B4", 1], [2.75, "C5", 2], [5.0, "E5", 1], [5.75, "D5", 1], [6.5, "C5", 0.75], [7.0, "B4", 1]]},
+      {"name": "reads", "energy": "verse", "at": 5.0, "bars": 4, "chords": ["Am9", "Fmaj9", "C69", "G6"]},
+      {"name": "populates, cites, costs", "energy": "chorus", "bars": 6, "chords": ["Fmaj7", "G6", "Em7", "Am9", "Fmaj7", "Gsus4|G"], "lead": [[0, "A4", 1], [1.5, "C5", 0.5], [2, "E5", 1.5], [3.5, "D5", 0.5], [4, "D5", 1], [5.5, "B4", 0.5], [6, "G4", 1.5], [7.5, "A4", 0.5], [8, "B4", 1.5], [9.5, "E5", 0.5], [10, "G5", 1], [11, "E5", 1], [12, "A5", 2], [14, "G5", 0.5], [14.5, "E5", 0.5], [15, "C5", 1], [16, "A4", 1], [17.5, "C5", 0.5], [18, "E5", 1.5], [19.5, "F5", 0.5], [20, "D5", 1], [21, "C5", 1], [22, "B4", 2]]},
+      {"name": "stops and asks", "energy": "breakdown", "bars": 2, "chords": ["Dm9", "Fmaj9"], "piano": [[1, "A4", 1], [2, "D5", 1], [3, "E5", 2], [5, "C5", 1], [6, "A4", 1], [7, "G4", 2]]},
+      {"name": "approved", "energy": "build", "bars": 1, "chords": ["E7sus4|E7"]},
+      {"name": "sends", "energy": "chorus", "bars": 2.5, "chords": ["Fmaj7", "Am7", "G6"], "lead": [[0, "A5", 1], [1, "G5", 0.5], [1.5, "A5", 0.5], [2, "C6", 1.5], [3.5, "A5", 0.5], [4, "C6", 1], [5, "B5", 0.5], [5.5, "A5", 0.5], [6, "E5", 2], [8, "D5", 0.5], [8.5, "E5", 0.5], [9, "G5", 1]]},
+      {"name": "morning", "energy": "end", "seconds": 4.7, "chords": ["Cmaj9"], "lead": [[0, "E5", 4]], "piano": [[1.5, "G5", 1], [2.25, "E5", 1], [3, "D5", 1], [3.75, "C5", 3]]}
+    ]
+  }
 }
