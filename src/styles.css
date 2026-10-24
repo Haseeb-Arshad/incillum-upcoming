@@ -50,24 +50,27 @@
  * Declared on `:root` rather than inside `@theme` so the inverted scope below
  * can reference the same values without redeclaring any of them.
  *
- * The paper is warm rather than neutral: #F7F7F5 against a pure-white browser
- * chrome reads as paper, and against #FFFFFF content it gives the one step of
- * elevation this palette can afford. The ink stops short of #000000 for the
+ * The paper is white, by the owner's call (2026-10-23): the warm #F7F7F5 it
+ * used to be read as grey beside the reference pages, which lie on white. So
+ * elevation is no longer a step of paper — a white panel on white paper is
+ * drawn by its hairline, and a tile or a band steps down to the sunken tone
+ * instead. The ink stops short of #000000 for the
  * same reason a printer does — pure black on a light field vibrates at display
  * sizes, and 8% off is invisible as a colour and calmer as a mass.
  *
  * Every text value is measured against the lightest surface it can land on:
  *
- *   ink-900 on paper       17.4:1     display and body
- *   ink-600 on paper        9.1:1     secondary prose
- *   ink-400 on paper        4.8:1     labels and captions — clears AA at 12px
+ *   ink-900 on paper       18.9:1     display and body
+ *   ink-600 on paper        9.7:1     secondary prose
+ *   ink-400 on paper        5.1:1     labels and captions — clears AA at 12px
+ *   ink-400 on sunken       4.6:1     the darkest ground it lands on
  *
  * ink-400 is the floor. Anything quieter than this is a border, never type.
  */
 :root {
-  --ic-paper: #f7f7f5;
+  --ic-paper: #ffffff;
   --ic-paper-raised: #ffffff;
-  --ic-paper-sunken: #efefec;
+  --ic-paper-sunken: #f2f2f0;
 
   --ic-ink-900: #111110;
   --ic-ink-800: #1c1c1a;
@@ -245,7 +248,8 @@
  * #9C9C93 (5.2:1 on the panel) because a grey that clears AA on paper does not
  * clear it here.
  */
-[data-inverted] {
+[data-inverted],
+[data-tone='night'] {
   --ic-paper: #131312;
   --ic-paper-raised: #1b1b19;
   --ic-paper-sunken: #0d0d0c;
@@ -271,10 +275,17 @@
   /* The same noise, a little stronger: a dark field shows grain less. */
   --ic-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
 
+  color: var(--ic-ink-900);
+}
+/*
+ * The region paints the night's ground. `[data-tone='night']` takes the tokens
+ * alone: it is for the masthead, which floats over the night and the paper
+ * both and has no ground of its own to paint.
+ */
+[data-inverted] {
   background-color: var(--ic-paper);
   background-image: var(--ic-grain);
   background-repeat: repeat;
-  color: var(--ic-ink-900);
 }
 
 /* ── The lit scope ────────────────────────────────────────────────────────
@@ -286,9 +297,9 @@
  * `border-line` like everything else and does not know where it landed.
  */
 [data-lit] {
-  --ic-paper: #f7f7f5;
+  --ic-paper: #ffffff;
   --ic-paper-raised: #ffffff;
-  --ic-paper-sunken: #efefec;
+  --ic-paper-sunken: #f2f2f0;
 
   --ic-ink-900: #111110;
   --ic-ink-800: #1c1c1a;
@@ -311,10 +322,9 @@
     scroll-behavior: smooth;
   }
 
+  /* White, and nothing on it: the grain stays in the night, where it reads as dark. */
   body {
     background-color: var(--ic-paper);
-    background-image: var(--ic-grain);
-    background-repeat: repeat;
     color: var(--ic-ink-900);
     font-family: var(--font-sans);
     font-size: 1rem;
@@ -968,65 +978,6 @@
   }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   Home — one quotation in eight acts (`components/home-page.tsx`).
-
-   The first screen is the commissioned photograph, full-bleed: an empty
-   office, one lamp, a quotation under it. The headline sits over the dark side
-   of the frame. Below it the night plays in a frame — the film from /glass,
-   whose sheet is *lit*, the way the quotation is the one lit thing in the
-   photograph. Then the page turns to the desk the contact memo is laid on and
-   takes the same quotation apart: six sources, four tabs, the build's states,
-   the trust grid, the questions, and the morning.
-
-   One dark region (`.home-night`, carrying `[data-inverted]`), one lit panel
-   inside it (`[data-lit]`), one desk after it. Every colour below is a token
-   or a scrim built from one.
-
-   ── Its motion budget ─────────────────────────────────────────────────────
-     1. the hero's one entrance;
-     2. the film: once through while on screen, pausable, never looped;
-     3. the sources gathering: one change of state tied to the scroll;
-     4. a tab change: one 220ms crossfade, only when the reader asks;
-     5. one reveal per section;
-     6. the masthead filling in once the hero has gone — 300ms, a state change;
-     7. the arrow nudge and the press.
-   The night plate never moves, nothing loops, and there is no dust and no
-   parallax here. Reduced motion renders the final frame of every one.
-
-   Contrast:
-     on the night (#0d0d0c)   ink-900 18.6:1 · ink-600 10.3:1 · ink-400 6.9:1
-     over the scrim           the headline column sits on ≥ 86% night, so the
-                              same figures hold within a few tenths
-     on the desk (#e0ddd5)    ink-900 14.2:1 · ink-600 7.6:1 · ink-400 (re-
-                              pointed below to #5c5b55) 5.2:1
-   ══════════════════════════════════════════════════════════════════════════ */
-.home {
-  /* The fixed masthead's height. Anchors land below it (`--ic-anchor-offset`). */
-  --home-bar: 4.75rem;
-  /* The masthead's one state change, and the tab change: in, and the faster way out. */
-  --home-fill: 300ms;
-  --home-tab-in: 220ms;
-  --home-tab-out: 120ms;
-  --home-display: clamp(2.5rem, 4.6vw, 5.25rem);
-  --home-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
-  --home-form: 30rem;
-  --home-control: 3rem;
-  --home-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --home-arrive: 900ms;
-  --hero-scrim-strong: rgba(13, 13, 12, 0.94);
-  --hero-scrim: rgba(13, 13, 12, 0.7);
-
-  position: relative;
-  color: var(--ic-ink-900);
-  overflow: clip;
-}
-
-/* The page's one dark region. Deeper than the default night: a photograph on black reads as a print. */
-.home-night {
-  background-color: var(--ic-paper-sunken);
-}
-
 /* ── The brand and the navigation, shared with /contact ───────────────── */
 .site-brand {
   display: inline-flex;
@@ -1073,221 +1024,11 @@
   background-color: currentColor;
   transform: scaleX(0);
   transform-origin: right;
-  transition: transform var(--ic-slow) var(--home-ease);
+  transition: transform var(--ic-slow) var(--ic-ease);
 }
 .desk-nav-link:hover::after {
   transform: scaleX(1);
   transform-origin: left;
-}
-.home .desk-cta {
-  min-height: 2.5rem;
-  padding: 0.5rem 1.125rem 0.5rem 1.25rem;
-}
-.home .desk-cta--large {
-  min-height: 3.25rem;
-  padding: 0.75rem 1.5rem 0.75rem 1.75rem;
-}
-
-/* ── Act one: the plate ───────────────────────────────────────────────── */
-.hero {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  min-height: max(40rem, min(100svh, 64rem));
-  overflow: hidden;
-}
-.hero-plate {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-}
-.hero-plate img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* Crop from the original's left, where the lamp and the quotation are; the flip then puts them on the right. */
-  object-position: 12% 62%;
-  transform: scaleX(-1);
-  user-select: none;
-}
-.hero-plate::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, var(--hero-scrim-strong) 0%, var(--hero-scrim) 36%, transparent 68%),
-    linear-gradient(0deg, var(--ic-paper-sunken) 0%, transparent 30%),
-    linear-gradient(180deg, var(--hero-scrim) 0%, transparent 20%);
-}
-.hero-inner {
-  display: flex;
-  flex-direction: column;
-  padding-top: var(--home-bar);
-}
-
-/*
- * The masthead, fixed. Transparent over the photograph, where the top scrim
- * already holds it at AA; once the first screen has scrolled away it fills in
- * with the night's own sunken ground and grain, and a hairline under it. That
- * fill is its one state change, and the 300ms it takes is the documented
- * exception to the two durations. It never shrinks, never gains a shadow, and
- * never changes colour: it belongs to the night region, so it is the same night
- * bar over the paper sections as over the photograph.
- */
-.home-sentinel {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1px;
-  height: 6rem;
-  pointer-events: none;
-}
-.home-bar {
-  position: fixed;
-  inset: 0 0 auto;
-  z-index: 40;
-  color: var(--ic-ink-900);
-}
-.home-bar::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-bottom: 1px solid var(--ic-line);
-  background-color: var(--ic-paper-sunken);
-  background-image: var(--ic-grain);
-  opacity: 0;
-  transition: opacity var(--home-fill) var(--home-ease);
-}
-.home-bar[data-scrolled='true']::before {
-  opacity: 1;
-}
-.home-bar-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  min-height: var(--home-bar);
-}
-.hero-body {
-  display: grid;
-  gap: 2rem;
-  align-items: end;
-  margin-top: auto;
-  padding-block: clamp(4rem, 10vh, 8rem) clamp(3rem, 8vh, 5.5rem);
-}
-.hero-copy {
-  min-width: 0;
-  max-width: 46rem;
-}
-.hero-kicker {
-  margin-bottom: 1.5rem;
-  font-size: var(--text-label);
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ic-ink-600);
-}
-.home-title {
-  font-size: var(--home-display);
-  line-height: 0.96;
-  letter-spacing: -0.006em;
-  text-transform: uppercase;
-  color: var(--ic-ink-900);
-}
-/* Each headline line rises out of its own line box; the clip is padded so nothing is cut at rest. */
-.home-line {
-  display: inline-block;
-  white-space: nowrap;
-  overflow: clip;
-  padding-bottom: 0.1em;
-  margin-bottom: -0.1em;
-}
-.home-line > span {
-  display: inline-block;
-  animation: home-line-rise var(--home-arrive) var(--home-ease) both;
-  animation-delay: 150ms;
-}
-.home-line + .home-line > span {
-  animation-delay: 240ms;
-}
-.home-lede {
-  max-width: 36rem;
-  margin-top: clamp(1.5rem, 3vh, 2rem);
-  font-size: var(--home-lede);
-  line-height: 1.6;
-  color: var(--ic-ink-600);
-  text-wrap: pretty;
-}
-.home-form {
-  max-width: var(--home-form);
-  margin-top: 2.25rem;
-}
-.home-note {
-  max-width: var(--home-form);
-  margin-top: 1rem;
-  font-size: var(--text-small);
-  line-height: 1.5;
-  color: var(--ic-ink-400);
-}
-.hero-caption {
-  max-width: 17rem;
-  font-family: var(--font-display);
-  font-size: 1rem;
-  line-height: 1.4;
-  color: var(--ic-ink-600);
-}
-
-.home-rise {
-  animation: home-rise var(--home-arrive) var(--home-ease) both;
-}
-.hero-kicker.home-rise {
-  animation-delay: 80ms;
-}
-.home-lede.home-rise {
-  animation-delay: 380ms;
-}
-.home-form.home-rise {
-  animation-delay: 470ms;
-}
-.home-note.home-rise {
-  animation-delay: 560ms;
-}
-.hero-caption.home-rise {
-  animation-delay: 900ms;
-}
-.home-drop {
-  animation: home-drop var(--home-arrive) var(--home-ease) both;
-}
-@keyframes home-line-rise {
-  from {
-    transform: translate3d(0, 108%, 0);
-  }
-  to {
-    transform: none;
-  }
-}
-@keyframes home-rise {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 14px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-@keyframes home-drop {
-  from {
-    opacity: 0;
-    transform: translate3d(0, -10px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
 }
 
 /*
@@ -1296,7 +1037,7 @@
  * plain readable tone rather than carry the field's name.
  */
 .waitlist-inline-input {
-  height: var(--home-control);
+  height: 3rem;
   padding: 0 0.125rem;
   border: 0;
   border-bottom: 1px solid var(--ic-line-strong);
@@ -1321,10 +1062,6 @@
   outline: none;
   border-bottom-color: var(--ic-ink-900);
   box-shadow: 0 1px 0 var(--ic-ink-900);
-}
-.home .waitlist-inline-submit {
-  min-height: var(--home-control);
-  padding: 0.625rem 1.25rem 0.625rem 1.5rem;
 }
 
 /*
@@ -1374,20 +1111,9 @@
   color: var(--ic-signal);
 }
 
-/* ── Act two: the film, under the plate ───────────────────────────────── */
-.home-watch {
-  margin-top: 1.25rem;
-}
-.home-film {
-  padding-top: clamp(0.5rem, 2vw, 1.5rem);
-}
-
 /* ── After the night: the desk ────────────────────────────────────────── */
 .desk {
-  /* ink-400 is re-pointed here so muted text clears AA on the darker paper. */
-  --ic-ink-400: #5c5b55;
-  background-color: var(--memo-desk);
-  background-image: var(--ic-grain);
+  background-color: var(--glass-ground);
   color: var(--ic-ink-900);
 }
 
@@ -1397,13 +1123,11 @@
  * share one size so the acts read as one document rather than as slides.
  */
 .how,
-.standing,
 .trust,
 .questions {
   padding-block: clamp(5rem, 10vw, 8.5rem);
 }
 .how-intro,
-.standing-intro,
 .trust-intro,
 .questions-intro {
   display: flex;
@@ -1412,10 +1136,8 @@
   max-width: 46rem;
 }
 .how-title,
-.standing-title,
 .trust-title,
-.questions-title,
-.home-closing-title {
+.questions-title {
   font-size: var(--glass-heading);
   line-height: 1;
   letter-spacing: -0.022em;
@@ -1521,17 +1243,17 @@
   visibility: hidden;
   transform: translate3d(0, 6px, 0);
   transition:
-    opacity var(--home-tab-out) var(--ic-ease),
-    transform var(--home-tab-out) var(--ic-ease),
-    visibility 0s linear var(--home-tab-out);
+    opacity var(--glass-tab-out) var(--ic-ease),
+    transform var(--glass-tab-out) var(--ic-ease),
+    visibility 0s linear var(--glass-tab-out);
 }
 .how-body[data-enhanced='true'] .how-panel[data-active='true'] {
   opacity: 1;
   visibility: visible;
   transform: none;
   transition:
-    opacity var(--home-tab-in) var(--ic-ease),
-    transform var(--home-tab-in) var(--ic-ease),
+    opacity var(--glass-tab-in) var(--ic-ease),
+    transform var(--glass-tab-in) var(--ic-ease),
     visibility 0s;
 }
 .how-panel:focus-visible {
@@ -1566,12 +1288,11 @@
   padding-left: 1rem;
   border-left: 2px solid var(--ic-ink-900);
 }
+/* Sentence case: the presentation sets no tracked capitals anywhere. */
 .how-stops-label {
-  font-size: var(--text-label);
+  font-size: var(--text-small);
   font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  line-height: 1.2;
   color: var(--ic-ink-400);
 }
 .how-stops-line {
@@ -1881,53 +1602,72 @@
   font-weight: 500;
 }
 
-/* ── Act five: where this stands (`standing.tsx`) ─────────────────────── */
 /*
- * The reference pages' band of figures, answered with the build's three states
- * at the size they give their numbers.
+ * Pinned to the scroll, where the whole stage fits on one screen: the track
+ * is the scroll the four steps take, a screen and three quarters more, and the
+ * stage holds still under the masthead while it passes. A hairline on the rail
+ * shows how far through the four the reader has come — a transform on one
+ * custom property, written by the scroll, with nothing re-rendered.
  */
-.standing {
-  border-top: 1px solid var(--ic-line);
+@media (min-width: 48rem) and (min-height: 46rem) {
+  .how-track[data-pinned='true'] {
+    height: calc(100svh + 3 * 75svh);
+  }
+  .how-track[data-pinned='true'] .how-stage {
+    position: sticky;
+    top: var(--glass-bar, 0px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: calc(100svh - var(--glass-bar, 0px));
+  }
+  .how-track[data-pinned='true'] .how-body {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+  /*
+   * The whole step on one screen: the copy keeps its height and the desk takes
+   * what is left, and the paper on it scales down with the desk rather than
+   * running off the bottom of the screen.
+   */
+  .how-track[data-pinned='true'] .how-panel {
+    height: calc(100svh - var(--glass-bar, 0px) - 3rem);
+    gap: 1.25rem;
+  }
+  .how-track[data-pinned='true'] .how-desk {
+    min-height: 0;
+    height: 100%;
+    padding-block: clamp(1.5rem, 3.5vh, 2.75rem);
+  }
+  .how-track[data-pinned='true'] .how-doc {
+    font-size: clamp(6.5px, min(0.7vw, 1.25vh), 10.5px);
+  }
+  .how-track[data-pinned='true'] .how-card {
+    font-size: 0.9375rem;
+  }
+  .how-track[data-pinned='true'] .how-tabs {
+    position: relative;
+  }
+  .how-track[data-pinned='true'] .how-tabs::after {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background-color: var(--ic-ink-900);
+    transform: scaleX(var(--how-progress, 0));
+    transform-origin: left;
+    pointer-events: none;
+  }
 }
-.standing-stages {
-  display: grid;
-  gap: 0 clamp(2rem, 4vw, 3.5rem);
-  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
-  padding: 0;
-  list-style: none;
-}
-.standing-stage {
-  display: grid;
-  align-content: start;
-  gap: 0.75rem;
-  padding-block: 1.75rem 2rem;
-  border-top: 1px solid var(--ic-line-strong);
-}
-.standing-number {
-  font-size: var(--text-label);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: var(--ic-ink-400);
-}
-.standing-state {
-  font-family: var(--font-display);
-  font-size: clamp(2.75rem, 5.2vw, 4.75rem);
-  line-height: 0.95;
-  letter-spacing: -0.025em;
-  color: var(--ic-ink-900);
-}
-.standing-stage-title {
-  margin-top: 0.75rem;
-  font-family: var(--font-sans);
-  font-size: var(--text-body);
-  font-weight: 500;
-  color: var(--ic-ink-900);
-}
-.standing-stage-body {
-  max-width: 34ch;
-  font-size: var(--text-small);
-  line-height: 1.55;
-  color: var(--ic-ink-600);
+@media (min-width: 64rem) and (min-height: 46rem) {
+  .how-track[data-pinned='true'] .how-tabs::after {
+    inset: 0 auto 0 0;
+    width: 2px;
+    height: auto;
+    transform: scaleY(var(--how-progress, 0));
+    transform-origin: top;
+  }
 }
 
 /* ── Act six: data and trust (`trust.tsx`) ────────────────────────────── */
@@ -1964,15 +1704,14 @@
   margin-bottom: 0.75rem;
   color: var(--ic-ink-600);
 }
+/* Sentence case, like everything on the presentation: a word and a mark, never a badge. */
 .trust-state {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: var(--text-label);
+  font-size: var(--text-small);
   font-weight: 500;
   line-height: 1;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
   color: var(--ic-ink-600);
 }
 .trust-state::before {
@@ -2028,6 +1767,29 @@
   color: var(--ic-ink-900);
 }
 
+/* The contact link beside the Product menu, set like the menu's own button. */
+.site-menu-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.375rem;
+  padding: 0 0.625rem;
+  border-radius: var(--radius-control);
+  color: var(--ic-ink-900);
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color var(--ic-fast) var(--ic-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .site-menu-link:hover {
+    background-color: var(--ic-line);
+  }
+}
+@media (max-width: 59.99rem) {
+  .site-menu-link {
+    display: none;
+  }
+}
+
 /* ── Act seven: questions (`questions.tsx`) ───────────────────────────── */
 .questions {
   border-top: 1px solid var(--ic-line);
@@ -2059,114 +1821,6 @@
   font-size: var(--text-body);
   line-height: 1.62;
   color: var(--ic-ink-600);
-}
-
-/* ── Act eight: the morning ───────────────────────────────────────────── */
-/* This page's photographs hold still: the morning plate sits centred, with no drift and no dust. */
-.home-morning .glass-morning-frame img {
-  transform: none;
-  will-change: auto;
-}
-.home-closing {
-  padding-block: clamp(5rem, 10vw, 8.5rem) clamp(4.5rem, 9vw, 7rem);
-  border-top: 1px solid var(--ic-line);
-}
-.home-closing-grid {
-  display: grid;
-  gap: 2.5rem 4rem;
-}
-.home-closing-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-.home-closing-title {
-  max-width: 16ch;
-}
-.home-closing-body {
-  max-width: 34rem;
-  font-size: var(--glass-lede);
-  line-height: 1.6;
-  color: var(--ic-ink-600);
-}
-.home-closing-side {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2rem;
-}
-.home-next {
-  display: grid;
-  gap: 0.875rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--ic-line-strong);
-}
-.home-next-steps {
-  display: grid;
-  gap: 0.75rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.home-next-steps li {
-  display: grid;
-  grid-template-columns: 1.25rem minmax(0, 1fr);
-  gap: 0.75rem;
-  align-items: start;
-  max-width: 30rem;
-  font-size: var(--text-body);
-  line-height: 1.5;
-  color: var(--ic-ink-600);
-}
-.home-next-steps svg {
-  width: 1.125rem;
-  height: 1.125rem;
-  margin-top: 0.2rem;
-  color: var(--ic-ink-900);
-}
-
-.home-footer {
-  padding-bottom: 2rem;
-}
-.home-footer-sign {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  padding-top: clamp(2.5rem, 5vw, 3rem);
-  border-top: 1px solid var(--ic-line-strong);
-}
-.home-footer-base {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem 2.5rem;
-  margin-top: clamp(3rem, 6vw, 4rem);
-  padding-top: 1.75rem;
-  border-top: 1px solid var(--ic-line-strong);
-}
-.home-footer-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.75rem;
-  font-size: var(--text-small);
-}
-.home-footer-nav a {
-  color: var(--ic-ink-900);
-  text-decoration: underline;
-  text-decoration-color: var(--ic-line-strong);
-  text-underline-offset: 0.3em;
-  transition: text-decoration-color var(--ic-fast) var(--ic-ease);
-}
-.home-footer-nav a:hover {
-  text-decoration-color: currentColor;
-}
-
-/* The sources pin under the fixed masthead, so their stage starts below it. */
-@media (min-width: 48rem) and (min-height: 46rem) {
-  .home .glass-sources[data-enhanced='true'] .glass-sources-stage {
-    padding-top: calc(var(--home-bar) + clamp(1.25rem, 4vh, 3rem));
-  }
 }
 
 @media (min-width: 48rem) {
@@ -2213,9 +1867,6 @@
   }
   .trust-cell:nth-child(even) {
     border-left: 1px solid var(--ic-line);
-  }
-  .standing-stages {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -2269,133 +1920,38 @@
   }
   .questions-intro {
     position: sticky;
-    top: calc(var(--home-bar) + 2rem);
+    top: calc(var(--glass-bar, 0px) + 2rem);
   }
-  .home-closing-grid {
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-    align-items: start;
-  }
-}
-.home a:focus-visible,
-.home button:focus-visible {
-  outline: 2px solid var(--ic-ink-900);
-  outline-offset: 3px;
 }
 
-/* ── Responsive ───────────────────────────────────────────────────────── */
-@media (min-width: 64rem) {
-  .hero-body {
-    grid-template-columns: minmax(0, 46rem) minmax(0, 1fr);
-  }
-  .hero-caption {
-    justify-self: end;
-    text-align: right;
-  }
-}
-@media (max-width: 63.99rem) {
-  .hero-caption {
-    display: none;
-  }
-}
 @media (max-width: 720px) {
   .desk-nav-link {
     display: none;
   }
 }
-/* Four section links and the button need a laptop's width; below it the bar keeps the brand and the button. */
-@media (max-width: 59.99rem) {
-  .home-bar .desk-nav-link {
-    display: none;
-  }
-}
-@media (max-width: 639px) {
-  .home {
-    --home-display: clamp(2.125rem, 10.4vw, 3.25rem);
-  }
-  /* A phone cannot hold "COMMERCIAL WORK." on one line at a readable size, so the lines may wrap. */
-  .home-line {
-    white-space: normal;
-  }
-  .hero {
-    min-height: 100svh;
-  }
-  /*
-   * On a phone the photograph cannot sit behind the words without being
-   * scrimmed to nothing, so it takes the top half of the screen on its own —
-   * lamp and quotation in view — and the words sit under it on the night.
-   */
-  .hero-plate {
-    bottom: auto;
-    height: 56svh;
-  }
-  .hero-plate img {
-    object-position: 0% 60%;
-  }
-  .hero-plate::after {
-    background:
-      linear-gradient(0deg, var(--ic-paper-sunken) 0%, transparent 42%),
-      linear-gradient(180deg, var(--hero-scrim) 0%, transparent 26%);
-  }
-  .hero-body {
-    padding-top: 42svh;
-  }
-  .home .waitlist-inline-submit {
-    width: 100%;
-  }
-}
+
 @media (max-width: 440px) {
-  /* The masthead button has to share a 342px row with the wordmark; drop the arrow and tighten the tracking. */
-  .home-bar .desk-cta {
-    padding-inline: 0.875rem;
-    font-size: 0.6875rem;
-    letter-spacing: 0.07em;
-  }
   .desk-cta .ic-cta-arrow {
     display: none;
-  }
-}
-@media (max-width: 380px) {
-  .home-bar-inner {
-    gap: 0.75rem;
-  }
-  .home-bar .site-brand {
-    gap: 0.5rem;
-    font-size: 1.25rem;
-  }
-  .home-bar .site-brand-mark {
-    width: 2rem;
-    height: 2rem;
-  }
-  .home-bar .desk-cta {
-    padding-inline: 0.625rem;
-    font-size: 0.65625rem;
-    letter-spacing: 0.04em;
   }
 }
 
 /*
  * Reduced motion renders the final frame. The global rule shortens durations
- * but keeps delays, and an entrance with `both` fill would sit invisible for
- * its delay — so every home animation is removed outright.
+ * but keeps delays, so each of these is removed outright.
  */
 @media (prefers-reduced-motion: reduce) {
-  .home-line > span,
-  .home-rise,
-  .home-drop {
-    animation: none;
-  }
   .site-brand-mark {
     transform: none;
     transition: none;
   }
-  /* A tab change swaps the panel at once; the masthead fills without a fade. */
+  /* A tab change swaps the panel at once. */
   .how-body[data-enhanced='true'] .how-panel,
   .how-body[data-enhanced='true'] .how-panel[data-active='true'] {
     transform: none;
     transition: none;
   }
-  .how-tab,
-  .home-bar::before {
+  .how-tab {
     transition: none;
   }
 }
@@ -2423,7 +1979,6 @@
      ink-400 #6e6e66     5.1:1    the optional note and the privacy line
    ══════════════════════════════════════════════════════════════════════════ */
 .memo-page,
-.home,
 .glass {
   --memo-desk: #e0ddd5;
   --memo-sheet: var(--ic-paper-raised);
@@ -2444,7 +1999,6 @@
 
   /* Speckled ink: alpha is thinned where the noise runs high, so a fill reads as pressed, not printed. */
   --memo-ink-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='m' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -9 7.6'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23m)'/%3E%3C/svg%3E");
-
 }
 
 .memo-page {
@@ -3354,7 +2908,7 @@
      4. the field: dust drifting at thirty frames a second while it is on
         screen — a landscape under the opening that unrolls out of one slit of
         light, settles when the page assembles and falls behind on scroll; and
-        round the morning plate, two ribbons of it. The one motion that
+        round the morning plate, loose motes of it. The one motion that
         continues while the reader is still, by the owner's choice: it is the
         night, moving while nobody watches it. It stops off screen and in a
         hidden tab;
@@ -3372,18 +2926,24 @@
    the presentation's own furniture — its opening, its dust, its parallax —
    stays on /glass.
    ══════════════════════════════════════════════════════════════════════════ */
-.glass,
-.home {
+.glass {
+  /*
+   * The ground after the night: white paper, as the reference pages lie on, by
+   * the owner's call. It was the contact memo's darker desk (`--memo-desk`),
+   * which stays the memo's own.
+   */
+  --glass-ground: var(--ic-paper);
   --glass-display: clamp(2.75rem, 6vw, 5.5rem);
   --glass-heading: clamp(2.25rem, 4.4vw, 4.25rem);
   --glass-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
   --glass-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --glass-arrive: 900ms;
-  /* The opening: two beats, then the page. */
-  --glass-beat: 1900ms;
-  --glass-opening: calc(var(--glass-beat) * 2);
+  /* The opening: a quotation held for three beats, the line that answers it for one, then the page. */
+  --glass-beat: 1700ms;
+  --glass-quote-beats: 3;
+  --glass-opening: calc(var(--glass-beat) * (var(--glass-quote-beats) + 1));
   /* One hour of the film, timed by its chapter's hairline. */
-  --glass-frame: 5200ms;
+  --glass-frame: 3400ms;
   /* The documents gathering onto one sheet. */
   --glass-gather: 1100ms;
   /* The scroll length the gathering pins for: one screen of stage, and the rest to scroll through. */
@@ -3425,10 +2985,25 @@
 }
 
 /* ── The night: hour rules, the opening, the hero ─────────────────────── */
+/*
+ * The night is its own stacking layer (`isolation`), so its dust and hour
+ * rules sit under its own type and nothing else. The masthead is not in it:
+ * from inside a layer lifted by one, it lost to every positioned block further
+ * down that was lifted by one too — the gathered sheet painted over it.
+ */
 .glass-night {
   position: relative;
   isolation: isolate;
   background-color: var(--ic-paper-sunken);
+}
+/* Half a masthead above the night's end: once it has scrolled past the top, the masthead is over paper. */
+.glass-dusk {
+  position: absolute;
+  bottom: calc(var(--glass-bar) / 2);
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
 }
 
 /*
@@ -3498,20 +3073,51 @@
   padding: 1.5rem;
   animation: glass-opening-end 1ms linear var(--glass-opening) forwards;
 }
-.glass-opening p {
+/* The quotation and its answer share the one cell, one after the other. */
+.glass-opening > * {
   grid-area: 1 / 1;
-  max-width: 20ch;
+  margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(2rem, 4.2vw, 3.5rem);
-  line-height: 1.06;
-  letter-spacing: -0.018em;
   text-align: center;
   text-wrap: balance;
   color: var(--ic-ink-900);
-  animation: glass-beat var(--glass-beat) var(--glass-ease) both;
 }
-.glass-opening p + p {
-  animation-delay: var(--glass-beat);
+/*
+ * The quotation arrives a line at a time and its source after it, so the
+ * sentence is read as it is set; then it leaves as one.
+ */
+.glass-opening-quote {
+  max-width: 24ch;
+  font-size: clamp(1.75rem, 3.4vw, 3rem);
+  line-height: 1.12;
+  letter-spacing: -0.014em;
+  animation: glass-quote calc(var(--glass-beat) * var(--glass-quote-beats)) var(--glass-ease) both;
+}
+.glass-opening-quote blockquote {
+  margin: 0;
+}
+.glass-opening-quote p {
+  margin: 0;
+  animation: glass-line 700ms var(--glass-ease) both;
+  animation-delay: calc(var(--glass-beat) * 0.7 * var(--line, 0));
+}
+.glass-opening-quote figcaption {
+  margin-top: 1.25rem;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--ic-ink-600);
+  animation: glass-line 700ms var(--glass-ease) both;
+  animation-delay: calc(var(--glass-beat) * 1.25);
+}
+.glass-opening-then {
+  max-width: 20ch;
+  font-size: clamp(2rem, 4.2vw, 3.5rem);
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+  animation: glass-beat var(--glass-beat) var(--glass-ease) both;
+  animation-delay: calc(var(--glass-beat) * var(--glass-quote-beats));
 }
 
 /* The page assembles as the second beat leaves; ended early, it assembles at once. */
@@ -3544,13 +3150,274 @@
   animation-name: glass-enter-now;
   animation-delay: var(--glass-enter-delay, 0ms);
 }
+/*
+ * A return this visit (`lib/opening.ts`): the page is simply there. The head
+ * script marks the document before the first paint; the state keeps it so.
+ */
+:root[data-opened] .glass .glass-opening,
+.glass[data-opening='seen'] .glass-opening {
+  display: none;
+}
+:root[data-opened] .glass .glass-enter,
+:root[data-opened] .glass .glass-hours > span,
+.glass[data-opening='seen'] .glass-enter,
+.glass[data-opening='seen'] .glass-hours > span {
+  animation: none;
+}
 
-.glass-header {
+/*
+ * The masthead, fixed, and above everything on the page: nothing else on it is
+ * lifted past one or two, and it is not inside any layer that could lose to
+ * one. It is see-through, by the owner's call: clear over the first screen,
+ * and once that has gone, a pane of whatever it is over — the night's ground
+ * or the white paper, at three quarters, blurred — so what scrolls under it
+ * reads as passing under glass and the links stay legible. It never turns
+ * into a black bar over the paper: its tokens follow what is under it
+ * (`data-tone`), and that change is a snap at the night's edge. The pane
+ * fading in is its one animation. It never shrinks and never gains a shadow.
+ */
+.glass {
+  --glass-bar: 4.75rem;
+  --glass-fill: 300ms;
+  /* A tab change: in, and the faster way out. */
+  --glass-tab-in: 220ms;
+  --glass-tab-out: 120ms;
+
+  position: relative;
+}
+.glass-sentinel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 6rem;
+  pointer-events: none;
+}
+.glass-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  color: var(--ic-ink-900);
+}
+.glass-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: color-mix(in srgb, var(--ic-paper) 86%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+  opacity: 0;
+  transition: opacity var(--glass-fill) var(--glass-ease);
+}
+.glass-bar[data-scrolled='true']::before {
+  opacity: 1;
+}
+/* The masthead's button is the quiet version of the hero's: one step smaller, the same fill. */
+.glass .glass-bar .desk-cta {
+  min-height: 2.375rem;
+  padding: 0.375rem 0.875rem 0.375rem 1rem;
+  font-size: 0.875rem;
+}
+.glass-bar-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  padding-top: 2rem;
+  min-height: var(--glass-bar);
+}
+.glass-hero {
+  padding-top: var(--glass-bar);
+}
+
+/*
+ * The masthead's menus (`masthead-bar.tsx`): a name with a chevron, and under
+ * it a small box of places to go, each with one line — the night's raised
+ * panel on a hairline, 12px radius, no shadow. It settles 4px into place over
+ * 160ms and goes at once. Hover opens it only where a pointer hovers; focus
+ * inside it shows it even without a script.
+ */
+.site-menus {
+  gap: clamp(0.25rem, 1vw, 0.75rem);
+}
+.site-menu {
+  position: relative;
+}
+.site-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 2.375rem;
+  padding: 0 0.625rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ic-ink-900);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--ic-fast) var(--ic-ease);
+}
+.site-menu[data-open='true'] .site-menu-button {
+  background-color: var(--ic-line);
+}
+.site-menu-chevron {
+  width: 0.75rem;
+  height: 0.75rem;
+  transition: transform var(--ic-fast) var(--ic-ease);
+}
+.site-menu[data-open='true'] .site-menu-chevron {
+  transform: rotate(180deg);
+}
+.site-menu-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: -0.25rem;
+  z-index: 1;
+  width: 18rem;
+  padding: 0.375rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(0, -4px, 0);
+  transition:
+    opacity 0s,
+    transform 0s,
+    visibility 0s;
+}
+/* The gap under the button is part of the menu, so the pointer can cross it. */
+.site-menu-panel::before {
+  content: '';
+  position: absolute;
+  inset: -0.625rem 0 100%;
+}
+.site-menu[data-open='true'] .site-menu-panel,
+.site-menu:focus-within .site-menu-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity var(--ic-fast) var(--ic-ease),
+    transform var(--ic-fast) var(--ic-ease),
+    visibility 0s;
+}
+.site-menu-panel ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.site-menu-item {
+  display: grid;
+  gap: 0.125rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-control);
+  color: var(--ic-ink-900);
+  text-decoration: none;
+  transition: background-color var(--ic-fast) var(--ic-ease);
+}
+.site-menu-item:hover,
+.site-menu-item:focus-visible {
+  background-color: var(--ic-line);
+}
+.site-menu-title {
+  font-size: var(--text-ui);
+  font-weight: 500;
+}
+.site-menu-line {
+  font-size: var(--text-small);
+  line-height: 1.4;
+  color: var(--ic-ink-600);
+}
+@media (max-width: 59.99rem) {
+  .site-menu {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-menu-panel,
+  .site-menu[data-open='true'] .site-menu-panel,
+  .site-menu:focus-within .site-menu-panel {
+    transform: none;
+    transition: none;
+  }
+  .site-menu-chevron {
+    transition: none;
+  }
+}
+@media (max-width: 59.99rem) {
+  .glass-bar .desk-nav-link {
+    display: none;
+  }
+}
+@media (min-width: 48rem) and (min-height: 46rem) {
+  .glass .glass-sources[data-enhanced='true'] .glass-sources-stage {
+    padding-top: calc(var(--glass-bar) + clamp(1.25rem, 4vh, 3rem));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-bar::before {
+    transition: none;
+  }
+}
+
+/* What happens after somebody writes, under the ask — sentence case, no label style. */
+.glass-next {
+  display: grid;
+  gap: 0.875rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ic-line-strong);
+}
+.glass-next-label {
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--ic-ink-600);
+}
+.glass-next-steps {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.glass-next-steps li {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.glass-next-steps svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.2rem;
+  color: var(--ic-ink-900);
+}
+.glass-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  margin-block: clamp(2rem, 4vw, 2.75rem) 1.75rem;
+  font-size: var(--text-small);
+}
+.glass-footer-nav a {
+  color: var(--ic-ink-900);
+  text-decoration: underline;
+  text-decoration-color: var(--ic-line-strong);
+  text-underline-offset: 0.3em;
+}
+.glass-motto {
+  padding-top: clamp(2.5rem, 5vw, 3.5rem);
+  border-top: 1px solid var(--ic-line-strong);
+  font-family: var(--font-display);
+  font-size: var(--glass-heading);
+  line-height: 1;
+  letter-spacing: -0.022em;
+  color: var(--ic-ink-900);
 }
 
 .glass-hero-inner {
@@ -4189,14 +4056,16 @@
   padding: 0.75rem clamp(1.25rem, 3vw, 2.5rem) 1rem;
   border-top: 1px solid var(--ic-line);
 }
+/* Round, by the owner's choice: the ring round it is the hour's clock. */
 .glass-play {
+  position: relative;
   display: grid;
   flex: none;
   place-items: center;
   width: var(--glass-control);
   height: var(--glass-control);
-  border: 1px solid var(--ic-line-strong);
-  border-radius: var(--radius-control);
+  border: 0;
+  border-radius: 50%;
   background-color: transparent;
   color: var(--ic-ink-900);
   cursor: pointer;
@@ -4207,11 +4076,42 @@
 .glass-play:active {
   transform: translateY(1px);
 }
+.glass-play-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+.glass-play-ring circle {
+  fill: none;
+  stroke-width: 1.5;
+}
+.glass-play-ring-track {
+  stroke: var(--ic-line-strong);
+}
+.glass-play-ring-fill {
+  stroke: var(--ic-ink-900);
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: glass-ring var(--glass-frame) linear both;
+  animation-play-state: paused;
+}
+.glass-film[data-running='true'] .glass-play-ring-fill {
+  animation-play-state: running;
+}
+/* The morning holds a little longer before the night goes round again. */
+.glass-play-ring-fill[data-last='true'],
+.glass-chapter:last-child .glass-chapter-fill--live {
+  animation-duration: calc(var(--glass-frame) * 1.6);
+}
+/* No gaps between the hours: one line along the foot of the frame, filling. */
 .glass-chapters {
   display: grid;
   flex: 1;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: clamp(0.375rem, 1.2vw, 1rem);
+  gap: 0;
   min-width: 0;
 }
 .glass-chapter {
@@ -4258,6 +4158,7 @@
   animation-play-state: running;
 }
 .glass-chapter-hour {
+  padding-right: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 500;
   line-height: 1;
@@ -4291,8 +4192,9 @@
   display: grid;
   grid-template-areas: 'scattered' 'desk' 'gathered' 'sheet';
 }
-/* The headline left and its paragraph beside it, on one baseline: a page, not a slide. */
-.glass-sources-title {
+/* The headline left and its paragraph beside it, on one baseline: a page, not a slide. Every act's opening. */
+.glass-sources-title,
+.glass-act-title {
   display: grid;
   align-items: end;
   gap: 1.25rem 4rem;
@@ -4334,8 +4236,7 @@
   height: clamp(30rem, 46vw, 38rem);
   margin-top: clamp(2.5rem, 5vw, 3.5rem);
   container-type: size;
-  background-color: var(--memo-desk);
-  background-image: var(--ic-grain);
+  background-color: var(--glass-ground);
 }
 .glass-tangle {
   position: absolute;
@@ -4869,9 +4770,9 @@
   align-items: center;
   gap: 0.625rem;
   padding: 0.75rem 1.25rem;
-  border: 1px solid var(--ic-line);
+  border: 1px solid var(--ic-line-strong);
   border-radius: var(--radius-panel) var(--radius-panel) 0 0;
-  background-color: var(--ic-paper);
+  background-color: var(--ic-paper-sunken);
   font-size: 0.8125rem;
   font-weight: 500;
 }
@@ -4903,19 +4804,26 @@
   line-height: 1.3;
   text-align: right;
 }
-/* A document at thumbnail size: the same drawing, cropped to its top edge. */
+/*
+ * A document at thumbnail size: the same drawing, cropped to its top edge. The
+ * crop takes the document's own border with it, so the thumbnail draws its
+ * edge itself — on white paper a document with no edge is not there.
+ */
 .glass-thumb {
   display: block;
   flex: none;
   width: 5.75rem;
   height: 3.5rem;
   overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
   border-radius: var(--radius-control);
+  background-color: var(--ic-paper-raised);
   font-size: 2.5px;
   pointer-events: none;
 }
 .glass-thumb > .gd {
   width: 38em;
+  border: 0;
   border-radius: 0;
 }
 .glass-thread-wire {
@@ -4951,7 +4859,7 @@
   gap: 0.375rem 0.75rem;
   min-height: 3.25rem;
   padding: 0.5rem 1.25rem;
-  border-inline: 1px solid var(--ic-line);
+  border-inline: 1px solid var(--ic-line-strong);
   border-top: 1px solid var(--ic-line);
   background-color: var(--ic-paper-raised);
   font-size: 0.875rem;
@@ -4976,10 +4884,9 @@
   grid-column: cell;
   gap: 0.5rem;
   padding: 0.875rem 1.25rem 1rem;
-  border: 1px solid var(--ic-line);
-  border-top-color: var(--ic-line-strong);
+  border: 1px solid var(--ic-line-strong);
   border-radius: 0 0 var(--radius-panel) var(--radius-panel);
-  background-color: var(--ic-paper);
+  background-color: var(--ic-paper-sunken);
 }
 .glass-thread-count {
   font-size: 0.8125rem;
@@ -5003,8 +4910,7 @@
     display: flex;
     height: 100svh;
     padding-block: clamp(3rem, 8vh, 5.5rem) clamp(1.25rem, 4vh, 2.5rem);
-    background-color: var(--memo-desk);
-    background-image: var(--ic-grain);
+    background-color: var(--glass-ground);
   }
   .glass-sources[data-enhanced='true'] .glass-sources-grid {
     flex: 1;
@@ -5204,14 +5110,1373 @@
   padding-top: 2rem;
   border-top: 1px solid var(--ic-line-strong);
 }
-.glass-standing,
 .glass-copyright {
   font-size: var(--text-small);
   line-height: 1.5;
   color: var(--ic-ink-600);
 }
-.glass-standing {
-  max-width: 44rem;
+/* ══════════════════════════════════════════════════════════════════════════
+   Charlie (`components/charlie.tsx`, `charlie-page.tsx`) and the inner pages'
+   frame (`page-frame.tsx`).
+   ══════════════════════════════════════════════════════════════════════════ */
+.charlie-act {
+  padding-block: clamp(5rem, 10vw, 8.5rem);
+  border-top: 1px solid var(--ic-line);
+}
+/* Straight after the night there is no hairline: the change of ground is the edge. */
+.glass-night + .glass-acts .charlie-act {
+  border-top: 0;
+}
+.charlie-act-side {
+  display: grid;
+  justify-items: start;
+  gap: 1.25rem;
+}
+.charlie-abilities {
+  padding-block: clamp(4.5rem, 9vw, 7.5rem);
+}
+/* Planned: a dashed ring, between the filled mark of settled and the open one of in build. */
+.trust-state[data-state='planned']::before {
+  border-style: dashed;
+  background-color: transparent;
+}
+.trust-more {
+  font-size: var(--text-body);
+}
+
+/* ── The Charlie page (`charlie-page.tsx`, `charlie-reel.tsx`) ───────────── */
+.cp-hero {
+  padding-block: clamp(4.5rem, 10vw, 8rem) clamp(2.5rem, 5vw, 3.5rem);
+}
+.cp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: var(--text-body);
+  color: var(--ic-ink-600);
+}
+.cp-eyebrow-mark {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--ic-ink-900);
+}
+.cp-title {
+  margin-top: 1.5rem;
+  max-width: 15ch;
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 7vw, 6rem);
+  line-height: 0.98;
+  letter-spacing: -0.028em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.cp-hero-foot {
+  display: grid;
+  gap: 1.75rem;
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+.cp-lede {
+  max-width: 36rem;
+  font-size: var(--glass-lede);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.cp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+@media (min-width: 960px) {
+  .cp-hero-foot {
+    grid-template-columns: minmax(0, 36rem) auto;
+    justify-content: space-between;
+    align-items: end;
+  }
+}
+
+.cp-film {
+  padding-bottom: clamp(4rem, 8vw, 6.5rem);
+  scroll-margin-top: calc(var(--glass-bar) + 1rem);
+}
+.reel {
+  display: grid;
+  gap: 1.25rem;
+}
+.reel-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background: var(--ic-paper-sunken);
+}
+.reel-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+/* The way in, over the poster: gone once the film plays. */
+.reel-start {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition: opacity 200ms var(--glass-ease);
+}
+.reel[data-playing] .reel-start {
+  opacity: 0;
+  pointer-events: none;
+}
+.reel-start-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.95rem 1.4rem;
+  border-radius: 999px;
+  background: var(--ic-ink-900);
+  color: var(--ic-paper);
+  font-size: var(--text-body);
+  transition: transform 200ms var(--glass-ease);
+}
+.reel-start:hover .reel-start-pill {
+  transform: scale(1.04);
+}
+.reel-controls {
+  position: absolute;
+  right: clamp(0.5rem, 1.5vw, 1rem);
+  bottom: clamp(0.5rem, 1.5vw, 1rem);
+  display: flex;
+  gap: 0.5rem;
+}
+/* Before it plays the way in is the one button over the poster; the controls come with the film. */
+.reel:not([data-playing]) .reel-controls {
+  visibility: hidden;
+}
+.reel-button {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: 999px;
+  background: var(--ic-paper-raised);
+  color: var(--ic-ink-900);
+}
+.reel-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+.reel-start-pill .reel-icon {
+  fill: currentColor;
+}
+.reel-chapters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem 0.75rem;
+  list-style: none;
+}
+@media (min-width: 768px) {
+  .reel-chapters {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+.reel-chapter {
+  display: grid;
+  gap: 0.55rem;
+  width: 100%;
+  min-height: 2.75rem;
+  text-align: left;
+  color: var(--ic-ink-400);
+}
+.reel-chapter:hover,
+.reel-chapter[aria-current] {
+  color: var(--ic-ink-900);
+}
+.reel-chapter-bar {
+  display: block;
+  height: 2px;
+  overflow: hidden;
+  background: var(--ic-line-strong);
+}
+.reel-chapter-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--ic-ink-900);
+  transform-origin: left center;
+  transition: transform 260ms linear;
+}
+.reel-chapter-label {
+  display: flex;
+  gap: 0.5rem;
+  font-size: var(--text-body);
+}
+.reel-chapter-number,
+.reel-chapter-time {
+  font-size: var(--text-small);
+  color: var(--ic-ink-400);
+}
+
+.cp-steps {
+  padding-block: clamp(4.5rem, 9vw, 7.5rem);
+  border-top: 1px solid var(--ic-line);
+}
+.cp-step-list {
+  display: grid;
+  gap: clamp(4rem, 8vw, 6.5rem);
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+  list-style: none;
+}
+.cp-step {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+@media (min-width: 960px) {
+  .cp-step {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(3rem, 6vw, 5rem);
+  }
+  .cp-step:nth-child(even) .cp-step-copy {
+    order: 2;
+  }
+}
+.cp-step-number {
+  display: flex;
+  gap: 0.6rem;
+  font-size: var(--text-small);
+  color: var(--ic-ink-400);
+}
+.cp-step-title {
+  margin-top: 0.85rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.018em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.cp-step-body {
+  max-width: 32rem;
+  margin-top: 1rem;
+  font-size: var(--glass-lede);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.cp-watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  margin-top: 1.25rem;
+  font-size: var(--text-body);
+  color: var(--ic-ink-900);
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+  text-decoration-color: var(--ic-line-strong);
+}
+.cp-watch:hover {
+  text-decoration-color: currentColor;
+}
+.cp-watch-icon {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+}
+.cp-step-still {
+  overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background: var(--ic-paper-raised);
+}
+.cp-step-still img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reel-start,
+  .reel-start-pill,
+  .reel-chapter-bar > span {
+    transition: none;
+  }
+}
+
+/* ── The inner pages ──────────────────────────────────────────────────── */
+.page-frame-body {
+  padding-top: var(--glass-bar);
+  min-height: 100svh;
+}
+.page-hero {
+  padding-block: clamp(4rem, 9vw, 7rem) clamp(3rem, 6vw, 4.5rem);
+}
+.page-hero-grid {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+  align-items: start;
+}
+.page-hero-copy {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 34rem;
+}
+.page-hero-copy--wide {
+  max-width: 46rem;
+}
+.page-title {
+  font-size: clamp(2.5rem, 5vw, 4.25rem);
+  line-height: 1;
+  letter-spacing: -0.022em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.page-lede {
+  font-size: var(--glass-lede);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.page-close {
+  padding-block: clamp(5rem, 10vw, 8rem);
+  border-top: 1px solid var(--ic-line);
+}
+
+/* ── Security ─────────────────────────────────────────────────────────── */
+@media (min-width: 64rem) {
+  .page-hero-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+}
+
+/*
+ * Cards of protection (`ProtectionCards` in `trust.tsx`), in the reference
+ * page's shape, which the owner pointed at: no card around them, white paper
+ * under them, a small sunken tile with the icon in it, a title in the grotesk
+ * at reading size and two or three lines under it in the muted ink. The
+ * grotesk is chosen, not slipped: at this size a serif title shouts over its
+ * own line, and the reference sets these in its sans. The trust section and
+ * Charlie's abilities share them.
+ */
+.protect-grid {
+  display: grid;
+  gap: clamp(3rem, 6vw, 4.75rem) clamp(2rem, 5vw, 5rem);
+  margin: clamp(3rem, 6vw, 4.5rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.protect-card {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+}
+.protect-tile {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-bottom: 1.5rem;
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper-sunken);
+}
+.protect-tile .trust-glyph {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  color: var(--ic-ink-900);
+}
+.protect-title {
+  font-family: var(--font-sans);
+  font-size: 1.1875rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ic-ink-900);
+}
+.protect-body {
+  max-width: 36ch;
+  margin-top: 0.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+}
+
+@media (min-width: 48rem) {
+  .protect-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 64rem) {
+  .protect-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Charlie, at work — the film on the front page (`charlie-film.tsx`).
+
+   Six beats on three scenes over the desk photographed in the morning: the
+   sheet (reads, cites, holds), the document (makes) and the channel (tells,
+   asks). Each beat runs for `--cf-beat`, timed by the hairline under its name
+   in the rail; the film goes round, by the owner's choice, and only while it
+   is on screen. Every animation runs from its first frame to the resting
+   state the rule describes, so with animation removed — reduced motion — each
+   beat is simply its final frame.
+
+   Only opacity and transform move. The signal is spent on the held lines and
+   the figure under the floor, as everywhere.
+   ══════════════════════════════════════════════════════════════════════════ */
+.cf {
+  --cf-beat: 3600ms;
+  --cf-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  display: grid;
+  gap: clamp(2rem, 4vw, 3rem);
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+/* ── The rail ─────────────────────────────────────────────────────────── */
+.cf-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+.cf-licence {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--ic-ink-600);
+}
+.cf-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ic-line);
+}
+.cf-step {
+  position: relative;
+  border-bottom: 1px solid var(--ic-line);
+}
+.cf-step-button {
+  display: grid;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0.875rem 0 1rem;
+  border: 0;
+  background: none;
+  color: var(--ic-ink-400);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--ic-fast) var(--ic-ease);
+}
+.cf-step[data-active='true'] .cf-step-button,
+.cf[data-enhanced='false'] .cf-step-button {
+  color: var(--ic-ink-900);
+}
+.cf-step-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 1.45vw, 1.3125rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.cf-step-line {
+  font-size: var(--text-small);
+  line-height: 1.45;
+  color: var(--ic-ink-600);
+}
+.cf-step-track {
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 2px;
+  overflow: hidden;
+}
+.cf-step-fill {
+  position: absolute;
+  inset: 0;
+  background-color: var(--ic-ink-900);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.cf-step[data-active='true'] .cf-step-fill:not(.cf-step-fill--live) {
+  transform: none;
+}
+.cf-step-fill--live {
+  animation: cf-progress var(--cf-beat) linear both;
+  animation-play-state: paused;
+}
+/* Reading, citing and the last beat hold a little longer: there is more to watch in them. */
+.cf-step:is(:nth-child(1), :nth-child(2), :last-child) .cf-step-fill--live {
+  animation-duration: calc(var(--cf-beat) * 1.35);
+}
+.cf[data-running='true'] .cf-step-fill--live {
+  animation-play-state: running;
+}
+.cf-play {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0 0.875rem 0 0.75rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ic-ink-900);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: 500;
+  cursor: pointer;
+}
+.cf-play svg {
+  width: 1rem;
+  height: 1rem;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cf-step-button:hover {
+    color: var(--ic-ink-900);
+  }
+}
+
+/* ── The stage ────────────────────────────────────────────────────────── */
+.cf-stage {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  overflow: hidden;
+  aspect-ratio: 16 / 11;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-ink-900);
+  color: var(--ic-ink-900);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+.cf-desk img {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+.cf-scene {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 420ms var(--cf-ease),
+    visibility 0s linear 420ms;
+}
+.cf-stage[data-scene='sheet'] .cf-scene--sheet,
+.cf-stage[data-scene='document'] .cf-scene--document,
+.cf-stage[data-scene='channel'] .cf-scene--channel {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 420ms var(--cf-ease),
+    visibility 0s;
+}
+.cf-card {
+  position: absolute;
+  overflow: hidden;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+}
+.cf-card-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--ic-line);
+  background-color: var(--ic-paper);
+  font-weight: 500;
+}
+.cf-card-bar > :last-child:not(:first-child) {
+  margin-left: auto;
+}
+.cf-card-bar .gd-icon {
+  width: 1rem;
+  height: 1rem;
+}
+.cf-quiet {
+  color: var(--ic-ink-400);
+}
+/* The paper lands on the sheet's corner, the way documents pile on a desk. */
+.cf-mail,
+.cf-confirmation {
+  top: 12%;
+  left: 5%;
+  z-index: 1;
+  width: 40%;
+  transform: rotate(-1.5deg);
+}
+.cf-mail > p:not(.cf-card-bar),
+.cf-confirmation > p:not(.cf-card-bar) {
+  padding-inline: 0.75rem;
+}
+.cf-mail-subject {
+  padding-top: 0.625rem;
+  font-weight: 500;
+}
+.cf-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding-block: 0.5rem 0.75rem;
+}
+.cf-files span {
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-control);
+  color: var(--ic-ink-600);
+}
+.cf-change {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-block: 0.25rem 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.cf-change s {
+  color: var(--ic-ink-400);
+}
+.cf-sheet {
+  top: 50%;
+  right: 5%;
+  width: 64%;
+  transform: translateY(-38%);
+}
+.cf-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+/* Columns of figures line up; the item names are prose and keep their own spacing. */
+.cf-line,
+.cf-qty,
+.cf-rate {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+.cf-table td {
+  overflow: hidden;
+  padding: 0.5rem 0.625rem;
+  border-top: 1px solid var(--ic-line);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cf-table tr:first-child td {
+  border-top: 0;
+}
+.cf-line {
+  width: 2.25rem;
+  color: var(--ic-ink-400);
+}
+.cf-qty {
+  width: 3.75rem;
+  text-align: right;
+}
+.cf-rate {
+  width: 8.25rem;
+  text-align: right;
+}
+.cf-rate-moved s {
+  color: var(--ic-ink-400);
+}
+/* Clipped, not ellipsed: a pill waiting to appear must not leave dots behind it. */
+.cf-status {
+  width: 7.25rem;
+  text-overflow: clip;
+}
+.cf-status .matrix-status {
+  font-size: 0.6875rem;
+}
+
+/* The PDF being read, inside the mail: a page of grey lines, a band passing down it, a bar filling. */
+.cf-reading {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0.5rem 0.75rem 0;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper);
+}
+.cf-pdf {
+  position: relative;
+  display: grid;
+  flex: none;
+  align-content: start;
+  gap: 3px;
+  width: 2.125rem;
+  height: 2.75rem;
+  padding: 0.375rem 0.3125rem;
+  overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: 3px;
+  background-color: var(--ic-paper-raised);
+}
+.cf-pdf > span:not(.cf-scan) {
+  height: 2px;
+  border-radius: 1px;
+  background-color: var(--ic-line-strong);
+}
+.cf-pdf > span:nth-child(3n) {
+  width: 64%;
+}
+.cf-scan {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 0.75rem;
+  border-bottom: 1px solid var(--ic-ink-900);
+  background-color: var(--ic-line);
+  opacity: 0;
+}
+.cf-reading-text {
+  display: grid;
+  flex: 1;
+  gap: 0.375rem;
+  min-width: 0;
+}
+.cf-reading-now,
+.cf-reading-done {
+  grid-area: 1 / 1;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* At rest the reading is done: the name of the file gives way to the count of its lines. */
+.cf-reading-now {
+  opacity: 0;
+}
+.cf-reading-bar {
+  display: block;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 1px;
+  background-color: var(--ic-line);
+}
+.cf-reading-bar > span {
+  display: block;
+  height: 100%;
+  background-color: var(--ic-ink-900);
+  transform-origin: left;
+}
+/* A figure or a name written into a cell: a cover the colour of the sheet slides off it. */
+.cf-write {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+.cf-write::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--ic-paper-raised);
+  transform: scaleX(0);
+  transform-origin: right;
+}
+/* A citation: the icon of the document the figure came from, on its own small tile. */
+.cf-cite {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-left: 0.375rem;
+  vertical-align: -0.4rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: 0.375rem;
+  background-color: var(--ic-paper);
+  color: var(--ic-ink-900);
+}
+.cf-cite .gd-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+.cf-rate-swap {
+  display: inline-grid;
+}
+.cf-rate-swap > * {
+  grid-area: 1 / 1;
+  justify-self: end;
+}
+.cf-rate-before {
+  opacity: 0;
+}
+/* A highlighter's stroke behind a figure: what Charlie read, on the page it read it from. */
+.cf-mark {
+  position: relative;
+  z-index: 0;
+  background: none;
+  color: inherit;
+  font-weight: 500;
+}
+.cf-mark::before {
+  content: '';
+  position: absolute;
+  inset: -0.125em -0.25em;
+  z-index: -1;
+  border-radius: 2px;
+  background-color: var(--ic-line-strong);
+  transform-origin: left;
+}
+/* The cited page, opened over the sheet just above the line it changed. */
+.cf-source {
+  position: absolute;
+  right: 6.75rem;
+  bottom: 2.625rem;
+  display: grid;
+  gap: 0.375rem;
+  width: min(16.5rem, 64%);
+  padding: 0 0 0.625rem;
+  overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+}
+.cf-source > p {
+  padding-inline: 0.75rem;
+}
+.cf-source-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block: 0.5rem;
+  border-bottom: 1px solid var(--ic-line);
+  background-color: var(--ic-paper);
+  font-weight: 500;
+}
+.cf-source-bar > :last-child {
+  margin-left: auto;
+}
+.cf-source-bar .gd-icon {
+  width: 1rem;
+  height: 1rem;
+}
+.cf-source-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.cf-source-line s {
+  color: var(--ic-ink-400);
+}
+.cf-cursor {
+  position: absolute;
+  right: 7.5rem;
+  bottom: 0.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: var(--ic-ink-900);
+  stroke: var(--ic-paper-raised);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+}
+
+/* Reads: the request arrives, its PDF is read, and its lines are written into the sheet one by one. */
+.cf-stage:not([data-step='reads']) .cf-mail,
+.cf-stage:not([data-step='cites']) :is(.cf-confirmation, .cf-source, .cf-cursor) {
+  opacity: 0;
+}
+.cf-stage[data-step='reads'] .cf-mail {
+  animation: cf-arrive 640ms var(--cf-ease) both;
+}
+.cf-stage[data-step='reads'] .cf-scan {
+  animation: cf-scan 1300ms ease-in-out 600ms 2 both;
+}
+.cf-stage[data-step='reads'] .cf-reading-bar > span {
+  animation: cf-progress 2700ms var(--cf-ease) 600ms both;
+}
+.cf-stage[data-step='reads'] .cf-reading-now {
+  animation: cf-read 3500ms linear both;
+}
+.cf-stage[data-step='reads'] .cf-reading-done {
+  animation: cf-in 360ms var(--cf-ease) both;
+  animation-delay: 3500ms;
+}
+.cf-stage[data-step='reads'] .cf-table tr {
+  animation: cf-in 360ms var(--cf-ease) both;
+  animation-delay: calc(900ms + var(--cf-row) * 440ms);
+}
+.cf-stage[data-step='reads'] .cf-write::after {
+  animation: cf-unveil 520ms var(--cf-ease) both;
+  animation-delay: calc(1000ms + var(--cf-row) * 440ms);
+}
+.cf-stage[data-step='reads'] .cf-qty .cf-write::after {
+  animation-delay: calc(1250ms + var(--cf-row) * 440ms);
+}
+.cf-stage[data-step='reads'] :is(.cf-rate, .cf-status) > * {
+  opacity: 0;
+}
+/*
+ * Cites: each rate is written with the page it came from. The supplier's answer
+ * lands, its figure is marked, the line's rate moves to it and cites it; then
+ * the citation is opened, and the page shows the figure where it was read.
+ */
+.cf-stage[data-step='cites'] .cf-status > * {
+  opacity: 0;
+}
+.cf-stage[data-step='cites'] .cf-rate > * {
+  animation: cf-in 420ms var(--cf-ease) both;
+  animation-delay: calc(200ms + var(--cf-row) * 120ms);
+}
+.cf-stage[data-step='cites'] .cf-cite {
+  animation: cf-pop 360ms var(--cf-ease) both;
+  animation-delay: calc(420ms + var(--cf-row) * 120ms);
+}
+.cf-stage[data-step='cites'] .cf-confirmation {
+  animation: cf-arrive 640ms var(--cf-ease) both;
+  animation-delay: 800ms;
+}
+.cf-stage[data-step='cites'] .cf-confirmation .cf-mark::before {
+  animation: cf-sweep 520ms var(--cf-ease) both;
+  animation-delay: 1450ms;
+}
+.cf-stage[data-step='cites'] tr[data-status='changed'] td {
+  background-color: var(--ic-paper-sunken);
+}
+.cf-stage[data-step='cites'] .cf-rate-before {
+  animation: cf-pass 2100ms var(--cf-ease) both;
+  animation-delay: 200ms;
+}
+.cf-stage[data-step='cites'] .cf-rate-moved {
+  animation: cf-in 460ms var(--cf-ease) both;
+  animation-delay: 2150ms;
+}
+.cf-stage[data-step='cites'] .cf-rate-moved .cf-cite {
+  animation-delay: 2400ms;
+}
+.cf-stage[data-step='cites'] .cf-cursor {
+  animation:
+    cf-point 640ms var(--cf-ease) 2700ms both,
+    cf-press 240ms var(--cf-ease) 3360ms both;
+}
+.cf-stage[data-step='cites'] .cf-source {
+  transform-origin: 70% 100%;
+  animation: cf-pop 380ms var(--cf-ease) both;
+  animation-delay: 3450ms;
+}
+.cf-stage[data-step='cites'] .cf-source .cf-mark::before {
+  animation: cf-sweep 520ms var(--cf-ease) both;
+  animation-delay: 3800ms;
+}
+/* Holds: every line has its state, and the two it cannot settle wait in the signal. */
+.cf-stage[data-step='holds'] .cf-status > * {
+  animation: cf-pop 420ms var(--cf-ease) both;
+  animation-delay: calc(300ms + var(--cf-row) * 160ms);
+}
+
+/* Makes: the quotation is drafted, its working laid out, and stamped for review. */
+.cf-page {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  gap: 0.875rem;
+  width: min(60%, 26rem);
+  padding: 1.375rem 1.5rem 1.5rem;
+  border: 1px solid var(--ic-line);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-raised);
+  transform: translate(-50%, -50%) rotate(-1deg);
+}
+.cf-page-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+.cf-page-head .cf-quiet {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+}
+.cf-page-to {
+  color: var(--ic-ink-600);
+}
+.cf-page-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  margin: 0;
+  padding-block: 0.875rem;
+  border-block: 1px solid var(--ic-line);
+}
+.cf-page-figures dt {
+  color: var(--ic-ink-400);
+}
+.cf-page-figures dd {
+  margin: 0.125rem 0 0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.cf-held,
+.cf-short {
+  color: var(--ic-signal);
+}
+.cf-short {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.cf-short strong {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 400;
+}
+.cf-stamp {
+  justify-self: end;
+  padding: 0.25rem 0.75rem;
+  border: 1.5px solid var(--ic-ink-900);
+  border-radius: var(--radius-control);
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  transform: rotate(-4deg);
+}
+.cf-stage[data-step='makes'] .cf-page > * {
+  animation: cf-in 420ms var(--cf-ease) both;
+}
+.cf-stage[data-step='makes'] .cf-page > :nth-child(2) {
+  animation-delay: 200ms;
+}
+.cf-stage[data-step='makes'] .cf-page > :nth-child(3) {
+  animation-delay: 450ms;
+}
+.cf-stage[data-step='makes'] .cf-page > :nth-child(4) {
+  animation-delay: 800ms;
+}
+.cf-stage[data-step='makes'] .cf-stamp {
+  animation: cf-stamp 420ms var(--cf-ease) both;
+  animation-delay: 1600ms;
+}
+
+/* Tells, asks: the channel, a message, and a request that waits for an approval. */
+.cf-channel {
+  top: 50%;
+  left: 50%;
+  width: min(80%, 34rem);
+  transform: translate(-50%, -50%);
+}
+.cf-hash {
+  font-weight: 500;
+}
+.cf-message {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.625rem;
+  padding: 0.75rem 0.875rem;
+}
+.cf-message + .cf-message {
+  border-top: 1px solid var(--ic-line);
+}
+.cf-avatar {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+}
+.cf-avatar--charlie {
+  background-color: var(--ic-ink-900);
+  color: var(--ic-paper-raised);
+}
+.cf-avatar-mark {
+  width: 70%;
+  height: 70%;
+}
+.cf-message-head {
+  font-weight: 500;
+}
+.cf-message-text {
+  margin-top: 0.125rem;
+  color: var(--ic-ink-900);
+}
+.cf-typing {
+  display: none;
+  gap: 0.25rem;
+  padding-block: 0.5rem;
+}
+.cf-typing span {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background-color: var(--ic-ink-400);
+}
+.cf-ask {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.375rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--ic-line-strong);
+  border-left: 2px solid var(--ic-ink-900);
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper);
+}
+.cf-ask-title {
+  font-weight: 500;
+}
+.cf-ask-answers {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.375rem;
+}
+.cf-approve,
+.cf-other {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.875rem;
+  padding: 0 0.75rem;
+  border-radius: var(--radius-control);
+  font-weight: 500;
+}
+.cf-approve {
+  background-color: var(--ic-ink-900);
+  color: var(--ic-paper-raised);
+}
+.cf-other {
+  border: 1px solid var(--ic-line-strong);
+}
+.cf-decided {
+  margin-top: 0.375rem;
+  color: var(--ic-ink-600);
+}
+.cf-pointer {
+  position: absolute;
+  bottom: 2.75rem;
+  left: 5.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: var(--ic-ink-900);
+  stroke: var(--ic-paper-raised);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+}
+.cf-stage[data-step='tells'] .cf-message--ask {
+  display: none;
+}
+.cf-stage[data-step='tells'] .cf-typing {
+  display: flex;
+  animation: cf-gone 0s 1100ms both;
+}
+.cf-stage[data-step='tells'] .cf-typing span {
+  animation: cf-dot 600ms ease-in-out both;
+  animation-iteration-count: 2;
+}
+.cf-stage[data-step='tells'] .cf-typing span:nth-child(2) {
+  animation-delay: 120ms;
+}
+.cf-stage[data-step='tells'] .cf-typing span:nth-child(3) {
+  animation-delay: 240ms;
+}
+.cf-stage[data-step='tells'] .cf-message-text {
+  animation: cf-in 420ms var(--cf-ease) both;
+  animation-delay: 1100ms;
+}
+.cf-stage[data-step='asks'] .cf-message--ask {
+  animation: cf-in 520ms var(--cf-ease) both;
+}
+.cf-stage[data-step='asks'] .cf-pointer {
+  animation: cf-point 900ms var(--cf-ease) both;
+  animation-delay: 900ms;
+}
+.cf-stage[data-step='asks'] .cf-approve {
+  animation: cf-press 260ms var(--cf-ease) both;
+  animation-delay: 1900ms;
+}
+.cf-stage[data-step='asks'] .cf-decided {
+  animation: cf-in 420ms var(--cf-ease) both;
+  animation-delay: 2200ms;
+}
+.cf-stage:not([data-step='asks']) .cf-pointer {
+  opacity: 0;
+}
+
+@keyframes cf-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes cf-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+}
+@keyframes cf-arrive {
+  from {
+    opacity: 0;
+    transform: translate3d(-12px, 0, 0) rotate(-1.5deg);
+  }
+}
+@keyframes cf-scan {
+  from {
+    opacity: 1;
+    transform: translate3d(0, -0.75rem, 0);
+  }
+  90% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, 2.75rem, 0);
+  }
+}
+/* The file's name while it is read, gone once it has been. */
+@keyframes cf-read {
+  from,
+  92% {
+    opacity: 1;
+  }
+}
+/* Shown, then given way: the rate the price list gave, before the supplier's answer moved it. */
+@keyframes cf-pass {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  12%,
+  82% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes cf-unveil {
+  from {
+    transform: none;
+  }
+}
+@keyframes cf-sweep {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes cf-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+@keyframes cf-stamp {
+  from {
+    opacity: 0;
+    transform: rotate(-4deg) scale(1.3);
+  }
+}
+@keyframes cf-point {
+  from {
+    opacity: 0;
+    transform: translate3d(9rem, 2.5rem, 0);
+  }
+}
+@keyframes cf-press {
+  50% {
+    transform: translate3d(0, 1px, 0) scale(0.97);
+  }
+}
+@keyframes cf-dot {
+  50% {
+    transform: translate3d(0, -3px, 0);
+  }
+}
+@keyframes cf-gone {
+  to {
+    visibility: hidden;
+    position: absolute;
+  }
+}
+
+@media (min-width: 64rem) {
+  .cf {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    align-items: center;
+  }
+}
+/* Stacked, the film comes first and its abilities follow it. */
+@media (max-width: 63.99rem) {
+  .cf-stage {
+    order: -1;
+  }
+}
+@media (max-width: 47.99rem) {
+  .cf-stage {
+    aspect-ratio: 4 / 5;
+    font-size: 0.75rem;
+  }
+  .cf-mail,
+  .cf-confirmation {
+    left: 4%;
+    right: 4%;
+    width: auto;
+    top: 4%;
+  }
+  .cf-sheet {
+    top: auto;
+    left: 4%;
+    right: 4%;
+    bottom: 4%;
+    width: auto;
+    transform: none;
+  }
+  .cf-qty,
+  .cf-line {
+    display: none;
+  }
+  .cf-rate {
+    width: 4.25rem;
+  }
+  .cf-rate-moved s {
+    display: none;
+  }
+  .cf-status {
+    width: 6.5rem;
+  }
+  .cf-source {
+    right: 4%;
+    left: 4%;
+    width: auto;
+  }
+  .cf-cursor {
+    right: 6.75rem;
+  }
+  .cf-page {
+    width: 88%;
+  }
+  .cf-channel {
+    width: 92%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cf-stage *,
+  .cf-stage *::before,
+  .cf-stage *::after,
+  .cf-scene,
+  .cf-step-button {
+    animation: none !important;
+    transition: none !important;
+  }
+  .cf-typing {
+    display: none !important;
+  }
 }
 
 /* ── Keyframes ────────────────────────────────────────────────────────── */
@@ -5220,6 +6485,27 @@
     transform: scaleY(0);
   }
   to {
+    transform: none;
+  }
+}
+@keyframes glass-quote {
+  0%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -0.25em, 0);
+  }
+}
+@keyframes glass-line {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.5em, 0);
+  }
+  to {
+    opacity: 1;
     transform: none;
   }
 }
@@ -5269,6 +6555,14 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+@keyframes glass-ring {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
   }
 }
 @keyframes glass-progress {
@@ -5325,7 +6619,8 @@
   }
 }
 @media (min-width: 48rem) {
-  .glass-sources-title {
+  .glass-sources-title,
+  .glass-act-title {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   }
 }
@@ -5355,7 +6650,7 @@
   }
   .glass-close-grid {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-    align-items: end;
+    align-items: start;
   }
 }
 @media (max-width: 47.99rem) {
@@ -5402,7 +6697,7 @@
     justify-self: stretch;
     gap: 0.75rem;
     padding: 0.75rem 1rem 0.25rem;
-    border-inline: 1px solid var(--ic-line);
+    border-inline: 1px solid var(--ic-line-strong);
     border-top: 1px solid var(--ic-line);
     background-color: var(--ic-paper-raised);
   }

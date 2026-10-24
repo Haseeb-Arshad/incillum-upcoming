@@ -10,13 +10,16 @@ describe('dust', () => {
   it('keeps every grain inside the ranges the shader reads them in', () => {
     const data = seeds(20_000)
     expect(data).toHaveLength(80_000)
+    // Collected, then asserted once: eighty thousand assertions time out on a busy machine.
+    const outside: number[] = []
     for (let index = 0; index < 20_000; index += 1) {
-      expect(Math.abs(data[index * 4]!)).toBeLessThanOrEqual(1.25)
+      if (Math.abs(data[index * 4]!) > 1.25) outside.push(index)
       for (const offset of [1, 2, 3]) {
-        expect(data[index * 4 + offset]).toBeGreaterThanOrEqual(0)
-        expect(data[index * 4 + offset]).toBeLessThan(1)
+        const value = data[index * 4 + offset]!
+        if (value < 0 || value >= 1) outside.push(index)
       }
     }
+    expect(outside).toEqual([])
   })
 
   it('weights the grains toward the near rows, which the perspective spreads thinnest', () => {
@@ -33,10 +36,11 @@ describe('dust', () => {
     expect(dustCount(3840, 2160)).toBe(120_000)
   })
 
-  it('gives the morning’s two ribbons far fewer grains, since they gather them into thin bands', () => {
-    expect(dustCount(1440, 900, 'morning')).toBe(48_000)
-    expect(dustCount(390, 630, 'morning')).toBe(14_000)
-    expect(dustCount(1440, 900, 'morning')).toBeLessThan(dustCount(1440, 900))
+  it('gives the morning’s loose motes far fewer grains, so they read as dust in the light', () => {
+    expect(dustCount(1440, 900, 'morning')).toBe(4_320)
+    expect(dustCount(390, 630, 'morning')).toBe(1_800)
+    expect(dustCount(3840, 2160, 'morning')).toBe(7_000)
+    expect(dustCount(1440, 900, 'morning')).toBeLessThan(dustCount(1440, 900) / 20)
   })
 
   it('reads a computed colour into channels', () => {

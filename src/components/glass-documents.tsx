@@ -1,3 +1,4 @@
+import { Icon, sourceIcons } from '#/components/icons.tsx'
 import { glass } from '#/content/site.ts'
 
 import type { GlassSource } from '#/content/site.ts'
@@ -362,66 +363,9 @@ function BearingSeat() {
   )
 }
 
-/**
- * Sixteen-pixel glyphs on `currentColor`, one per kind of source, drawn here
- * rather than taken from a package (AGENTS.md §3). One stroke weight for all.
- */
+/** A source's icon, from the product's own set (`icons.tsx`). */
 export function SourceIcon({ source }: { source: GlassSource }) {
-  const common = {
-    viewBox: '0 0 16 16',
-    fill: 'none',
-    'aria-hidden': true,
-    focusable: 'false',
-    className: 'gd-icon',
-  } as const
-  const stroke = {
-    stroke: 'currentColor',
-    strokeWidth: 1.25,
-    strokeLinecap: 'round',
-    strokeLinejoin: 'round',
-  } as const
-
-  switch (source) {
-    case 'request':
-    case 'supplier':
-      return (
-        <svg {...common}>
-          <rect x="1.75" y="3.25" width="12.5" height="9.5" rx="1" {...stroke} />
-          <path d="M2.25 4l5.75 4.5L13.75 4" {...stroke} />
-        </svg>
-      )
-    case 'drawing':
-      return (
-        <svg {...common}>
-          <rect x="1.75" y="2.25" width="12.5" height="11.5" rx="1" {...stroke} />
-          <path d="M4.5 10.5l3-5 3 5M5.5 9h4M9.5 11.75h3" {...stroke} />
-        </svg>
-      )
-    case 'catalogue':
-      return (
-        <svg {...common}>
-          <path d="M3 2.75h7.25a1 1 0 0 1 1 1v9.5H4a1 1 0 0 1-1-1z" {...stroke} />
-          <path d="M3 12.25a1 1 0 0 1 1-1h7.25M13 4.5v10" {...stroke} />
-        </svg>
-      )
-    case 'prices':
-      return (
-        <svg {...common}>
-          <rect x="1.75" y="2.25" width="12.5" height="11.5" rx="1" {...stroke} />
-          <path d="M1.75 6h12.5M1.75 9.75h12.5M6 2.25v11.5" {...stroke} />
-        </svg>
-      )
-    case 'agreement':
-      return (
-        <svg {...common}>
-          <path d="M3.25 1.75h6l3.5 3.5v9H3.25z" {...stroke} />
-          <path
-            d="M5.5 7h5M5.5 9.5h3M5.5 12c1-.9 1.6-.9 2.2 0s1.2.9 2.3-.4"
-            {...stroke}
-          />
-        </svg>
-      )
-  }
+  return <Icon icon={sourceIcons[source]} className="gd-icon" />
 }
 
 /** A file, with its format on its corner — the way a mail client shows an attachment. */

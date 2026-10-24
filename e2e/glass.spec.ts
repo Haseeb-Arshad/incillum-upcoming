@@ -6,7 +6,7 @@ import type { Page } from '@playwright/test'
  * The presentation, which is the front page (`/`).
  *
  * The rules under test are the home page's, carried onto a page that moves
- * more: one dark region; the invented material says so first, in a sentence;
+ * more: one dark region; the film opens on one sentence, never a label;
  * the money is the thread's; nothing is claimed, nothing pulses, and the motto
  * is not spent; one form, which is never submitted here. And the
  * presentation's own: no tracked capitals anywhere, the opening gets out of the
@@ -41,7 +41,8 @@ async function holdTheOpening(page: Page) {
       if (!document.head) return
       observer.disconnect()
       const style = document.createElement('style')
-      style.textContent = '.glass { --glass-beat: 15s; }'
+      // Above the stylesheet's own rule by specificity, so it wins wherever in the head it lands.
+      style.textContent = ':root .glass { --glass-beat: 15s; }'
       document.head.append(style)
     }).observe(document, { childList: true, subtree: true })
   })
@@ -82,13 +83,13 @@ test('first screen: the headline, one form, one dark region, and no horizontal o
   ).toBe(true)
 })
 
-test('the film says it is invented first, and its chapters are the thread’s hours', async ({
+test('the film opens on one sentence, and its chapters are the thread’s hours', async ({
   page,
 }) => {
   const film = page.locator('#film')
   // The licence is the frame's first line and its name: a sentence, not a label.
-  await expect(film.getByRole('heading', { level: 2 })).toHaveText(/invented/i)
-  await expect(film).toHaveAccessibleName(/invented/i)
+  await expect(film.getByRole('heading', { level: 2 })).toHaveText(/^One quotation/)
+  await expect(film).toHaveAccessibleName(/^One quotation/)
 
   const chapters = film
     .getByRole('group', { name: 'Hours of the night' })
@@ -229,37 +230,36 @@ test('the film’s money is the thread’s money', async ({ page }) => {
   await expect(film.locator('.glass-sheet-row[data-status="priced"]')).toHaveCount(4)
 })
 
-test('the film plays once, in order, and stops at 08:04', async ({ page }) => {
-  // Six hours of animation-timed playback, then a replay: on a loaded machine a
+test('the film plays in order, holds the morning, and goes round again', async ({ page }) => {
+  // Six hours of animation-timed playback and round again: on a loaded machine a
   // headless browser draws frames slowly enough to need more than the default budget.
   test.slow()
   await watchTheFilm(page, '400ms')
   const film = page.locator('.glass-film')
   const seen: string[] = []
+  let wrapped = false
   await expect
     .poll(
       async () => {
         const stage = (await film.getAttribute('data-stage')) ?? ''
         if (seen.at(-1) !== stage) seen.push(stage)
-        return stage
+        // Once the morning has been reached, the next hour is 23:47 again.
+        wrapped = seen.includes('5') && seen.at(-1) === '0'
+        return wrapped
       },
-      { intervals: [100], timeout: 10_000 },
+      { intervals: [100], timeout: 15_000 },
     )
-    .toBe('5')
-  expect(seen).toEqual(['0', '1', '2', '3', '4', '5'])
-  await expect(page.getByRole('button', { name: 'Watch it again' })).toBeVisible()
-  await page.waitForTimeout(1200)
-  await expect(film).toHaveAttribute('data-stage', '5')
-
-  await page.getByRole('button', { name: 'Watch it again' }).click()
-  await expect(film).toHaveAttribute('data-stage', '0')
+    .toBe(true)
+  expect(seen).toEqual(['0', '1', '2', '3', '4', '5', '0'])
+  // It keeps playing: the reader is offered a pause, not a replay.
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible()
 })
 
 test('the reader can pause the film, and it holds where it was', async ({ page }) => {
   await watchTheFilm(page, '1500ms')
   const film = page.locator('.glass-film')
   await expect(film).toHaveAttribute('data-running', 'true')
-  await page.getByRole('button', { name: 'Pause' }).click()
+  await page.getByRole('button', { name: 'Pause', exact: true }).click()
   await expect(film).toHaveAttribute('data-running', 'false')
   const held = await film.getAttribute('data-stage')
   await page.waitForTimeout(2200)
@@ -275,7 +275,7 @@ test('the opening ends on its own, and leaves nothing over the page', async ({
   await page.waitForSelector('html[data-hydrated="true"]')
 
   await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'ended', {
-    timeout: 8_000,
+    timeout: 14_000,
   })
   await expect(page.locator('.glass-opening')).toBeHidden()
   // Nothing transparent left on top: the middle of the screen is the page's own.
@@ -306,6 +306,102 @@ test('any key ends the opening early, and the page arrives at once', async ({ pa
     'animation-name',
     'glass-enter-now',
   )
+})
+
+test('the opening plays once a visit: not on a return from another page, and again on a reload', async ({
+  page,
+}) => {
+  // Three page loads, each waited out to hydration.
+  test.slow()
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await holdTheOpening(page)
+  await page.goto(GLASS)
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'playing')
+  await page.keyboard.press('Shift')
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'skipped')
+
+  // Back from another page, the page is simply there: marked before the first paint, and kept so.
+  await page.goto('/charlie')
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await page.locator('.site-brand').first().click()
+  await page.waitForURL(/\/$/)
+  await expect(page.locator('html')).toHaveAttribute('data-opened', '')
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'seen')
+  await expect(page.locator('.glass-opening')).toBeHidden()
+  const title = page.getByRole('heading', { level: 1 })
+  await expect(title).toHaveCSS('animation-name', 'none')
+  await expect(title).toHaveCSS('opacity', '1')
+  await expect(page.locator('.glass-field[data-tone="night"]')).toHaveAttribute('data-formed', 'true')
+
+  // A reload plays it again.
+  await page.reload()
+  await page.waitForSelector('html[data-hydrated="true"]')
+  expect(await page.locator('html').getAttribute('data-opened')).toBeNull()
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'playing')
+  await expect(page.locator('.glass-opening')).toBeVisible()
+})
+
+test('a reload below the first screen keeps the reader’s place, with nothing over it', async ({
+  page,
+}) => {
+  // Four page loads, each waited out to hydration.
+  test.slow()
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await holdTheOpening(page)
+  await page.goto(GLASS)
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await page.keyboard.press('Shift')
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'skipped')
+
+  await page
+    .locator('#questions')
+    .evaluate((element) => element.scrollIntoView({ block: 'start', behavior: 'instant' }))
+  await page.reload()
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await expect(page.locator('html')).toHaveAttribute('data-opened', '')
+  await expect(page.locator('.glass-opening')).toBeHidden()
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+
+  // At the top, a reload plays it as before.
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.reload()
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'playing')
+})
+
+test('an address that names a section opens on it, with nothing over it', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await holdTheOpening(page)
+  // A new document, not the fragment navigation a hash on the open front page would be.
+  await page.goto('about:blank')
+  await page.goto(`${GLASS}#questions`)
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await expect(page.locator('html')).toHaveAttribute('data-opened', '')
+  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'seen')
+  await expect(page.locator('.glass-opening')).toBeHidden()
+})
+
+test('the opening is a quotation and its answer, and the dust keeps the opening’s time', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await holdTheOpening(page)
+  await page.goto(GLASS)
+  await page.waitForSelector('html[data-hydrated="true"]')
+  const opening = page.locator('.glass-opening')
+  await expect(opening.locator('blockquote p')).toHaveCount(2)
+  await expect(opening.locator('blockquote')).toContainText('plenty there that needs to be done')
+  await expect(opening.locator('figcaption')).toHaveText(
+    '— Alan Turing, Computing Machinery and Intelligence, 1950',
+  )
+  await expect(opening.locator('.glass-opening-then')).toHaveText('Charlie does the work. You decide.')
+  // The quotation is set first; its answer waits its turn.
+  await expect(opening.locator('blockquote p').first()).toHaveCSS('opacity', '1')
+  await expect(opening.locator('.glass-opening-then')).toHaveCSS('opacity', '0')
+  // Fifteen seconds a beat: well inside the first, the landscape is still unrolling.
+  await expect(page.locator('.glass-field[data-tone="night"]')).toHaveAttribute('data-formed', 'false')
 })
 
 test('six sources gather into one thread as the reader scrolls, and come apart again', async ({
@@ -349,8 +445,10 @@ test('nothing is claimed, nothing pulses, and the signal stays where it is licen
   await expect(page.locator('body')).not.toContainText(
     /trusted by|customers include|testimonial|SOC 2|ISO 27001|HIPAA|GDPR|check your inbox|NetSuite|\bSAP\b|Salesforce|Gmail|Outlook|�/i,
   )
+  // The front page's close carries the motto once, as its last line.
   const text = await page.locator('body').innerText()
-  expect(text.match(/stay with the work/gi)).toBeNull()
+  expect(text.match(/stay with the work/gi)).toHaveLength(1)
+  await expect(page.getByRole('contentinfo')).toContainText('Stay with the work.')
 
   const infinite = await page.evaluate(
     () =>
@@ -364,7 +462,7 @@ test('nothing is claimed, nothing pulses, and the signal stays where it is licen
   const strays = await page.evaluate(() => {
     const signal = new Set(['rgb(154, 85, 24)', 'rgb(228, 160, 70)'])
     const licensed =
-      '.matrix-status--held, .glass-sheet-short, .glass-thread-short, .glass-handover-short'
+      '.matrix-status--held, .glass-sheet-short, .glass-thread-short, .glass-handover-short, .how-card-short, .how-decide-short, .cf-held, .cf-short'
     return [...document.querySelectorAll('body *')]
       .filter((element) => element.childElementCount === 0 && element.textContent?.trim())
       .filter((element) => signal.has(getComputedStyle(element).color))
@@ -449,7 +547,7 @@ test('the documents carry their own contents, and the part lies on bare desk', a
 test('reduced motion renders the final frame', async ({ page }) => {
   await expect(page.locator('.glass-opening')).toBeHidden()
   for (const selector of [
-    '.glass-header',
+    '.glass-bar',
     '.glass-title',
     '.glass-form',
     '.glass-film-enter',
@@ -556,15 +654,265 @@ test('server HTML carries the headline, the form, the whole night and the licenc
   await staticPage.goto(`${base}${GLASS}`)
   await expect(staticPage.getByRole('heading', { level: 1 })).toBeVisible()
   await expect(staticPage.getByRole('textbox', { name: /^Work email/ })).toBeAttached()
-  await expect(staticPage.locator('#film h2')).toHaveText(/invented/i)
+  await expect(staticPage.locator('#film h2')).toHaveText(/^One quotation/)
   await expect(staticPage.locator('.glass-beat')).toHaveCount(6)
   for (const hour of ['23:47', '00:06', '01:18', '03:42', '06:50', '08:04']) {
     await expect(staticPage.locator('.glass-beat', { hasText: hour })).toBeVisible()
   }
   await expect(staticPage.getByText('Six sources that never meet.')).toBeVisible()
   await expect(staticPage.getByText('Now they meet.')).toBeVisible()
-  await expect(staticPage.getByText(/The six on this page are invented/)).toBeVisible()
+  await expect(staticPage.getByText(/^Everything one quotation needs/)).toBeVisible()
+  // Without a script the four steps are simply listed, each with its heading.
+  await expect(staticPage.locator('#how .how-panel-heading')).toHaveCount(4)
+  for (const panel of await staticPage.locator('#how .how-panel').all()) {
+    await expect(panel).toBeVisible()
+  }
+  await expect(staticPage.locator('#trust .protect-card')).toHaveCount(6)
+  await expect(staticPage.locator('#questions .questions-answer').first()).toBeVisible()
   await context.close()
+})
+
+test('where the stage pins, the scroll walks the four steps, and a tab scrolls to its step', async ({
+  page,
+}) => {
+  const track = page.locator('.how-track')
+  const fits = await page.evaluate(
+    () => window.matchMedia('(min-width: 48rem) and (min-height: 46rem)').matches,
+  )
+  // The attribute follows hydration by one render, so wait for it rather than read it once.
+  await expect(track).toHaveAttribute('data-pinned', fits ? 'true' : 'false')
+  test.skip(!fits, 'pins only where the whole stage fits on one screen')
+
+  const tabs = page.locator('#how').getByRole('tab')
+  const scrollTo = (fraction: number) =>
+    track.evaluate((element, f) => {
+      const top = element.getBoundingClientRect().top + window.scrollY
+      const height = element.getBoundingClientRect().height
+      window.scrollTo(0, top + f * (height - window.innerHeight))
+    }, fraction)
+  for (const [fraction, index] of [
+    [0.1, 0],
+    [0.35, 1],
+    [0.6, 2],
+    [0.9, 3],
+  ] as const) {
+    await scrollTo(fraction)
+    await expect(tabs.nth(index)).toHaveAttribute('aria-selected', 'true')
+  }
+  // The stage holds still under the masthead while the track passes.
+  const stage = await page.locator('.how-stage').boundingBox()
+  const bar = await page.getByRole('banner').boundingBox()
+  expect(Math.abs((stage?.y ?? 0) - (bar?.height ?? 0))).toBeLessThan(2)
+
+  // Choosing a tab scrolls to its step, and the scroll keeps it chosen.
+  await tabs.nth(1).click()
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true')
+  await page.waitForTimeout(1200)
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true')
+})
+
+test('how it works is a real tablist, and each step ends where it stops', async ({ page }) => {
+  const section = page.locator('#how')
+  await expect(section.getByText(/^Four steps through one quotation/)).toBeVisible()
+  const tabs = section.getByRole('tab')
+  await expect(tabs).toHaveCount(4)
+  await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true')
+  await expect(section.getByRole('tabpanel')).toHaveCount(1)
+
+  // The keyboard moves the selection and the focus together, and wraps.
+  await tabs.nth(0).focus()
+  await page.keyboard.press('ArrowDown')
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true')
+  await expect(tabs.nth(1)).toBeFocused()
+  await page.keyboard.press('End')
+  await expect(tabs.nth(3)).toHaveAttribute('aria-selected', 'true')
+  await page.keyboard.press('ArrowRight')
+  await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true')
+  await page.keyboard.press('ArrowUp')
+  await expect(tabs.nth(3)).toBeFocused()
+  await page.keyboard.press('Home')
+  await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true')
+
+  // Every step names one of the four limits, and the four are each used once.
+  const limits: string[] = []
+  for (let index = 0; index < 4; index += 1) {
+    await tabs.nth(index).click()
+    const panel = section.getByRole('tabpanel')
+    await expect(panel).toHaveAttribute('aria-labelledby', (await tabs.nth(index).getAttribute('id'))!)
+    // Wait for the panel to be drawn before reading it: `innerText` of a panel not yet shown is empty.
+    const limit = panel.locator('.how-stops-line strong')
+    await expect(limit).toHaveText(/\S/)
+    limits.push((await limit.innerText()).replace(/\.$/, ''))
+  }
+  expect([...limits].sort()).toEqual(['Ambiguity', 'Approval', 'Commercial policy', 'Missing evidence'])
+})
+
+test('the tabs’ figures are the evidence document’s and the ledger’s, and a change is a swap', async ({
+  page,
+}) => {
+  const section = page.locator('#how')
+  await section.getByRole('tab', { name: /Hold/ }).click()
+  await expect(section.getByRole('tabpanel').locator('.matrix-status--held')).toHaveCount(2)
+
+  await section.getByRole('tab', { name: /Price/ }).click()
+  const price = section.getByRole('tabpanel')
+  for (const figure of ['20.0%', '15.2%', 'EUR 160.00', 'EUR 11,520.00']) {
+    await expect(price).toContainText(figure)
+  }
+  // Under reduced motion nothing fades: nothing longer than the site's 0.01ms backstop.
+  const durations = await price.evaluate((element) =>
+    getComputedStyle(element).transitionDuration.split(',').map((value) => parseFloat(value)),
+  )
+  for (const seconds of durations) expect(seconds).toBeLessThan(0.001)
+
+  await section.getByRole('tab', { name: /Decide/ }).click()
+  const decide = section.getByRole('tabpanel')
+  for (const figure of ['EUR 169.60', '16.4%', 'EUR 10,638.00']) {
+    await expect(decide).toContainText(figure)
+  }
+})
+
+test('trust: six cards of protection, no state labels, and no certification named', async ({
+  page,
+}) => {
+  const section = page.locator('#trust')
+  await expect(section.getByRole('heading', { level: 2 })).toHaveText(
+    'Built for the figures you guard most.',
+  )
+  const cards = section.locator('.protect-card')
+  await expect(cards).toHaveCount(6)
+  for (const card of await cards.all()) {
+    await expect(card.locator('.protect-tile svg')).toBeAttached()
+    await expect(card.getByRole('heading', { level: 3 })).toBeVisible()
+  }
+  await expect(section).not.toContainText(/Decided|In build|Planned|Not held/)
+  // The build's own progress is kept for the owner, off the page.
+  await expect(page.locator('body')).not.toContainText(
+    /SOC 2|ISO\/IEC|GDPR|CCPA|HIPAA|certified|compliant|Honest about what exists/,
+  )
+})
+
+test('nothing on the page paints over the masthead, from the top to the footer', async ({
+  page,
+}) => {
+  // Every point across the masthead's middle, at every scroll position, belongs to the masthead.
+  const covered = await page.evaluate(() => {
+    const banner = document.querySelector('[role="banner"]')!
+    const box = banner.getBoundingClientRect()
+    const y = box.top + box.height / 2
+    const found: string[] = []
+    const end = document.documentElement.scrollHeight - window.innerHeight
+    for (let top = 0; top <= end; top += 120) {
+      window.scrollTo({ top, behavior: 'instant' })
+      for (let x = 4; x < window.innerWidth; x += 48) {
+        const hit = document.elementFromPoint(x, y)
+        if (hit && !banner.contains(hit)) found.push(`${top}px, x ${x}: ${hit.className}`)
+      }
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    return found.slice(0, 5)
+  })
+  expect(covered).toEqual([])
+})
+
+test('after the night the page lies on white paper, with nothing grained into it', async ({
+  page,
+}) => {
+  for (const selector of ['body', '.glass-acts', '.glass-sources', '.glass-desk']) {
+    const ground = await page
+      .locator(selector)
+      .first()
+      .evaluate((element) => {
+        const style = getComputedStyle(element)
+        return { colour: style.backgroundColor, image: style.backgroundImage }
+      })
+    expect(ground, selector).toEqual({ colour: 'rgb(255, 255, 255)', image: 'none' })
+  }
+})
+
+test('questions are answered in full, with nothing folded away', async ({ page }) => {
+  const section = page.locator('#questions')
+  const answers = section.locator('.questions-answer')
+  expect(await answers.count()).toBeGreaterThanOrEqual(5)
+  for (const answer of await answers.all()) await expect(answer).toBeVisible()
+  await expect(page.locator('details')).toHaveCount(0)
+  await expect(section.locator('[hidden]')).toHaveCount(0)
+})
+
+test('the masthead stays with the reader, and its links land somewhere real', async ({
+  page,
+}) => {
+  const banner = page.getByRole('banner')
+  await expect(banner).toHaveAttribute('data-scrolled', 'false')
+  // In the night's tokens over the night, and the paper's over the paper: never a dark bar over white.
+  await expect(banner).toHaveAttribute('data-tone', 'night')
+  await page.locator('#trust').evaluate((element) => element.scrollIntoView({ behavior: 'instant' }))
+  await expect(banner).toHaveAttribute('data-scrolled', 'true')
+  await expect(banner).toHaveAttribute('data-tone', 'day')
+  expect((await banner.boundingBox())?.y).toBe(0)
+  await expect(banner.getByRole('link', { name: 'Request early access' })).toBeInViewport()
+
+  // Every link to a section of this page, written `#id` or `/#id`, names one that exists, once.
+  const anchors = await page
+    .locator('a[href^="#"], a[href^="/#"]')
+    .evaluateAll((links) => links.map((link) => link.getAttribute('href')!.split('#')[1]!))
+  for (const id of new Set(anchors)) {
+    await expect(page.locator(`[id="${id}"]`), `#${id}`).toHaveCount(1)
+  }
+
+  // The button puts the cursor in the field.
+  await banner.getByRole('link', { name: 'Request early access' }).click()
+  await expect(page.getByRole('textbox', { name: /^Work email/ })).toBeFocused()
+})
+
+test('Charlie’s film plays its six beats in order while on screen, and goes round', async ({
+  page,
+}) => {
+  test.slow()
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto(GLASS)
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await page.addStyleTag({ content: '.cf { --cf-beat: 500ms; }' })
+  await page.keyboard.press('Shift')
+  const film = page.locator('.cf')
+  await film.evaluate((element) => element.scrollIntoView({ block: 'center', behavior: 'instant' }))
+  await expect(film).toHaveAttribute('data-running', 'true')
+
+  const stage = page.locator('.cf-stage')
+  const seen: string[] = []
+  await expect
+    .poll(
+      async () => {
+        const step = (await stage.getAttribute('data-step')) ?? ''
+        if (seen.at(-1) !== step) seen.push(step)
+        return seen.length >= 7
+      },
+      { intervals: [80], timeout: 15_000 },
+    )
+    .toBe(true)
+  expect(seen.slice(0, 7)).toEqual(['reads', 'cites', 'holds', 'makes', 'tells', 'asks', 'reads'])
+  // The frame restates the list, so it is hidden from a screen reader; the list is not.
+  await expect(stage).toHaveAttribute('aria-hidden', 'true')
+  await expect(page.locator('.cf-step-button')).toHaveCount(6)
+
+  // Paused, it holds where it was.
+  await page.getByRole('button', { name: 'Pause Charlie' }).click()
+  const held = await stage.getAttribute('data-step')
+  await page.waitForTimeout(1500)
+  await expect(stage).toHaveAttribute('data-step', held!)
+})
+
+test('under reduced motion Charlie’s film never plays, and a beat is chosen by hand', async ({
+  page,
+}) => {
+  const film = page.locator('.cf')
+  await film.evaluate((element) => element.scrollIntoView({ block: 'center', behavior: 'instant' }))
+  await expect(page.locator('.cf-step-fill--live')).toHaveCount(0)
+  await expect(page.locator('.cf-play')).toHaveCount(0)
+  await page.locator('.cf-step-button').filter({ hasText: 'Makes the documents' }).click()
+  await expect(page.locator('.cf-stage')).toHaveAttribute('data-step', 'makes')
+  await page.waitForTimeout(1200)
+  await expect(page.locator('.cf-stage')).toHaveAttribute('data-step', 'makes')
 })
 
 test('is the front page: indexable, canonical at the root, and where /glass now lands', async ({

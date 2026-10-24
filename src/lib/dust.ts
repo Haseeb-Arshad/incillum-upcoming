@@ -13,10 +13,11 @@
  * first and the near dunes last, so the landscape unrolls toward the reader
  * from a single opening (`DustScene.form`).
  *
- * **The morning** is the same dust put in order: two ribbons framing the
- * photograph, one above it and one below, each turning about its own length,
- * so that where a ribbon turns edge-on it pinches to a single thread. The night
- * is a landscape; the morning is threads, which is what the night was for.
+ * **The morning** is the same dust let loose in the room: grains scattered at
+ * random round the photograph, each wandering slowly on its own path, with the
+ * air drifting them all a little toward the glass. They catch the daylight in a
+ * soft band falling from the upper left and all but vanish outside it. The
+ * night is a landscape; the morning is a room with the light on.
  *
  * Both are one colour at many alphas, and the colour is the caller's: ink on
  * the night, ink on the desk.
@@ -40,7 +41,7 @@ export type DustTone = 'night' | 'morning'
 
 /**
  * Where the camera stands, how the dust is lit, and how far it has formed.
- * Every field is a uniform; the morning's ribbons read only `level` and `fade`.
+ * Every field is a uniform; the morning's motes read only `level` and `fade`.
  */
 export interface DustScene {
   /** The far edge of the landscape, as a fraction of the canvas height. */
@@ -162,7 +163,7 @@ void main() {
 }
 `
 
-const RIBBONS = `
+const MOTES = `
 precision highp float;
 attribute vec4 aSeed;
 uniform vec2 uSize;
@@ -176,33 +177,39 @@ varying float vSoft;
 const float TAU = 6.2831853;
 
 void main() {
-  float x = mix(-0.06, 1.06, clamp(aSeed.x / 2.5 + 0.5, 0.0, 1.0));
-  float across = aSeed.z * 2.0 - 1.0;
-  float strand = step(0.5, aSeed.w);
-  float fuzz = aSeed.y;
+  // Where each grain lives: anywhere in the field, at random. Most are far and fine; a few are near and soft.
+  vec2 home = vec2(aSeed.x / 2.5 + 0.5, aSeed.z);
+  float depth = aSeed.y;
+  float own = aSeed.w;
 
-  // Two threads framing the photograph, one along the margin above it and one along the margin below.
-  float path = mix(0.095, 0.89, strand)
-    + 0.022 * sin(x * TAU * 1.2 + uTime * 0.16 + strand * 2.4)
-    + 0.008 * sin(x * TAU * 3.1 - uTime * 0.23 + strand * 1.1);
+  // Its own slow wander about that home, on sines of unrelated periods, so no two grains keep step
+  // and the field never settles into a pattern.
+  float pace = mix(0.035, 0.09, own);
+  float turn = own * TAU * 13.0;
+  vec2 wander = vec2(
+    sin(uTime * pace + turn) + 0.6 * sin(uTime * pace * 2.37 + turn * 1.9),
+    cos(uTime * pace * 0.83 + turn * 1.3) + 0.6 * sin(uTime * pace * 1.91 + turn * 0.7)
+  ) * mix(0.006, 0.028, depth);
 
-  // Each ribbon turns about its own length; edge-on, it pinches to a single thread. The
-  // turns are set by the width, so a phone sees a ribbon's twist rather than a chain of them.
-  float turns = clamp(uSize.x / 560.0, 1.2, 2.6) * (1.0 + strand * 0.28);
-  float twist = x * TAU * turns - uTime * 0.4 + strand * 1.7;
-  float width = min(0.07, 52.0 / uSize.y);
-  float y = path + across * width * cos(twist) + (fuzz - 0.5) * 0.004;
-  vec2 point = vec2(x * uSize.x, y * uSize.y);
-  gl_Position = vec4(point.x / uSize.x * 2.0 - 1.0, 1.0 - point.y / uSize.y * 2.0, 0.0, 1.0);
+  // And the room's still air: everything rises a little and drifts toward the glass, very slowly, round and round.
+  vec2 air = vec2(uTime * mix(0.002, 0.006, own), -uTime * mix(0.001, 0.003, depth));
+  vec2 at = fract(home + air) + wander;
+  gl_Position = vec4(at.x * 2.0 - 1.0, 1.0 - at.y * 2.0, 0.0, 1.0);
 
-  gl_PointSize = (0.9 + fuzz * 0.8) * uRatio;
-  vSoft = 0.25;
+  float size = mix(1.0, 5.0, depth * depth * depth);
+  gl_PointSize = size * uRatio;
+  vSoft = smoothstep(0.3, 0.9, depth);
 
-  // The face turned toward the reader is lit; the far face, and the ribbon's edges, fall away.
-  float face = 0.5 + 0.5 * across * sin(twist);
-  float alpha = (0.14 + 0.62 * face) * (1.0 - abs(across) * 0.5);
-  float along = point.y / uSize.y;
-  alpha *= smoothstep(0.0, uFade.x, along) * (1.0 - smoothstep(uFade.y, 1.0, along));
+  // The daylight through the glass wall: a broad soft band falling from the upper left, where the
+  // dust catches it. Outside it a grain is barely there.
+  float across = (at.x - 0.12) + (at.y - 0.5) * 0.62;
+  float light = exp(-pow(across / 0.34, 2.0));
+  float alpha = mix(0.1, 0.7, light) * mix(1.0, 0.55, depth);
+  // A grain out of focus spreads the same ink over more of the paper.
+  alpha *= min(1.0, 2.0 / size);
+  // Faded out at every edge, so a grain coming round again never appears from nowhere.
+  alpha *= smoothstep(0.0, 0.05, at.x) * (1.0 - smoothstep(0.95, 1.0, at.x));
+  alpha *= smoothstep(0.0, uFade.x, at.y) * (1.0 - smoothstep(uFade.y, 1.0, at.y));
   vAlpha = alpha * uLevel;
 }
 `
@@ -245,12 +252,12 @@ export function seeds(count: number, seed = 7): Float32Array {
 
 /**
  * Grains for a canvas of this size: the area decides, inside what a phone and
- * a wide screen can both fill. The ribbons gather their grains into two thin
- * bands, so they need far fewer to read as solid.
+ * a wide screen can both fill. The morning's motes are scattered loose, and
+ * read as dust in the light only while there are few of them.
  */
 export function dustCount(width: number, height: number, tone: DustTone = 'night'): number {
   const area = width * height
-  if (tone === 'morning') return Math.round(Math.min(48_000, Math.max(14_000, area / 24)))
+  if (tone === 'morning') return Math.round(Math.min(7_000, Math.max(1_800, area / 300)))
   return Math.round(Math.min(120_000, Math.max(20_000, area / 11)))
 }
 
@@ -282,7 +289,7 @@ export function createDust(
     gl.compileShader(shader)
     return gl.getShaderParameter(shader, gl.COMPILE_STATUS) ? shader : null
   }
-  const vertex = compile(gl.VERTEX_SHADER, tone === 'night' ? LANDSCAPE : RIBBONS)
+  const vertex = compile(gl.VERTEX_SHADER, tone === 'night' ? LANDSCAPE : MOTES)
   const fragment = compile(gl.FRAGMENT_SHADER, FRAGMENT)
   const program = gl.createProgram()
   if (!vertex || !fragment || !program) return null
@@ -298,7 +305,7 @@ export function createDust(
   gl.enableVertexAttribArray(seed)
   gl.vertexAttribPointer(seed, 4, gl.FLOAT, false, 0, 0)
 
-  // The ribbons' program has no camera: those locations come back null, and setting a null location does nothing.
+  // The motes' program has no camera: those locations come back null, and setting a null location does nothing.
   const uniform = (name: string) => gl.getUniformLocation(program, name)
   const at = {
     size: uniform('uSize'),

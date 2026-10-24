@@ -11,6 +11,7 @@ import appCss from '#/styles.css?url'
 import { Colophon } from '#/components/colophon.tsx'
 import { Masthead } from '#/components/masthead.tsx'
 import { gtmHeadScript, gtmNoScriptSrc, posthogHeadScript } from '#/lib/analytics.ts'
+import { openingHeadScript } from '#/lib/opening.ts'
 import { organizationJsonLd, seoTags } from '#/lib/seo.ts'
 
 import type { ReactNode } from 'react'
@@ -41,7 +42,7 @@ export const Route = createRootRoute({
          * cannot take a `var()`. It must be kept equal to `--ic-paper` in
          * styles.css by hand — there is nowhere else to read it from.
          */
-        { name: 'theme-color', content: '#f7f7f5' },
+        { name: 'theme-color', content: '#ffffff' },
         { name: 'color-scheme', content: 'light' },
         ...base.meta,
       ],
@@ -61,11 +62,13 @@ export const Route = createRootRoute({
        * (`dataLayer`, the `posthog` stub) exist before anything else on the
        * page could push to them, and `.filter` removes each one entirely when
        * its key is unset — an empty inline script tag on every page of an
-       * unconfigured deployment is litter.
+       * unconfigured deployment is litter. The front page's once-a-visit mark
+       * has to be set before the first paint, so it is in the head as well.
        */
       scripts: [
         gtmHeadScript(),
         posthogHeadScript(),
+        { children: openingHeadScript },
         { type: 'application/ld+json', children: organizationJsonLd() },
       ].filter((script) => script !== null),
     }
@@ -82,7 +85,9 @@ function RootComponent() {
    */
   const ownsChrome = useRouterState({
     select: (state) =>
-      ['/', '/contact', '/glass', '/lab/particles'].includes(state.location.pathname),
+      ['/', '/contact', '/charlie', '/glass', '/lab/particles'].includes(
+        state.location.pathname,
+      ),
   })
   useEffect(() => {
     /**

@@ -1,15 +1,31 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 import { GlassField } from '#/components/glass-field.tsx'
 import { GlassFilm } from '#/components/glass-film.tsx'
 import { GlassHandover } from '#/components/glass-handover.tsx'
 import { GlassSources } from '#/components/glass-sources.tsx'
+import { CharlieAct } from '#/components/charlie.tsx'
+import { HowItWorks } from '#/components/how-it-works.tsx'
+import { MastheadBar } from '#/components/masthead-bar.tsx'
 import { ButtonLink, Container, TextLink } from '#/components/primitives.tsx'
+import { Questions } from '#/components/questions.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { SiteBrand } from '#/components/site-brand.tsx'
+import { StepIcon } from '#/components/step-icon.tsx'
+import { Trust } from '#/components/trust.tsx'
 import { WaitlistForm } from '#/components/waitlist-form.tsx'
-import { brand, glass, instrument, thread } from '#/content/site.ts'
+import {
+  brand,
+  contact,
+  glass,
+  how,
+  instrument,
+  questions,
+  thread,
+  trust,
+} from '#/content/site.ts'
 import { contactEmail } from '#/env.ts'
+import { markOpeningSeen, openingSeen, rememberPlace } from '#/lib/opening.ts'
 
 /**
  * /glass — the presentation.
@@ -17,7 +33,8 @@ import { contactEmail } from '#/env.ts'
  * ── The acts ───────────────────────────────────────────────────────────────
  *
  * 1. **The opening.** The night, a field of hour rules drawing down it, a
- *    landscape of dust under it (`glass-field.tsx`), and two beats of type.
+ *    landscape of dust under it (`glass-field.tsx`), a quotation set line by
+ *    line, and the one line that answers it.
  *    Then the page assembles: the dust sinks, dims and clears a space for the
  *    type, and falls behind as the page scrolls.
  * 2. **The hero.** Centred: the headline and the home page's form.
@@ -25,9 +42,14 @@ import { contactEmail } from '#/env.ts'
  *    sheet changing state as the hours pass (`glass-film.tsx`).
  * 4. **Six sources.** The documents a quotation is assembled from, lying on a
  *    desk, then gathered onto one sheet (`glass-sources.tsx`).
- * 5. **The close.** The same office at 08:04 with what is waiting in it
- *    (`glass-handover.tsx`), the night's dust settled around it, one
- *    invitation, and one sentence about what exists.
+ * 5. **How it works.** Four tabs — read, hold, price, decide — each one line of
+ *    the quotation laid on the desk under the lamp, each ending where the work
+ *    stops (`how-it-works.tsx`).
+ * 6. **Data and trust, questions.** Six cards of protection, and what a
+ *    buyer asks, answered in full (`trust.tsx`, `questions.tsx`).
+ * 7. **The close.** The same office at 08:04 with what is waiting in it
+ *    (`glass-handover.tsx`), the night's dust settled around it, and one
+ *    invitation.
  *
  * Acts one to three are the page's one `[data-inverted]` region. The film ends
  * at 08:04 and the page turns to paper with it.
@@ -55,9 +77,14 @@ import { contactEmail } from '#/env.ts'
  * a key, a click, a wheel, a touch — ends it early and the page arrives at
  * once. The film waits for it either way, so the first hour is never spent
  * behind the dark.
+ *
+ * It plays once a visit (`lib/opening.ts`): the first time the page is opened
+ * in a tab, and again on a reload. Back from another page of the site, the page
+ * is simply there — `seen`, drawn assembled by the stylesheet before hydration
+ * and kept so by the state after it.
  */
 
-type Opening = 'playing' | 'skipped' | 'ended'
+type Opening = 'playing' | 'skipped' | 'ended' | 'seen'
 
 /** Minutes after the office empties, wrapping past midnight. */
 function minutesAfter(start: string, at: string): number {
@@ -73,15 +100,90 @@ const morning = thread.beats[thread.beats.length - 1]?.at ?? officeEmpties
 /** One rule per whole hour of the night, from the hour the office empties to the morning. */
 const nightHours = Math.floor(minutesAfter(officeEmpties, morning) / 60) + 1
 
+/** Whether the opening has been seen does not change under a mounted page, so there is nothing to subscribe to. */
+const stay = () => () => {}
+
 export function GlassPage() {
   const openingRef = useRef<HTMLDivElement>(null)
   const filmRef = useRef<HTMLDivElement>(null)
-  const [opening, setOpening] = useState<Opening>('playing')
+  const sentinelRef = useRef<HTMLSpanElement>(null)
+  const duskRef = useRef<HTMLSpanElement>(null)
+  const [played, setOpening] = useState<Exclude<Opening, 'seen'>>('playing')
+  const [scrolled, setScrolled] = useState(false)
+  const [overNight, setOverNight] = useState(true)
+  /**
+   * A return this visit. False on the server and while hydrating, so the markup
+   * matches; then read from the document, which the head script has already
+   * marked — or from this page's own memory, after a client-side return.
+   */
+  const returned = useSyncExternalStore(stay, openingSeen, () => false)
+  const opening: Opening = returned && played === 'playing' ? 'seen' : played
 
+  /**
+   * Whether the opening could play, read once as the page mounts: a preference
+   * changed later does not turn an opening that never played into one seen.
+   */
+  const stillRef = useRef(true)
+  useEffect(() => {
+    stillRef.current = matchMedia('(prefers-reduced-motion: reduce)').matches
+  }, [])
+
+  // Played to its end or ended early, it has been seen. Under reduced motion it never played.
+  useEffect(() => {
+    if (played !== 'ended' && played !== 'skipped') return
+    if (!stillRef.current) markOpeningSeen()
+  }, [played])
+
+  /**
+   * Whether the first screen has scrolled away, as one boolean from an
+   * observer rather than a scroll listener — two renders a visit. It is what
+   * fills the masthead in.
+   */
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0]
+      if (entry) setScrolled(!entry.isIntersecting && entry.boundingClientRect.top < 0)
+    })
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [])
+
+  /**
+   * Whether the night is still under the masthead: a point half a masthead
+   * above the night's end, against a root that runs from the top of the screen
+   * to far below it — so the point is inside it exactly while it has not
+   * scrolled past the top, and every crossing flips it, however fast.
+   */
+  useEffect(() => {
+    const dusk = duskRef.current
+    if (!dusk || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (entry) setOverNight(entry.boundingClientRect.top >= 0)
+      },
+      { rootMargin: '0px 0px 100000px 0px' },
+    )
+    observer.observe(dusk)
+    return () => observer.disconnect()
+  }, [])
+
+  // Where the reader was when they left, so a reload below the first screen does not replay the opening over the page.
+  useEffect(() => {
+    window.addEventListener('pagehide', rememberPlace)
+    return () => window.removeEventListener('pagehide', rememberPlace)
+  }, [])
+
+  /**
+   * Any input ends the opening early — and so does a scroll, which is how a
+   * restored position the head script could not foresee shows itself.
+   */
   useEffect(() => {
     if (opening !== 'playing') return
     const skip = () => setOpening('skipped')
-    const inputs = ['keydown', 'pointerdown', 'wheel', 'touchstart'] as const
+    const inputs = ['keydown', 'pointerdown', 'wheel', 'touchstart', 'scroll'] as const
     for (const input of inputs) window.addEventListener(input, skip, { passive: true })
     return () => {
       for (const input of inputs) window.removeEventListener(input, skip)
@@ -116,6 +218,20 @@ export function GlassPage() {
 
   return (
     <div className="glass" data-opening={opening}>
+      <span ref={sentinelRef} className="glass-sentinel" aria-hidden="true" />
+
+      {/*
+        The masthead stays with the reader: fixed, clear over the first screen
+        and a pane of glass after it, in the tokens of whatever it is over. It
+        sits outside every section, so none of them can paint over it.
+      */}
+      <MastheadBar
+        scrolled={scrolled}
+        onFront
+        tone={overNight ? 'night' : 'day'}
+        className="glass-enter"
+      />
+
       <div data-inverted="" className="glass-night">
         <div className="glass-hours" aria-hidden="true">
           {Array.from({ length: nightHours }, (_, hour) => (
@@ -123,28 +239,26 @@ export function GlassPage() {
           ))}
         </div>
 
-        <GlassField settled={opening !== 'playing'} until={filmRef} />
+        <GlassField opening={openingRef} skipped={opening === 'skipped'} until={filmRef} />
 
         {/*
-          Decoration, as far as a screen reader is concerned: the two beats set
-          a scene the hero then states, and they are gone within seconds.
+          Decoration, as far as a screen reader is concerned: the quotation and
+          its answer set a scene the hero then states, and they are gone within
+          seconds.
         */}
         <div ref={openingRef} className="glass-opening" aria-hidden="true">
-          {glass.opening.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
+          <figure className="glass-opening-quote">
+            <blockquote>
+              {glass.opening.quote.map((line, index) => (
+                <p key={line} style={{ ['--line' as string]: index }}>
+                  {line}
+                </p>
+              ))}
+            </blockquote>
+            <figcaption>{glass.opening.by}</figcaption>
+          </figure>
+          <p className="glass-opening-then">{glass.opening.then}</p>
         </div>
-
-        <Container>
-          <header className="glass-header glass-enter" role="banner">
-            <SiteBrand />
-            <nav className="desk-nav" aria-label="Primary">
-              <a href="/contact" className="desk-nav-link">
-                {glass.nav.contact}
-              </a>
-            </nav>
-          </header>
-        </Container>
 
         <section className="glass-hero" aria-labelledby="glass-title">
           <Container className="glass-hero-inner">
@@ -180,9 +294,23 @@ export function GlassPage() {
         <div ref={filmRef} className="glass-film-enter glass-enter">
           <GlassFilm ready={opening !== 'playing'} />
         </div>
+        <span ref={duskRef} className="glass-dusk" aria-hidden="true" />
       </div>
 
+      {/*
+        The agent first, as features: what Charlie does, in a few words a beat.
+        The quotation's own detail — its sources and its four steps — follows
+        for the reader who wants it.
+      */}
+      <div className="desk glass-acts">
+        <CharlieAct />
+      </div>
       <GlassSources />
+      <div className="desk glass-acts">
+        <HowItWorks />
+        <Trust />
+        <Questions />
+      </div>
       <Close />
     </div>
   )
@@ -196,11 +324,14 @@ export function GlassPage() {
  * the one large picture on the page and it sits above the ask, so the last
  * thing a reader sees before deciding is the morning the product is for.
  *
- * Left-aligned, one statement, one action and an address — no label over it,
- * and no grid of stages under it: where the build stands is a sentence read off
- * `standing`, set as quietly as the footer it sits above. The motto is not
- * here; its placements are the home page's last line and the success state,
- * and this page already carries the second through its form.
+ * Left-aligned, one statement, one action and an address — no label over it —
+ * and under them what happens after somebody writes: the contact memo's own
+ * three steps, read from `contact`, so the two pages promise the same thing in
+ * the same words.
+ *
+ * The motto signs the page off at the head of the footer. This is the front
+ * page, and its close is one of the motto's two placements; the other is the
+ * success state of the form above.
  */
 function Close() {
   const { closing } = glass
@@ -226,18 +357,42 @@ function Close() {
                   </TextLink>
                 </p>
               </div>
+              <div className="glass-next">
+                <p className="glass-next-label">{closing.nextLabel}</p>
+                <ol className="glass-next-steps">
+                  {contact.steps.map((step) => (
+                    <li key={step.icon}>
+                      <StepIcon name={step.icon} />
+                      <span>{step.text}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </div>
           </Reveal>
         </Container>
       </section>
 
       <footer className="glass-footer" role="contentinfo">
-        <Container className="glass-footer-inner">
-          <SiteBrand />
-          <p className="glass-standing">{glass.standing}</p>
-          <p className="glass-copyright">
-            © {new Date().getFullYear()} {brand.name}
-          </p>
+        <Container>
+          {/*
+            The motto: one of its two placements on the whole site, and the
+            page's sign-off. It is not extended and not repeated — see
+            `brand.motto`.
+          */}
+          <p className="glass-motto">{brand.motto}</p>
+          <nav aria-label="Sections" className="glass-footer-nav">
+            <a href={`#${how.anchor}`}>{glass.nav.how}</a>
+            <a href={`#${trust.anchor}`}>{glass.nav.trust}</a>
+            <a href={`#${questions.anchor}`}>{glass.nav.questions}</a>
+            <a href="/contact">{glass.nav.contact}</a>
+          </nav>
+          <div className="glass-footer-inner">
+            <SiteBrand />
+            <p className="glass-copyright">
+              © {new Date().getFullYear()} {brand.name}
+            </p>
+          </div>
         </Container>
       </footer>
     </div>
@@ -275,7 +430,10 @@ function MorningPlate() {
       }
       const box = frame.getBoundingClientRect()
       const through = (window.innerHeight - box.top) / (window.innerHeight + box.height)
-      frame.style.setProperty('--glass-drift', (Math.min(1, Math.max(0, through)) - 0.5).toFixed(3))
+      frame.style.setProperty(
+        '--glass-drift',
+        (Math.min(1, Math.max(0, through)) - 0.5).toFixed(3),
+      )
     }
     function onScroll() {
       if (!request) request = requestAnimationFrame(place)
@@ -303,12 +461,16 @@ function MorningPlate() {
           <source
             type="image/avif"
             sizes={sizes}
-            srcSet={widths.map((width) => `/glass/morning-${width}.avif ${width}w`).join(', ')}
+            srcSet={widths
+              .map((width) => `/glass/morning-${width}.avif ${width}w`)
+              .join(', ')}
           />
           <source
             type="image/webp"
             sizes={sizes}
-            srcSet={widths.map((width) => `/glass/morning-${width}.webp ${width}w`).join(', ')}
+            srcSet={widths
+              .map((width) => `/glass/morning-${width}.webp ${width}w`)
+              .join(', ')}
           />
           <img
             src="/glass/morning-1896.jpg"

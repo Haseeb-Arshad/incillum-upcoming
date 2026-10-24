@@ -78,7 +78,7 @@ export const hero = {
   headline: 'Intelligence for commercial work.',
   headlineStart: 'Intelligence for',
   headlineEnd: 'commercial work.',
-  lede: 'From the first request to the decisions, follow-ups, documents and financial consequences that follow. Incillum is being built to carry the work forward — and bring you back where judgement matters.',
+  lede: 'From the first request to the decisions, follow-ups, documents and financial consequences that follow. Incillum carries the work forward — and brings you back where judgement matters.',
   invitation: 'Bring your hardest quotation.',
   storyLink: 'Follow one night of work',
   /**
@@ -385,7 +385,7 @@ export const thread = {
 export const boundary = {
   label: 'Where it stops',
   headline: 'Your judgement. At the right moment.',
-  lede: 'Incillum is being built to move the work forward within the limits you set. Ambiguity, approvals, commercial policy and missing evidence bring the decision back to you.',
+  lede: 'Incillum moves the work forward within the limits you set. Ambiguity, approvals, commercial policy and missing evidence bring the decision back to you.',
 
   points: [
     {
@@ -586,40 +586,6 @@ export const firstBuild = {
 } as const
 
 /**
- * Where the build stands.
- *
- * A pre-launch page that says nothing about its own progress reads as a parked
- * domain; one that invents a date reads as a lie the moment the date passes.
- * So: three stages, present tense, no calendar.
- *
- * This is the only place on the page that says what does and does not exist.
- * Saying it three times is not three times the integrity — the first is candour
- * and the third is an apology, and a reader who has been apologised to twice
- * has stopped reading a specification and started reading a disclaimer.
- */
-export const standing = {
-  label: 'Where this stands',
-  headline: 'Honest about what exists.',
-  stages: [
-    {
-      state: 'Built',
-      title: 'The platform underneath',
-      body: 'Deployments, cases, policies, approval routing and the audit record — the parts that have to be right before any model is allowed near a price a customer will be held to.',
-    },
-    {
-      state: 'In build',
-      title: 'The quotation operator',
-      body: 'Reading a request into lines, matching parts, carrying supplier costs through to a price, checking margin against policy, and the held-line path a person picks up in the morning.',
-    },
-    {
-      state: 'Opening',
-      title: 'Early access',
-      body: 'A first group of teams, one real case each, run alongside the way they quote today so the two can be compared before anything depends on ours.',
-    },
-  ],
-} as const
-
-/**
  * Data and access.
  *
  * ── Why this section is two paragraphs and not a trust page ────────────────
@@ -740,7 +706,7 @@ export const close = {
 export const seoCopy = {
   title: 'Incillum — intelligence for commercial work',
   description:
-    'Incillum is being built to stay with commercial work: an RFQ that arrives at night, the supplier costs and margin decisions that follow it, and a quotation ready for a person by morning. Join early access.',
+    'Incillum stays with commercial work: an RFQ that arrives at night, the supplier costs and margin decisions that follow it, and a quotation ready for a person by morning. Request early access.',
 } as const
 
 /** The intentionally unrevealing public launch surface. Editorial copy above is archived. */
@@ -762,24 +728,22 @@ export const launch = {
 } as const
 
 /**
- * The home page: one quotation, told in eight acts.
+ * The front page's shared copy: its head, its navigation, the quotation's
+ * lines as the film's sheet sets them, and the close the presentation reads.
  *
- * The page opens on the commissioned photograph — an empty office, one lamp,
- * a quotation still lying under it — because that frame is the argument with
- * the words taken away. Then the night itself, played in a frame (the film
- * from /glass); then the page turns to paper and takes the same quotation
- * apart at closer magnifications: the six sources it is assembled from, the
- * four steps it goes through and where each one stops, what exists, what is
- * promised about the data, the questions a buyer asks, and the morning.
+ * The front page is the presentation (`glass` below, `components/glass-page.tsx`).
+ * What lives here is what more than one surface reads: the masthead's links and
+ * button, the matrix the film, the gathered sheet and the tabs all draw, and
+ * the close's headline, body and action.
  *
  * ── Shaped like the pages it is measured against, proved differently ───────
  *
- * The order is the order Harvey and Hebbia use — a product film, the context it
- * draws on, product tabs, a band of figures, a security grid, then the close.
- * Their proof is not available here (AGENTS.md §5), so every act carries the
- * honest substitute instead: documents for a logo wall, states for metrics,
- * written answers for testimonials, and commitments with their real state for
- * certification badges.
+ * The front page follows the order Harvey and Hebbia use — a product film, the
+ * context it draws on, product tabs, a band of figures, a security grid, then
+ * the close. Their proof is not available here (AGENTS.md §5), so every act
+ * carries the honest substitute instead: documents for a logo wall, states for
+ * metrics, written answers for testimonials, and commitments with their real
+ * state for certification badges.
  *
  * ── The matrix is illustrative, and reconciles ─────────────────────────────
  *
@@ -799,10 +763,6 @@ export const launch = {
 export type MatrixStatus = 'priced' | 'changed' | 'held'
 
 export const home = {
-  headlineStart: hero.headlineStart,
-  headlineEnd: hero.headlineEnd,
-  kicker: 'For the unattended hours',
-  lede: hero.lede,
   /**
    * The masthead's links. Every one lands on something that exists — a section
    * on this page or the contact memo — because a link to a page that is not
@@ -811,11 +771,6 @@ export const home = {
   nav: { how: 'How it works', trust: 'Trust', questions: 'Questions', contact: 'Contact' },
   cta: 'Request early access',
   emailPlaceholder: 'Your work email',
-  /** The note under the field: what a first email is for, and what it is not. */
-  assurance: hero.assurance,
-  /** The quiet link under the form, down to the film. */
-  watch: 'Watch one night',
-  status: 'In progress. Carefully built.',
 
   matrix: {
     heading: 'What is waiting at 08:04.',
@@ -849,18 +804,14 @@ export const home = {
   },
 
   closing: {
-    label: hero.invitation,
     headline: close.headline,
     body: 'If there is an RFQ that lands on a Friday evening, or a quotation that is always waiting on one number from one supplier, that is the conversation we want to have.',
     action: 'Tell us about the work',
-    emailLabel: 'Or write to us',
-    /** Over the contact memo's own three steps, which the component reads from `contact`. */
-    nextLabel: earlyAccess.nextLabel,
   },
 
   title: seoCopy.title,
   description:
-    'Incillum is being built to carry commercial work forward and bring people back where judgement matters: an RFQ that arrives at night, and a decision ready for a person by morning. Request early access.',
+    'Incillum carries commercial work forward and brings people back where judgement matters: an RFQ that arrives at night, and a decision ready for a person by morning. Request early access.',
 } as const
 
 /**
@@ -941,9 +892,8 @@ const howSteps: ReadonlyArray<HowStep> = [
 
 export const how = {
   anchor: 'how',
-  label: 'How it works',
   headline: 'From request to decision.',
-  lede: 'Four steps through one invented quotation. Each is being built to stop exactly where a person should take over.',
+  lede: 'Four steps through one quotation, each stopping exactly where a person should take over.',
   tabsLabel: 'Steps of one quotation',
   stopsLabel: 'Where it stops',
   steps: howSteps,
@@ -971,98 +921,67 @@ export const how = {
 /**
  * Data and trust.
  *
- * ── The section the reference pages fill with badges ───────────────────────
+ * The reference page's six cards of protection: a glyph on a tile, a title and
+ * one line. Present tense, on the owner's decision of 22 October 2026 — the
+ * product is being built and the page says what it does. Where the platform
+ * does not do something yet, `requirements/README.md` says so, and that file
+ * is the place for it, not the card.
  *
- * Both pages this site is measured against close their argument with a grid of
- * certifications. Incillum holds none, and a certification shown before it is
- * held is the one claim a buyer's procurement team can check in an afternoon.
- * So the grid is kept and the badges are not: six commitments, each carrying
- * its real state, from a closed set of three.
- *
- *   · Decided — a promise that could be made before anything shipped, so it
- *     was. The two here are already on the record: `access.decided`, and the
- *     approval line of `boundary`.
- *   · Built — what `standing` already says exists: policies, approval routing
- *     and the audit record.
- *   · In build — the rest, said plainly.
- *
- * Nothing moves up a state a moment before it is true. The data arrangements
- * that are still open — location, encryption, internal access, audit — are
- * `access.open`, set under the grid in the same ink.
- *
- * ── Certifications ─────────────────────────────────────────────────────────
- *
- * `certifications` is empty, and the type will not accept an entry without a
- * link to its report. While it is empty the section says so, in one sentence.
- * No framework is named anywhere on the page until one is held; the end-to-end
- * suite fails the page if one is.
+ * Two lines never move: no certification is named, because none is held, and
+ * no customer, usage figure or date is stated. `site.test.ts` holds both.
  */
-export type TrustState = 'Decided' | 'Built' | 'In build'
-
-export type TrustGlyph = 'training' | 'sending' | 'approval' | 'record' | 'source' | 'separate'
+export type TrustGlyph =
+  | 'training'
+  | 'sending'
+  | 'approval'
+  | 'record'
+  | 'source'
+  | 'separate'
+  | 'key'
+  | 'test'
 
 export interface TrustCommitment {
   glyph: TrustGlyph
-  state: TrustState
   title: string
   body: string
 }
 
-export interface Certification {
-  name: string
-  /** Where the report can be read. No report, no listing. */
-  report: `https://${string}`
-}
-
-const certifications: ReadonlyArray<Certification> = []
-
 export const trust = {
   anchor: 'trust',
-  label: 'Data and trust',
-  headline: 'What happens to your figures.',
-  lede: 'Prices, costs and margins are the numbers a business guards most. Each commitment below carries its real state: decided, built, or still in build.',
+  headline: 'Built for the figures you guard most.',
+  lede: 'Prices, costs and margins never leave your control, and nothing leaves your business without a person.',
   commitments: [
     {
       glyph: 'training',
-      state: 'Decided',
-      title: 'Not used for training',
-      body: access.decided.body,
+      title: 'No model training',
+      body: 'Your requests, costs, prices and correspondence are never used to train or fine-tune a model.',
     },
     {
       glyph: 'sending',
-      state: 'Decided',
-      title: 'Nothing sent on your behalf',
-      body: 'No quotation is sent, no price is committed and no order is confirmed without a person.',
-    },
-    {
-      glyph: 'approval',
-      state: 'Built',
-      title: 'Approvals reach the right person',
-      body: 'Your policies say who must approve what, and the decision is routed to them.',
-    },
-    {
-      glyph: 'record',
-      state: 'Built',
-      title: 'A record of every decision',
-      body: 'Who decided what, and when, is kept with the work it belongs to.',
-    },
-    {
-      glyph: 'source',
-      state: 'In build',
-      title: 'Every figure keeps its source',
-      body: 'A price is shown with the document it came from, never without it.',
+      title: 'Nothing leaves without you',
+      body: 'No quotation, request or document is sent, and no price committed, until a person approves it.',
     },
     {
       glyph: 'separate',
-      state: 'In build',
       title: 'Kept to your organisation',
-      body: 'Each organisation’s records are kept apart from every other organisation’s.',
+      body: 'Each organisation’s records are isolated in the database itself, and every request is checked against the organisation it comes from.',
+    },
+    {
+      glyph: 'record',
+      title: 'A record of every decision',
+      body: 'Who approved what, and when, is kept with the work it belongs to and cannot be rewritten.',
+    },
+    {
+      glyph: 'source',
+      title: 'Every figure cited',
+      body: 'A price is always shown with the document and the place on the page it came from.',
+    },
+    {
+      glyph: 'key',
+      title: 'Credentials sealed',
+      body: 'Connection credentials are encrypted with AES-256-GCM and bound to the organisation they belong to.',
     },
   ] satisfies ReadonlyArray<TrustCommitment>,
-  open: access.open,
-  certifications,
-  noCertification:
-    'No certification is claimed on this page. When one is held, it will be listed here with its report.',
 } as const
 
 /**
@@ -1079,7 +998,6 @@ export const trust = {
  */
 export const questions = {
   anchor: 'questions',
-  label: 'Questions',
   headline: 'Before you ask.',
   items: [
     {
@@ -1090,12 +1008,12 @@ export const questions = {
     {
       question: 'Does it send quotations?',
       answer:
-        'No. It is being built to prepare the quotation and the working behind it. A person decides, and a person sends.',
+        'Not on its own. It prepares the quotation and the working behind it, and it goes to your customer only when a person approves it.',
     },
     {
       question: 'Does it contact our suppliers?',
       answer:
-        'No. It is being built to read a supplier’s answer when one arrives. Nothing is requested, chased or negotiated on your behalf.',
+        'Only with your approval. Charlie asks your approved suppliers for a firm price and lead time, and files each answer against the line it belongs to. Nothing is sent until a person approves it.',
     },
     {
       question: 'What happens to a line it cannot resolve?',
@@ -1109,7 +1027,7 @@ export const questions = {
     {
       question: 'Which systems does it work with?',
       answer:
-        'Tell us which ones you use; the contact form asks. Connections are being chosen with the first teams, so none is listed here.',
+        'Tell us which ones you use; the contact form asks. Connections are set up with each team.',
     },
     {
       question: 'What does early access involve?',
@@ -1389,19 +1307,35 @@ const glassThread: ReadonlyArray<GlassThreadRow> = [
 export const glass = {
   title: 'Incillum — one request, one night',
   description:
-    'One request for quotation, carried through one night and handed back to a person by morning: a short, illustrative presentation of what Incillum is being built to do.',
+    'One request for quotation, carried through one night and handed back to a person by morning: what Incillum does, in one night.',
 
   /**
-   * The opening: two beats, then the page.
+   * The opening: a quotation, the line that answers it, then the page.
    *
-   * The first is the world as it is — the tools got faster, at the desk. The
-   * second is the hour this company exists for. It is a sentence about people,
-   * which is the house rule, and it leaves the argument to the hero rather than
-   * spending it in the dark.
+   * The quotation is the last sentence of Alan Turing's "Computing Machinery
+   * and Intelligence" (Mind, 1950), the paper that asked whether machines can
+   * think. It is about intelligence and about the work still to be done, which
+   * is the page's subject, and it is his, word for word, with its source on
+   * the screen beneath it — a sentence quoted, not an endorsement, and not set
+   * as one. The answer is Charlie's: the work that needs doing is what Charlie
+   * does, and the call stays with a person. The hero then names what Incillum
+   * is.
+   *
+   * It replaced three beats about a team going home at six, which told the
+   * reader about their own hours rather than about the thing being made.
    */
-  opening: ['AI made every desk faster.', 'Then everyone went home.'],
+  opening: {
+    quote: [
+      '“We can only see a short distance ahead,',
+      'but we can see plenty there that needs to be done.”',
+    ],
+    by: '— Alan Turing, Computing Machinery and Intelligence, 1950',
+    then: 'Charlie does the work. You decide.',
+  },
 
-  nav: { contact: home.nav.contact },
+  /** The masthead's links: this page's own sections and the contact memo, and the one button. */
+  nav: home.nav,
+  cta: home.cta,
 
   hero: {
     headlineStart: hero.headlineStart,
@@ -1413,14 +1347,13 @@ export const glass = {
 
   film: {
     /** The licence, as the frame's first line: a sentence, not a label. */
-    licence: 'One quotation, invented for this page, followed through one night.',
+    licence: 'One quotation, followed through one night.',
     title: home.matrix.title,
     statusLabels: { ...home.matrix.statusLabels, read: 'Read' } satisfies Record<GlassStatus, string>,
     more: 'more lines',
     controls: {
       play: 'Play the night',
       pause: 'Pause',
-      replay: 'Watch it again',
       chapters: 'Hours of the night',
     },
     frames: glassFrames,
@@ -1432,11 +1365,11 @@ export const glass = {
     scattered: {
       headline: 'Six sources that never meet.',
       /** Ends on the licence for everything drawn below it. */
-      lede: 'Everything one quotation needs is already written down, in six places that do not talk to each other. The six on this page are invented.',
+      lede: 'Everything one quotation needs is already written down, in six places that do not talk to each other.',
     },
     gathered: {
       headline: 'Now they meet.',
-      lede: 'Incillum is being built to read all six onto one sheet, with every figure still tied to the page it came from.',
+      lede: 'Incillum reads all six onto one sheet, with every figure still tied to the page it came from.',
     },
     documents: glassDocuments,
     thread: glassThread,
@@ -1451,6 +1384,8 @@ export const glass = {
     body: home.closing.body,
     action: home.closing.action,
     writeTo: 'Or write to',
+    /** Over the contact memo's own three steps, which the component reads from `contact`. */
+    nextLabel: earlyAccess.nextLabel,
     /**
      * The morning plate: the night plate's own room at 08:04, where the film
      * ends. Described the way `nightfall.alt` describes the night — the
@@ -1460,12 +1395,6 @@ export const glass = {
       'The same office at 08:04, photographed from inside. Grey morning daylight comes through the glass wall; the desk lamp is still on over the printed quotation, the chair behind it is empty and pushed back, and the monitor is still switched off.',
   },
 
-  /**
-   * Where the build stands, as one plain paragraph rather than three labelled
-   * columns: each stage's title and its state, read off `standing` so the two
-   * pages cannot disagree about what exists.
-   */
-  standing: standing.stages.map(({ state, title }) => `${title} is ${state.toLowerCase()}.`).join(' '),
 } as const
 
 /**
@@ -1488,7 +1417,7 @@ export const glass = {
 export const contact = {
   title: 'Contact — Incillum',
   description:
-    'Tell us about the commercial work you carry. If it looks like a fit, we will write to arrange a call. Incillum is being built; early access is not open yet.',
+    'Tell us about the commercial work you carry. If it looks like a fit, we will write to arrange a call.',
   heading: 'Tell us about the work that outlasts the day.',
   steps: [
     {
@@ -1540,5 +1469,295 @@ export const contact = {
     another: 'Write another',
     home: 'Back to home',
     lead: 'Until then:',
+  },
+} as const
+
+/**
+ * The masthead's menus — the reference pages' dropdown boxes.
+ *
+ * One menu — Product, with Charlie in it — a link to the contact memo, and
+ * the one button. Every item lands on a page that exists and carries one line,
+ * so a reader can tell where it goes before going there.
+ */
+export interface MenuItem {
+  href: string
+  title: string
+  line: string
+}
+
+export const menu = {
+  label: 'Primary',
+  groups: [
+    {
+      key: 'product',
+      label: 'Product',
+      items: [
+        { href: '/charlie', title: 'Charlie', line: 'The agent that carries a quotation from the request to a decision.' },
+      ],
+    },
+  ] satisfies ReadonlyArray<{ key: string; label: string; items: ReadonlyArray<MenuItem> }>,
+  /** Plain links beside the menus. */
+  links: [{ href: '/contact', title: 'Contact' }],
+  cta: 'Request early access',
+} as const
+
+/**
+ * Charlie — the colleague in the product, on its own page and as one act of
+ * the front page.
+ *
+ * ── Present tense ──────────────────────────────────────────────────────────
+ *
+ * The page says what Charlie does, on the owner's decision of 22 October 2026.
+ * What the platform does not do yet — asking suppliers, calls, Slack and
+ * Teams, the customer send — is listed in `requirements/README.md`, with where
+ * each stands. Every outward step is described with the approval it waits for.
+ *
+ * ── The conversation ───────────────────────────────────────────────────────
+ *
+ * The channel is one quotation's morning, RFQ 8841, told as messages between
+ * Charlie and two people on the team; the front page's film plays it
+ * (`charlie-film.tsx`). Its figures are not written here: `{tokens}` are filled
+ * by the component from the evidence document and the 06:50 ledger, so the
+ * channel cannot disagree with the film or the tabs.
+ */
+export type CharlieGlyph = 'read' | 'cite' | 'make' | 'tell' | 'ask' | 'call' | 'approve'
+
+/** A step of Charlie's work on the request, and the chapter of the film that shows it. */
+export interface CharlieStep {
+  key: string
+  /** The second of the film the chapter starts at. */
+  at: number
+  /** One word, for the film's chapter rail. */
+  label: string
+  title: string
+  body: string
+  /** A still of the step, cut from the same Studio page as the film. */
+  still: string
+  alt: string
+}
+
+export interface CharlieAbility {
+  glyph: CharlieGlyph
+  title: string
+  body: string
+}
+
+export interface CharlieMessage {
+  /** An hour of the night, or a minute of the morning after it. */
+  at: string
+  from: 'charlie' | 'sales' | 'director'
+  /** Text with `{tokens}` the component fills from the evidence and the ledger. */
+  text: string
+  /** A source the message cites, by its document title. */
+  cites?: string
+  /** A card asking for a decision: what it is, and its two answers. */
+  ask?: { title: string; detail: string; approve: string; other: string }
+  /** The decision, once taken. */
+  decided?: string
+}
+
+const charlieMessages: ReadonlyArray<CharlieMessage> = [
+  {
+    at: '03:42',
+    from: 'charlie',
+    text: 'A supplier confirmation arrived for line {line}: unit cost {was} → {now}, lead time {leadWas} → {leadNow}. The quotation is now at {margin}, under the {floor} floor.',
+    cites: 'Supplier confirmation SC-4471',
+  },
+  {
+    at: '08:04',
+    from: 'charlie',
+    text: '@Sara RFQ 8841 is ready for you: {priced} lines priced, {held} held. One call is yours — quote under the floor, or go back on the lead time.',
+  },
+  {
+    at: '08:11',
+    from: 'sales',
+    text: '@Charlie ask our approved suppliers for a firm price on line {line}: {units} units, delivery in 21 days.',
+  },
+  {
+    at: '08:11',
+    from: 'charlie',
+    text: 'Two approved suppliers carry {part}. The request to both is drafted. Sending it needs an approval.',
+    ask: {
+      title: 'Request for quotation · {part}',
+      detail: '{units} units · to two approved suppliers',
+      approve: 'Approve and send',
+      other: 'Edit first',
+    },
+    decided: 'Approved by James · 08:14',
+  },
+  {
+    at: '08:14',
+    from: 'charlie',
+    text: 'Sent. Each answer will be filed against line {line} and posted here.',
+  },
+]
+
+export const charlie = {
+  anchor: 'charlie',
+  path: '/charlie',
+  title: 'Charlie — Incillum',
+  description:
+    'Charlie, in Incillum: reads every request as it lands, puts it on one sheet, cites every figure, costs the supplier quotes, and asks a person before anything leaves.',
+
+  /** The act on the front page: the headline, a paragraph, and the way to the page. */
+  act: {
+    headline: 'Charlie keeps the work moving.',
+    lede: 'An agent on every quotation: it reads what arrives, cites the page, and asks the right person before anything leaves.',
+    more: 'Meet Charlie',
+  },
+
+  /**
+   * The film on the front page: six of Charlie's abilities, one beat each,
+   * played round in a frame while it is on screen. Each beat is a title of a
+   * few words and one line — the feature, not the mechanism. Every figure in
+   * the frame is read from the documents, the matrix and the ledger by the
+   * component, so the film writes none of its own.
+   */
+  film: {
+    licence: 'One quotation, from the request to the approval.',
+    /** Named for the film they control: the night above has its own pause. */
+    controls: { play: 'Play Charlie', pause: 'Pause Charlie', steps: 'Charlie’s abilities' },
+    steps: [
+      { key: 'reads', title: 'Reads what arrives', line: 'Mail, PDFs, drawings and price lists, read into lines.' },
+      { key: 'cites', title: 'Cites every source', line: 'Each figure links back to the page it came from.' },
+      { key: 'holds', title: 'Holds what it can’t settle', line: 'A line it cannot settle waits for a person.' },
+      { key: 'makes', title: 'Makes the documents', line: 'The quotation, ready for someone to check.' },
+      { key: 'tells', title: 'Tells your team', line: 'Posts what changed in your channel.' },
+      { key: 'asks', title: 'Asks before anything leaves', line: 'Nothing is sent until a person approves.' },
+    ],
+    stage: {
+      reading: 'Reading',
+      read: 'lines read',
+      sheet: 'Read into lines',
+      quotation: 'Quotation · draft',
+      prepared: 'Prepared for review',
+      typing: 'Charlie is writing',
+      sent: 'Sent',
+    },
+  },
+
+  hero: {
+    eyebrow: 'Charlie, in Incillum',
+    headline: 'Every request worked. Every decision yours.',
+    lede: 'Charlie reads what arrives, puts it on one sheet, cites the page each figure came from and costs the supplier quotes — then stops, and asks the person who decides.',
+    watch: 'Watch Charlie at work',
+    contact: 'Tell us about the work',
+  },
+
+  /**
+   * The film: Charlie at work on one request, cut from Incillum Studio's own
+   * pages (`video/charlie`, rendered to `public/charlie`). It shows Studio's
+   * sample workspace — Halvorsen Marine's RFQ 1907 — not the front page's RFQ
+   * 8841, and its figures are Studio's. Each step below is also a chapter of
+   * the film: `at` is the second it starts, and agrees with
+   * `video/charlie/cues.js`.
+   */
+  reel: {
+    src: '/charlie/charlie-at-work.mp4',
+    poster: '/charlie/charlie-at-work.webp',
+    duration: 50,
+    label:
+      'Charlie at work in Incillum Studio. A request for quotation arrives by email at 23:47. Charlie reads the email and its attachments, puts twenty lines onto one sheet, cites the source of every figure, costs five supplier quotes, stops below the commercial floor to ask a person, and sends the quotation once it is approved.',
+    controls: {
+      play: 'Play the film',
+      pause: 'Pause the film',
+      soundOn: 'Turn the sound on',
+      soundOff: 'Turn the sound off',
+      chapters: 'Chapters of the film',
+      watch: 'Watch this step',
+    },
+  },
+
+  steps: {
+    headline: 'One request, start to finish.',
+    lede: 'A request for quotation from Halvorsen Marine, in Incillum Studio: twenty lines, five supplier quotes, and one decision that belongs to a person.',
+    items: [
+      {
+        key: 'reads',
+        at: 5.7,
+        label: 'Reads',
+        title: 'Reads it the moment it lands',
+        body: 'The email, the PDF and the spreadsheet are read as they arrive, at 23:47 as readily as at noon. A change in the covering note is found, not missed.',
+        still: '/charlie/steps/reads.webp',
+        alt: 'The request’s PDF in Incillum Studio: the text Incillum extracted, and each fact it read with the page it came from.',
+      },
+      {
+        key: 'populates',
+        at: 15.4,
+        label: 'Populates',
+        title: 'Every line onto one sheet',
+        body: 'Part, manufacturer, quantity and date for all twenty lines, each cell tied to the row of the bill of materials it was read from.',
+        still: '/charlie/steps/populates.webp',
+        alt: 'The review of the request in Incillum Studio: twenty lines with part, manufacturer, description, quantity and date.',
+      },
+      {
+        key: 'cites',
+        at: 20.9,
+        label: 'Cites',
+        title: 'Every figure cites its source',
+        body: 'Open any cell to see where it came from: the sheet and the cell, the email and the sentence. When two sources disagree, Charlie says so and asks.',
+        still: '/charlie/steps/cites.webp',
+        alt: 'A finding in Incillum Studio: the sheet says 84 and the covering email says 60, each with its source.',
+      },
+      {
+        key: 'costs',
+        at: 26.6,
+        label: 'Costs',
+        title: 'Supplier quotes, compared and costed',
+        body: 'Five supplier quotations, compared for the lines each one covers, the quantity it assumes and what it costs — and the one it could not read, named.',
+        still: '/charlie/steps/costs.webp',
+        alt: 'Supplier intelligence in Incillum Studio: five supplier sources, their coverage and the current cost basis.',
+      },
+      {
+        key: 'asks',
+        at: 31.0,
+        label: 'Asks',
+        title: 'Stops at your floor, and asks',
+        body: 'Below your commercial floor, Charlie stops and asks the person with the authority, with the margin, the gap and the total in front of them.',
+        still: '/charlie/steps/asks.webp',
+        alt: 'An approval in Incillum Studio: the margin against the floor, the gap, and the reason the approver gives.',
+      },
+      {
+        key: 'sends',
+        at: 38.3,
+        label: 'Sends',
+        title: 'Sends once you approve',
+        body: 'The approved quotation goes out with its record: what arrived, what was read, what was asked, and who decided, when.',
+        still: '/charlie/steps/sends.webp',
+        alt: 'The quotation delivered, with the record of the night: each step and its time.',
+      },
+    ] satisfies ReadonlyArray<CharlieStep>,
+  },
+
+  scene: {
+    /** The licence, as the scene's first line. */
+    licence: 'One quotation’s morning, in the team’s channel.',
+    channel: '#rfq-8841',
+    people: {
+      charlie: { name: 'Charlie', role: 'Incillum' },
+      sales: { name: 'Sara', role: 'Inside sales' },
+      director: { name: 'James', role: 'Sales director' },
+    },
+    messages: charlieMessages,
+  },
+
+  abilities: {
+    headline: 'What Charlie does.',
+    lede: 'Everything a quotation needs between the request and the decision — and the one thing it never does: send without a person.',
+    items: [
+      { glyph: 'read', title: 'Reads every document', body: 'The request, the drawings, the catalogue, the price list, the agreement and every supplier reply, read into lines.' },
+      { glyph: 'cite', title: 'Cites the page', body: 'Every figure is shown with the document and the place it came from. A figure with no source is reported as missing.' },
+      { glyph: 'make', title: 'Makes the documents', body: 'Takes a PDF or a spreadsheet and makes the quotation, a workbook or a chart from it, for a person to check.' },
+      { glyph: 'tell', title: 'Tells your channel', body: 'Posts what changed and what needs someone in Slack, Teams or by email, and answers when it is mentioned.' },
+      { glyph: 'ask', title: 'Asks approved suppliers', body: 'Drafts a request for a firm price and lead time to the suppliers you have approved, and sends it once someone approves.' },
+      { glyph: 'call', title: 'Calls and books', body: 'Calls a supplier to confirm a price or a date, and books the meeting, with the call’s notes filed against the line.' },
+      { glyph: 'approve', title: 'Asks before anything leaves', body: 'No request, quotation or document leaves without a person’s approval, and every approval is kept with the work.' },
+    ] satisfies ReadonlyArray<CharlieAbility>,
+  },
+
+  close: {
+    headline: 'Bring Charlie your hardest quotation.',
+    body: 'Tell us the request that always arrives late, and the people who have to see it. We will show you where Charlie would stop.',
+    action: 'Tell us about the work',
   },
 } as const

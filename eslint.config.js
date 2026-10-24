@@ -30,6 +30,10 @@ export default tseslint.config(
       // that the type-aware rules need. Including it would mean widening the
       // app's tsconfig to cover a file the app does not use.
       'design/**',
+      // The Charlie film's source (`video/charlie`): a HyperFrames composition and its
+      // capture, sound and frame scripts, rendered to `public/charlie/` and never
+      // imported by the app. The same reason as `design/`.
+      'video/**',
       '.tanstack/**',
       'test-results/**',
       'playwright-report/**',

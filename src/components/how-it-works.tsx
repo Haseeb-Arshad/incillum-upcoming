@@ -1,16 +1,17 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 import { DocumentQuestion, SourceDocument } from '#/components/glass-documents.tsx'
-import { Container, Label } from '#/components/primitives.tsx'
+import { Container } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { boundary, evidence, glass, home, how, thread } from '#/content/site.ts'
-import { useHydrated } from '#/lib/motion.ts'
+import { useHydrated, useReducedMotion } from '#/lib/motion.ts'
 
 import type { HowKey, HowStep } from '#/content/site.ts'
 import type { KeyboardEvent } from 'react'
 
 /**
- * How it works — four tabs, one quotation.
+ * How it works — four tabs, one quotation, on the presentation after the six
+ * sources.
  *
  * ── The shape it borrows ───────────────────────────────────────────────────
  *
@@ -38,7 +39,34 @@ import type { KeyboardEvent } from 'react'
  * between tabs, selection follows focus, and the panels sit in one cell so the
  * section keeps its height. The change is one short crossfade, and under
  * reduced motion an instant swap.
+ *
+ * ── Pinned to the scroll ───────────────────────────────────────────────────
+ *
+ * Where the whole stage fits on one screen, the steps pin under the masthead
+ * and the scroll walks through them: read, then hold, then price, then decide,
+ * a quarter of the track each, and a hairline down the rail shows how far.
+ * Choosing a tab — by pointer or keyboard — scrolls to its quarter, so the
+ * scroll and the selection never disagree. On a phone, a short laptop window
+ * or without a script it does not pin, and the tabs are tabs.
  */
+
+/** Where the stage pins: wide enough for the rail beside the desk, and tall enough to hold it. */
+const pinQuery = '(min-width: 48rem) and (min-height: 46rem)'
+
+function subscribeToPin(onChange: () => void) {
+  const query = window.matchMedia(pinQuery)
+  query.addEventListener('change', onChange)
+  return () => query.removeEventListener('change', onChange)
+}
+
+/** True where the stage pins, live; `false` on the server, whose HTML never pins. */
+function usePinnable(): boolean {
+  return useSyncExternalStore(
+    subscribeToPin,
+    () => window.matchMedia(pinQuery).matches,
+    () => false,
+  )
+}
 
 const { visual, record } = evidence
 const ledger = thread.beats.find((beat) => beat.figures)?.figures ?? []
@@ -54,12 +82,65 @@ const marginAfter = (1 - visual.unitCostAfter / visual.unitPrice) * 100
 const atFloor = record.calculation.rows.find((row) => row.basis.startsWith('At the'))
 
 const frameAt = (at: string) => glass.film.frames.find((frame) => frame.at === at)
-const limitOf = (step: HowStep) => boundary.points.find((point) => point.title === step.stops)
+const limitOf = (step: HowStep) =>
+  boundary.points.find((point) => point.title === step.stops)
 
 export function HowItWorks() {
   const hydrated = useHydrated()
+  const pinnable = usePinnable()
+  const reduced = useReducedMotion()
+  const pinned = hydrated && pinnable
   const [active, setActive] = useState<HowKey>(how.steps[0]!.key)
   const tabs = useRef<Array<HTMLButtonElement | null>>([])
+  const trackRef = useRef<HTMLDivElement>(null)
+
+  /**
+   * The step the scroll is in, read on an animation frame from a passive
+   * listener. State changes only when the step does — four renders down the
+   * whole track — and the rail's hairline is a custom property written
+   * directly, so it follows the scroll without rendering anything.
+   */
+  useEffect(() => {
+    const track = trackRef.current
+    if (!pinned || !track) return
+    let frame = 0
+    function place() {
+      frame = 0
+      if (!track) return
+      const box = track.getBoundingClientRect()
+      const distance = box.height - window.innerHeight
+      if (distance <= 0) return
+      const progress = Math.min(Math.max(-box.top / distance, 0), 1)
+      track.style.setProperty('--how-progress', progress.toFixed(4))
+      const step =
+        how.steps[Math.min(how.steps.length - 1, Math.floor(progress * how.steps.length))]
+      if (step) setActive((current) => (current === step.key ? current : step.key))
+    }
+    function onScroll() {
+      if (!frame) frame = requestAnimationFrame(place)
+    }
+    place()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [pinned])
+
+  /** Choose a step: select it, and where the stage is pinned, scroll to its quarter of the track. */
+  function select(index: number) {
+    const step = how.steps[index]
+    if (!step) return
+    setActive(step.key)
+    const track = trackRef.current
+    if (!pinned || !track) return
+    const box = track.getBoundingClientRect()
+    const distance = box.height - window.innerHeight
+    const top = window.scrollY + box.top + ((index + 0.5) / how.steps.length) * distance
+    window.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' })
+  }
 
   function move(event: KeyboardEvent<HTMLDivElement>) {
     const index = how.steps.findIndex((step) => step.key === active)
@@ -80,91 +161,100 @@ export function HowItWorks() {
               : null
     if (next === null) return
     event.preventDefault()
-    setActive(how.steps[next]!.key)
-    tabs.current[next]?.focus()
+    select(next)
+    tabs.current[next]?.focus({ preventScroll: true })
   }
 
   return (
     <section id={how.anchor} aria-labelledby="how-title" className="how">
       <Container>
-        <Reveal className="how-intro">
-          <Label>{how.label}</Label>
-          <h2 id="how-title" className="how-title">
+        {/*
+          The presentation's own opening for a section: the headline and its
+          paragraph on one baseline, and no label over either.
+        */}
+        <Reveal className="glass-act-title">
+          <h2 id="how-title" className="glass-heading">
             {how.headline}
           </h2>
-          <p className="how-lede">{how.lede}</p>
+          <p className="glass-sources-lede">{how.lede}</p>
         </Reveal>
 
-        <div className="how-body" data-enhanced={hydrated ? 'true' : 'false'}>
-          {hydrated ? (
-            <div
-              role="tablist"
-              aria-label={how.tabsLabel}
-              aria-orientation="vertical"
-              className="how-tabs"
-              onKeyDown={move}
-            >
-              {how.steps.map((step, index) => {
-                const selected = step.key === active
-                return (
-                  <button
-                    key={step.key}
-                    ref={(element) => {
-                      tabs.current[index] = element
-                    }}
-                    type="button"
-                    role="tab"
-                    id={`how-tab-${step.key}`}
-                    aria-controls={`how-panel-${step.key}`}
-                    aria-selected={selected}
-                    tabIndex={selected ? 0 : -1}
-                    className="how-tab"
-                    onClick={() => setActive(step.key)}
-                  >
-                    <span className="how-tab-number ic-tabular" aria-hidden="true">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <span className="how-tab-name">{step.tab}</span>
-                    <span className="how-tab-title">{step.title}</span>
-                  </button>
-                )
-              })}
-            </div>
-          ) : null}
-
-          <div className="how-panels">
-            {how.steps.map((step, index) => {
-              const selected = step.key === active
-              return (
+        <div ref={trackRef} className="how-track" data-pinned={pinned ? 'true' : 'false'}>
+          <div className="how-stage">
+            <div className="how-body" data-enhanced={hydrated ? 'true' : 'false'}>
+              {hydrated ? (
                 <div
-                  key={step.key}
-                  id={`how-panel-${step.key}`}
-                  className="how-panel"
-                  data-step={step.key}
-                  data-active={!hydrated || selected ? 'true' : 'false'}
-                  role={hydrated ? 'tabpanel' : undefined}
-                  aria-labelledby={hydrated ? `how-tab-${step.key}` : undefined}
-                  tabIndex={hydrated && selected ? 0 : undefined}
-                  inert={hydrated && !selected ? true : undefined}
-                  // Out of the accessibility tree the moment it is deselected,
-                  // not when its fade ends: one tabpanel at a time, always.
-                  aria-hidden={hydrated && !selected ? true : undefined}
+                  role="tablist"
+                  aria-label={how.tabsLabel}
+                  aria-orientation="vertical"
+                  className="how-tabs"
+                  onKeyDown={move}
                 >
-                  {/*
+                  {how.steps.map((step, index) => {
+                    const selected = step.key === active
+                    return (
+                      <button
+                        key={step.key}
+                        ref={(element) => {
+                          tabs.current[index] = element
+                        }}
+                        type="button"
+                        role="tab"
+                        id={`how-tab-${step.key}`}
+                        aria-controls={`how-panel-${step.key}`}
+                        aria-selected={selected}
+                        tabIndex={selected ? 0 : -1}
+                        className="how-tab"
+                        onClick={() => select(index)}
+                      >
+                        <span className="how-tab-number ic-tabular" aria-hidden="true">
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <span className="how-tab-name">{step.tab}</span>
+                        <span className="how-tab-title">{step.title}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : null}
+
+              <div className="how-panels">
+                {how.steps.map((step, index) => {
+                  const selected = step.key === active
+                  return (
+                    <div
+                      key={step.key}
+                      id={`how-panel-${step.key}`}
+                      className="how-panel"
+                      data-step={step.key}
+                      data-active={!hydrated || selected ? 'true' : 'false'}
+                      role={hydrated ? 'tabpanel' : undefined}
+                      aria-labelledby={hydrated ? `how-tab-${step.key}` : undefined}
+                      tabIndex={hydrated && selected ? 0 : undefined}
+                      inert={hydrated && !selected ? true : undefined}
+                      // Out of the accessibility tree the moment it is deselected,
+                      // not when its fade ends: one tabpanel at a time, always.
+                      aria-hidden={hydrated && !selected ? true : undefined}
+                    >
+                      {/*
                     Without a script there is no tab to name the step, so the
                     panel carries its own heading. With one, the tab is its name.
                   */}
-                  {hydrated ? null : (
-                    <h3 className="how-panel-heading">
-                      <span className="ic-tabular">{String(index + 1).padStart(2, '0')}</span>{' '}
-                      {step.tab}. {step.title}
-                    </h3>
-                  )}
-                  <StepCopy step={step} />
-                  <Desk step={step} />
-                </div>
-              )
-            })}
+                      {hydrated ? null : (
+                        <h3 className="how-panel-heading">
+                          <span className="ic-tabular">
+                            {String(index + 1).padStart(2, '0')}
+                          </span>{' '}
+                          {step.tab}. {step.title}
+                        </h3>
+                      )}
+                      <StepCopy step={step} />
+                      <Desk step={step} />
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </Container>
@@ -221,12 +311,16 @@ function DeskPhoto({ light }: { light: 'night' | 'morning' }) {
       <source
         type="image/avif"
         sizes={sizes}
-        srcSet={widths.map((width) => `/how/desk-${light}-${width}.avif ${width}w`).join(', ')}
+        srcSet={widths
+          .map((width) => `/how/desk-${light}-${width}.avif ${width}w`)
+          .join(', ')}
       />
       <source
         type="image/webp"
         sizes={sizes}
-        srcSet={widths.map((width) => `/how/desk-${light}-${width}.webp ${width}w`).join(', ')}
+        srcSet={widths
+          .map((width) => `/how/desk-${light}-${width}.webp ${width}w`)
+          .join(', ')}
       />
       <img
         src={`/how/desk-${light}-1600.jpg`}

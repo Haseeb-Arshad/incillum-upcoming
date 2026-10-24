@@ -34,10 +34,13 @@ import type { AnimationEvent } from 'react'
  * advances the film. One clock, so pausing is `animation-play-state` and the
  * hairline and the film can never disagree about where they are.
  *
- * It plays once and stops at 08:04 — the morning is the end, and a night that
- * restarts itself is a screensaver. It waits for the opening to finish and for
- * the frame to be on screen, pauses when it leaves, and the reader can pause it.
- * Under reduced motion it never plays; the hours are chapters to step through.
+ * It goes round: after a longer hold on 08:04 the night starts again, by the
+ * owner's choice, so a reader who arrives late still sees it from 23:47. The
+ * hairlines under the hours join into one line along the foot of the frame,
+ * and the ring round the play button fills with each hour. It waits for the
+ * opening to finish and for the frame to be on screen, pauses when it leaves,
+ * and the reader can pause it. Under reduced motion it never plays; the hours
+ * are chapters to step through.
  *
  * Without JavaScript every hour is listed and the sheet shows the morning,
  * which is the whole story in the server's HTML. The licence is the frame's
@@ -161,47 +164,26 @@ export function GlassFilm({ ready }: { ready: boolean }) {
 
   const [index, setIndex] = useState(0)
   const [playing, setPlaying] = useState(true)
-  const [ended, setEnded] = useState(false)
-  /** Bumped to restart the hairline when a chapter is chosen or the night is replayed. */
+  /** Bumped to restart the hairline and the ring when a chapter is chosen. */
   const [take, setTake] = useState(0)
 
   const autoplay = hydrated && !reduced
-  const running = autoplay && ready && playing && inView && !ended
+  const running = autoplay && ready && playing && inView
   /** Without a script the sheet shows the morning, beside the whole night listed. */
   const stage = hydrated ? index : LAST
 
+  /** The hour's hairline has filled: the next hour, or round to 23:47 after the morning. */
   function advance(event: AnimationEvent<HTMLSpanElement>) {
     if (event.animationName !== 'glass-progress') return
-    if (index < LAST) {
-      setIndex(index + 1)
-      return
-    }
-    setPlaying(false)
-    setEnded(true)
+    setIndex(index < LAST ? index + 1 : 0)
   }
 
   function choose(hour: number) {
     setIndex(hour)
-    setEnded(false)
     setTake((count) => count + 1)
   }
 
-  function toggle() {
-    if (ended) {
-      setIndex(0)
-      setEnded(false)
-      setPlaying(true)
-      setTake((count) => count + 1)
-      return
-    }
-    setPlaying(!playing)
-  }
-
-  const control = ended
-    ? film.controls.replay
-    : playing
-      ? film.controls.pause
-      : film.controls.play
+  const control = playing ? film.controls.pause : film.controls.play
 
   return (
     <section id="film" aria-labelledby="film-label" className="glass-film-section">
@@ -254,9 +236,22 @@ export function GlassFilm({ ready }: { ready: boolean }) {
                   className="glass-play"
                   aria-label={control}
                   title={control}
-                  onClick={toggle}
+                  onClick={() => setPlaying(!playing)}
                 >
-                  <PlayIcon state={ended ? 'replay' : playing ? 'pause' : 'play'} />
+                  {/* The hour's progress, round the button: the same clock as the hairline. */}
+                  <svg className="glass-play-ring" viewBox="0 0 44 44" aria-hidden="true" focusable="false">
+                    <circle className="glass-play-ring-track" cx="22" cy="22" r="20.75" />
+                    <circle
+                      key={`${take}-${index}`}
+                      className="glass-play-ring-fill"
+                      data-last={index === LAST ? 'true' : undefined}
+                      cx="22"
+                      cy="22"
+                      r="20.75"
+                      pathLength={100}
+                    />
+                  </svg>
+                  <PlayIcon state={playing ? 'pause' : 'play'} />
                 </button>
               ) : null}
 
@@ -272,13 +267,11 @@ export function GlassFilm({ ready }: { ready: boolean }) {
                     className="glass-chapter"
                     aria-label={`${beat.at} — ${beat.title}`}
                     aria-current={hour === index ? 'step' : undefined}
-                    data-done={
-                      hour < index || (ended && hour === index) ? 'true' : 'false'
-                    }
+                    data-done={hour < index ? 'true' : 'false'}
                     onClick={() => choose(hour)}
                   >
                     <span className="glass-chapter-track" aria-hidden="true">
-                      {hour === index && !ended && autoplay ? (
+                      {hour === index && autoplay ? (
                         <span
                           key={`${take}-${hour}`}
                           className="glass-chapter-fill glass-chapter-fill--live"
@@ -556,8 +549,8 @@ function Chip({
   )
 }
 
-/** Sixteen-pixel glyphs on `currentColor`. Three of them do not earn a package. */
-function PlayIcon({ state }: { state: 'play' | 'pause' | 'replay' }) {
+/** Sixteen-pixel glyphs on `currentColor`. Two of them do not earn a package. */
+function PlayIcon({ state }: { state: 'play' | 'pause' }) {
   const common = {
     viewBox: '0 0 16 16',
     fill: 'none',
@@ -572,19 +565,6 @@ function PlayIcon({ state }: { state: 'play' | 'pause' | 'replay' }) {
           stroke="currentColor"
           strokeWidth="1.5"
           strokeLinecap="round"
-        />
-      </svg>
-    )
-  }
-  if (state === 'replay') {
-    return (
-      <svg {...common}>
-        <path
-          d="M3.5 8a4.5 4.5 0 1 0 1.32-3.18M3.5 2.75v2.5H6"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
         />
       </svg>
     )
