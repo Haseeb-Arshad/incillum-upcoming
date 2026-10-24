@@ -30,7 +30,7 @@ test.beforeEach(async ({ page }) => {
 /**
  * Holds the opening for fifteen seconds a beat, from before the page is parsed.
  *
- * The real one is gone in under four, and a test has to wait for hydration
+ * The real one is gone in just over five seconds, and a test has to wait for hydration
  * before any key it presses can end it — which, with four workers sharing a
  * machine, is sometimes longer than that. Without this, a test of skipping it
  * is a test of how busy the machine was.
@@ -383,25 +383,34 @@ test('an address that names a section opens on it, with nothing over it', async 
   await expect(page.locator('.glass-opening')).toBeHidden()
 })
 
-test('the opening is a quotation and its answer, and the dust keeps the opening’s time', async ({
+test('the opening introduces the work and Charlie in three beats, and the dust keeps time', async ({
   page,
-}) => {
+}, testInfo) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await holdTheOpening(page)
   await page.goto(GLASS)
   await page.waitForSelector('html[data-hydrated="true"]')
   const opening = page.locator('.glass-opening')
-  await expect(opening.locator('blockquote p')).toHaveCount(2)
-  await expect(opening.locator('blockquote')).toContainText('plenty there that needs to be done')
-  await expect(opening.locator('figcaption')).toHaveText(
-    '— Alan Turing, Computing Machinery and Intelligence, 1950',
-  )
-  await expect(opening.locator('.glass-opening-then')).toHaveText('Charlie does the work. You decide.')
-  // The quotation is set first; its answer waits its turn.
-  await expect(opening.locator('blockquote p').first()).toHaveCSS('opacity', '1')
-  await expect(opening.locator('.glass-opening-then')).toHaveCSS('opacity', '0')
+  const beats = opening.locator('p')
+  await expect(beats).toHaveText([
+    'Intelligence should move work forward.',
+    'From request to decision.',
+    'Meet Charlie.',
+  ])
+  // One statement at a time; the remaining beats wait their turn.
+  await expect(beats.nth(0)).toHaveCSS('opacity', '1')
+  await expect(beats.nth(1)).toHaveCSS('opacity', '0')
+  await expect(beats.nth(2)).toHaveCSS('opacity', '0')
+  for (const beat of await beats.all()) {
+    const fits = await beat.evaluate((element) => {
+      const box = element.getBoundingClientRect()
+      return box.left >= 0 && box.right <= innerWidth && box.top >= 0 && box.bottom <= innerHeight
+    })
+    expect(fits).toBe(true)
+  }
   // Fifteen seconds a beat: well inside the first, the landscape is still unrolling.
   await expect(page.locator('.glass-field[data-tone="night"]')).toHaveAttribute('data-formed', 'false')
+  await page.screenshot({ path: testInfo.outputPath('opening.png') })
 })
 
 test('six sources gather into one thread as the reader scrolls, and come apart again', async ({

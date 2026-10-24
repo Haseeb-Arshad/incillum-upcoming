@@ -2899,7 +2899,7 @@
    Larger than the home page's, because a presentation tells by moving — and
    written down here so that it only grows on purpose:
 
-     1. the opening: hour rules drawing down, two beats of type, the page
+     1. the opening: hour rules drawing down, three beats of type, the page
         assembling. Once, ended early by any input, absent under reduced motion;
      2. the film: one hour per `--glass-frame` while it is on screen, once
         through, paused by the reader, never looped — its sheet filling, its
@@ -2938,10 +2938,9 @@
   --glass-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
   --glass-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --glass-arrive: 900ms;
-  /* The opening: a quotation held for three beats, the line that answers it for one, then the page. */
+  /* The opening: three beats, counted from the copy, then the page. */
   --glass-beat: 1700ms;
-  --glass-quote-beats: 3;
-  --glass-opening: calc(var(--glass-beat) * (var(--glass-quote-beats) + 1));
+  --glass-opening: calc(var(--glass-beat) * var(--glass-beats, 3));
   /* One hour of the film, timed by its chapter's hairline. */
   --glass-frame: 3400ms;
   /* The documents gathering onto one sheet. */
@@ -3073,54 +3072,23 @@
   padding: 1.5rem;
   animation: glass-opening-end 1ms linear var(--glass-opening) forwards;
 }
-/* The quotation and its answer share the one cell, one after the other. */
-.glass-opening > * {
+/* The three beats share one cell, replacing each other without moving the page. */
+.glass-opening p {
   grid-area: 1 / 1;
   margin: 0;
-  font-family: var(--font-display);
-  text-align: center;
-  text-wrap: balance;
-  color: var(--ic-ink-900);
-}
-/*
- * The quotation arrives a line at a time and its source after it, so the
- * sentence is read as it is set; then it leaves as one.
- */
-.glass-opening-quote {
-  max-width: 24ch;
-  font-size: clamp(1.75rem, 3.4vw, 3rem);
-  line-height: 1.12;
-  letter-spacing: -0.014em;
-  animation: glass-quote calc(var(--glass-beat) * var(--glass-quote-beats)) var(--glass-ease) both;
-}
-.glass-opening-quote blockquote {
-  margin: 0;
-}
-.glass-opening-quote p {
-  margin: 0;
-  animation: glass-line 700ms var(--glass-ease) both;
-  animation-delay: calc(var(--glass-beat) * 0.7 * var(--line, 0));
-}
-.glass-opening-quote figcaption {
-  margin-top: 1.25rem;
-  font-family: var(--font-sans);
-  font-size: 0.9375rem;
-  line-height: 1.4;
-  letter-spacing: 0;
-  color: var(--ic-ink-600);
-  animation: glass-line 700ms var(--glass-ease) both;
-  animation-delay: calc(var(--glass-beat) * 1.25);
-}
-.glass-opening-then {
   max-width: 20ch;
+  font-family: var(--font-display);
   font-size: clamp(2rem, 4.2vw, 3.5rem);
   line-height: 1.06;
   letter-spacing: -0.018em;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--ic-ink-900);
   animation: glass-beat var(--glass-beat) var(--glass-ease) both;
-  animation-delay: calc(var(--glass-beat) * var(--glass-quote-beats));
+  animation-delay: calc(var(--glass-beat) * var(--beat, 0));
 }
 
-/* The page assembles as the second beat leaves; ended early, it assembles at once. */
+/* The page assembles as the final beat leaves; ended early, it assembles at once. */
 .glass-enter {
   animation: glass-enter var(--glass-arrive) var(--glass-ease) both;
   animation-delay: calc(var(--glass-opening) - 250ms + var(--glass-enter-delay, 0ms));
@@ -6485,27 +6453,6 @@
     transform: scaleY(0);
   }
   to {
-    transform: none;
-  }
-}
-@keyframes glass-quote {
-  0%,
-  88% {
-    opacity: 1;
-    transform: none;
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(0, -0.25em, 0);
-  }
-}
-@keyframes glass-line {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 0.5em, 0);
-  }
-  to {
-    opacity: 1;
     transform: none;
   }
 }

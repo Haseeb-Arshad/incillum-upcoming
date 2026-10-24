@@ -53,9 +53,8 @@ import type { Dust, DustScene, DustTone } from '#/lib/dust.ts'
  * field's own shape. Wide, the swells rise at the edges and the words sit just
  * above the bright far ridge. Narrow, there is no room for tall edges, so the
  * camera stands higher and the landscape lies lower, under the type rather
- * than through it. The opening clears the grains behind its quotation as the
- * hero does behind the headline: a source line at reading size cannot sit on
- * the bright ridge and still be read.
+ * than through it. The opening clears the grains behind its words as the
+ * hero does behind the headline, keeping the bright ridge away from the type.
  */
 const scenes = {
   opening: {
