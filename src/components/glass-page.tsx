@@ -33,8 +33,8 @@ import { markOpeningSeen, openingSeen, rememberPlace } from '#/lib/opening.ts'
  * ── The acts ───────────────────────────────────────────────────────────────
  *
  * 1. **The opening.** The night, a field of hour rules drawing down it, a
- *    landscape of dust under it (`glass-field.tsx`), a quotation set line by
- *    line, and the one line that answers it.
+ *    landscape of dust under it (`glass-field.tsx`), and three short beats
+ *    introducing intelligence, the work, and Charlie.
  *    Then the page assembles: the dust sinks, dims and clears a space for the
  *    type, and falls behind as the page scrolls.
  * 2. **The hero.** Centred: the headline and the home page's form.
@@ -217,7 +217,11 @@ export function GlassPage() {
   }, [opening])
 
   return (
-    <div className="glass" data-opening={opening}>
+    <div
+      className="glass"
+      data-opening={opening}
+      style={{ ['--glass-beats' as string]: glass.opening.length }}
+    >
       <span ref={sentinelRef} className="glass-sentinel" aria-hidden="true" />
 
       {/*
@@ -242,22 +246,15 @@ export function GlassPage() {
         <GlassField opening={openingRef} skipped={opening === 'skipped'} until={filmRef} />
 
         {/*
-          Decoration, as far as a screen reader is concerned: the quotation and
-          its answer set a scene the hero then states, and they are gone within
-          seconds.
+          Decoration, as far as a screen reader is concerned: the beats set a
+          scene the hero then states, and they are gone within seconds.
         */}
         <div ref={openingRef} className="glass-opening" aria-hidden="true">
-          <figure className="glass-opening-quote">
-            <blockquote>
-              {glass.opening.quote.map((line, index) => (
-                <p key={line} style={{ ['--line' as string]: index }}>
-                  {line}
-                </p>
-              ))}
-            </blockquote>
-            <figcaption>{glass.opening.by}</figcaption>
-          </figure>
-          <p className="glass-opening-then">{glass.opening.then}</p>
+          {glass.opening.map((line, index) => (
+            <p key={line} style={{ ['--beat' as string]: index }}>
+              {line}
+            </p>
+          ))}
         </div>
 
         <section className="glass-hero" aria-labelledby="glass-title">
