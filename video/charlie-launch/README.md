@@ -77,7 +77,7 @@ or licensed.
 4. In this folder:
    `npx hyperframes@0.8.152 render . -o renders/meet-charlie.mp4 --quality high --workers 1 --low-memory-mode`.
 5. Encode for the web with the product-film skill’s `publish.py`:
-   `python publish.py renders/meet-charlie.mp4 ../../public/charlie/meet-charlie.mp4 --wav soundtrack.wav --poster 12.6`
+   `python publish.py renders/meet-charlie.mp4 ../../public/charlie/meet-charlie.mp4 --wav soundtrack.wav --poster 10.4`
    (H.264 CRF 23, faststart, soundtrack at −16 LUFS).
 
 Only the music or a sound changed? Steps 3 and
