@@ -1,0 +1,1116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Meet Charlie</title>
+    <script src="vendor/gsap.min.js"></script>
+    <script src="icons.js"></script>
+    <script src="cues.js"></script>
+    <style>
+      /* The site's own faces, copied into fonts/ (they are licensed: never edited, never committed twice). */
+      @font-face {
+        font-family: 'Incillum Sans';
+        src: url('fonts/sans.woff2') format('woff2');
+        font-weight: 100 900;
+      }
+      @font-face {
+        font-family: 'Incillum Serif';
+        src: url('fonts/serif.woff2') format('woff2');
+      }
+
+      /* The site's tokens (src/styles.css): white paper, ink, one signal, and the night's inversion of them. */
+      :root {
+        --paper: #ffffff;
+        --sunken: #f2f2f0;
+        --ink: #111110;
+        --ink-800: #1c1c1a;
+        --ink-600: #45453f;
+        --ink-400: #6e6e66;
+        --line: rgba(17, 17, 16, 0.11);
+        --line-strong: rgba(17, 17, 16, 0.22);
+        --signal: #9a5518;
+        --signal-soft: rgba(154, 85, 24, 0.16);
+        --night: #131312;
+        --night-raised: #1b1b19;
+        --night-sunken: #0d0d0c;
+        --night-ink: #f2f2ee;
+        --night-ink-600: #b6b6ad;
+        --night-ink-400: #9c9c93;
+        --night-line: rgba(242, 242, 238, 0.13);
+        --night-line-strong: rgba(242, 242, 238, 0.26);
+        --night-signal: #e4a046;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--night);
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--night);
+        font-family: 'Incillum Sans', system-ui, sans-serif;
+        color: var(--ink);
+      }
+      .tnum {
+        font-feature-settings: 'tnum' 1;
+      }
+      .abs {
+        position: absolute;
+      }
+      .full {
+        position: absolute;
+        inset: 0;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .serif {
+        font-family: 'Incillum Serif', Georgia, serif;
+        font-weight: 400;
+      }
+      .w {
+        display: inline-block;
+        overflow: hidden;
+        vertical-align: bottom;
+        padding-bottom: 0.1em;
+        margin-bottom: -0.1em;
+      }
+      .w > span {
+        display: inline-block;
+      }
+
+      /* ── Ground: the white paper, and the photographs of the room ── */
+      #paperBg {
+        background: var(--paper);
+        opacity: 0;
+      }
+      .plate {
+        opacity: 0;
+        transform-origin: 50% 50%;
+      }
+      .plate > img {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        object-fit: cover;
+      }
+      #shade {
+        background: var(--night);
+        opacity: 0;
+      }
+
+      /* ── The window and its camera ─────────────────────────────── */
+      #cam {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: 0 0;
+        perspective: 2600px;
+        perspective-origin: 960px 700px;
+      }
+      #win {
+        position: absolute;
+        left: 180px;
+        top: 84px;
+        width: 1560px;
+        height: 975px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: var(--paper);
+        outline: 1px solid var(--line-strong);
+        opacity: 0;
+      }
+      #page {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1440px;
+        height: 900px;
+        transform: scale(1.0833333);
+        transform-origin: 0 0;
+      }
+      .shot {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+      }
+      .shot > img {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1440px;
+        height: 900px;
+      }
+      .cover {
+        position: absolute;
+        background: #ffffff;
+        transform-origin: right center;
+      }
+      .mark {
+        position: absolute;
+        background: var(--signal-soft);
+        mix-blend-mode: multiply;
+        border-radius: 3px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+      .ring {
+        position: absolute;
+        border: 2px solid var(--signal);
+        border-radius: 8px;
+        opacity: 0;
+      }
+      .band {
+        position: absolute;
+        height: 30px;
+        background: rgba(154, 85, 24, 0.07);
+        border-bottom: 2px solid rgba(154, 85, 24, 0.55);
+        opacity: 0;
+      }
+      .chip {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        height: 30px;
+        padding: 0 12px 0 9px;
+        border-radius: 999px;
+        background: var(--paper);
+        outline: 1px solid var(--line-strong);
+        font-size: 13px;
+        color: var(--ink-800);
+        white-space: nowrap;
+        opacity: 0;
+      }
+      .chip i {
+        width: 16px;
+        height: 16px;
+        color: var(--signal);
+      }
+      .badge {
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: var(--ink);
+        color: #fff;
+        padding: 5px;
+        opacity: 0;
+      }
+      .cursor {
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        opacity: 0;
+        transform-origin: 4px 4px;
+      }
+      .cursor path {
+        fill: var(--ink);
+        stroke: #ffffff;
+        stroke-width: 1.4;
+      }
+
+      /* ── The quotation, lifted out of the list ─────────────────── */
+      #docStage {
+        perspective: 2200px;
+        perspective-origin: 900px 540px;
+      }
+      #doc {
+        position: absolute;
+        left: 560px;
+        top: 150px;
+        width: 808px;
+        height: 807px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--paper);
+        outline: 1px solid var(--line-strong);
+        transform-origin: 30% 40%;
+        opacity: 0;
+      }
+      /* The draft from its title down: the line above it, the request's reference, is left out of the frame. */
+      #doc img {
+        position: absolute;
+        left: 0;
+        top: 36px;
+        width: 808px;
+        height: 771px;
+      }
+
+      /* ── Reaching out: composed, in the brand's type, not Studio's ─ */
+      #reach {
+        perspective: 2400px;
+        perspective-origin: 960px 540px;
+      }
+      .rc {
+        position: absolute;
+        top: 300px;
+        display: flex;
+        flex-direction: column;
+        width: 520px;
+        min-height: 352px;
+        padding: 30px 32px 28px;
+        border-radius: 20px;
+        background: var(--night-raised);
+        outline: 1px solid var(--night-line-strong);
+        color: var(--night-ink);
+        opacity: 0;
+      }
+      .rc .head {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .rc .tile {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: var(--night-ink);
+        color: var(--night);
+        padding: 13px;
+        flex: none;
+      }
+      .rc .who {
+        font-size: 22px;
+      }
+      .rc .meta {
+        margin-top: 3px;
+        font-size: 17px;
+        color: var(--night-ink-400);
+      }
+      .rc .say {
+        margin-top: 22px;
+        font-family: 'Incillum Serif', Georgia, serif;
+        font-size: 36px;
+        line-height: 1.16;
+        letter-spacing: -0.01em;
+      }
+      .rc .body {
+        margin-top: 12px;
+        margin-bottom: 24px;
+        font-size: 19px;
+        line-height: 1.5;
+        color: var(--night-ink-600);
+      }
+      .rc .foot {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: auto;
+        padding-top: 18px;
+        border-top: 1px solid var(--night-line);
+        font-size: 18px;
+        color: var(--night-ink-600);
+      }
+      .rc .foot i {
+        width: 20px;
+        height: 20px;
+        color: var(--night-ink-600);
+      }
+      .rc .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        height: 36px;
+        padding: 0 16px 0 13px;
+        border-radius: 999px;
+        outline: 1px solid var(--night-line-strong);
+        color: var(--night-ink);
+        opacity: 0;
+      }
+      .rc .pill b {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: var(--night-signal);
+      }
+
+      /* ── The strip: the brand on the left, the chapter on the right ─ */
+      #strip {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 76px;
+        background: var(--paper);
+        border-bottom: 1px solid var(--line);
+        opacity: 0;
+      }
+      #brand {
+        left: 96px;
+        top: 23px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 20px;
+        color: var(--ink-600);
+        opacity: 0;
+      }
+      #brand .m {
+        width: 30px;
+        height: 30px;
+        color: var(--ink);
+      }
+      #label {
+        right: 96px;
+        top: 22px;
+        width: 600px;
+        height: 34px;
+      }
+      #label span {
+        position: absolute;
+        right: 0;
+        top: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 21px;
+        color: var(--ink-600);
+        white-space: nowrap;
+        opacity: 0;
+      }
+      #label i {
+        width: 22px;
+        height: 22px;
+        color: var(--ink);
+      }
+
+      /* ── Captions ──────────────────────────────────────────────── */
+      .cap {
+        position: absolute;
+        left: 96px;
+        bottom: 64px;
+        max-width: 820px;
+        padding: 22px 30px 26px;
+        border-radius: 18px;
+        background: var(--paper);
+        outline: 1px solid var(--line-strong);
+        opacity: 0;
+      }
+      .cap-step {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 19px;
+        color: var(--ink-400);
+      }
+      .cap-step i {
+        width: 22px;
+        height: 22px;
+        color: var(--ink);
+      }
+      .cap-title {
+        margin-top: 10px;
+        font-family: 'Incillum Serif', Georgia, serif;
+        font-size: 46px;
+        line-height: 1.12;
+        letter-spacing: -0.012em;
+      }
+
+      /* ── What Charlie does: eight abilities, as the site sets them ─ */
+      #grid {
+        background: var(--paper);
+        opacity: 0;
+      }
+      #grid .h {
+        position: absolute;
+        left: 152px;
+        top: 96px;
+        font-size: 100px;
+        line-height: 1.05;
+        letter-spacing: -0.018em;
+      }
+      #grid .l {
+        position: absolute;
+        left: 155px;
+        top: 226px;
+        font-size: 30px;
+        color: var(--ink-600);
+      }
+      .ab {
+        position: absolute;
+        width: 380px;
+        padding-top: 26px;
+        border-top: 1px solid var(--line-strong);
+        opacity: 0;
+      }
+      .ab .ico {
+        width: 72px;
+        height: 72px;
+        border-radius: 16px;
+        background: var(--sunken);
+        color: var(--ink);
+        padding: 19px;
+      }
+      .ab .tt {
+        margin-top: 22px;
+        font-size: 29px;
+        font-weight: 500;
+        letter-spacing: -0.005em;
+        color: var(--ink);
+      }
+      .ab .tb {
+        margin-top: 10px;
+        font-size: 20px;
+        line-height: 1.48;
+        color: var(--ink-400);
+      }
+
+      /* ── The chapter cards: one icon, one word, one line ───────── */
+      .title {
+        background: var(--paper);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        clip-path: inset(100% 0 0 0);
+      }
+      .title .num {
+        font-size: 26px;
+        color: var(--ink-400);
+        letter-spacing: 0.02em;
+      }
+      .title .row {
+        display: flex;
+        align-items: center;
+        gap: 44px;
+        margin-top: 26px;
+      }
+      .title .ico {
+        width: 150px;
+        height: 150px;
+        color: var(--ink);
+      }
+      .title .ico svg * {
+        stroke-width: 1.5;
+      }
+      .title .word {
+        font-size: 196px;
+        line-height: 1;
+        letter-spacing: -0.025em;
+      }
+      .title .sub {
+        margin-top: 34px;
+        font-size: 34px;
+        color: var(--ink-600);
+      }
+
+      /* ── Lines of type, over the night and the morning ─────────── */
+      .line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-family: 'Incillum Serif', Georgia, serif;
+        letter-spacing: -0.018em;
+        color: var(--night-ink);
+      }
+
+      /* ── The reveal ────────────────────────────────────────────── */
+      #lockup {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 210px;
+        text-align: center;
+        color: var(--night-ink);
+      }
+      #lockup .m {
+        width: 176px;
+        height: 176px;
+        margin: 0 auto;
+      }
+      #lockup .t {
+        margin-top: 34px;
+        font-size: 216px;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        opacity: 0;
+      }
+      #lockup .s {
+        margin-top: 34px;
+        font-size: 34px;
+        color: var(--night-ink-400);
+        opacity: 0;
+      }
+      #wave {
+        position: absolute;
+        left: 872px;
+        top: 210px;
+        width: 176px;
+        height: 176px;
+        border-radius: 999px;
+        border: 1.5px solid var(--night-ink);
+        opacity: 0;
+      }
+
+      /* ── The close ─────────────────────────────────────────────── */
+      #end {
+        background: var(--paper);
+        text-align: center;
+        opacity: 0;
+      }
+      #end .m {
+        width: 104px;
+        height: 104px;
+        margin: 290px auto 0;
+        color: var(--ink);
+      }
+      #end .t {
+        margin-top: 28px;
+        font-size: 132px;
+        line-height: 1;
+        letter-spacing: -0.025em;
+      }
+      #end .s {
+        margin-top: 24px;
+        font-size: 34px;
+        color: var(--ink-600);
+      }
+      #end .u {
+        margin-top: 46px;
+        font-size: 24px;
+        color: var(--ink-400);
+        letter-spacing: 0.02em;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="60" data-fps="30" data-width="1920" data-height="1080">
+      <audio id="soundtrack" src="soundtrack.wav" data-start="0" data-duration="60" data-track-index="0" data-volume="1"></audio>
+
+      <div id="paperBg" class="full"></div>
+      <div class="plate full" id="plate-lamp"><img src="plates/lamp.webp" alt="" /></div>
+      <div class="plate full" id="plate-glass"><img src="plates/glass.webp" alt="" /></div>
+      <div class="plate full" id="plate-quay"><img src="plates/quay.webp" alt="" /></div>
+      <div class="plate full" id="plate-morning"><img src="plates/morning.webp" alt="" /></div>
+      <div id="shade" class="full"></div>
+
+      <div id="cam">
+        <div id="win">
+          <div id="page">
+            <div class="shot" id="shot-pdf"><img src="stills/pdf.webp" alt="" /></div>
+            <div class="shot" id="shot-matrix"><img src="stills/matrix.webp" alt="" /></div>
+            <div class="shot" id="shot-finding"><img src="stills/finding.webp" alt="" /></div>
+            <div class="shot" id="shot-suppliers"><img src="stills/suppliers.webp" alt="" /></div>
+            <div class="shot" id="shot-needs"><img src="stills/needs-you.webp" alt="" /></div>
+            <div class="shot" id="shot-artifacts"><img src="stills/artifacts.webp" alt="" /></div>
+            <div class="shot" id="shot-approve"><img src="stills/approve.webp" alt="" /></div>
+            <div class="shot" id="shot-typed"><img src="stills/approve-typed.webp" alt="" /></div>
+            <div id="overlays" class="abs" style="inset: 0"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="docStage" class="full">
+        <div id="doc"><img src="stills/quotation.webp" alt="" /></div>
+      </div>
+
+      <!-- Composed, not captured: Studio does not reach outside yet (requirements/README.md). -->
+      <div id="reach" class="full">
+        <div class="rc" id="rc-tell" style="left: 150px">
+          <div class="head">
+            <span class="tile"><i data-icon="message-square-text"></i></span>
+            <div>
+              <div class="who">Charlie, in #rfq-1907</div>
+              <div class="meta">Your team’s channel</div>
+            </div>
+          </div>
+          <div class="say">Line 09 changed: 84 to 60.</div>
+          <div class="body">The covering email says 60. At 16.40% the quotation is under the floor. Avery, it is your call.</div>
+          <div class="foot"><i data-icon="check"></i><span>Posted for the team</span></div>
+        </div>
+        <div class="rc" id="rc-ask" style="left: 700px">
+          <div class="head">
+            <span class="tile"><i data-icon="send"></i></span>
+            <div>
+              <div class="who">To Aldermann Components</div>
+              <div class="meta">An approved supplier</div>
+            </div>
+          </div>
+          <div class="say">A firm price and lead time.</div>
+          <div class="body">Line 09: 60 × DC/DC converter, 300 W, for delivery from 19 September.</div>
+          <div class="foot"><span class="pill"><b></b>Waiting for your approval</span></div>
+        </div>
+        <div class="rc" id="rc-call" style="left: 1250px">
+          <div class="head">
+            <span class="tile"><i data-icon="phone-call"></i></span>
+            <div>
+              <div class="who">Call Marsden Industrial</div>
+              <div class="meta">Their quotation could not be read</div>
+            </div>
+          </div>
+          <div class="say">Ask for it again.</div>
+          <div class="body">And book a call for Thursday at 10:00, with the notes filed against the line.</div>
+          <div class="foot"><span class="pill"><b></b>Waiting for your approval</span></div>
+        </div>
+      </div>
+
+      <div id="strip"></div>
+      <div id="brand" class="abs"><span class="m" data-mark></span><span>Charlie, in Incillum Studio</span></div>
+      <div id="label" class="abs"></div>
+
+      <div id="captions"></div>
+
+      <div id="grid" class="full">
+        <div class="h serif">What Charlie does.</div>
+        <div class="l">Everything a quotation needs between the request and the decision.</div>
+      </div>
+
+      <div id="titles"></div>
+
+      <div id="lines">
+        <div class="line" id="lineArrives" style="top: 250px; font-size: 92px"></div>
+        <div class="line" id="lineHome" style="top: 230px; font-size: 92px"></div>
+        <div class="line" id="lineWork" style="top: 452px; font-size: 136px"></div>
+        <div class="line" id="lineBoundary" style="top: 462px; font-size: 112px"></div>
+      </div>
+
+      <div id="wave"></div>
+      <div id="lockup">
+        <div class="m" data-mark data-draw></div>
+        <div class="t serif">Charlie</div>
+        <div class="s">The colleague in Incillum for commercial work.</div>
+      </div>
+
+      <div id="end" class="full">
+        <div class="m" data-mark></div>
+        <div class="t serif">Charlie</div>
+        <div class="s">Intelligence for commercial work.</div>
+        <div class="u">incillum.com</div>
+      </div>
+    </div>
+
+    <script>
+      ;(function () {
+        const M = window.CUES.moments
+        const S = 1.0833333
+        const WX = 180
+        const WY = 84
+        const $ = (selector) => document.querySelector(selector)
+        const overlays = $('#overlays')
+
+        // ── Building blocks ─────────────────────────────────────────
+        for (const node of document.querySelectorAll('[data-icon]')) node.innerHTML = window.ICONS[node.dataset.icon]
+        const orbit = (draw) =>
+          `<svg viewBox="0 0 100 100" fill="none">${[0, 45, 90, 135]
+            .map((angle) => `<ellipse cx="50" cy="50" rx="43" ry="20.5" transform="rotate(${angle} 50 50)" stroke="currentColor" stroke-width="2.4" ${draw ? 'pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"' : ''}/>`)
+            .join('')}</svg>`
+        for (const node of document.querySelectorAll('[data-mark]')) node.innerHTML = orbit(node.hasAttribute('data-draw'))
+        /** An icon whose strokes can be drawn on: every shape measured as length 1. */
+        function drawable(name) {
+          const holder = document.createElement('div')
+          holder.innerHTML = window.ICONS[name]
+          for (const shape of holder.querySelectorAll('path, circle, rect, line, polyline, ellipse')) {
+            shape.setAttribute('pathLength', '1')
+            shape.setAttribute('stroke-dasharray', '1')
+            shape.setAttribute('stroke-dashoffset', '1')
+          }
+          return holder.innerHTML
+        }
+        const words = (text) =>
+          text
+            .split(' ')
+            .map((word) => `<span class="w"><span>${word}</span></span>`)
+            .join(' ')
+
+        function box(className, rect, html = '') {
+          const element = document.createElement('div')
+          element.className = className
+          Object.assign(element.style, { left: `${rect[0]}px`, top: `${rect[1]}px`, width: `${rect[2]}px`, height: `${rect[3]}px` })
+          element.innerHTML = html
+          overlays.append(element)
+          return element
+        }
+        function chip(x, y, icon, text) {
+          const element = document.createElement('div')
+          element.className = 'chip'
+          Object.assign(element.style, { left: `${x}px`, top: `${y}px` })
+          element.innerHTML = `<i>${window.ICONS[icon]}</i><span>${text}</span>`
+          overlays.append(element)
+          return element
+        }
+        const pointer = '<path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z" />'
+        function makeCursor() {
+          const element = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+          element.setAttribute('viewBox', '0 0 24 24')
+          element.setAttribute('class', 'cursor')
+          element.innerHTML = pointer
+          overlays.append(element)
+          return element
+        }
+
+        // Captions: one card, each word in its own mask.
+        const captions = {}
+        function caption(key, icon, step, title) {
+          const element = document.createElement('div')
+          element.className = 'cap'
+          element.innerHTML = `<div class="cap-step"><i>${window.ICONS[icon]}</i><span>${step}</span></div><div class="cap-title">${words(title)}</div>`
+          $('#captions').append(element)
+          captions[key] = element
+        }
+        caption('agent', 'badge-check', 'Charlie, in Incillum Studio', 'An agent on every quotation.')
+        caption('morning', 'clock', '08:04', 'Every request worked. Every decision yours.')
+        captions.morning.style.maxWidth = '1200px'
+
+        // The chapters: what Charlie does, one word each, in the site's own words.
+        const chapters = [
+          ['reads', M.cardReads, 'scan-text', 'Reads.', 'Mail, PDFs, drawings and price lists, read into lines.'],
+          ['sheet', M.cardSheet, 'table', 'Populates.', 'Every line onto one sheet, each cell tied to its source.'],
+          ['cites', M.cardCites, 'link-2', 'Cites.', 'Each figure links back to the page it came from.'],
+          ['costs', M.cardCosts, 'calculator', 'Costs.', 'Supplier quotes, compared for coverage and cost.'],
+          ['holds', M.cardHolds, 'circle-pause', 'Holds.', 'A line it cannot settle waits for a person.'],
+          ['makes', M.cardMakes, 'file-stack', 'Makes.', 'The quotation, ready for someone to check.'],
+          ['reach', M.cardReach, 'send', 'Reaches out.', 'Suppliers, your channel, a call — once you approve.'],
+        ]
+        const titles = {}
+        chapters.forEach(([key, , icon, word, sub], index) => {
+          const element = document.createElement('div')
+          element.className = 'title full'
+          element.innerHTML = `<div class="num">0${index + 1}</div><div class="row"><div class="ico">${drawable(icon)}</div><div class="word serif">${words(word)}</div></div><div class="sub">${sub}</div>`
+          $('#titles').append(element)
+          titles[key] = element
+        })
+
+        // The strip's chapter label.
+        const labels = {}
+        for (const [key, icon, text] of [
+          ['reads', 'scan-text', '01 · Reads'], ['sheet', 'table', '02 · Populates'], ['cites', 'link-2', '03 · Cites'],
+          ['costs', 'calculator', '04 · Costs'], ['holds', 'circle-pause', '05 · Holds'], ['makes', 'file-stack', '06 · Makes'],
+          ['asks', 'badge-check', 'Asks before anything leaves'],
+        ]) {
+          const span = document.createElement('span')
+          span.innerHTML = `<i>${window.ICONS[icon]}</i>${text}`
+          $('#label').append(span)
+          labels[key] = span
+        }
+
+        // What Charlie does: the Charlie page's abilities, word for word, and the film's "holds".
+        const abilities = [
+          ['scan-text', 'Reads every document', 'The request, the drawings, the catalogue, the price list, the agreement and every supplier reply, read into lines.'],
+          ['link-2', 'Cites the page', 'Every figure is shown with the document and the place it came from. A figure with no source is reported as missing.'],
+          ['circle-pause', 'Holds what it can’t settle', 'A line it cannot settle waits for a person, with the question narrowed to the one thing it needs.'],
+          ['file-stack', 'Makes the documents', 'Takes a PDF or a spreadsheet and makes the quotation, a workbook or a chart from it, for a person to check.'],
+          ['message-square-text', 'Tells your channel', 'Posts what changed and what needs someone in Slack, Teams or by email, and answers when it is mentioned.'],
+          ['send', 'Asks approved suppliers', 'Drafts a request for a firm price and lead time to the suppliers you have approved, and sends it once someone approves.'],
+          ['phone-call', 'Calls and books', 'Calls a supplier to confirm a price or a date, and books the meeting, with the call’s notes filed against the line.'],
+          ['badge-check', 'Asks before anything leaves', 'No request, quotation or document leaves without a person’s approval, and every approval is kept with the work.'],
+        ]
+        const tiles = abilities.map(([icon, title, body], index) => {
+          const element = document.createElement('div')
+          element.className = 'ab'
+          Object.assign(element.style, { left: `${152 + (index % 4) * 412}px`, top: `${index < 4 ? 322 : 668}px` })
+          element.innerHTML = `<div class="ico">${drawable(icon)}</div><div class="tt">${title}</div><div class="tb">${body}</div>`
+          $('#grid').append(element)
+          return element
+        })
+
+        for (const [id, text] of [
+          ['lineArrives', 'The request arrives at 23:47.'],
+          ['lineHome', 'Everyone has gone home.'],
+          ['lineWork', 'The work hasn’t.'],
+          ['lineBoundary', 'Nothing leaves without a person.'],
+        ])
+          $(`#${id}`).innerHTML = words(text)
+
+        // ── The timeline ────────────────────────────────────────────
+        const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.inOut' } })
+        /** Puts a rectangle of the page (its own pixels) at the frame's centre, `z` times larger. */
+        function focus(rect, z, at, duration = 1.1, cy = 560) {
+          const fx = WX + (rect[0] + rect[2] / 2) * S
+          const fy = WY + (rect[1] + rect[3] / 2) * S
+          tl.to('#cam', { x: 960 - z * fx, y: cy - z * fy, scale: z, duration }, at)
+        }
+        const wide = (at, duration = 1.0) => tl.to('#cam', { x: 0, y: 0, scale: 1, duration }, at)
+        /** The window lands: a small settle out of depth, on the cut. */
+        const settle = (at) => tl.fromTo('#win', { scale: 0.955, rotateX: 7, transformOrigin: '50% 60%' }, { scale: 1, rotateX: 0, duration: 0.6, ease: 'power3.out' }, at)
+        /** Only one page in the window: the rest are hidden at the same instant. */
+        const shots = [...document.querySelectorAll('.shot')]
+        function only(shot, at) {
+          for (const element of shots) tl.set(element, { opacity: element.id === shot ? 1 : 0 }, at)
+        }
+        const clearOverlays = (at) => tl.set('#overlays > *', { opacity: 0 }, at)
+        function lineIn(selector, at, stagger = 0.06) {
+          tl.fromTo(`${selector} .w > span`, { yPercent: 110 }, { yPercent: 0, duration: 0.75, ease: 'power3.out', stagger }, at)
+        }
+        const lineOut = (selector, at) => tl.to(selector, { opacity: 0, duration: 0.25, ease: 'power1.in' }, at)
+        function captionIn(key, at) {
+          const element = captions[key]
+          tl.fromTo(element, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, at)
+          tl.fromTo(element.querySelectorAll('.w > span'), { yPercent: 105 }, { yPercent: 0, duration: 0.7, ease: 'power3.out', stagger: 0.045 }, at + 0.08)
+        }
+        const captionOut = (key, at) => tl.to(captions[key], { opacity: 0, y: -10, duration: 0.35, ease: 'power2.in' }, at)
+        /** A cover over part of a page from `from`, wiped away at `at`: the part arriving. */
+        function reveal(rect, from, at, duration = 0.4) {
+          const cover = box('cover', rect)
+          gsap.set(cover, { opacity: 0 })
+          tl.set(cover, { opacity: 1 }, from)
+          tl.fromTo(cover, { scaleX: 1 }, { scaleX: 0, duration, ease: 'power2.inOut' }, at)
+          return cover
+        }
+        function highlight(rect, at, duration = 0.5) {
+          const mark = box('mark', rect)
+          tl.fromTo(mark, { scaleX: 0 }, { scaleX: 1, duration, ease: 'power2.out' }, at)
+          return mark
+        }
+        function ring(rect, at, until, pad = 6) {
+          const element = box('ring', [rect[0] - pad, rect[1] - pad, rect[2] + pad * 2, rect[3] + pad * 2])
+          tl.fromTo(element, { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(2)' }, at)
+          if (until) tl.to(element, { opacity: 0, duration: 0.3 }, until)
+          return element
+        }
+        function pop(element, at, until) {
+          tl.fromTo(element, { opacity: 0, y: 8, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'back.out(1.8)' }, at)
+          if (until) tl.to(element, { opacity: 0, duration: 0.3 }, until)
+        }
+        function scan(rect, at, duration) {
+          const band = box('band', [rect[0], rect[1], rect[2], 30])
+          tl.fromTo(band, { opacity: 0, y: 0 }, { opacity: 1, duration: 0.2, ease: 'none' }, at)
+          tl.fromTo(band, { y: 0 }, { y: rect[3] - 30, duration, ease: 'none', immediateRender: false }, at)
+          tl.to(band, { opacity: 0, duration: 0.25 }, at + duration - 0.1)
+        }
+        function clickAt(cursor, from, to, at, travel = 0.55) {
+          tl.fromTo(cursor, { opacity: 0, x: from[0], y: from[1], scale: 1 }, { opacity: 1, x: from[0], y: from[1], duration: 0.15 }, at - travel - 0.15)
+          tl.to(cursor, { x: to[0], y: to[1], duration: travel, ease: 'power2.inOut' }, at - travel)
+          tl.to(cursor, { scale: 0.8, duration: 0.08, ease: 'power1.in' }, at)
+          tl.to(cursor, { scale: 1, duration: 0.16, ease: 'power1.out' }, at + 0.08)
+          tl.to(cursor, { opacity: 0, duration: 0.25 }, at + 0.45)
+        }
+        /** A chapter card: wiped up onto the frame on the downbeat, the icon drawn, the word risen, wiped off a bar-half later. */
+        function chapterCard(key, at) {
+          const element = titles[key]
+          tl.fromTo(element, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.22, ease: 'power3.out' }, at - 0.04)
+          tl.fromTo(element.querySelectorAll('.ico *'), { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.55, ease: 'power2.inOut', stagger: 0.04 }, at + 0.02)
+          tl.fromTo(element.querySelector('.ico'), { scale: 0.7, rotate: -12 }, { scale: 1, rotate: 0, duration: 0.6, ease: 'back.out(2.2)' }, at)
+          tl.fromTo(element.querySelectorAll('.word .w > span'), { yPercent: 110 }, { yPercent: 0, duration: 0.55, ease: 'power4.out', stagger: 0.06 }, at + 0.04)
+          tl.fromTo(element.querySelector('.sub'), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, at + 0.22)
+          tl.fromTo(element.querySelector('.row'), { scale: 1 }, { scale: 1.035, duration: 1.0, ease: 'none' }, at)
+          tl.fromTo(element, { clipPath: 'inset(0% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 100% 0%)', duration: 0.24, ease: 'power3.in', immediateRender: false }, at + 0.78)
+        }
+        function labelIn(key, at, until) {
+          tl.fromTo(labels[key], { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }, at)
+          tl.to(labels[key], { opacity: 0, duration: 0.15 }, until)
+        }
+        const stripOn = (at) => tl.set(['#strip', '#brand'], { opacity: 1 }, at)
+        const stripOff = (at) => tl.set(['#strip', '#brand'], { opacity: 0 }, at)
+
+        // ── 0 · The night ───────────────────────────────────────────
+        tl.fromTo('#plate-lamp', { opacity: 0 }, { opacity: 1, duration: 1.2, ease: 'power1.out' }, 0)
+        tl.fromTo('#plate-lamp', { scale: 1.0 }, { scale: 1.08, xPercent: -1.2, duration: 4.2, ease: 'power1.inOut' }, 0)
+        lineIn('#lineArrives', M.lineArrives)
+        lineOut('#lineArrives', M.toGlass - 0.3)
+        tl.set('#plate-lamp', { opacity: 0 }, M.toGlass)
+        tl.set('#plate-glass', { opacity: 1 }, M.toGlass)
+        tl.fromTo('#plate-glass', { scale: 1.09 }, { scale: 1.0, duration: 2.2, ease: 'power2.out' }, M.toGlass)
+        lineIn('#lineHome', M.lineHome)
+        lineOut('#lineHome', M.toBlack - 0.25)
+        tl.set('#plate-glass', { opacity: 0 }, M.toBlack)
+        lineIn('#lineWork', M.lineWork, 0.09)
+        tl.to('#lineWork .w > span', { yPercent: -110, duration: 0.4, ease: 'power3.in', stagger: 0.04 }, M.reveal - 0.5)
+
+        // ── 1 · Meet Charlie ────────────────────────────────────────
+        tl.to('#lockup ellipse', { strokeDashoffset: 0, duration: 1.2, ease: 'power2.inOut', stagger: 0.08 }, M.reveal)
+        tl.fromTo('#lockup .m', { scale: 0.6, rotate: -30 }, { scale: 1, rotate: 0, duration: 1.4, ease: 'power3.out' }, M.reveal)
+        tl.set('#wave', { opacity: 0.55, scale: 1 }, M.reveal)
+        tl.to('#wave', { opacity: 0, scale: 7, duration: 1.4, ease: 'power2.out' }, M.reveal)
+        tl.fromTo('#lockup .t', { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power4.out' }, M.reveal + 0.12)
+        tl.fromTo('#lockup .s', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, M.tagline)
+        tl.to('#lockup', { opacity: 0, y: -90, scale: 0.94, duration: 0.5, ease: 'power2.in' }, M.toWindow)
+        tl.to('#paperBg', { opacity: 1, duration: 0.5, ease: 'power1.inOut' }, M.toWindow + 0.15)
+        only('shot-matrix', M.toWindow)
+        tl.set('#win', { opacity: 1 }, M.toWindow + 0.1)
+        tl.fromTo('#win', { y: 1000, rotateX: 38, scale: 0.86, transformOrigin: '50% 30%' }, { y: 0, rotateX: 0, scale: 1, duration: 1.4, ease: 'power3.out' }, M.toWindow + 0.1)
+        tl.fromTo(['#strip', '#brand'], { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'none' }, M.toWindow + 1.1)
+        captionIn('agent', M.agentLine)
+        tl.to('#cam', { x: -40, y: -26, scale: 1.045, duration: 2.2, ease: 'power1.inOut' }, M.toWindow + 1.2)
+        captionOut('agent', M.cardReads - 0.3)
+
+        // ── 2 · Reads ───────────────────────────────────────────────
+        chapterCard('reads', M.cardReads)
+        only('shot-pdf', M.cardReads + 0.4)
+        focus([332, 140, 1098, 470], 1.22, M.cardReads + 0.4, 0.01)
+        settle(M.toPdf - 0.2)
+        labelIn('reads', M.toPdf - 0.1, M.cardSheet)
+        scan([332, 176, 664, 150], M.pdfScan, 0.8)
+        ;[355, 405, 455, 505, 555].forEach((top, index) => reveal([1097, top, 336, 48], M.cardReads + 0.4, M.pdfItems + index * 0.25, 0.35))
+        focus([1080, 330, 360, 290], 1.9, M.pdfItems + 0.25, 1.3)
+
+        // ── 3 · Populates ───────────────────────────────────────────
+        chapterCard('sheet', M.cardSheet)
+        clearOverlays(M.cardSheet + 0.4)
+        only('shot-matrix', M.cardSheet + 0.4)
+        wide(M.cardSheet + 0.4, 0.01)
+        settle(M.toMatrix - 0.2)
+        labelIn('sheet', M.toMatrix - 0.1, M.cardCites)
+        for (let row = 0; row < 13; row += 1) reveal([274, 298 + row * 48, 1140, 46], M.cardSheet + 0.4, M.rows + row * 0.13, 0.35)
+        const counterCover = box('cover', [818, 84, 114, 22])
+        gsap.set(counterCover, { opacity: 0 })
+        tl.set(counterCover, { opacity: 1 }, M.cardSheet + 0.4)
+        const counter = box('abs', [818, 84, 110, 22], '<span>0 of 20 lines</span>')
+        Object.assign(counter.style, { textAlign: 'right', whiteSpace: 'nowrap', fontSize: '14.4px', lineHeight: '22px', color: '#1c1c1a', opacity: 0 })
+        tl.set(counter, { opacity: 1 }, M.cardSheet + 0.4)
+        const count = { n: 0 }
+        tl.fromTo(count, { n: 0 }, { n: 20, duration: 1.9, ease: 'none', onUpdate: () => { counter.firstChild.textContent = `${Math.round(count.n)} of 20 lines` } }, M.rows)
+        tl.set([counter, counterCover], { opacity: 0 }, M.rows + 2.0)
+        reveal([272, 114, 1146, 12], M.cardSheet + 0.4, M.rows, 1.9)
+        tl.to('#cam', { x: -60, y: -40, scale: 1.06, duration: 2.6, ease: 'power1.inOut' }, M.rows + 0.1)
+
+        // ── 4 · Cites ───────────────────────────────────────────────
+        chapterCard('cites', M.cardCites)
+        clearOverlays(M.cardCites + 0.4)
+        only('shot-matrix', M.cardCites + 0.4)
+        focus([1093, 682, 119, 47], 2.3, M.cardCites + 0.4, 0.01)
+        settle(M.toCell - 0.2)
+        labelIn('cites', M.toCell - 0.1, M.cardCosts)
+        ring([1093, 682, 119, 47], M.toCell + 0.1, M.click1 + 0.2)
+        clickAt(makeCursor(), [1290, 820], [1160, 708], M.click1, 0.5)
+        const panel = box('abs', [1030, 148, 410, 752], '<img src="stills/finding.webp" alt="" style="position:absolute;left:-1030px;top:-148px;width:1440px;height:900px" />')
+        panel.style.overflow = 'hidden'
+        gsap.set(panel, { opacity: 0 })
+        tl.fromTo(panel, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: 'none' }, M.click1 + 0.1)
+        tl.fromTo(panel, { x: 60 }, { x: 0, duration: 0.4, ease: 'power3.out' }, M.click1 + 0.1)
+        only('shot-finding', M.click1 + 0.5)
+        tl.set(panel, { opacity: 0 }, M.click1 + 0.52)
+        focus([880, 330, 560, 470], 1.6, M.findTop, 0.8)
+        ring([1045, 520, 365, 112], M.citeA, null)
+        pop(box('badge', [1022, 560, 26, 26], window.ICONS['link-2']), M.citeA + 0.1)
+        ring([1045, 642, 365, 148], M.citeB, null)
+        pop(box('badge', [1022, 700, 26, 26], window.ICONS.quote), M.citeB + 0.1)
+        highlight([1062, 721, 326, 19], M.citeB + 0.25, 0.4)
+        highlight([1062, 740, 64, 19], M.citeB + 0.6, 0.15)
+
+        // ── 5 · Costs ───────────────────────────────────────────────
+        chapterCard('costs', M.cardCosts)
+        clearOverlays(M.cardCosts + 0.4)
+        only('shot-suppliers', M.cardCosts + 0.4)
+        focus([272, 84, 1146, 440], 1.22, M.cardCosts + 0.4, 0.01)
+        settle(M.toSuppliers - 0.2)
+        labelIn('costs', M.toSuppliers - 0.1, M.cardHolds)
+        ;[[405, 108], [516, 108], [628, 108], [740, 108]].forEach(([top, height], index) => reveal([562, top + 2, 852, height], M.cardCosts + 0.4, M.supRows + index * 0.25))
+        focus([900, 84, 520, 120], 2.1, M.supCost - 0.45, 0.9)
+        ring([934, 94, 214, 21], M.supCost, null, 3)
+
+        // ── 6 · Holds ───────────────────────────────────────────────
+        chapterCard('holds', M.cardHolds)
+        clearOverlays(M.cardHolds + 0.4)
+        only('shot-needs', M.cardHolds + 0.4)
+        focus([280, 150, 800, 500], 1.3, M.cardHolds + 0.4, 0.01)
+        settle(M.toHeld - 0.2)
+        labelIn('holds', M.toHeld - 0.1, M.cardMakes)
+        highlight([297, 195, 382, 22], M.heldMark, 0.5)
+        focus([290, 180, 780, 330], 1.7, M.heldMark + 0.2, 1.0)
+        ring([297, 352, 762, 110], M.heldRing, null)
+        pop(chip(600, 468, 'circle-pause', 'Held for a person, with the one question it needs'), M.heldChip)
+
+        // ── 7 · Makes ───────────────────────────────────────────────
+        chapterCard('makes', M.cardMakes)
+        clearOverlays(M.cardMakes + 0.4)
+        only('shot-artifacts', M.cardMakes + 0.4)
+        focus([280, 160, 1100, 380], 1.3, M.cardMakes + 0.4, 0.01)
+        settle(M.toWork - 0.2)
+        labelIn('makes', M.toWork - 0.1, M.cardReach)
+        ring([280, 302, 352, 62], M.workRing, null)
+        highlight([280, 339, 232, 22], M.workRing + 0.15, 0.4)
+        // The quotation itself lifts out of the list, and the list falls back.
+        tl.to('#cam', { scale: '-=0.12', x: '+=110', y: '+=70', duration: 0.9, ease: 'power3.inOut' }, M.docLift)
+        tl.to('#win', { opacity: 0.18, duration: 0.6, ease: 'power1.inOut' }, M.docLift)
+        tl.fromTo('#doc', { opacity: 0, x: -340, y: 260, rotateX: 58, rotateY: 26, rotateZ: -6, scale: 0.5 }, { opacity: 1, x: 0, y: 0, rotateX: 10, rotateY: 30, rotateZ: -2, scale: 1, duration: 0.85, ease: 'power3.out' }, M.docLift)
+        tl.to('#doc', { x: -190, y: 40, rotateX: 6, rotateY: 22, rotateZ: -1, scale: 1.32, duration: 1.3, ease: 'power2.inOut' }, M.docPush)
+        tl.set('#doc', { opacity: 0 }, M.cardReach + 0.4)
+        tl.set('#win', { opacity: 0 }, M.cardReach + 0.4)
+
+        // ── 8 · Reaches out (composed) ──────────────────────────────
+        chapterCard('reach', M.cardReach)
+        stripOff(M.cardReach + 0.4)
+        tl.set('#paperBg', { opacity: 0 }, M.cardReach + 0.4)
+        tl.set('#plate-quay', { opacity: 1 }, M.cardReach + 0.4)
+        tl.set('#shade', { opacity: 0.42 }, M.cardReach + 0.4)
+        tl.fromTo('#plate-quay', { scale: 1.08 }, { scale: 1.0, duration: 3.6, ease: 'power1.out' }, M.cardReach + 0.4)
+        const cards = ['#rc-tell', '#rc-ask', '#rc-call']
+        cards.forEach((card, index) => {
+          const tilt = [9, 0, -9][index]
+          tl.fromTo(card, { opacity: 0, y: 150, rotateX: 28, rotateY: tilt }, { opacity: 1, y: 0, rotateX: 0, rotateY: tilt * 0.5, duration: 0.8, ease: 'power3.out' }, M.reachCards + index * 0.35)
+        })
+        tl.fromTo('.rc .pill', { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(2)', stagger: 0.15 }, M.reachPills)
+        tl.set(['#plate-quay', '#shade', ...cards], { opacity: 0 }, M.toBoundary)
+
+        // ── 9 · Nothing leaves without a person ─────────────────────
+        lineIn('#lineBoundary', M.toBoundary + 0.15, 0.08)
+        lineOut('#lineBoundary', M.toApprove - 0.25)
+        tl.set('#paperBg', { opacity: 1 }, M.toApprove)
+        tl.set('#win', { opacity: 1 }, M.toApprove)
+        stripOn(M.toApprove)
+        clearOverlays(M.toApprove - 0.1)
+        only('shot-approve', M.toApprove - 0.1)
+        focus([441, 189, 558, 522], 1.45, M.toApprove - 0.1, 0.01)
+        settle(M.toApprove)
+        labelIn('asks', M.toApprove + 0.1, M.toGrid)
+        ring([455, 284, 345, 44], M.approveNums + 0.2, M.toReason + 0.2)
+        focus([441, 500, 558, 200], 2.0, M.toReason, 0.5)
+        // The reason, typed: the real typed page shown a letter at a time over the empty one.
+        const typed = box('abs', [470, 532, 0, 28], '<img src="stills/approve-typed.webp" alt="" style="position:absolute;left:-470px;top:-532px;width:1440px;height:900px" />')
+        typed.style.overflow = 'hidden'
+        const caret = box('abs', [471, 535, 1.5, 21])
+        caret.style.background = '#111110'
+        gsap.set([typed, caret], { opacity: 0 })
+        tl.set([typed, caret], { opacity: 1 }, M.typeStart)
+        tl.fromTo(typed, { width: 0 }, { width: 312, duration: M.typeEnd - M.typeStart, ease: 'steps(51)' }, M.typeStart)
+        tl.fromTo(caret, { x: 0 }, { x: 310, duration: M.typeEnd - M.typeStart, ease: 'steps(51)' }, M.typeStart)
+        only('shot-typed', M.typeEnd + 0.05)
+        tl.set([typed, caret], { opacity: 0 }, M.typeEnd + 0.08)
+        clickAt(makeCursor(), [980, 720], [905, 660], M.click2, 0.5)
+        const pressed = box('ring', [844, 643, 134, 32])
+        pressed.style.borderColor = '#111110'
+        tl.fromTo(pressed, { opacity: 0, scale: 1 }, { opacity: 0.9, scale: 1.12, duration: 0.25, ease: 'power2.out' }, M.click2)
+        tl.to(pressed, { opacity: 0, duration: 0.3 }, M.click2 + 0.25)
+
+        // ── 10 · What Charlie does ──────────────────────────────────
+        tl.set(['#win', '#strip', '#brand'], { opacity: 0 }, M.toGrid)
+        tl.set('#grid', { opacity: 1 }, M.toGrid)
+        tl.fromTo('#grid .h', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power4.out' }, M.toGrid + 0.02)
+        tl.fromTo('#grid .l', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, M.toGrid + 0.15)
+        tiles.forEach((tile, index) => {
+          const at = M.tiles + index * 0.1
+          tl.fromTo(tile, { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, at)
+          tl.fromTo(tile.querySelectorAll('.ico *'), { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.6, ease: 'power2.inOut' }, at + 0.1)
+        })
+        tl.fromTo('#grid', { scale: 1 }, { scale: 1.025, duration: 3.6, ease: 'none', transformOrigin: '50% 45%' }, M.toGrid + 0.3)
+
+        // ── 11 · The morning ────────────────────────────────────────
+        tl.set('#grid', { opacity: 0 }, M.toMorning)
+        tl.set('#paperBg', { opacity: 0 }, M.toMorning)
+        tl.set('#plate-morning', { opacity: 1 }, M.toMorning)
+        tl.fromTo('#plate-morning', { scale: 1.07 }, { scale: 1.0, duration: 4.2, ease: 'power2.out' }, M.toMorning)
+        captionIn('morning', M.lineWorked)
+
+        // ── The close ───────────────────────────────────────────────
+        tl.fromTo('#end', { opacity: 0 }, { opacity: 1, duration: 0.45, ease: 'power1.inOut' }, M.toEnd)
+        tl.fromTo('#end .m', { scale: 0.85, rotate: -25 }, { scale: 1, rotate: 0, duration: 1.4, ease: 'power3.out' }, M.toEnd + 0.1)
+        tl.fromTo('#end .t', { y: 26 }, { y: 0, duration: 1.0, ease: 'power3.out' }, M.toEnd + 0.15)
+        tl.fromTo(['#end .s', '#end .u'], { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', stagger: 0.2 }, M.toEnd + 0.6)
+        tl.to('#end', { opacity: 1, duration: 0.01 }, window.CUES.duration - 0.01)
+
+        window.__timelines = window.__timelines || {}
+        window.__timelines.main = tl
+        tl.seek(0)
+      })()
+    </script>
+  </body>
+</html>

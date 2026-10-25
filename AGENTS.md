@@ -297,6 +297,13 @@ each says so in its component's header:
   `npx hyperframes render` in `video/charlie` and encode for the web, as
   `video/charlie/README.md` records; a new soundtrack alone goes under the
   finished film with `mux_audio.py`, which copies the picture untouched.
+- **Meet Charlie** (`video/charlie-launch`, rendered to
+  `public/charlie/meet-charlie.mp4`) is the launch film: what Charlie is and
+  what it does, in seven chapters over the same Studio pages, with four
+  generated photographs for the room and the quay and an original score played
+  in code. It does not replace *Charlie at work*, which the owner keeps, and it
+  is on no page yet. Its chapter 07, *Reaches out*, is composed, and listed in
+  `requirements/README.md`; its `README.md` records how it is made.
 - **The front page's act** is Charlie's film in the site's type
   (`charlie-film.tsx`), after the night; its channel beats read their messages
   from `charlie.scene`, whose figures are tokens the component fills from the
