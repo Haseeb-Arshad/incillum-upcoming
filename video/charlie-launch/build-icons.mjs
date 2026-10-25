@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const dir = process.argv[2]
-const names = ['mail', 'file-text', 'file-spreadsheet', 'scan-text', 'link-2', 'quote', 'check', 'circle-check', 'send-horizontal', 'send', 'scale', 'shield-check', 'clock', 'table', 'sheet', 'user-check', 'file-stack', 'message-square-text', 'phone-call', 'badge-check', 'circle-pause', 'calendar-check', 'calculator', 'hash', 'arrow-right', 'image']
+const names = ['mail', 'paperclip', 'file-text', 'file-spreadsheet', 'database', 'scroll-text', 'video', 'calendar-clock', 'link-2', 'quote', 'check', 'circle-check', 'send', 'circle-pause', 'badge-check', 'clock', 'table', 'sheet', 'calculator', 'arrow-right', 'triangle-alert']
 const icons = {}
 for (const name of names) {
   const source = readFileSync(path.join(dir, `${name}.mjs`), 'utf8')

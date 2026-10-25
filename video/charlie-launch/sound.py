@@ -3,10 +3,14 @@ film's cue sheet, and a sound for every cue.
 
     python video/charlie-launch/sound.py      # writes video/charlie-launch/soundtrack.wav
 
-The engine is the Charlie at work film's (`video/charlie/sound.py`), with four
-energies added for a launch film's drive: `dark` (a heartbeat under the night),
-`reveal` (four on the floor, no claps), `drive` (the full beat, a rolling bass
-and the figure doubled an octave up) and `hush` (one bar with the drums out).
+The engine is the Charlie at work film's (`video/charlie/sound.py`), with the
+energies this film is scored in added to it: a dry wood pulse instead of a kick
+for most of the night (`pulse`, `firm`, `open`), a section that is only the room
+(`silence`), one held tone (`tone`), the morning (`dawn`, `ask`, `suspend`) and
+the release when a person approves (`resolve`, `ebb`, `home`). A figure can play
+on plucks instead of the piano (`figureVoice`), the melody on the piano instead
+of the marimba (`leadVoice`), a section can leave notes out (`mute`), and the
+room's own sound runs under all of it (`room`).
 
 Reads <dir>/cues.js, the same file the picture reads:
 
@@ -343,6 +347,19 @@ def riser(length):
     return (tone * 0.6 + climb) * env
 
 
+def wood(velocity=1.0, pitch=1150):
+    """A dry woodblock: a short pitched knock with its own overtone and a little click."""
+    t = seconds(0.14)
+    tone = np.sin(2 * np.pi * pitch * t) * np.exp(-t * 55) + 0.45 * np.sin(2 * np.pi * pitch * 2.76 * t) * np.exp(-t * 95)
+    click = bandpass(rng.standard_normal(len(t)), 2200, 8000) * np.exp(-t * 420) * 0.3
+    return fade_edges((tone + click) * velocity * 0.6, 0.0005, 0.02)
+
+
+def soft_kick(velocity=1.0):
+    """A kick with the click taken off and the top rolled away: felt more than heard."""
+    return lowpass(kick(velocity), 140, 2) * 1.6
+
+
 # ── The score ──────────────────────────────────────────────────────────────
 # What plays in each kind of section. A section names one of these as its energy.
 ENERGY = {
@@ -363,13 +380,31 @@ ENERGY = {
     "reveal": dict(pad=0.6, cutoff=2200, keys=None, bass="pedal", drums="reveal", arp=None),
     "drive": dict(pad=0.5, cutoff=3000, keys=None, bass="drive", drums="drive", arp="figure"),
     "hush": dict(pad=0.95, cutoff=1500, keys=None, bass="sub", drums=None, arp=None),
+    # Meet Charlie: a night of work over a wood pulse, a stop, a morning, and a person's release.
+    "still": dict(pad=0.8, cutoff=900, keys=None, bass="sub", drums=None, arp=None),
+    "pulse": dict(pad=0.7, cutoff=1500, keys=None, bass="pulse8", drums="wood", arp=None),
+    "firm": dict(pad=0.6, cutoff=2000, keys=None, bass="drive", drums="wooddrive", arp=None),
+    "thin": dict(pad=0.85, cutoff=1200, keys=None, bass="sub", drums=None, arp=None),
+    "open": dict(pad=0.55, cutoff=2900, keys=None, bass="drive", drums="wooddrive", arp="figure"),
+    "silence": dict(pad=0.0, cutoff=900, keys=None, bass=None, drums=None, arp=None),
+    "tone": dict(pad=0.6, cutoff=700, keys=None, bass=None, drums=None, arp=None),
+    "dawn": dict(pad=0.9, cutoff=1700, keys="hold", bass="sub", drums=None, arp=None),
+    "ask": dict(pad=0.75, cutoff=1500, keys=None, bass="pedal", drums="wood", arp=None),
+    "suspend": dict(pad=0.85, cutoff=1300, keys="hold", bass="sub", drums=None, arp=None),
+    "resolve": dict(pad=0.6, cutoff=2700, keys=None, bass="drive", drums="wooddrive", arp="figure"),
+    "ebb": dict(pad=0.8, cutoff=1900, keys=None, bass="pedal", drums="wood", arp=None),
+    "home": dict(pad=0.9, cutoff=1800, keys=None, bass="sub", drums=None, arp=None),
 }
-RANK = {"intro": 0, "glow": 0, "dark": 0, "breakdown": 1, "end": 1, "settle": 1, "hush": 1, "verse": 2, "groove": 2, "reveal": 2, "build": 3, "chorus": 4, "lift": 4, "drive": 4}
+RANK = {"intro": 0, "glow": 0, "dark": 0, "breakdown": 1, "end": 1, "settle": 1, "hush": 1, "verse": 2, "groove": 2, "reveal": 2, "build": 3, "chorus": 4, "lift": 4, "drive": 4,
+        "still": 0, "silence": 0, "tone": 0, "thin": 1, "dawn": 1, "suspend": 1, "home": 1, "pulse": 2, "ask": 2, "ebb": 2, "firm": 3, "open": 4, "resolve": 4}
 # How loud each kind of section plays, so the piece has an arc: quiet at night, full when the work runs.
 LOUDNESS = {
     "intro": (0.42, 0.42), "verse": (0.66, 0.7), "chorus": (1.0, 1.0), "breakdown": (0.5, 0.5), "build": (0.55, 0.95), "end": (0.62, 0.62),
     "glow": (0.52, 0.56), "groove": (0.78, 0.82), "lift": (1.0, 1.0), "settle": (0.74, 0.74),
     "dark": (0.45, 0.58), "reveal": (0.84, 0.88), "drive": (1.0, 1.0), "hush": (0.56, 0.56),
+    "still": (0.42, 0.46), "pulse": (0.6, 0.7), "firm": (0.78, 0.86), "thin": (0.52, 0.5), "open": (0.96, 1.0),
+    "silence": (0.0, 0.0), "tone": (0.34, 0.38), "dawn": (0.5, 0.62), "ask": (0.58, 0.6), "suspend": (0.55, 0.62),
+    "resolve": (1.0, 0.96), "ebb": (0.8, 0.62), "home": (0.5, 0.5),
 }
 KEYS_RHYTHM = [(0.0, 1.5), (2.5, 1.0)]
 BASS_RHYTHM = {
@@ -380,6 +415,8 @@ BASS_RHYTHM = {
     "lift": [(0.0, 0.75, 0), (1.5, 0.5, 0), (2.0, 0.5, 12), (2.5, 0.75, 0), (3.5, 0.5, 12)],
     # Rolling eighths, the offbeats leaning in between the kicks: (beat, length, step, velocity).
     "drive": [(k * 0.5, 0.4, 12 if k in (3, 7) else 0, 0.95 if k % 2 else 0.6) for k in range(8)],
+    # Soft eighths on the root, the second of each pair a little lighter.
+    "pulse8": [(k * 0.5, 0.38, 0, 0.55 if k % 2 else 0.7) for k in range(8)],
 }
 ARP_ORDER = [0, 1, 2, 3, 4, 3, 2, 1]
 
@@ -429,6 +466,8 @@ def build_score(score, buses):
         bars_in_section = int(np.ceil((end - start) / bar - 1e-6))
         figure = section.get("figure", score.get("figure"))
         step = float(section.get("figureStep", figure_step))
+        muted = [(float(a), float(b)) for a, b in section.get("mute", [])]
+        voice_ = score.get("figureVoice", "piano")
         for s, e, symbol in spans:
             voicing, low = chord(symbol, previous_voicing)
             previous_voicing = voicing
@@ -454,12 +493,17 @@ def build_score(score, buses):
                 count = int(round((e - s) / (step * beat)))
                 for k in range(count):
                     t0 = at_beat(s, k * step) + rng.uniform(-0.003, 0.003)
+                    if any(a <= t0 < b for a, b in muted):
+                        continue
                     i = figure[k % len(figure)]
                     n = voicing[i % len(voicing)] + 12 * (i // len(voicing))
                     accent = (0.82 if k % 8 == 0 else 0.7 if k % 8 == 1 else 0.6) + rng.uniform(-0.04, 0.04)
-                    buses["piano"].add(felt_piano(hz(n), max(0.05, e - t0), accent, damp=0.16), t0, 1.0, (n - 64) / 30)
+                    if voice_ == "pluck":
+                        buses["piano"].add(pluck(hz(n + 12), accent, 0.32, length=min(0.9, step * beat * 1.6)), t0, 1.0, 0.3 if k % 2 else -0.3)
+                    else:
+                        buses["piano"].add(felt_piano(hz(n), max(0.05, e - t0), accent, damp=0.16), t0, 1.0, (n - 64) / 30)
                     if style["arp"] == "figure":
-                        buses["arp"].add(pluck(hz(n + 12), accent, 0.45), t0, 1.0, 0.35 if k % 2 else -0.35)
+                        buses["arp"].add(pluck(hz(n + 24 if voice_ == "pluck" else n + 12), accent, 0.45), t0, 1.0, 0.35 if k % 2 else -0.35)
             # Bass.
             if style["bass"] in BASS_RHYTHM:
                 for position, length, interval, *velocity in BASS_RHYTHM[style["bass"]]:
@@ -550,6 +594,19 @@ def build_score(score, buses):
                 if last and index + 1 < len(sections) and ENERGY[sections[index + 1]["energy"]]["drums"] != "drive":
                     for k, position in enumerate((3.0, 3.25, 3.5, 3.75)):
                         hit(snap(0.3 + 0.12 * k), at_beat(b0, position), 1.0, 0.1)
+            elif kind == "wood":
+                for position, velocity in ((1.0, 0.75), (3.0, 0.75), (3.5, 0.35)):
+                    hit(wood(velocity, 1150 if position != 3.5 else 1320), at_beat(b0, position) + 0.003, 1.0, 0.2)
+                for k in range(8):
+                    hit(shaker((0.5, 0.25)[k % 2] * rng.uniform(0.85, 1.1)), at_beat(b0, k / 2), 0.4, -0.35)
+            elif kind == "wooddrive":
+                for position in (0.0, 2.0):
+                    if hit(soft_kick(0.85), at_beat(b0, position)):
+                        kicks.append((at_beat(b0, position), 0.22))
+                for position, velocity in ((1.0, 0.85), (3.0, 0.85), (1.75, 0.3), (3.5, 0.4)):
+                    hit(wood(velocity, 1150 if velocity > 0.5 else 1320), at_beat(b0, position) + 0.003, 1.0, 0.2)
+                for k in range(16):
+                    hit(shaker((0.55, 0.22, 0.38, 0.22)[k % 4] * rng.uniform(0.85, 1.1)), at_beat(b0, k / 4), 0.45, -0.35)
             elif kind == "build":
                 rolls = [2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.625, 3.75, 3.875] if (end - start) <= bar + 1e-6 else [0, 1, 2, 2.5, 3, 3.25, 3.5, 3.75]
                 for k, position in enumerate(rolls):
@@ -557,7 +614,12 @@ def build_score(score, buses):
 
         # Melodies: the lead, and the felt piano's motif.
         for position, note, length in section.get("lead", []):
-            buses["lead"].add(mallet(hz(midi(note)), length * beat, 0.9), start + position * beat + rng.uniform(0, 0.006), 1.0, 0.08)
+            t0 = start + position * beat + rng.uniform(0, 0.006)
+            if score.get("leadVoice") == "felt":
+                buses["lead"].add(felt_piano(hz(midi(note)), length * beat, 0.85), t0, 1.0, 0.05)
+                buses["lead"].add(pluck(hz(midi(note) + 12), 0.35, 0.3, length=0.6), t0, 0.5, -0.1)
+            else:
+                buses["lead"].add(mallet(hz(midi(note)), length * beat, 0.9), t0, 1.0, 0.08)
         for position, note, length in section.get("piano", []):
             buses["piano"].add(felt_piano(hz(midi(note)), length * beat, 0.7), start + position * beat, 1.0, (midi(note) - 64) / 30)
 
@@ -707,8 +769,44 @@ def bloom():
     return lowpass(tone, 1800) * envelope * 0.12
 
 
-SOUNDS = {"chime": chime, "whoosh": whoosh, "tick": tick, "pop": pop, "click": click, "swell": swell, "alert": alert, "sent": sent, "bloom": bloom}
-PANS = {"whoosh": 0.25, "pop": 0.15, "tick": 0.1}
+def mail():
+    """A message arriving: two soft glassy notes, a sixth apart."""
+    k = seconds(1.4)
+    tone = np.zeros_like(k)
+    for delay_, frequency in ((0.0, 880.0), (0.11, 1318.5)):
+        local = np.clip(k - delay_, 0, None)
+        on = k >= delay_
+        tone += (np.sin(2 * np.pi * frequency * local) * np.exp(-local * 5) + 0.22 * np.sin(2 * np.pi * 2 * frequency * local) * np.exp(-local * 10)) * on
+    return tone * 0.32
+
+
+def paper():
+    """A sheet moving on a desk: filtered noise that swells and falls away."""
+    k = seconds(0.55)
+    noise = rng.standard_normal(len(k))
+    env = np.sin(np.pi * np.clip(k / 0.55, 0, 1)) ** 1.5
+    return (bandpass(noise, 1800, 7000) * 0.6 + bandpass(noise, 500, 1800) * 0.3) * env * 0.4
+
+
+def lamp():
+    """A desk lamp's switch: a sharp click, a small knock in the body, and the release a breath later."""
+    k = seconds(0.14)
+    press_ = bandpass(rng.standard_normal(len(k)), 1500, 9000) * np.exp(-k * 320) * 0.7
+    knock = np.sin(2 * np.pi * 150 * k) * np.exp(-k * 45) * 0.5
+    release = np.zeros_like(k)
+    d = int(0.032 * RATE)
+    release[d:] = bandpass(rng.standard_normal(len(k) - d), 2200, 9000) * np.exp(-k[: len(k) - d] * 420) * 0.32
+    return press_ + knock + release
+
+
+def thud():
+    """A dull, muted knock: the thing that could not be read."""
+    k = seconds(0.2)
+    return (np.sin(2 * np.pi * 92 * k) * np.exp(-k * 28) * 0.8 + lowpass(rng.standard_normal(len(k)), 600) * np.exp(-k * 50) * 0.3) * 0.75
+
+
+SOUNDS = {"chime": chime, "whoosh": whoosh, "tick": tick, "pop": pop, "click": click, "swell": swell, "alert": alert, "sent": sent, "bloom": bloom, "mail": mail, "paper": paper, "lamp": lamp, "thud": thud}
+PANS = {"whoosh": 0.25, "pop": 0.15, "tick": 0.1, "paper": -0.15}
 # The cues with a pitch. A fifth entry moves one by semitones, into the chord it lands on.
 TONAL = {"chime", "alert", "sent", "bloom"}
 
@@ -728,8 +826,9 @@ def lay_sounds(bus):
         at = MOMENTS[moment] + offset
         if kind in ("ticks", "rows"):
             count, spacing = (entry[3], entry[4]) if len(entry) > 4 else (13, 0.18)
+            gain = entry[5] if len(entry) > 5 else 0.35
             for row in range(count):
-                bus.add(tick(), at + row * spacing, 0.35, -0.4 + row * 0.8 / max(1, count - 1))
+                bus.add(tick(), at + row * spacing, gain, -0.4 + row * 0.8 / max(1, count - 1))
         elif kind == "typing":
             until = MOMENTS[entry[3]] if len(entry) > 3 else MOMENTS.get("typeEnd", at + 2)
             key = at
@@ -744,6 +843,18 @@ def lay_sounds(bus):
             if kind in TONAL and len(entry) > 4:
                 sound = transpose(sound, entry[4])
             bus.add(sound, at, gain, PANS.get(kind, 0.0))
+
+
+def room_tone(morning):
+    """The empty office: a low rumble and a little air, quieter than anything else, and a shade
+    brighter once it is morning. It runs under the stop, so the silence is the room's, not the film's."""
+    t = np.arange(N) / RATE
+    noise = rng.standard_normal((N, 2)).astype(np.float32)
+    bed = lowpass(noise, 220, 2) + bandpass(noise, 300, 1400, 2) * 0.22
+    day = np.clip((t - morning) / 4.0, 0, 1)[:, None]
+    bed = bed + bandpass(noise, 700, 3200, 2) * 0.14 * day
+    bed *= db(-52) / max(np.sqrt(np.mean(bed**2)), 1e-9)
+    return (bed * np.minimum(1, t / 0.8)[:, None]).astype(np.float32)
 
 
 def licensed_track(path, fade_in=0.0, fade_out=2.5):
@@ -786,6 +897,8 @@ elif score:
     # A little out of the low mids, where pad, keys and bass pile up into mud.
     music = music - 0.3 * bandpass(music, 180, 400)
     mix = music + sfx.x + reverb(sfx.x) * db(-14)
+    if score.get("room"):
+        mix = mix + room_tone(float(MOMENTS.get("dawn", DURATION)))
     # The music fades at the very end; the last chord's tail goes with it.
     t = np.arange(N) / RATE
     mix *= np.clip((DURATION - t) / float(score.get("fadeOut", 2.0)), 0, 1)[:, None]

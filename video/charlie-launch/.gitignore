@@ -4,4 +4,6 @@ renders/
 frames/
 soundtrack.wav
 *.mp4
+# The night turning to morning is a source, not an output.
+!plates/dawn.mp4
 .hyperframes/
