@@ -2899,15 +2899,18 @@
    Larger than the home page's, because a presentation tells by moving — and
    written down here so that it only grows on purpose:
 
-     1. the opening: hour rules drawing down, three beats of type, the page
-        assembling. Once, ended early by any input, absent under reduced motion;
+     1. the opening: hour rules drawing down, three beats of type — each word
+        rising into place in turn, each line leaving whole before the next
+        arrives — and the page assembling. Once, ended early by any input,
+        absent under reduced motion;
      2. the film: one hour per `--glass-frame` while it is on screen, once
         through, paused by the reader, never looped — its sheet filling, its
         selection moving to what each hour changed;
      3. the gathering: one change of state, tied to where the reader is;
      4. the field: dust drifting at thirty frames a second while it is on
-        screen — a landscape under the opening that unrolls out of one slit of
-        light, settles when the page assembles and falls behind on scroll; and
+        screen — a landscape that opens as a slit of light under the last beat,
+        unrolls out of it as the page assembles, settles, and falls behind on
+        scroll; and
         round the morning plate, loose motes of it. The one motion that
         continues while the reader is still, by the owner's choice: it is the
         night, moving while nobody watches it. It stops off screen and in a
@@ -2938,9 +2941,15 @@
   --glass-lede: clamp(1.0625rem, 1.15vw, 1.1875rem);
   --glass-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --glass-arrive: 900ms;
-  /* The opening: three beats, counted from the copy, then the page. */
-  --glass-beat: 1700ms;
+  /*
+   * The opening: three beats, counted from the copy, then the page. A beat is
+   * its words arriving one after another, the line held, and the line leaving
+   * over the last fifth — gone before the next beat's first word.
+   */
+  --glass-beat: 1900ms;
   --glass-opening: calc(var(--glass-beat) * var(--glass-beats, 3));
+  --glass-word: 80ms;
+  --glass-word-in: 1100ms;
   /* One hour of the film, timed by its chapter's hairline. */
   --glass-frame: 3400ms;
   /* The documents gathering onto one sheet. */
@@ -3072,26 +3081,51 @@
   padding: 1.5rem;
   animation: glass-opening-end 1ms linear var(--glass-opening) forwards;
 }
-/* The three beats share one cell, replacing each other without moving the page. */
+/*
+ * The three beats share one cell, replacing each other without moving the
+ * page. A beat holds the line and takes it away; its words bring it in, each
+ * rising into place from below its own baseline a little after the one before,
+ * so the line is read as it is set rather than faded up whole. One line leaves
+ * before the next arrives: two lines dissolving through each other in one
+ * place read as a smudge, not as a cut.
+ *
+ * Only opacity and transform move, so the browser runs all of it off the main
+ * thread and it keeps its pace while the page hydrates under it — which is
+ * exactly when the beats are playing. A blur was tried: it is drawn on the
+ * main thread, and froze mid-word on every load.
+ */
 .glass-opening p {
   grid-area: 1 / 1;
   margin: 0;
   max-width: 20ch;
   font-family: var(--font-display);
-  font-size: clamp(2rem, 4.2vw, 3.5rem);
+  font-size: clamp(2.125rem, 4.6vw, 4rem);
   line-height: 1.06;
-  letter-spacing: -0.018em;
+  letter-spacing: -0.02em;
   text-align: center;
   text-wrap: balance;
   color: var(--ic-ink-900);
-  animation: glass-beat var(--glass-beat) var(--glass-ease) both;
+  animation: glass-beat var(--glass-beat) linear both;
   animation-delay: calc(var(--glass-beat) * var(--beat, 0));
 }
+/* A word's mask, with room inside it for the serif's ascenders, descenders and overhangs, given back so the line does not grow. */
+.glass-opening p > span {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding: 0.1em 0.06em 0.18em;
+  margin: -0.1em -0.06em -0.18em;
+}
+.glass-opening p > span > span {
+  display: inline-block;
+  animation: glass-word var(--glass-word-in) var(--glass-ease) both;
+  animation-delay: calc(var(--glass-beat) * var(--beat, 0) + var(--glass-word) * var(--word, 0));
+}
 
-/* The page assembles as the final beat leaves; ended early, it assembles at once. */
+/* The page assembles as the final beat finishes leaving; ended early, it assembles at once. */
 .glass-enter {
   animation: glass-enter var(--glass-arrive) var(--glass-ease) both;
-  animation-delay: calc(var(--glass-opening) - 250ms + var(--glass-enter-delay, 0ms));
+  animation-delay: calc(var(--glass-opening) - 120ms + var(--glass-enter-delay, 0ms));
 }
 .glass-title.glass-enter {
   --glass-enter-delay: 80ms;
@@ -6456,19 +6490,35 @@
     transform: none;
   }
 }
+/*
+ * A beat: present from its first moment — its words, each still below its
+ * mask, bring the line in — then held, then gone over the last fifth, lifting
+ * and gathering speed as it goes, the way something leaves rather than fades.
+ */
 @keyframes glass-beat {
   0% {
     opacity: 0;
-    transform: translate3d(0, 0.5em, 0);
   }
-  24%,
-  76% {
+  0.1%,
+  80% {
     opacity: 1;
     transform: none;
+    animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
   }
   100% {
     opacity: 0;
-    transform: translate3d(0, -0.25em, 0);
+    transform: translate3d(0, -0.22em, 0);
+  }
+}
+/* A word, rising into place from below its mask: quick to arrive, long to settle. */
+@keyframes glass-word {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 115%, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 /*

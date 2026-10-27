@@ -346,7 +346,11 @@ have it and will write once.
 The front page (`/`) is the night told as a film, for somebody who wants to be
 shown rather than read to. Three short beats in Incillum's own words —
 "Intelligence should move work forward.", "From request to decision.",
-"Meet Charlie." — over a field of hour rules —
+"Meet Charlie." — over a field of hour rules, each set a word at a time, every
+word rising into place from below its own mask, and each line gone before the
+next arrives. Only opacity and transform move in them, so they keep their
+pace while the page hydrates under them; a blur was tried and froze mid-word,
+because the browser draws it on the main thread —
 played once a visit, and again on a reload at the top, never on a return from
 another page, a reload further down or an address with a section in it — it
 belongs over the first screen and nowhere else (`lib/opening.ts`) — a centred
@@ -395,9 +399,15 @@ off the spine, is a permanent redirect to it. `e2e/glass.spec.ts` holds both.
   still"**, and it is the owner's call rather than a lapse
   (`components/glass-field.tsx`, drawn by `lib/dust.ts` in WebGL with no
   library). Under the opening it is a landscape that is not there when the page
-  opens: it unrolls out of one thin slit of light on the horizon, far ridge
-  first, across the beats, on the opening's own clock (read off its CSS
-  animations), so it settles with the type rather than after it. Round the
+  opens, and stays away while the first two beats are read: under the last,
+  "Meet Charlie.", one thin slit of light opens on the horizon, and the
+  landscape unrolls out of it, far ridge first, as that beat leaves and the
+  page assembles — on the opening's own clock (read off its CSS animations).
+  It can only start once the page has hydrated, so it never jumps to where
+  the clock says it should be: it starts from nothing and travels there at a
+  capped pace, and a stall in the page is not time it travelled through.
+  Before 28 October 2026 it landed fully formed after the last line whenever
+  the page hydrated late, which on a slow load was every time. Round the
   morning plate it is a different
   formation on purpose — the night's dust let loose in the room: motes
   scattered at random, each wandering on its own unrelated path, catching a

@@ -408,7 +408,19 @@ test('the opening introduces the work and Charlie in three beats, and the dust k
     })
     expect(fits).toBe(true)
   }
-  // Fifteen seconds a beat: well inside the first, the landscape is still unrolling.
+  // Set a word at a time, and only by what the browser moves off the main thread, so hydrating under it cannot stall it.
+  await expect(beats.nth(0).locator(':scope > span')).toHaveCount(5)
+  const moved = await opening.evaluate((element) => [
+    ...new Set(
+      element
+        .getAnimations({ subtree: true })
+        .flatMap((animation) => (animation.effect as KeyframeEffect).getKeyframes())
+        .flatMap((frame) => Object.keys(frame))
+        .filter((key) => !['offset', 'computedOffset', 'easing', 'composite'].includes(key)),
+    ),
+  ])
+  expect(moved.sort()).toEqual(['opacity', 'transform', 'visibility'])
+  // Fifteen seconds a beat: well inside the first, the landscape has not begun — it opens under the last beat.
   await expect(page.locator('.glass-field[data-tone="night"]')).toHaveAttribute('data-formed', 'false')
   await page.screenshot({ path: testInfo.outputPath('opening.png') })
 })
