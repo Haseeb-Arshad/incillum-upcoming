@@ -8,10 +8,12 @@
  * perspective, so the far slopes fold into bright ridges on their own and the
  * near ones open out. Near grains are out of focus — larger, fainter, softer —
  * far ones are sharp and fade into the distance, and a few hang in the air.
- * It does not start that way. Every grain begins inside one thin slit of light
- * on the horizon and travels out to its place along an arc, the far ridge
- * first and the near dunes last, so the landscape unrolls toward the reader
- * from a single opening (`DustScene.form`).
+ * It does not start lit. Every grain is in its place from the first frame, in
+ * the dark, and the night comes up around it (`DustScene.form`): the crests
+ * catch the light first and the far ridge before the near dunes, and it spreads
+ * down the faces into the troughs, each grain at its own moment. Nothing flies
+ * into place; only the light changes, which is why it is smooth at any frame
+ * rate and from any moment it starts.
  *
  * **The morning** is the same dust let loose in the room: grains scattered at
  * random round the photograph, each wandering slowly on its own path, with the
@@ -58,7 +60,7 @@ export interface DustScene {
   flank: number
   /** Where the dust fades out at the top and the bottom of the canvas, as fractions of its height. */
   fade: readonly [top: number, bottom: number]
-  /** From every grain inside the opening (0) to every grain in its place (1). */
+  /** From the dark (0) to every grain lit (1); no grain moves to get there. */
   form: number
 }
 
@@ -83,7 +85,6 @@ uniform float uFlank;
 uniform float uNear;
 uniform vec2 uFade;
 uniform float uForm;
-uniform vec2 uOrigin;
 varying float vAlpha;
 varying float vSoft;
 
@@ -122,26 +123,14 @@ void main() {
   float y = height + pow(r1, 7.0) * 0.45 + mote * (0.4 + r1 * 2.4);
   x += mote * sin(uTime * 0.11 + r1 * 6.2832) * 0.12;
 
-  vec2 point = vec2(
+  vec2 position = vec2(
     uSize.x * 0.5 + x / depth * focal,
     uSize.y * uHorizon + (uCamera - y) / depth * focal
   );
-
-  // The formation. Each grain leaves the opening at its own moment — the far ridge first, the
-  // centre before the edges — and travels out to its place on an arc, higher the nearer it lands.
-  // The opening is a line of light along the horizon, wider than the words above it so it reads
-  // as the horizon and not as a rule under them, densest at the middle and thinning to nothing.
-  float delay = (1.0 - aSeed.y) * 0.4 + abs(across) * 0.12 + r1 * 0.1;
-  float travel = clamp((uForm - delay) / 0.3, 0.0, 1.0);
-  float arrive = 1.0 - pow(1.0 - travel, 3.0);
-  float slit = r1 * 2.0 - 1.0;
-  vec2 opening = uOrigin + vec2(slit * abs(slit) * uSize.x * 0.24, (r2 - 0.5) * 2.0);
-  vec2 position = mix(opening, point, arrive);
-  position.y -= sin(arrive * 3.14159) * mix(10.0, 70.0, 1.0 - aSeed.y);
   gl_Position = vec4(position.x / uSize.x * 2.0 - 1.0, 1.0 - position.y / uSize.y * 2.0, 0.0, 1.0);
 
   // Depth of field: the circle of confusion grows with distance from the focal plane.
-  float blur = abs(1.0 / depth - 1.0 / FOCUS) * BLUR * arrive;
+  float blur = abs(1.0 / depth - 1.0 / FOCUS) * BLUR;
   float size = GRAIN * (0.55 + 1.2 / depth) + blur;
   gl_PointSize = size * uRatio;
   vSoft = clamp(blur / (blur + 1.5), 0.0, 1.0);
@@ -160,8 +149,15 @@ void main() {
   alpha *= mix(1.0, smoothstep(0.5, 1.4, length(type)), uClear);
   float along = position.y / uSize.y;
   alpha *= smoothstep(0.0, uFade.x, along) * (1.0 - smoothstep(uFade.y, 1.0, along));
-  // Still inside the opening, a grain is one of thousands in a thin line: each one is faint.
-  alpha *= mix(0.04, 1.0, arrive);
+
+  // The night coming up out of the dark (uForm). No grain moves to get there: each is already in
+  // its place, and only the light changes — the crests that catch the most of it and the far ridge
+  // first, the troughs and the near dunes last, every grain at a moment of its own so the light
+  // spreads over the swells rather than sweeping across them as a line. Coming up, a grain runs a
+  // little past its own brightness and settles back, which is what makes the spreading read as light.
+  float order = (1.0 - (glow - 0.22) / 0.78) * 0.55 + (1.0 - aSeed.y) * 0.2 + r2 * 0.25;
+  float lit = smoothstep(order, order + 0.45, uForm * 1.45);
+  alpha *= lit * (1.0 + 1.2 * lit * (1.0 - lit));
   vAlpha = alpha * uLevel * (1.0 - mote * 0.35);
 }
 `
@@ -323,7 +319,6 @@ export function createDust(
     near: uniform('uNear'),
     fade: uniform('uFade'),
     form: uniform('uForm'),
-    origin: uniform('uOrigin'),
     color: uniform('uColor'),
   }
   gl.uniform3f(at.color, color[0], color[1], color[2])
@@ -367,8 +362,6 @@ export function createDust(
       gl.uniform1f(at.near, Math.min(1.2, Math.max(0.45, near)))
       gl.uniform2f(at.fade, scene.fade[0], scene.fade[1])
       gl.uniform1f(at.form, scene.form)
-      // The opening is on the far ridge, at the middle of the view: where the landscape begins.
-      gl.uniform2f(at.origin, width / 2, height * scene.horizon + ((scene.camera - 0.8) / 10) * focal)
       gl.clear(gl.COLOR_BUFFER_BIT)
       if (count) gl.drawArrays(gl.POINTS, 0, count)
     },

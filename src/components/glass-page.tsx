@@ -34,10 +34,11 @@ import { markOpeningSeen, openingSeen, rememberPlace } from '#/lib/opening.ts'
  *
  * 1. **The opening.** The night, a field of hour rules drawing down it, and
  *    three short beats introducing intelligence, the work, and Charlie, set a
- *    word at a time. Under the last, a slit of light opens on the horizon,
- *    and as the page assembles a landscape of dust unrolls out of it
- *    (`glass-field.tsx`), sinks, dims and clears a space for the type, and
- *    falls behind as the page scrolls.
+ *    word at a time, on plain night. As the last leaves and the page
+ *    assembles, a landscape of dust comes up out of the dark behind the
+ *    headline (`glass-field.tsx`) — only its light changes — rises a little
+ *    into place, clears a space for the type, and falls behind as the page
+ *    scrolls.
  * 2. **The hero.** Centred: the headline and the home page's form.
  * 3. **The film.** One request carried from 23:47 to 08:04 in a frame, the
  *    sheet changing state as the hours pass (`glass-film.tsx`).

@@ -420,7 +420,7 @@ test('the opening introduces the work and Charlie in three beats, and the dust k
     ),
   ])
   expect(moved.sort()).toEqual(['opacity', 'transform', 'visibility'])
-  // Fifteen seconds a beat: well inside the first, the landscape has not begun — it opens under the last beat.
+  // Fifteen seconds a beat: well inside the first, the night is still dark — it comes up only as the page assembles.
   await expect(page.locator('.glass-field[data-tone="night"]')).toHaveAttribute('data-formed', 'false')
   await page.screenshot({ path: testInfo.outputPath('opening.png') })
 })
@@ -614,7 +614,7 @@ test('the dust holds one still frame under reduced motion, and drifts without it
   await expect(night).toHaveAttribute('data-motion', 'still')
 })
 
-test('the landscape opens from a slit of light, and forms by the end of the opening', async ({
+test('the night stays dark under the beats, and comes up once the opening is over', async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
@@ -623,7 +623,7 @@ test('the landscape opens from a slit of light, and forms by the end of the open
   const night = page.locator('.glass-field[data-tone="night"]')
   await expect(night).toHaveAttribute('data-ready', 'true')
   await expect(night).toHaveAttribute('data-formed', 'false')
-  // Skipping the opening finishes the formation at once rather than leaving it half drawn.
+  // Ending the opening early brings the night up at once rather than waiting out the beats.
   await page.keyboard.press('Shift')
   await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'skipped')
   await expect(night).toHaveAttribute('data-formed', 'true', { timeout: 15_000 })

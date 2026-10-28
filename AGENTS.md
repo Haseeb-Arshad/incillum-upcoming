@@ -398,16 +398,20 @@ off the spine, is a permanent redirect to it. `e2e/glass.spec.ts` holds both.
 - **The dust is the one exception to "nothing moves while the reader is
   still"**, and it is the owner's call rather than a lapse
   (`components/glass-field.tsx`, drawn by `lib/dust.ts` in WebGL with no
-  library). Under the opening it is a landscape that is not there when the page
-  opens, and stays away while the first two beats are read: under the last,
-  "Meet Charlie.", one thin slit of light opens on the horizon, and the
-  landscape unrolls out of it, far ridge first, as that beat leaves and the
-  page assembles — on the opening's own clock (read off its CSS animations).
-  It can only start once the page has hydrated, so it never jumps to where
-  the clock says it should be: it starts from nothing and travels there at a
-  capped pace, and a stall in the page is not time it travelled through.
-  Before 28 October 2026 it landed fully formed after the last line whenever
-  the page hydrated late, which on a slow load was every time. Round the
+  library). At the top it is a landscape under the hero, and the opening's
+  three beats are set on plain night: it is dark under all of them. As the
+  last beat leaves and the page assembles — on the opening's own clock, read
+  off its CSS animations — the night comes up behind the headline over a
+  little more than three seconds: no grain moves, only the light changes, the
+  crests catching it first and the troughs last, while the landscape rises a
+  little into place. It was a slit of light under "Meet Charlie." that the
+  landscape unrolled out of, until the owner, on 28 October 2026, found it
+  read as Charlie leaving and the dust arriving, and asked for it smooth
+  rather than fancy. It waits for the page because it can only start once
+  the page has hydrated — two or three seconds in on a busy machine — so a
+  dawn under the beats themselves came up under Charlie anyway. A late field
+  starts its dawn late rather than hurrying, and a stall in the page is not
+  time it travelled through. Round the
   morning plate it is a different
   formation on purpose — the night's dust let loose in the room: motes
   scattered at random, each wandering on its own unrelated path, catching a
