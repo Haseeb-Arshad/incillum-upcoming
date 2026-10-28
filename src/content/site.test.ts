@@ -1235,3 +1235,35 @@ describe('no certification is named anywhere on the site', () => {
     }
   })
 })
+
+/**
+ * The film under the hero (`video/product-film`). What it says is on the page
+ * as text, so the two are held to each other word for word, and to the rules
+ * every word on the site keeps: the outward step behind an approval, no system
+ * named, the motto kept for its two places.
+ */
+describe('the film under the hero', () => {
+  const composition = readFileSync(new URL('../../video/product-film/index.html', import.meta.url), 'utf-8')
+
+  it('says on the page exactly what the film says, in its order', () => {
+    const titles = [...composition.matchAll(/title\('[a-z]+', '([^']+)'/g)].map((match) => match[1])
+    const close = /<div class="s">([^<]+)<\/div>/.exec(composition)?.[1]
+    expect([...titles, close]).toEqual([...glass.reel.statements])
+  })
+
+  it('opens on a sentence that names what it follows', () => {
+    expect(glass.reel.licence).toMatch(/^One request for quotation/)
+  })
+
+  it('asks suppliers only with an approval, and does not spend the motto', () => {
+    expect(glass.reel.statements.find((line) => /suppliers/.test(line))).toMatch(/^With your approval/)
+    expect(JSON.stringify(glass.reel)).not.toMatch(/stay with the work/i)
+  })
+
+  it('names no system, in the page or in the film', () => {
+    for (const name of ['Gmail', 'Outlook', 'HubSpot', 'Salesforce', 'SAP', 'Odoo', 'NetSuite', 'Slack']) {
+      expect(JSON.stringify(glass.reel), name).not.toContain(name)
+      expect(composition, name).not.toMatch(new RegExp(`\\b${name}\\b`, 'i'))
+    }
+  })
+})

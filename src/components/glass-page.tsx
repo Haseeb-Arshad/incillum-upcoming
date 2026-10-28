@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 import { GlassField } from '#/components/glass-field.tsx'
-import { GlassFilm } from '#/components/glass-film.tsx'
 import { GlassHandover } from '#/components/glass-handover.tsx'
+import { GlassReel } from '#/components/glass-reel.tsx'
 import { GlassSources } from '#/components/glass-sources.tsx'
 import { CharlieAct } from '#/components/charlie.tsx'
 import { HowItWorks } from '#/components/how-it-works.tsx'
@@ -40,8 +40,11 @@ import { markOpeningSeen, openingSeen, rememberPlace } from '#/lib/opening.ts'
  *    into place, clears a space for the type, and falls behind as the page
  *    scrolls.
  * 2. **The hero.** Centred: the headline and the home page's form.
- * 3. **The film.** One request carried from 23:47 to 08:04 in a frame, the
- *    sheet changing state as the hours pass (`glass-film.tsx`).
+ * 3. **The film.** What Incillum does with a request, in forty-nine seconds:
+ *    one statement a beat over Studio's own screens and three daylight plates
+ *    (`glass-reel.tsx`, rendered from `video/product-film`). It replaced the
+ *    night played hour by hour in a frame (`glass-film.tsx`), which is kept,
+ *    unplaced, with its styles, so it can be put back by one line.
  * 4. **Six sources.** The documents a quotation is assembled from, lying on a
  *    desk, then gathered onto one sheet (`glass-sources.tsx`).
  * 5. **How it works.** Four tabs — read, hold, price, decide — each one line of
@@ -53,8 +56,8 @@ import { markOpeningSeen, openingSeen, rememberPlace } from '#/lib/opening.ts'
  *    (`glass-handover.tsx`), the night's dust settled around it, and one
  *    invitation.
  *
- * Acts one to three are the page's one `[data-inverted]` region. The film ends
- * at 08:04 and the page turns to paper with it.
+ * Acts one to three are the page's one `[data-inverted]` region, and the page
+ * turns to paper after the film.
  *
  * ── What it leaves out ─────────────────────────────────────────────────────
  *
@@ -300,7 +303,7 @@ export function GlassPage() {
         </section>
 
         <div ref={filmRef} className="glass-film-enter glass-enter">
-          <GlassFilm ready={opening !== 'playing'} />
+          <GlassReel />
         </div>
         <span ref={duskRef} className="glass-dusk" aria-hidden="true" />
       </div>

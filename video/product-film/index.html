@@ -1,0 +1,1105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Incillum — the front page's film</title>
+    <!--
+      The front page's film: what Incillum is, said in 49 seconds.
+
+      Not a walkthrough and not a night. One statement a beat about what
+      Charlie does with a request — picks it up the moment it lands, reads
+      everything it depends on, matches every line, checks every figure, asks
+      suppliers once you approve, compares the quotes and holds the margin —
+      the one decision that stays yours, and the documents ready to send. The
+      product's own screens float on a dark stage between three daylight
+      plates: a working port, a warehouse with its conveyors running, trucks
+      on the road to an industrial park.
+
+      The clock is cues.js. Every time below is a moment from it, so the
+      picture and the soundtrack cannot drift apart. HyperFrames renders this
+      page: the root carries data-composition-id, each plate is a <video> clip
+      with its own data-start, and the paused GSAP timeline is
+      window.__timelines.main.
+    -->
+    <script src="vendor/gsap.min.js"></script>
+    <script src="icons.js"></script>
+    <script src="marks.js"></script>
+    <script src="cues.js"></script>
+    <style>
+      /* The site's two faces, copied into fonts/ for the render (copied, never edited, never committed twice). */
+      @font-face {
+        font-family: 'Film Sans';
+        src: url('fonts/sans.woff2') format('woff2');
+        font-weight: 100 900;
+      }
+      @font-face {
+        font-family: 'Film Serif';
+        src: url('fonts/serif.woff2') format('woff2');
+      }
+
+      /* The site's tokens (src/styles.css): paper, ink, one signal, and the night scope. */
+      :root {
+        --paper: #ffffff;
+        --paper-sunken: #f2f2f0;
+        --raised: #ffffff;
+        --ink: #111110;
+        --ink-800: #1c1c1a;
+        --ink-600: #45453f;
+        --ink-400: #6e6e66;
+        --line: rgba(17, 17, 16, 0.11);
+        --line-strong: rgba(17, 17, 16, 0.22);
+        --signal: #9a5518;
+        --night: #131312;
+        --night-deep: #0d0d0c;
+        --night-raised: #1b1b19;
+        --night-hover: #232320;
+        --night-ink: #f2f2ee;
+        --night-ink-600: #b6b6ad;
+        --night-ink-400: #9c9c93;
+        --night-line: rgba(242, 242, 238, 0.11);
+        --night-line-strong: rgba(242, 242, 238, 0.22);
+        --lamp: #e4a046;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body,
+      #root {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--night-deep);
+      }
+      #root {
+        position: relative;
+        font-family: 'Film Sans', system-ui, sans-serif;
+        color: var(--night-ink);
+      }
+      .abs {
+        position: absolute;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .layer {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+      }
+
+      /* ── Grounds: the stage the product floats on, and paper for what it hands back ── */
+      #stage {
+        background: radial-gradient(120% 95% at 50% 118%, #34342f 0%, #1b1b19 42%, var(--night-deep) 82%);
+      }
+      #paper {
+        background: radial-gradient(110% 90% at 50% 0%, #ffffff 0%, #f7f7f5 55%, #ecece8 100%);
+      }
+
+      /* ── Plates: the three daylight clips ─────────────────────────────── */
+      .plate {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        object-fit: cover;
+        opacity: 0;
+      }
+      /* Holds a white title over a bright frame: darker toward the foot, where the titles sit. */
+      #grade {
+        background: linear-gradient(180deg, rgba(13, 13, 12, 0.12) 0%, rgba(13, 13, 12, 0.04) 40%, rgba(13, 13, 12, 0.72) 100%);
+      }
+
+      /* ── Titles: one statement a beat, every word in its own mask ───── */
+      .title {
+        position: absolute;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-family: 'Film Serif', Georgia, serif;
+        font-weight: 400;
+        letter-spacing: -0.015em;
+        opacity: 0;
+      }
+      .title.low {
+        top: 790px;
+        padding: 0 140px;
+        font-size: 70px;
+        line-height: 1.1;
+      }
+      .title.top {
+        top: 72px;
+        font-size: 60px;
+        line-height: 1.1;
+      }
+      .title.ink {
+        color: var(--ink);
+      }
+      .w {
+        display: inline-block;
+        overflow: hidden;
+        vertical-align: bottom;
+        padding-bottom: 0.1em;
+        margin-bottom: -0.1em;
+      }
+      .w > span {
+        display: inline-block;
+      }
+
+      /* ── The opening lockup ───────────────────────────────────────── */
+      #lockup {
+        position: absolute;
+        inset: 360px 0 auto;
+        text-align: center;
+      }
+      #lockup .m {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+      }
+      #lockup .t {
+        margin-top: 30px;
+        font-family: 'Film Serif', Georgia, serif;
+        font-size: 104px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+      }
+
+      /* ── The request, as it lands ─────────────────────────────────── */
+      #mail {
+        position: absolute;
+        left: 330px;
+        top: 272px;
+        width: 1260px;
+        padding: 42px 48px 46px;
+        border-radius: 22px;
+        background: var(--night-raised);
+        outline: 1px solid var(--night-line-strong);
+        opacity: 0;
+      }
+      #mail .head {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      #mail .tile {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: var(--night-hover);
+        outline: 1px solid var(--night-line);
+        color: var(--night-ink);
+        padding: 17px;
+        flex: none;
+      }
+      #mail .from {
+        font-size: 29px;
+      }
+      #mail .meta {
+        margin-top: 4px;
+        font-size: 22px;
+        color: var(--night-ink-400);
+      }
+      #mail .right {
+        position: relative;
+        margin-left: auto;
+        align-self: flex-start;
+        height: 46px;
+        width: 330px;
+      }
+      #mail .at {
+        position: absolute;
+        right: 0;
+        top: 4px;
+        font-size: 24px;
+        color: var(--night-ink-400);
+      }
+      /* Charlie's name on the request: it has been picked up. */
+      #mail .picked {
+        position: absolute;
+        right: 0;
+        top: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 46px;
+        padding: 0 20px 0 8px;
+        border-radius: 999px;
+        background: var(--night-ink);
+        color: var(--ink);
+        font-size: 21px;
+        white-space: nowrap;
+        opacity: 0;
+      }
+      #mail .picked i {
+        width: 30px;
+        height: 30px;
+        padding: 6px;
+        border-radius: 999px;
+        background: var(--ink);
+        color: var(--night-ink);
+      }
+      #mail .subject {
+        margin-top: 30px;
+        font-family: 'Film Serif', Georgia, serif;
+        font-size: 58px;
+        line-height: 1.1;
+        letter-spacing: -0.012em;
+      }
+      #mail .body {
+        margin-top: 16px;
+        font-size: 26px;
+        line-height: 1.45;
+        color: var(--night-ink-600);
+      }
+      #mail .atts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 30px;
+      }
+      .att {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 72px;
+        padding: 0 24px 0 16px;
+        border-radius: 14px;
+        background: var(--night-hover);
+        outline: 1px solid var(--night-line);
+        white-space: nowrap;
+      }
+      .att .i {
+        width: 36px;
+        height: 36px;
+        flex: none;
+      }
+      .att b {
+        display: block;
+        font-weight: 400;
+        font-size: 20px;
+      }
+      .att small {
+        display: block;
+        margin-top: 2px;
+        font-size: 17px;
+        color: var(--night-ink-400);
+      }
+
+      /* ── The wall: everything a request depends on ────────────────── */
+      #wall {
+        -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+        mask-image: linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+      }
+      .row {
+        position: absolute;
+        left: 0;
+        display: flex;
+        gap: 18px;
+        white-space: nowrap;
+      }
+      .pill {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        height: 72px;
+        padding: 0 30px 0 18px;
+        border-radius: 999px;
+        background: var(--night-raised);
+        outline: 1px solid var(--night-line);
+        font-size: 27px;
+        color: var(--night-ink-400);
+      }
+      .pill .i {
+        width: 38px;
+        height: 38px;
+        flex: none;
+        display: grid;
+        place-items: center;
+      }
+      .pill .i.glyph {
+        padding: 7px;
+        border-radius: 999px;
+        background: var(--night-hover);
+        color: var(--night-ink-600);
+      }
+      /* The tick a source earns once it has been read for this request. */
+      .pill .tick {
+        width: 0;
+        height: 30px;
+        overflow: hidden;
+        flex: none;
+        margin-right: -8px;
+      }
+      .pill .tick i {
+        display: block;
+        width: 30px;
+        height: 30px;
+        padding: 6px;
+        border-radius: 999px;
+        background: var(--night-ink);
+        color: var(--ink);
+      }
+      .pill .glow {
+        position: absolute;
+        inset: -18px;
+        border-radius: 999px;
+        background: radial-gradient(closest-side, rgba(242, 242, 238, 0.16), transparent);
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* ── The product window and its camera ────────────────────────────
+         #cam is the camera: the only thing that zooms and pans. #win holds
+         the 1440×900 stills at their own size; overlay rectangles are in
+         the still's pixels. The window bleeds off the foot of the frame. */
+      #cam {
+        position: absolute;
+        inset: 0;
+        transform-origin: 0 0;
+      }
+      #win {
+        position: absolute;
+        left: 240px;
+        top: 232px;
+        width: 1440px;
+        height: 900px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: var(--raised);
+        outline: 1px solid var(--night-line-strong);
+        opacity: 0;
+      }
+      .shot {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+      }
+      .shot > img {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1440px;
+        height: 900px;
+      }
+      #overlays {
+        position: absolute;
+        inset: 0;
+      }
+      /* The stage closes over the top of a page pushed in on, so the title stays legible. */
+      #scrim {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 300px;
+        background: linear-gradient(180deg, var(--night-deep) 0%, rgba(13, 13, 12, 0.92) 46%, rgba(13, 13, 12, 0) 100%);
+        opacity: 0;
+      }
+      .cover {
+        position: absolute;
+        background: #ffffff;
+        transform-origin: right center;
+      }
+      .mark {
+        position: absolute;
+        background: rgba(154, 85, 24, 0.16);
+        mix-blend-mode: multiply;
+        border-radius: 3px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+      .ring {
+        position: absolute;
+        border: 2px solid var(--signal);
+        border-radius: 8px;
+        opacity: 0;
+      }
+      .ring.ink {
+        border-color: var(--ink);
+      }
+      .badge {
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: var(--ink);
+        color: #ffffff;
+        padding: 5px;
+        opacity: 0;
+      }
+      .cursor {
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        opacity: 0;
+        transform-origin: 4px 4px;
+      }
+      .cursor path {
+        fill: var(--ink);
+        stroke: #ffffff;
+        stroke-width: 1.4;
+      }
+
+      /* ── The documents, ready ─────────────────────────────────────── */
+      #docs {
+        position: absolute;
+        inset: 0;
+      }
+      .doc {
+        position: absolute;
+        top: 200px;
+        width: 540px;
+        height: 712px;
+        border-radius: 14px;
+        background: var(--raised);
+        outline: 1px solid var(--line-strong);
+        overflow: hidden;
+        color: var(--ink);
+        opacity: 0;
+      }
+      .doc .bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 64px;
+        padding: 0 20px;
+        border-bottom: 1px solid var(--line);
+        background: #f7f7f5;
+      }
+      .doc .bar .i {
+        width: 30px;
+        height: 30px;
+        flex: none;
+      }
+      .doc .bar b {
+        font-weight: 400;
+        font-size: 18px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .doc .bar small {
+        margin-left: auto;
+        font-size: 15px;
+        color: var(--ink-400);
+        white-space: nowrap;
+      }
+      .doc .page {
+        position: absolute;
+        inset: 64px 0 0;
+        overflow: hidden;
+      }
+      .doc .page > img {
+        width: 540px;
+        display: block;
+      }
+      /* The workbook: the quotation's own rows, as the Excel version carries them. */
+      .sheet {
+        font-size: 15px;
+        color: var(--ink-800);
+      }
+      .sheet table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .sheet th,
+      .sheet td {
+        height: 38px;
+        padding: 0 9px;
+        border-right: 1px solid #e3e3df;
+        border-bottom: 1px solid #e3e3df;
+        text-align: right;
+        white-space: nowrap;
+      }
+      .sheet th {
+        height: 28px;
+        background: #f1f1ee;
+        color: var(--ink-400);
+        font-weight: 400;
+        font-size: 13px;
+        text-align: center;
+      }
+      .sheet td:first-child,
+      .sheet th:first-child {
+        width: 30px;
+        background: #f1f1ee;
+        color: var(--ink-400);
+        text-align: center;
+        font-size: 12px;
+      }
+      .sheet td.l {
+        text-align: left;
+      }
+      .sheet tr.h td {
+        font-weight: 500;
+        color: var(--ink);
+      }
+      .sheet .tabs {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        gap: 2px;
+        height: 40px;
+        padding: 0 10px;
+        align-items: center;
+        background: #f1f1ee;
+        border-top: 1px solid #e3e3df;
+        font-size: 14px;
+        color: var(--ink-400);
+      }
+      .sheet .tabs span {
+        padding: 6px 14px;
+        border-radius: 6px;
+      }
+      .sheet .tabs span.on {
+        background: #ffffff;
+        color: #1d6f42;
+        outline: 1px solid #e3e3df;
+      }
+      /* The letter: set, not legible, but for its head. */
+      .letter {
+        padding: 46px 50px;
+      }
+      .letter .from {
+        font-size: 15px;
+        letter-spacing: 0.08em;
+        color: var(--ink-600);
+      }
+      .letter .to {
+        margin-top: 38px;
+        font-size: 17px;
+        line-height: 1.5;
+        color: var(--ink-600);
+      }
+      .letter h4 {
+        margin-top: 34px;
+        font-family: 'Film Serif', Georgia, serif;
+        font-weight: 400;
+        font-size: 36px;
+      }
+      .letter .p {
+        margin-top: 22px;
+      }
+      .letter .p i {
+        display: block;
+        height: 9px;
+        margin-top: 11px;
+        border-radius: 3px;
+        background: #e6e6e2;
+      }
+      #reply {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 950px;
+        display: flex;
+        justify-content: center;
+        opacity: 0;
+      }
+      #reply .in {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        height: 72px;
+        padding: 0 12px 0 22px;
+        border-radius: 999px;
+        background: var(--raised);
+        outline: 1px solid var(--line-strong);
+        color: var(--ink);
+        font-size: 22px;
+      }
+      #reply .i {
+        width: 28px;
+        height: 28px;
+        color: var(--ink-600);
+      }
+      #reply small {
+        font-size: 19px;
+        color: var(--ink-400);
+      }
+      #reply .go {
+        margin-left: 6px;
+        height: 50px;
+        padding: 0 24px 0 20px;
+        border-radius: 999px;
+        background: var(--ink);
+        color: #f7f7f5;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 19px;
+      }
+      #reply .go i {
+        display: block;
+        width: 20px;
+        height: 20px;
+      }
+
+      /* ── The close ─────────────────────────────────────────────────── */
+      #end {
+        position: absolute;
+        inset: 0;
+        text-align: center;
+        color: var(--ink);
+        background: #f7f7f5;
+        opacity: 0;
+      }
+      #end .m {
+        width: 128px;
+        height: 128px;
+        margin: 270px auto 0;
+      }
+      #end .t {
+        margin-top: 32px;
+        font-family: 'Film Serif', Georgia, serif;
+        font-size: 124px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+      }
+      #end .s {
+        margin-top: 26px;
+        font-size: 36px;
+        color: var(--ink-600);
+      }
+      #end .u {
+        margin-top: 50px;
+        font-size: 24px;
+        color: var(--ink-400);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- data-duration and the audio's data-duration must equal cues.js duration. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="49.4" data-fps="30" data-width="1920" data-height="1080">
+      <audio id="soundtrack" src="soundtrack.wav" data-start="0" data-duration="49.4" data-track-index="0" data-volume="1"></audio>
+
+      <div id="stage" class="layer"></div>
+      <div id="paper" class="layer"></div>
+
+      <video class="plate clip" id="plate-port" src="plates/port.mp4" data-start="2.4" data-duration="5.45" data-track-index="1" muted playsinline></video>
+      <video class="plate clip" id="plate-warehouse" src="plates/warehouse.mp4" data-start="16.5" data-duration="4.35" data-track-index="2" muted playsinline></video>
+      <video class="plate clip" id="plate-highway" src="plates/highway.mp4" data-start="26.9" data-duration="4.35" data-track-index="3" muted playsinline></video>
+      <div id="grade" class="layer"></div>
+
+      <div id="lockup">
+        <div class="m" id="lockupMark"></div>
+        <div class="t">Incillum</div>
+      </div>
+
+      <div id="mail">
+        <div class="head">
+          <span class="tile" data-icon="mail"></span>
+          <div>
+            <div class="from">Pernille Halvorsen</div>
+            <div class="meta">Halvorsen Marine · procurement</div>
+          </div>
+          <div class="right">
+            <span class="at">Just now</span>
+            <span class="picked"><i data-icon="check"></i>Picked up by Charlie</span>
+          </div>
+        </div>
+        <div class="subject">RFQ 1907 — twenty items for Ålesund</div>
+        <div class="body">Please quote for the twenty items on the attached bill of materials. We require your response by 16:00 on Monday.</div>
+        <div class="atts">
+          <div class="att"><span class="i" data-brand="pdf"></span><span><b>RFQ_1907.pdf</b><small>6 pages</small></span></div>
+          <div class="att"><span class="i" data-brand="excel"></span><span><b>Halvorsen_RFQ_1907.xlsx</b><small>Sheet BOM</small></span></div>
+          <div class="att"><span class="i" data-brand="word"></span><span><b>Framework_terms.docx</b><small>12 pages</small></span></div>
+          <div class="att"><span class="i" data-brand="powerpoint"></span><span><b>Ålesund_fit-out.pptx</b><small>18 slides</small></span></div>
+        </div>
+      </div>
+
+      <div id="wall" class="layer"></div>
+
+      <div id="cam">
+        <div id="win">
+          <div class="shot" id="shot-matrix"><img src="stills/matrix.webp" alt="" /></div>
+          <div class="shot" id="shot-suppliers"><img src="stills/suppliers.webp" alt="" /></div>
+          <div class="shot" id="shot-approve"><img src="stills/approve.webp" alt="" /></div>
+          <div class="shot" id="shot-typed"><img src="stills/approve-typed.webp" alt="" /></div>
+          <div id="overlays"></div>
+        </div>
+      </div>
+      <div id="scrim"></div>
+
+      <div id="docs">
+        <div class="doc" id="doc-pdf" style="left: 150px">
+          <div class="bar"><span class="i" data-brand="pdf"></span><b>Quotation_Halvorsen_v3.pdf</b><small>Revision 3</small></div>
+          <div class="page"><img src="stills/quotation.webp" alt="" /></div>
+        </div>
+        <div class="doc" id="doc-xlsx" style="left: 690px">
+          <div class="bar"><span class="i" data-brand="excel"></span><b>Quotation_Halvorsen_v3.xlsx</b><small>Workbook</small></div>
+          <div class="page sheet" id="sheet"></div>
+        </div>
+        <div class="doc" id="doc-docx" style="left: 1230px">
+          <div class="bar"><span class="i" data-brand="word"></span><b>Proposal_letter_Halvorsen.docx</b><small>Letter</small></div>
+          <div class="page letter">
+            <div class="from">NORTHWIND INSTRUMENTS</div>
+            <div class="to">Halvorsen Marine AS<br />Ålesund, Norway</div>
+            <h4>Our proposal</h4>
+            <div class="p"><i style="width: 96%"></i><i style="width: 100%"></i><i style="width: 88%"></i><i style="width: 62%"></i></div>
+            <div class="p"><i style="width: 100%"></i><i style="width: 94%"></i><i style="width: 97%"></i><i style="width: 40%"></i></div>
+            <div class="p"><i style="width: 90%"></i><i style="width: 72%"></i></div>
+          </div>
+        </div>
+        <div id="reply">
+          <div class="in"><span class="i" data-icon="mail"></span><span>Reply to Pernille Halvorsen</span><small>three attachments</small><span class="go"><i data-icon="send"></i>Send</span></div>
+        </div>
+      </div>
+
+      <div id="titles"></div>
+
+      <div id="end">
+        <div class="m" id="endMark"></div>
+        <div class="t">Incillum</div>
+        <div class="s">Intelligence for commercial work.</div>
+        <div class="u">incillum.com</div>
+      </div>
+    </div>
+
+    <script>
+      ;(function () {
+        const M = window.CUES.moments
+        // The window's place in the frame; the stills sit in it at their own size.
+        const WX = 240
+        const WY = 232
+        const $ = (selector) => document.querySelector(selector)
+        const overlays = $('#overlays')
+        const icon = (name) => window.ICONS[name] ?? ''
+        const brand = (name) => window.MARKS[name] ?? ''
+        for (const node of document.querySelectorAll('[data-brand]')) node.innerHTML = brand(node.dataset.brand)
+        for (const node of document.querySelectorAll('[data-icon]')) node.innerHTML = icon(node.dataset.icon)
+
+        /**
+         * Incillum's mark (public/logo.png): four ellipses crossing at 45°, drawn
+         * here as strokes so it can draw itself on.
+         */
+        function logo(stroke) {
+          return `<svg viewBox="0 0 100 100" fill="none">${[0, 45, 90, 135]
+            .map((angle) => `<ellipse cx="50" cy="50" rx="43" ry="20.5" transform="rotate(${angle} 50 50)" stroke="${stroke}" stroke-width="2.2" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>`)
+            .join('')}</svg>`
+        }
+        $('#lockupMark').innerHTML = logo('#f2f2ee')
+        $('#endMark').innerHTML = logo('#111110')
+
+        const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.inOut' } })
+
+        // ── Building blocks ─────────────────────────────────────────────
+        const words = (text) => text.split(' ').map((word) => `<span class="w"><span>${word}</span></span>`).join(' ')
+        const titles = {}
+        function title(key, text, place, ink = false) {
+          const element = document.createElement('div')
+          element.className = `title ${place}${ink ? ' ink' : ''}`
+          element.innerHTML = words(text)
+          $('#titles').append(element)
+          titles[key] = element
+        }
+        function titleIn(key, at) {
+          tl.fromTo(titles[key], { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, at)
+          tl.fromTo(titles[key].querySelectorAll('.w > span'), { yPercent: 108 }, { yPercent: 0, duration: 0.8, ease: 'power3.out', stagger: 0.05 }, at + 0.05)
+        }
+        const titleOut = (key, at) => tl.to(titles[key], { opacity: 0, y: -12, duration: 0.4, ease: 'power2.in' }, at)
+
+        /** A plate: up out of black with a slow settle, out again at its cut. */
+        function plate(id, from, to, push = 0.06) {
+          tl.fromTo(id, { opacity: 0 }, { opacity: 1, duration: 0.45, ease: 'power1.out' }, from)
+          tl.fromTo(id, { scale: 1 + push }, { scale: 1, duration: to - from + 0.3, ease: 'none' }, from)
+          tl.to(id, { opacity: 0, duration: 0.25, ease: 'power1.in' }, to - 0.05)
+          tl.fromTo('#grade', { opacity: 0 }, { opacity: 1, duration: 0.45, ease: 'none' }, from)
+          tl.to('#grade', { opacity: 0, duration: 0.25 }, to - 0.05)
+        }
+
+        /** An overlay over the page, at a rectangle [x, y, w, h] in the still's own pixels. */
+        function box(className, rect, html = '') {
+          const element = document.createElement('div')
+          element.className = className
+          Object.assign(element.style, { left: `${rect[0]}px`, top: `${rect[1]}px`, width: `${rect[2]}px`, height: `${rect[3]}px` })
+          element.innerHTML = html
+          overlays.append(element)
+          return element
+        }
+        /** Puts a rectangle of the page at the frame's centre line and at height `cy`, `z` times larger. */
+        function focus(rect, z, at, duration = 1.1, cy = 650) {
+          const fx = WX + rect[0] + rect[2] / 2
+          const fy = WY + rect[1] + rect[3] / 2
+          tl.to('#cam', { x: 960 - z * fx, y: cy - z * fy, scale: z, duration }, at)
+        }
+        function reveal(rect, from, at, duration = 0.42) {
+          const cover = box('cover', rect)
+          gsap.set(cover, { opacity: 0 })
+          tl.set(cover, { opacity: 1 }, from)
+          tl.fromTo(cover, { scaleX: 1 }, { scaleX: 0, duration, ease: 'power2.inOut' }, at)
+          return cover
+        }
+        function highlight(rect, at, duration = 0.5) {
+          const element = box('mark', rect)
+          tl.fromTo(element, { scaleX: 0 }, { scaleX: 1, duration, ease: 'power2.out' }, at)
+          return element
+        }
+        function ring(rect, at, until, pad = 6) {
+          const element = box('ring', [rect[0] - pad, rect[1] - pad, rect[2] + pad * 2, rect[3] + pad * 2])
+          tl.fromTo(element, { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(2)' }, at)
+          if (until) tl.to(element, { opacity: 0, duration: 0.3 }, until)
+          return element
+        }
+        /** A tick on the page: a small ink badge that pops in when a line is done. */
+        function tick(x, y, at) {
+          const element = box('badge', [x, y, 22, 22], icon('check'))
+          element.style.padding = '4px'
+          tl.fromTo(element, { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2.4)' }, at)
+          return element
+        }
+        const cursor = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+        cursor.setAttribute('viewBox', '0 0 24 24')
+        cursor.setAttribute('class', 'cursor')
+        cursor.innerHTML = '<path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z" />'
+        overlays.append(cursor)
+        /** The cursor travels from `from` to `to` (page pixels) and presses at `at`. */
+        function clickAt(from, to, at, travel = 0.8) {
+          tl.fromTo(cursor, { opacity: 0, x: from[0], y: from[1], scale: 1 }, { opacity: 1, duration: 0.2 }, at - travel - 0.25)
+          tl.to(cursor, { x: to[0], y: to[1], duration: travel, ease: 'power2.inOut' }, at - travel - 0.05)
+          tl.to(cursor, { scale: 0.8, duration: 0.08, ease: 'power1.in' }, at)
+          tl.to(cursor, { scale: 1, duration: 0.16, ease: 'power1.out' }, at + 0.08)
+        }
+        /** The window rises into the frame, tilted back, and settles flat. */
+        function windowIn(at) {
+          tl.fromTo('#win', { opacity: 0, y: 220, rotationX: 24, transformPerspective: 2400, transformOrigin: '50% 0%' }, { opacity: 1, y: 0, rotationX: 0, duration: 1.25, ease: 'power3.out' }, at)
+          tl.fromTo('#scrim', { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'none' }, at)
+        }
+        function windowOut(at) {
+          tl.to('#win', { opacity: 0, y: -40, duration: 0.3, ease: 'power2.in' }, at - 0.1)
+          tl.to('#scrim', { opacity: 0, duration: 0.3 }, at - 0.1)
+        }
+        const stage = (at, until) => {
+          tl.fromTo('#stage', { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'none' }, at)
+          tl.to('#stage', { opacity: 0, duration: 0.25, ease: 'none' }, until - 0.05)
+        }
+
+        title('port', 'Every order starts with a quotation.', 'low')
+        title('mail', 'Charlie picks it up the moment it lands.', 'top')
+        title('wall', 'Reads everything the request depends on.', 'low')
+        title('warehouse', 'Matches every line to a product you carry.', 'low')
+        title('matrix', 'Checks every figure against its source.', 'top')
+        title('highway', 'With your approval, asks suppliers for a firm price.', 'low')
+        title('suppliers', 'Compares every quote. Holds your margin.', 'top')
+        title('decide', 'Where money moves, you decide.', 'top')
+        title('docs', 'The quotation, ready to send.', 'top', true)
+
+        // ── 0 · The mark ──────────────────────────────────────────────────
+        tl.to('#lockup ellipse', { strokeDashoffset: 0, duration: 1.2, ease: 'power2.inOut', stagger: 0.09 }, M.markDraw)
+        tl.fromTo('#lockup .m', { rotate: -30, scale: 0.9 }, { rotate: 0, scale: 1, duration: 1.7, ease: 'power3.out' }, M.markDraw)
+        tl.fromTo('#lockup .t', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' }, M.markDraw + 0.55)
+        tl.to('#lockup', { opacity: 0, y: -30, scale: 0.97, duration: 0.45, ease: 'power2.in' }, M.lockupOut)
+
+        // ── 1 · Where the work comes from ─────────────────────────────────
+        plate('#plate-port', M.toPort, M.toMail)
+        titleIn('port', M.port)
+        titleOut('port', M.toMail - 0.45)
+
+        // ── 2 · A request lands, and Charlie has it ───────────────────────
+        stage(M.toMail, M.toWarehouse)
+        titleIn('mail', M.toMail + 0.2)
+        tl.fromTo('#mail', { opacity: 0, y: 70, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: 'power3.out' }, M.mailIn)
+        tl.fromTo('#mail .att', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.14 }, M.attach)
+        tl.to('#mail .at', { opacity: 0, duration: 0.2 }, M.picked - 0.1)
+        tl.fromTo('#mail .picked', { opacity: 0, x: 24, scale: 0.92 }, { opacity: 1, x: 0, scale: 1, duration: 0.45, ease: 'back.out(1.8)' }, M.picked)
+        tl.to('#mail', { scale: 1.03, duration: 2.0, ease: 'power1.inOut' }, M.attach + 0.2)
+        titleOut('mail', M.toWall - 0.45)
+        tl.to('#mail', { opacity: 0, y: -60, scale: 0.92, duration: 0.4, ease: 'power2.in' }, M.toWall - 0.42)
+
+        // ── 3 · Everything it depends on ──────────────────────────────────
+        // File marks for the documents it reads; the product's own Lucide glyphs for the rest.
+        const rows = [
+          [['pdf', 'Request for quotation'], ['excel', 'Bill of materials'], ['word', 'Framework terms'], ['g:mail', 'Customer thread'], ['g:package', 'Product catalogue'], ['image', 'Scanned drawing'], ['g:rotate-ccw-clock', 'Past quotations'], ['csv', 'Supplier price list'], ['powerpoint', 'Customer presentation']],
+          [['sheets', 'Shared price sheet'], ['g:scale', 'Margin policy'], ['excel', 'Supplier quotation'], ['g:file-badge', 'Certificates'], ['g:calendar-clock', 'Lead times'], ['pdf', 'Datasheet'], ['g:tag', 'Price history'], ['g:receipt', 'Purchase orders'], ['word', 'Specification']],
+          [['g:book-open', 'Customer terms'], ['powerpoint', 'Product deck'], ['g:truck', 'Delivery promises'], ['pdf', 'Supplier offer'], ['g:shield-check', 'Approval limits'], ['csv', 'Stock export'], ['g:hand-coins', 'Discount bands'], ['excel', 'Cost sheet'], ['g:layers', 'Precedent']],
+          [['g:mail', 'Supplier replies'], ['g:users', 'Who decides what'], ['sheets', 'Rate card'], ['g:percent', 'Margin floors'], ['pdf', 'Order confirmation'], ['g:ship', 'Freight terms'], ['image', 'Nameplate photo'], ['g:receipt', 'Invoices'], ['word', 'Proposal template']],
+        ]
+        const lit = ['Request for quotation', 'Bill of materials', 'Framework terms', 'Customer thread', 'Product catalogue', 'Shared price sheet', 'Margin policy', 'Supplier quotation', 'Past quotations', 'Approval limits', 'Precedent']
+        const pill = ([kind, label]) => {
+          const glyph = kind.startsWith('g:')
+          const art = glyph ? `<span class="i glyph">${icon(kind.slice(2))}</span>` : `<span class="i">${brand(kind)}</span>`
+          return `<div class="pill" data-label="${label}"><span class="glow"></span>${art}<span class="label">${label}</span><span class="tick"><i>${icon('check')}</i></span></div>`
+        }
+        const lanes = rows.map((items, index) => {
+          const element = document.createElement('div')
+          element.className = 'row'
+          element.style.top = `${232 + index * 96}px`
+          element.innerHTML = [...items, ...items].map(pill).join('')
+          $('#wall').append(element)
+          return element
+        })
+        tl.fromTo('#wall', { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'none' }, M.toWall)
+        lanes.forEach((lane, index) => {
+          // Lanes run in turn left and right, at slightly different speeds.
+          const from = index % 2 ? -1450 : -260
+          const to = index % 2 ? -980 : -760
+          tl.fromTo(lane, { x: from + (index % 2 ? -260 : 260), opacity: 0 }, { x: from, opacity: 1, duration: 0.7, ease: 'power3.out' }, M.toWall + index * 0.07)
+          const drift = M.toWall + 0.7 + index * 0.07
+          tl.fromTo(lane, { x: from }, { x: to, duration: M.toWarehouse - drift, ease: 'none', immediateRender: false }, drift)
+        })
+        // What this request depends on lights up and is ticked off, a few at a time.
+        let order = 0
+        for (const lane of lanes) {
+          for (const element of lane.querySelectorAll('.pill')) {
+            if (!lit.includes(element.dataset.label)) continue
+            const at = M.wallLit + (order++ % 11) * 0.24
+            tl.to(element, { backgroundColor: '#2b2b27', color: '#f2f2ee', outlineColor: 'rgba(242, 242, 238, 0.42)', duration: 0.35, ease: 'power2.out' }, at)
+            tl.to(element.querySelector('.glow'), { opacity: 1, duration: 0.5, ease: 'power2.out' }, at)
+            tl.to(element.querySelector('.tick'), { width: 38, duration: 0.35, ease: 'back.out(2)' }, at + 0.12)
+          }
+        }
+        titleIn('wall', M.wallTitle)
+        titleOut('wall', M.toWarehouse - 0.4)
+        tl.to('#wall', { opacity: 0, duration: 0.25 }, M.toWarehouse - 0.05)
+
+        // ── 4 · The warehouse: every line, a product you carry ────────────
+        plate('#plate-warehouse', M.toWarehouse, M.toMatrix, 0.04)
+        titleIn('warehouse', M.toWarehouse + 0.4)
+        titleOut('warehouse', M.toMatrix - 0.45)
+
+        // ── 5 · Every figure checked against its source ───────────────────
+        stage(M.toMatrix, M.toHighway)
+        tl.set('#shot-matrix', { opacity: 1 }, M.toMatrix)
+        windowIn(M.toMatrix + 0.1)
+        titleIn('matrix', M.toMatrix + 0.25)
+        for (let row = 0; row < 13; row += 1) {
+          reveal([274, 298 + row * 48, 1140, 46], M.toMatrix, M.rows + row * 0.1, 0.34)
+          // Every line but 09, which is held, is ticked as it lands.
+          if (row !== 8) tick(1392, 310 + row * 48, M.rows + row * 0.1 + 0.3)
+        }
+        reveal([272, 114, 1146, 12], M.toMatrix, M.rows, 1.5)
+        const counterCover = box('cover', [818, 84, 114, 22])
+        const counterLabel = box('abs', [818, 84, 110, 22], '<span>0 of 20 lines</span>')
+        Object.assign(counterLabel.style, { textAlign: 'right', whiteSpace: 'nowrap', fontSize: '14.4px', lineHeight: '22px', color: '#1c1c1a' })
+        gsap.set([counterCover, counterLabel], { opacity: 0 })
+        tl.set([counterCover, counterLabel], { opacity: 1 }, M.toMatrix)
+        const count = { n: 0 }
+        tl.fromTo(count, { n: 0 }, { n: 20, duration: 1.3, ease: 'none', onUpdate: () => { counterLabel.firstChild.textContent = `${Math.round(count.n)} of 20 lines` } }, M.rows)
+        tl.set([counterCover, counterLabel], { opacity: 0 }, M.rows + 1.45)
+        focus([1093, 682, 119, 47], 2.0, M.toCell, 1.1)
+        ring([1093, 682, 119, 47], M.ringCell, M.toSources)
+        clickAt([1260, 860], [1160, 708], M.click1, 0.55)
+        tl.to(cursor, { opacity: 0, duration: 0.25 }, M.click1 + 0.35)
+        // The finding opens beside the sheet: the next capture's panel, slid in.
+        const panel = box('abs', [1030, 148, 410, 752], '<img src="stills/finding.webp" alt="" style="position:absolute;left:-1030px;top:-148px;width:1440px;height:900px" />')
+        panel.style.overflow = 'hidden'
+        tl.fromTo(panel, { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.45, ease: 'power3.out' }, M.finding)
+        // The figure and its sources in one frame, the window's edge just inside the frame's.
+        tl.to('#cam', { x: 1840 - 1.55 * (WX + 1440), y: 650 - 1.55 * (WY + 565), scale: 1.55, duration: 1.0 }, M.toSources)
+        ring([1045, 520, 365, 112], M.citeA, M.toHighway - 0.3)
+        const badgeA = box('badge', [1022, 560, 26, 26], icon('link-2'))
+        tl.fromTo(badgeA, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(2)' }, M.citeA + 0.1)
+        ring([1045, 642, 365, 148], M.citeB, M.toHighway - 0.3)
+        const badgeB = box('badge', [1022, 700, 26, 26], icon('quote'))
+        tl.fromTo(badgeB, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(2)' }, M.citeB + 0.1)
+        highlight([1062, 721, 326, 19], M.citeB + 0.3, 0.45)
+        titleOut('matrix', M.toHighway - 0.35)
+        windowOut(M.toHighway)
+        tl.to('#overlays > *', { opacity: 0, duration: 0.2 }, M.toHighway - 0.1)
+        tl.set('#shot-matrix', { opacity: 0 }, M.toHighway + 0.2)
+
+        // ── 6 · Suppliers asked, once you approve ─────────────────────────
+        plate('#plate-highway', M.toHighway, M.toSuppliers, 0.05)
+        titleIn('highway', M.toHighway + 0.4)
+        titleOut('highway', M.toSuppliers - 0.45)
+
+        // ── 7 · Every quote compared, the margin held ─────────────────────
+        stage(M.toSuppliers, M.toDecide)
+        tl.set('#cam', { x: 0, y: 0, scale: 1 }, M.toSuppliers)
+        tl.set('#shot-suppliers', { opacity: 1 }, M.toSuppliers)
+        windowIn(M.toSuppliers + 0.1)
+        titleIn('suppliers', M.toSuppliers + 0.25)
+        const supplierRows = [[405, 108], [516, 108], [628, 108], [740, 108]]
+        supplierRows.forEach(([top, height], index) => {
+          reveal([562, top + 2, 852, height], M.toSuppliers, M.supRows + index * 0.35)
+          // The third quotation could not be read, so it earns no tick.
+          if (index !== 2) tick(1392, top + 40, M.supRows + index * 0.35 + 0.35)
+        })
+        focus([900, 84, 520, 120], 2.0, M.supCost - 0.4, 1.0, 560)
+        ring([934, 94, 214, 21], M.supCost, M.toDecide - 0.3, 3)
+        titleOut('suppliers', M.toDecide - 0.35)
+        windowOut(M.toDecide)
+        tl.set('#shot-suppliers', { opacity: 0 }, M.toDecide + 0.2)
+
+        // ── 8 · The one decision that is yours ────────────────────────────
+        stage(M.toDecide, M.toDocs)
+        tl.set('#cam', { x: 0, y: 0, scale: 1 }, M.toDecide)
+        tl.set('#shot-approve', { opacity: 1 }, M.toDecide)
+        windowIn(M.toDecide + 0.1)
+        focus([441, 189, 558, 522], 1.18, M.toDecide + 0.1, 1.2, 640)
+        titleIn('decide', M.toDecide + 0.25)
+        focus([441, 189, 558, 160], 1.85, M.toNumbers, 1.0)
+        // Margin under the floor: the one place the signal means "waiting for a person".
+        ring([455, 284, 345, 44], M.ringFloor, M.toReason + 0.2)
+        focus([441, 470, 558, 240], 1.75, M.toReason, 0.9)
+        // The reason, typed: the real typed page shown a letter at a time over the empty one.
+        const typed = box('abs', [470, 532, 0, 28], '<img src="stills/approve-typed.webp" alt="" style="position:absolute;left:-470px;top:-532px;width:1440px;height:900px" />')
+        typed.style.overflow = 'hidden'
+        const caret = box('abs', [471, 535, 1.5, 21])
+        caret.style.background = '#111110'
+        gsap.set([typed, caret], { opacity: 0 })
+        tl.set([typed, caret], { opacity: 1 }, M.typeStart)
+        tl.fromTo(typed, { width: 0 }, { width: 312, duration: M.typeEnd - M.typeStart, ease: 'steps(51)' }, M.typeStart)
+        tl.fromTo(caret, { x: 0 }, { x: 310, duration: M.typeEnd - M.typeStart, ease: 'steps(51)' }, M.typeStart)
+        tl.set('#shot-typed', { opacity: 1 }, M.typeEnd + 0.05)
+        tl.set([typed, caret], { opacity: 0 }, M.typeEnd + 0.08)
+        tl.set('#shot-approve', { opacity: 0 }, M.typeEnd + 0.1)
+        clickAt([1000, 760], [905, 660], M.click2, 0.55)
+        const pressed = box('ring ink', [844, 643, 134, 32])
+        tl.fromTo(pressed, { opacity: 0, scale: 1 }, { opacity: 0.9, scale: 1.12, duration: 0.25, ease: 'power2.out' }, M.click2)
+        tl.to(pressed, { opacity: 0, duration: 0.3 }, M.click2 + 0.25)
+        titleOut('decide', M.toDocs - 0.35)
+        windowOut(M.toDocs)
+        tl.to(cursor, { opacity: 0, duration: 0.2 }, M.toDocs - 0.1)
+
+        // ── 9 · Ready to send, on paper ───────────────────────────────────
+        const sheetRows = [
+          ['NW-3120-B', '5', '2,600.00', '13,000.00'],
+          ['NW-3121-B', '5', '2,700.00', '13,500.00'],
+          ['NW-4410-S', '5', '2,800.00', '14,000.00'],
+          ['NW-4411-S', '5', '2,900.00', '14,500.00'],
+          ['NW-4412-S', '4', '2,500.00', '10,000.00'],
+          ['NW-5001-K', '4', '2,550.00', '10,200.00'],
+          ['NW-5002-K', '4', '2,600.00', '10,400.00'],
+          ['NW-5003-K', '4', '2,650.00', '10,600.00'],
+        ]
+        $('#sheet').innerHTML = `<table><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+          <tr class="h"><td>1</td><td class="l">Product</td><td>Quantity</td><td>Unit price</td><td>Line total</td></tr>
+          ${sheetRows.map((row, index) => `<tr><td>${index + 2}</td><td class="l">${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td></tr>`).join('')}
+          ${[10, 11, 12, 13, 14].map((n) => `<tr><td>${n}</td><td></td><td></td><td></td><td></td></tr>`).join('')}
+          </table><div class="tabs"><span class="on">Quotation</span><span>Sources</span><span>Terms</span></div>`
+        tl.fromTo('#paper', { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'none' }, M.toDocs)
+        const docs = ['#doc-pdf', '#doc-xlsx', '#doc-docx']
+        const turns = [16, 0, -16]
+        docs.forEach((doc, index) => {
+          tl.fromTo(doc, { opacity: 0, y: 160, rotationY: turns[index] * 1.6, rotationX: 14, transformPerspective: 2200, transformOrigin: '50% 100%' }, { opacity: 1, y: index === 1 ? -14 : 0, rotationY: turns[index], rotationX: 0, duration: 1.1, ease: 'power3.out' }, M.cards + index * 0.18)
+        })
+        tl.fromTo('#docs', { scale: 1 }, { scale: 1.035, transformOrigin: '50% 45%', duration: M.toEnd - M.toDocs, ease: 'none' }, M.toDocs)
+        titleIn('docs', M.toDocs + 0.3)
+        tl.fromTo('#reply', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, M.reply)
+        titleOut('docs', M.toEnd - 0.2)
+        tl.to('#docs', { opacity: 0, duration: 0.4, ease: 'power1.in' }, M.toEnd - 0.15)
+
+        // ── The close ───────────────────────────────────────────────────
+        tl.fromTo('#end', { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'none' }, M.toEnd)
+        tl.to('#end ellipse', { strokeDashoffset: 0, duration: 1.1, ease: 'power2.inOut', stagger: 0.08 }, M.toEnd + 0.15)
+        tl.fromTo('#end .m', { rotate: -30, scale: 0.9 }, { rotate: 0, scale: 1, duration: 1.6, ease: 'power3.out' }, M.toEnd + 0.15)
+        tl.fromTo('#end .t', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1.0, ease: 'power3.out' }, M.toEnd + 0.45)
+        tl.fromTo(['#end .s', '#end .u'], { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', stagger: 0.2 }, M.toEnd + 0.9)
+        // Holds the timeline open to the film's full length.
+        tl.to('#end', { opacity: 1, duration: 0.01 }, window.CUES.duration - 0.01)
+
+        window.__timelines = window.__timelines || {}
+        window.__timelines.main = tl
+        tl.seek(0)
+      })()
+    </script>
+  </body>
+</html>

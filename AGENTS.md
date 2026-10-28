@@ -354,7 +354,7 @@ because the browser draws it on the main thread —
 played once a visit, and again on a reload at the top, never on a return from
 another page, a reload further down or an address with a section in it — it
 belongs over the first screen and nowhere else (`lib/opening.ts`) — a centred
-hero with the form, then the quotation played hour by hour in a frame;
+hero with the form, then the film (*The film under the hero*, below);
 after it, the six documents a quotation is assembled from lie on a desk with the
 part itself among them, and gather onto one sheet; then the acts on the desk —
 Charlie, the four tabs, data and trust, the questions — and the
@@ -392,9 +392,25 @@ off the spine, is a permanent redirect to it. `e2e/glass.spec.ts` holds both.
   tells by moving, and listed in `styles.css` above the block that spends it:
   the opening, the film, the gathering, the dust, the morning's parallax, a tab
   change (one 220ms crossfade the reader asked for), the masthead filling in,
-  one reveal per block after the night, the nudge and the press. The film plays once
-  and stops at 08:04; nothing pulses; reduced motion gets the final frame of
-  all of it.
+  one reveal per block after the night, the nudge and the press. The film plays
+  muted only while half of it is on screen and never by itself under reduced
+  motion; nothing pulses; reduced motion gets the final frame of all of it.
+- **The film under the hero** (`components/glass-reel.tsx`, rendered from
+  `video/product-film`, served as `public/film/incillum.mp4`) says what
+  Incillum does with a request, not how a night went: one statement a beat —
+  Charlie picks it up, reads what it depends on, matches and checks every
+  line, asks suppliers *with your approval*, compares the quotes and holds the
+  margin — the one decision that is a person's, and the documents ready to
+  send. Studio's own pages float on a dark stage between three daylight plates
+  (a port, a warehouse, a highway; Kling 3.0 Pro through Higgsfield). It
+  follows Studio's sample request from Halvorsen Marine, as Charlie's page does,
+  not this page's quotation. File marks only (Excel, Word, PowerPoint, PDF,
+  CSV, an image, a shared Google Sheet) — never a mail client's, CRM's or
+  ERP's. Its statements are on the page as text, and `site.test.ts` holds them
+  to the composition word for word. On 28 October 2026 the owner replaced the
+  night played hour by hour (`components/glass-film.tsx`) with it, as reading
+  as progress rather than as the idea; that component and its styles are kept,
+  unplaced, and the bullet on *the film's sheet* below describes it.
 - **The dust is the one exception to "nothing moves while the reader is
   still"**, and it is the owner's call rather than a lapse
   (`components/glass-field.tsx`, drawn by `lib/dust.ts` in WebGL with no
