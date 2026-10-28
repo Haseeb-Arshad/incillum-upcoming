@@ -129,10 +129,13 @@ void main() {
 
   // The formation. Each grain leaves the opening at its own moment — the far ridge first, the
   // centre before the edges — and travels out to its place on an arc, higher the nearer it lands.
+  // The opening is a line of light along the horizon, wider than the words above it so it reads
+  // as the horizon and not as a rule under them, densest at the middle and thinning to nothing.
   float delay = (1.0 - aSeed.y) * 0.4 + abs(across) * 0.12 + r1 * 0.1;
   float travel = clamp((uForm - delay) / 0.3, 0.0, 1.0);
   float arrive = 1.0 - pow(1.0 - travel, 3.0);
-  vec2 opening = uOrigin + vec2((r1 - 0.5) * uSize.x * 0.08, (r2 - 0.5) * 2.5);
+  float slit = r1 * 2.0 - 1.0;
+  vec2 opening = uOrigin + vec2(slit * abs(slit) * uSize.x * 0.24, (r2 - 0.5) * 2.0);
   vec2 position = mix(opening, point, arrive);
   position.y -= sin(arrive * 3.14159) * mix(10.0, 70.0, 1.0 - aSeed.y);
   gl_Position = vec4(position.x / uSize.x * 2.0 - 1.0, 1.0 - position.y / uSize.y * 2.0, 0.0, 1.0);

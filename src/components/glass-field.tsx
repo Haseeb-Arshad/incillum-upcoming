@@ -15,11 +15,13 @@ import type { Dust, DustScene, DustTone } from '#/lib/dust.ts'
  * something is lit.
  *
  *   - **The night.** Under the opening and the hero, as a landscape. It is not
- *     there when the page opens: one thin slit of light appears on the horizon
- *     under the first beat, and the landscape unrolls out of it — the far ridge
- *     first, the near dunes last — across the opening's beats. As the page
- *     assembles it sinks a little, dims, and clears a space behind the centred
- *     type, so the form is never read through it. As the reader
+ *     there when the page opens, and it stays away while the first beats are
+ *     read: the words have the night to themselves. Under the last beat — the
+ *     one that introduces Charlie — one thin slit of light opens on the
+ *     horizon, and as that beat is read the landscape unrolls out of it, the
+ *     far ridge first and the near dunes last. As the page assembles it sinks
+ *     a little, dims, and clears a space behind the centred type, so the form
+ *     is never read through it. As the reader
  *     scrolls it falls behind at a little under half the page's speed, and it
  *     has faded out by the time the film is on screen.
  *   - **The morning.** Around the photograph at the close, on the desk: the
@@ -29,12 +31,19 @@ import type { Dust, DustScene, DustTone } from '#/lib/dust.ts'
  * ── How it keeps time with the type ────────────────────────────────────────
  *
  * The night follows the opening's own clock, read off its CSS animations: it
- * forms across the beats and begins to settle just before the page assembles,
- * so the dust and the type arrive as one movement. It does not wait for the
- * page to say the opening has ended — that arrives a render late, and the field
- * would lurch to catch up. Both movements ease in and out. Ended early, it
- * finishes from wherever it was; on a return this visit there is no opening to
- * follow, and it is simply formed.
+ * opens under the last beat, unrolls as that beat leaves, and begins to settle
+ * just before the page assembles, so the dust and the type arrive as one
+ * movement. It does not wait for the page to say the opening has ended — that
+ * arrives a render late, and the field would lurch to catch up. Every movement
+ * eases to a stop.
+ *
+ * The field can only start once the page has hydrated, and on a slow
+ * connection that is late in the opening, or after it. So it never jumps to
+ * where the clock says it should be: it starts from nothing and travels there,
+ * no faster than a set pace, and a late field arrives as a quicker version of
+ * the same movement rather than as a landscape that was suddenly there. Ended
+ * early, it finishes from wherever it was; on a return this visit there is no
+ * opening to follow, and it is simply formed.
  *
  * ── How it moves, and when it stops ────────────────────────────────────────
  *
@@ -74,14 +83,25 @@ const scenes = {
 
 /** The moment of the swells the scene was composed at, so the first frame and the still frame are that one. */
 const START = 12
+/** The slit of light opening, from just after the last beat's first word begins to land. */
+const APPEAR_LEAD = 150
+const APPEAR = 700
+/** The landscape unrolling out of it while the last beat is read, and landing as the page assembles. */
+const UNROLL_LEAD = 400
+const UNROLL = 2600
 /** How long the night takes to settle from the opening into the hero. */
 const SETTLE = 2000
 /** How long before the page assembles the night begins to settle, so the two read as one movement. */
 const SETTLE_LEAD = 500
-/** The share of the opening the landscape takes to unroll: formed before the last beat leaves. */
-const FORM_SHARE = 0.72
-/** How quickly it finishes forming, and settling, once the opening has ended early. */
-const FORM_SKIPPED = 600
+/** The fastest each may travel when the field starts late and has its schedule to catch up. */
+const APPEAR_FASTEST = 500
+const UNROLL_FASTEST = 1100
+const SETTLE_FASTEST = 1200
+/** The most one frame may move it while it catches up, however long the frame took. */
+const STALL = 50
+/** How quickly it finishes once the opening has ended early, or ended before the page could follow it. */
+const FORM_SKIPPED = 900
+const FORM_LATE = 2000
 const SETTLE_SKIPPED = 1100
 /** The drift's frame interval, once nothing is forming or settling. */
 const DRIFT = 1000 / 30
@@ -98,11 +118,28 @@ function smooth(amount: number): number {
 }
 
 /**
- * The opening's own clock, read off its animations: when its first beat began
- * and when the page assembles, on the timeline `requestAnimationFrame` reports.
- * Null when there is nothing left to follow.
+ * Out of the slit at once and a long landing: each grain eases in on its own
+ * arc, so what this shapes is how many are in flight, and an unroll that
+ * starts slowly is one nobody sees begin.
  */
-function openingClock(element: HTMLElement | null | undefined): { start: number; end: number } | null {
+function unroll(amount: number): number {
+  const x = Math.min(1, Math.max(0, amount))
+  return 1 - (1 - x) * (1 - x)
+}
+
+/** From where something is toward where it should be, by no more than one step. */
+const toward = (from: number, to: number, step: number) =>
+  from + Math.min(Math.max(to - from, -step), step)
+
+/**
+ * The opening's own clock, read off its animations: when its first beat
+ * began, when its last beat begins, and when the page assembles, on the
+ * timeline `requestAnimationFrame` reports. The beats share the opening
+ * equally, one child each. Null when there is nothing left to follow.
+ */
+function openingClock(
+  element: HTMLElement | null | undefined,
+): { start: number; last: number; end: number } | null {
   if (!element || typeof element.getAnimations !== 'function') return null
   const now = performance.now()
   let start = Infinity
@@ -113,7 +150,8 @@ function openingClock(element: HTMLElement | null | undefined): { start: number;
     start = Math.min(start, began)
     end = Math.max(end, began + Number(animation.effect?.getComputedTiming().endTime ?? 0))
   }
-  return end > now && end > start ? { start, end } : null
+  const beats = Math.max(1, element.children.length)
+  return end > now && end > start ? { start, last: start + ((end - start) * (beats - 1)) / beats, end } : null
 }
 
 function blend(from: Composition, to: Composition, amount: number): Composition {
@@ -172,46 +210,63 @@ export function GlassField({
     let faded = false
     let wide = 1
     /**
-     * The night, from every grain inside its opening (0) to every grain in
-     * place (1), and from the opening's composition (0) to the hero's (1).
-     * It forms once, during the opening, on the opening's clock.
+     * The night, from absent (0) to lit (1); from every grain inside its
+     * opening (0) to every grain in place (1); and from the opening's
+     * composition (0) to the hero's (1). It forms once, during the opening, on
+     * the opening's clock.
      */
+    let appear = 1
     let form = 1
     let settle = 1
+    /** When the night last moved, so a late field travels toward its schedule rather than jumping to it. */
+    let moved = 0
+    /** Whether the canvas has been cleared and nothing on it is lit yet, so there is nothing to draw. */
+    let blank = false
     const clock = tone === 'night' && !motion.matches ? openingClock(opening?.current) : null
-    /** When the opening was cut short, and where the night was when it was. */
-    let cut: { at: number; form: number; settle: number } | null = null
+    /** Where the night was when the opening was cut short, how long it has had since, and how long it has to finish. */
+    let cut: { since: number; appear: number; form: number; settle: number; pace: number } | null = null
     if (clock) {
+      appear = 0
       form = 0
       settle = 0
     } else if (tone === 'night' && !motion.matches && opening?.current?.getClientRects().length) {
-      // The opening ran its course before the page could follow it: unroll quickly into the hero.
+      // The opening ran its course before the page could follow it: unroll into the hero.
+      appear = 0
       form = 0
-      cut = { at: performance.now(), form: 0, settle: 1 }
+      cut = { since: 0, appear: 0, form: 0, settle: 1, pace: FORM_LATE }
     }
 
     /** Where the night is at this moment: on the opening's clock, or catching up after a cut. */
     function advance(now: number) {
-      if (form >= 1 && settle >= 1) return
-      if (!cut && skippedRef.current) cut = { at: now, form, settle }
+      // A stall — the page hydrating under it — is not time the night travelled through: it goes on from where it was.
+      const step = moved ? Math.min(Math.max(0, now - moved), STALL) : 0
+      moved = now
+      if (appear >= 1 && form >= 1 && settle >= 1) return
+      if (!cut && skippedRef.current) cut = { since: 0, appear, form, settle, pace: FORM_SKIPPED }
       if (cut) {
-        form = mix(cut.form, 1, smooth((now - cut.at) / FORM_SKIPPED))
-        settle = mix(cut.settle, 1, smooth((now - cut.at) / SETTLE_SKIPPED))
+        cut.since += step
+        appear = mix(cut.appear, 1, smooth(cut.since / APPEAR_FASTEST))
+        form = mix(cut.form, 1, smooth(cut.since / cut.pace))
+        settle = mix(cut.settle, 1, smooth(cut.since / SETTLE_SKIPPED))
       } else if (clock) {
-        form = Math.min(1, Math.max(0, (now - clock.start) / ((clock.end - clock.start) * FORM_SHARE)))
-        settle = smooth((now - (clock.end - SETTLE_LEAD)) / SETTLE)
+        appear = toward(appear, smooth((now - clock.last - APPEAR_LEAD) / APPEAR), step / APPEAR_FASTEST)
+        form = toward(form, unroll((now - clock.last - UNROLL_LEAD) / UNROLL), step / UNROLL_FASTEST)
+        settle = toward(settle, smooth((now - (clock.end - SETTLE_LEAD)) / SETTLE), step / SETTLE_FASTEST)
       }
     }
 
     function scene(): DustScene {
       const at = (pair: Record<'wide' | 'narrow', Composition>) => blend(pair.narrow, pair.wide, wide)
       if (tone === 'morning') return { ...at(scenes.morning), form: 1 }
-      return { ...blend(at(scenes.opening), at(scenes.hero), settle), form }
+      const night = blend(at(scenes.opening), at(scenes.hero), settle)
+      return { ...night, level: night.level * appear, form }
     }
 
     function render() {
       if (!dust || !root) return
-      dust.draw(time, scene())
+      // Unlit, it is cleared once and then left alone: no point drawing a hundred thousand dark grains a frame.
+      if (appear > 0 || !blank) dust.draw(time, scene())
+      blank = appear <= 0
       root.dataset.ready = 'true'
       // Written when it changes, which is twice: a test can tell a landscape forming from one formed.
       const formed = form >= 1 ? 'true' : 'false'
@@ -230,7 +285,7 @@ export function GlassField({
       }
       const elapsed = now - previous
       // Every frame while it forms or settles; the drift alone is slow enough for thirty.
-      if (form < 1 || settle < 1 || elapsed >= DRIFT) {
+      if (appear < 1 || form < 1 || settle < 1 || elapsed >= DRIFT) {
         time += Math.min(elapsed / 1000, 0.06)
         previous = now
         advance(now)
@@ -249,6 +304,7 @@ export function GlassField({
       }
       if (motion.matches) {
         time = START
+        appear = 1
         settle = 1
         form = 1
       } else {

@@ -1,0 +1,1108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Meet Charlie</title>
+    <script src="vendor/gsap.min.js"></script>
+    <script src="icons.js"></script>
+    <script src="cues.js"></script>
+    <style>
+      /* The site's own faces, copied into fonts/ (they are licensed: never edited, never committed twice). */
+      @font-face {
+        font-family: 'Incillum Sans';
+        src: url('fonts/sans.woff2') format('woff2');
+        font-weight: 100 900;
+      }
+      @font-face {
+        font-family: 'Incillum Serif';
+        src: url('fonts/serif.woff2') format('woff2');
+      }
+
+      /* The site's tokens (src/styles.css): white paper, ink, one signal, and the night's inversion of them. */
+      :root {
+        --paper: #ffffff;
+        --sunken: #f2f2f0;
+        --ink: #111110;
+        --ink-800: #1c1c1a;
+        --ink-600: #45453f;
+        --ink-400: #6e6e66;
+        --ink-200: #a3a39a;
+        --line: rgba(17, 17, 16, 0.11);
+        --line-strong: rgba(17, 17, 16, 0.22);
+        --signal: #9a5518;
+        --night: #131312;
+        --night-raised: #1b1b19;
+        --night-ink: #f2f2ee;
+        --night-ink-600: #b6b6ad;
+        --night-ink-400: #9c9c93;
+        --night-line: rgba(242, 242, 238, 0.13);
+        --night-line-strong: rgba(242, 242, 238, 0.26);
+        --night-signal: #e4a046;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--night);
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--night);
+        font-family: 'Incillum Sans', system-ui, sans-serif;
+        color: var(--ink);
+      }
+      .tnum {
+        font-feature-settings: 'tnum' 1;
+      }
+      .full {
+        position: absolute;
+        inset: 0;
+      }
+      .serif {
+        font-family: 'Incillum Serif', Georgia, serif;
+        font-weight: 400;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      i.ic {
+        display: inline-block;
+        flex: none;
+      }
+      .w {
+        display: inline-block;
+        overflow: hidden;
+        vertical-align: bottom;
+        padding-bottom: 0.12em;
+        margin-bottom: -0.12em;
+      }
+      .w > span {
+        display: inline-block;
+      }
+
+      /* ── The room: one locked frame, four states of light, and the night turning to morning ── */
+      #room {
+        overflow: hidden;
+      }
+      #roomCam {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: 0 0;
+      }
+      .plate {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        object-fit: cover;
+        opacity: 0;
+      }
+
+      /* ── The desk: the work, one canvas the camera crosses, entered through the paper ── */
+      #desk {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: 0 0;
+        overflow: hidden;
+        opacity: 0;
+      }
+      #ground {
+        background: var(--night);
+      }
+      #world {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1px;
+        height: 1px;
+        transform-origin: 0 0;
+      }
+      .doc {
+        position: absolute;
+        background: var(--paper);
+        outline: 1px solid var(--line-strong);
+        overflow: hidden;
+      }
+      .sheetdoc {
+        border-radius: 3px;
+      }
+      .studio {
+        border-radius: 14px;
+      }
+      .studio > img {
+        position: absolute;
+        max-width: none;
+      }
+      .card {
+        border-radius: 16px;
+        outline: 1px solid var(--line);
+      }
+      .cover {
+        position: absolute;
+        background: var(--paper);
+        transform-origin: right center;
+      }
+
+      /* The customer's request, page one */
+      #page {
+        padding: 70px 92px;
+        color: var(--ink);
+      }
+      #page .head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding-bottom: 22px;
+        border-bottom: 2px solid var(--ink);
+        font-size: 22px;
+      }
+      #page .head b {
+        font-weight: 600;
+        letter-spacing: 0.01em;
+      }
+      #page .head span {
+        color: var(--ink-400);
+      }
+      #page .title {
+        margin-top: 46px;
+        font-size: 34px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      #page .to {
+        margin-top: 14px;
+        font-size: 27px;
+      }
+      #page p {
+        margin-top: 34px;
+        font-size: 27px;
+        line-height: 1.62;
+        max-width: 1060px;
+      }
+      #page .hl {
+        white-space: nowrap;
+      }
+      .bars {
+        margin-top: 30px;
+      }
+      .bars i {
+        display: block;
+        height: 13px;
+        margin-bottom: 21px;
+        border-radius: 2px;
+        background: rgba(17, 17, 16, 0.09);
+      }
+      #page .foot {
+        position: absolute;
+        left: 92px;
+        right: 92px;
+        bottom: 54px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 19px;
+        color: var(--ink-400);
+      }
+
+      /* The covering email */
+      #email {
+        padding: 42px 48px;
+      }
+      #email .from {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 23px;
+      }
+      #email .from i.ic {
+        width: 30px;
+        height: 30px;
+        color: var(--ink);
+      }
+      #email .from span {
+        color: var(--ink-400);
+      }
+      #email .from em {
+        margin-left: auto;
+        font-style: normal;
+        color: var(--ink-400);
+      }
+      #email .subject {
+        margin-top: 24px;
+        font-size: 31px;
+        font-weight: 500;
+      }
+      #email p {
+        margin-top: 18px;
+        font-size: 23px;
+        line-height: 1.55;
+        color: var(--ink-600);
+      }
+      #email .att {
+        position: absolute;
+        left: 48px;
+        bottom: 36px;
+        display: flex;
+        gap: 14px;
+      }
+      .attchip {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        height: 42px;
+        padding: 0 16px 0 12px;
+        border-radius: 8px;
+        background: var(--sunken);
+        font-size: 19px;
+        color: var(--ink-800);
+      }
+      .attchip i.ic {
+        width: 22px;
+        height: 22px;
+        color: var(--ink-600);
+      }
+
+      /* The framework agreement */
+      #agreement {
+        padding: 70px 70px;
+      }
+      #agreement .kick {
+        font-size: 20px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-400);
+      }
+      #agreement .t {
+        margin-top: 16px;
+        font-size: 36px;
+        font-weight: 600;
+      }
+      #agreement .row {
+        display: flex;
+        justify-content: space-between;
+        margin: 34px 0 30px;
+        padding: 18px 0;
+        border-top: 1px solid var(--line-strong);
+        border-bottom: 1px solid var(--line-strong);
+        font-size: 26px;
+      }
+      #agreement .row b {
+        font-weight: 600;
+      }
+
+      /* The bill of materials, as the customer's spreadsheet */
+      .xl {
+        font-size: 18px;
+        color: var(--ink-800);
+      }
+      .xl .bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 62px;
+        padding: 0 22px;
+        background: var(--sunken);
+        border-bottom: 1px solid var(--line-strong);
+        font-size: 20px;
+      }
+      .xl .bar i.ic {
+        width: 26px;
+        height: 26px;
+        color: var(--ink);
+      }
+      .xl .bar span {
+        color: var(--ink-400);
+      }
+      .xl table {
+        border-collapse: collapse;
+        width: 100%;
+        table-layout: fixed;
+      }
+      .xl td,
+      .xl th {
+        height: 42px;
+        padding: 0 12px;
+        border-right: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: left;
+        font-weight: 400;
+      }
+      .xl th {
+        height: 34px;
+        background: var(--sunken);
+        color: var(--ink-400);
+        font-size: 15px;
+        text-align: center;
+      }
+      .xl td.n {
+        background: var(--sunken);
+        color: var(--ink-400);
+        font-size: 15px;
+        text-align: center;
+      }
+      .xl td.q {
+        text-align: right;
+      }
+      .xl tr.hd td {
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      /* Cards in Studio's manner: the business system, the cost basis, the drafts */
+      .chead {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .tile {
+        width: 58px;
+        height: 58px;
+        flex: none;
+        border-radius: 14px;
+        background: var(--sunken);
+        color: var(--ink);
+        padding: 15px;
+      }
+      .chead .who {
+        font-size: 26px;
+        font-weight: 500;
+      }
+      .chead .meta {
+        margin-top: 4px;
+        font-size: 20px;
+        color: var(--ink-400);
+      }
+      #system {
+        padding: 38px 44px;
+      }
+      .kv {
+        margin-top: 30px;
+        border-top: 1px solid var(--line);
+      }
+      .kv div {
+        display: flex;
+        align-items: baseline;
+        gap: 22px;
+        padding: 15px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 23px;
+      }
+      .kv span {
+        width: 330px;
+        flex: none;
+        color: var(--ink-400);
+      }
+      .kv em {
+        margin-left: auto;
+        font-style: normal;
+        font-size: 18px;
+        color: var(--ink-400);
+      }
+      #cost {
+        padding: 38px 44px;
+      }
+      #cost .r {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        row-gap: 4px;
+        padding: 20px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 24px;
+      }
+      #cost .r b {
+        font-weight: 500;
+        text-align: right;
+      }
+      #cost .r i {
+        grid-column: 1 / 3;
+        font-style: normal;
+        font-size: 17px;
+        color: var(--ink-400);
+      }
+      #cost .total {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 22px;
+        font-size: 30px;
+        font-weight: 600;
+      }
+
+      /* What Charlie makes: the quotation and its workbook */
+      #quote {
+        padding: 64px 60px;
+      }
+      #quote .kick {
+        font-size: 18px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-400);
+      }
+      #quote .t {
+        margin-top: 12px;
+        font-size: 38px;
+        line-height: 1.15;
+      }
+      #quote .m {
+        margin-top: 12px;
+        font-size: 18px;
+        color: var(--ink-400);
+      }
+      #quote table {
+        width: 100%;
+        margin-top: 34px;
+        border-collapse: collapse;
+        font-size: 17px;
+      }
+      #quote th {
+        padding: 10px 0;
+        border-bottom: 1.5px solid var(--ink);
+        text-align: left;
+        font-weight: 500;
+        color: var(--ink-600);
+      }
+      #quote td {
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      #quote .q {
+        text-align: right;
+      }
+      #quote .more {
+        margin-top: 14px;
+        font-size: 17px;
+        color: var(--ink-400);
+      }
+      #quote .total {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 26px;
+        padding-top: 16px;
+        border-top: 1.5px solid var(--ink);
+        font-size: 24px;
+        font-weight: 600;
+      }
+      #quote .foot {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        bottom: 46px;
+        font-size: 15px;
+        color: var(--ink-400);
+      }
+      .xl .tabs {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        gap: 4px;
+        height: 50px;
+        padding: 0 16px;
+        background: var(--sunken);
+        border-top: 1px solid var(--line-strong);
+        font-size: 18px;
+        color: var(--ink-400);
+      }
+      .xl .tabs span {
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+      }
+      .xl .tabs span.on {
+        background: var(--paper);
+        color: var(--ink);
+        font-weight: 500;
+        border-left: 1px solid var(--line-strong);
+        border-right: 1px solid var(--line-strong);
+      }
+      .label {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 24px;
+        color: var(--night-ink);
+        white-space: nowrap;
+      }
+      .label i.ic {
+        width: 28px;
+        height: 28px;
+      }
+      .label em {
+        font-style: normal;
+        padding: 3px 12px;
+        border-radius: 999px;
+        outline: 1px solid var(--night-line-strong);
+        font-size: 19px;
+        color: var(--night-ink-600);
+      }
+
+      /* The drafts, each waiting for a person */
+      .draft {
+        padding: 30px 34px 26px;
+      }
+      .draft .dsay {
+        margin-top: 20px;
+        font-size: 23px;
+        line-height: 1.42;
+        color: var(--ink-800);
+      }
+      .draft .foot {
+        position: absolute;
+        left: 34px;
+        right: 34px;
+        bottom: 22px;
+        height: 44px;
+      }
+      .pill,
+      .btn,
+      .done {
+        position: absolute;
+        top: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        height: 44px;
+        padding: 0 18px 0 15px;
+        border-radius: 999px;
+        font-size: 19px;
+        white-space: nowrap;
+      }
+      .pill {
+        left: 0;
+        outline: 1px solid var(--line-strong);
+        color: var(--ink-800);
+      }
+      .pill b {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--signal);
+      }
+      .btn {
+        right: 0;
+        padding: 0 20px;
+        border-radius: 10px;
+        background: var(--ink);
+        color: #fff;
+        opacity: 0;
+      }
+      .done {
+        left: 0;
+        padding: 0;
+        color: var(--ink);
+        opacity: 0;
+      }
+      .done i.ic {
+        width: 24px;
+        height: 24px;
+      }
+
+      /* Charlie, reading; a held line; the threads between a figure and its source */
+      .sel {
+        position: absolute;
+        background: rgba(17, 17, 16, 0.1);
+        border-radius: 3px;
+        transform-origin: left center;
+        opacity: 0;
+      }
+      .flag {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 34px;
+        padding: 0 13px 0 9px;
+        border-radius: 5px 5px 5px 0;
+        background: var(--ink);
+        color: #fff;
+        font-size: 19px;
+        white-space: nowrap;
+        transform-origin: left bottom;
+        opacity: 0;
+      }
+      .flag i {
+        width: 20px;
+        height: 20px;
+        color: #fff;
+      }
+      /* On the dark desk rather than on a page, the flag is light. */
+      .flag.light {
+        background: var(--night-ink);
+        color: var(--ink);
+      }
+      .flag.light i {
+        color: var(--ink);
+      }
+      .bracket {
+        position: absolute;
+        opacity: 0;
+      }
+      .bracket::before,
+      .bracket::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 12px;
+        border: 3px solid var(--signal);
+      }
+      .bracket::before {
+        left: 0;
+        border-right: 0;
+      }
+      .bracket::after {
+        right: 0;
+        border-left: 0;
+      }
+      .held {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        height: 46px;
+        padding: 0 18px 0 15px;
+        border-radius: 999px;
+        background: var(--paper);
+        font-size: 21px;
+        color: var(--ink-800);
+        white-space: nowrap;
+        opacity: 0;
+      }
+      .held b {
+        width: 11px;
+        height: 11px;
+        border-radius: 999px;
+        background: var(--signal);
+      }
+      .note {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 44px;
+        padding: 0 18px 0 13px;
+        border-radius: 999px;
+        background: var(--paper);
+        outline: 1px solid var(--line-strong);
+        font-size: 20px;
+        color: var(--ink);
+        white-space: nowrap;
+        opacity: 0;
+      }
+      .note i.ic {
+        width: 22px;
+        height: 22px;
+      }
+      #threads {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1px;
+        height: 1px;
+        overflow: visible;
+      }
+      #threads path {
+        fill: none;
+        stroke: var(--night-ink);
+        stroke-opacity: 0.55;
+        stroke-width: 2.6;
+        stroke-linecap: round;
+      }
+      #threads circle {
+        fill: var(--night-ink);
+        fill-opacity: 0.8;
+      }
+      .pointer {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        transform-origin: 6px 6px;
+        opacity: 0;
+      }
+      .pointer path {
+        fill: var(--ink);
+        stroke: #ffffff;
+        stroke-width: 1.4;
+      }
+      .typed {
+        position: absolute;
+        overflow: hidden;
+      }
+      .typed img {
+        position: absolute;
+        max-width: none;
+      }
+      .caret {
+        position: absolute;
+        width: 2.4px;
+        background: var(--ink);
+      }
+      .typedAnswer {
+        position: absolute;
+        font-size: 21.8px;
+        color: var(--ink-800);
+        white-space: nowrap;
+        opacity: 0;
+      }
+      .settled {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        background: var(--paper);
+        font-size: 24px;
+        color: var(--ink);
+        opacity: 0;
+      }
+      .settled i.ic {
+        width: 26px;
+        height: 26px;
+      }
+      /* Studio's answer box and its button, as they are once something is written in it */
+      .field {
+        position: absolute;
+        background: #ebece9;
+        opacity: 0;
+      }
+      .send {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: var(--ink);
+        color: #fff;
+        font-size: 19px;
+        opacity: 0;
+      }
+
+      /* ── Type over the room and the desk ──────────────────────── */
+      .over {
+        position: absolute;
+        left: 0;
+        right: 0;
+        text-align: center;
+        color: var(--night-ink);
+      }
+      #clock {
+        top: 214px;
+        font-size: 30px;
+        letter-spacing: 0.06em;
+        color: var(--night-ink-400);
+        opacity: 0;
+      }
+      #lineAnswer {
+        top: 262px;
+        font-size: 96px;
+        letter-spacing: -0.02em;
+      }
+      #name {
+        top: 168px;
+      }
+      #name .m {
+        width: 78px;
+        height: 78px;
+        margin: 0 auto;
+        opacity: 0;
+      }
+      #name .t {
+        margin-top: 20px;
+        font-size: 140px;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        opacity: 0;
+      }
+      #clockMorning {
+        opacity: 0;
+      }
+      .say {
+        position: absolute;
+        left: 110px;
+        bottom: 66px;
+        font-size: 58px;
+        line-height: 1.1;
+        letter-spacing: -0.015em;
+        color: var(--night-ink);
+        white-space: nowrap;
+      }
+      .say.day {
+        color: var(--ink);
+      }
+      .say.top {
+        top: 60px;
+        bottom: auto;
+      }
+
+      /* The request, arriving */
+      #mail {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 800px;
+        height: 270px;
+        transform-origin: 0 0;
+      }
+      #mailBody {
+        position: absolute;
+        inset: 0;
+        padding: 30px 34px;
+        border-radius: 20px;
+        background: var(--night-raised);
+        outline: 1px solid var(--night-line-strong);
+        color: var(--night-ink);
+        opacity: 0;
+      }
+      #mail .from {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 21px;
+      }
+      #mail .from i.ic {
+        width: 26px;
+        height: 26px;
+        color: var(--night-ink);
+      }
+      #mail .from span {
+        color: var(--night-ink-400);
+      }
+      #mail .from em {
+        margin-left: auto;
+        font-style: normal;
+        color: var(--night-ink-400);
+      }
+      #mail .subject {
+        margin-top: 20px;
+        font-size: 33px;
+        font-weight: 500;
+      }
+      #mail p {
+        margin-top: 10px;
+        font-size: 20px;
+        color: var(--night-ink-600);
+      }
+      #mail .att {
+        position: absolute;
+        left: 34px;
+        bottom: 28px;
+        display: flex;
+        gap: 12px;
+      }
+      #mail .attchip {
+        background: rgba(242, 242, 238, 0.08);
+        color: var(--night-ink);
+        opacity: 0;
+      }
+      #mail .attchip i.ic {
+        color: var(--night-ink-600);
+      }
+
+      /* ── The close ─────────────────────────────────────────────── */
+      #white {
+        background: var(--paper);
+        opacity: 0;
+      }
+      #end {
+        text-align: center;
+        opacity: 0;
+      }
+      #end .m {
+        width: 104px;
+        height: 104px;
+        margin: 304px auto 0;
+        color: var(--ink);
+      }
+      #end .t {
+        margin-top: 30px;
+        font-size: 132px;
+        line-height: 1;
+        letter-spacing: -0.025em;
+      }
+      #end .s {
+        margin-top: 26px;
+        font-size: 34px;
+        color: var(--ink-600);
+      }
+      #end .u {
+        margin-top: 44px;
+        font-size: 24px;
+        letter-spacing: 0.02em;
+        color: var(--ink-400);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="68" data-fps="30" data-width="1920" data-height="1080">
+      <audio id="soundtrack" src="soundtrack.wav" data-start="0" data-duration="68" data-track-index="0" data-volume="1"></audio>
+
+      <!-- The room: one frame, four states of light (plates/), and the night turning to morning between them. -->
+      <div id="room" class="full">
+        <div id="roomCam">
+          <img class="plate" id="nightOff" src="plates/night-off.webp" alt="" />
+          <img class="plate" id="nightOn" src="plates/night-on.webp" alt="" />
+          <video class="plate clip" id="dawnClip" src="plates/dawn.mp4" data-start="44" data-duration="4" data-track-index="1" muted playsinline></video>
+          <img class="plate" id="morningOn" src="plates/morning-on.webp" alt="" />
+          <img class="plate" id="morningOff" src="plates/morning-off.webp" alt="" />
+        </div>
+      </div>
+
+      <!-- The desk: everything the night touches, laid out once, in world units; the camera crosses it. -->
+      <div id="desk">
+        <div id="ground" class="full"></div>
+        <div id="world">
+          <!-- Sources: what was sent, and what the business already holds -->
+          <div class="doc sheetdoc" id="email" style="left: -520px; top: 60px; width: 960px; height: 470px">
+            <div class="from"><i class="ic" data-icon="mail"></i><b>Pernille Halvorsen</b><span>procurement, Halvorsen Marine AS</span><em>23:47</em></div>
+            <div class="subject">RFQ 1907 — 20 items for Ålesund</div>
+            <p>Our request for quotation is attached, with the bill of materials.</p>
+            <p><span class="hl" id="hl-sixty">On line 09 we now need 60 rather than the 84 shown on the sheet.</span></p>
+            <div class="att">
+              <span class="attchip"><i class="ic" data-icon="file-text"></i>Halvorsen_RFQ_1907.pdf</span>
+              <span class="attchip"><i class="ic" data-icon="file-spreadsheet"></i>Halvorsen_RFQ_1907.xlsx</span>
+            </div>
+          </div>
+
+          <div class="doc sheetdoc" id="page" style="left: 600px; top: 600px; width: 1273px; height: 900px">
+            <div class="head"><b>HALVORSEN MARINE AS</b><span>RFQ 1907 · Page 1 of 6</span></div>
+            <div class="title">Request for quotation — RFQ 1907</div>
+            <div class="to"><span class="hl" id="hl-customer">Halvorsen Marine AS, Ålesund</span></div>
+            <p>Please quote for the <span class="hl" id="hl-items">twenty items</span> on the attached bill of materials. Line-level delivery dates are given in the schedule and govern where they differ from the covering note. All prices in <span class="hl" id="hl-eur">EUR</span> excluding VAT. We require your response by <span class="hl" id="hl-due">16:00 on Monday 27 July.</span></p>
+            <div class="bars"><i style="width: 92%"></i><i style="width: 86%"></i><i style="width: 54%"></i></div>
+            <div class="foot"><span>Halvorsen Marine AS · Procurement · Ålesund</span><span>1</span></div>
+          </div>
+
+          <div class="doc studio" id="read" style="left: 1960px; top: 690px; width: 670px; height: 560px"><img src="stills/pdf.webp" alt="" style="left: -2170px; top: -650px; width: 2880px; height: 1800px" /></div>
+
+          <div class="doc sheetdoc" id="agreement" style="left: -460px; top: 660px; width: 780px; height: 1060px">
+            <div class="kick">Framework agreement</div>
+            <div class="t">Halvorsen Marine AS</div>
+            <div class="bars"><i style="width: 100%"></i><i style="width: 94%"></i><i style="width: 97%"></i><i style="width: 61%"></i></div>
+            <div class="row"><span class="hl" id="hl-floor">Commercial floor</span><b>20.00%</b></div>
+            <div class="bars"><i style="width: 98%"></i><i style="width: 91%"></i><i style="width: 95%"></i><i style="width: 88%"></i><i style="width: 70%"></i><i style="width: 96%"></i><i style="width: 93%"></i><i style="width: 42%"></i></div>
+          </div>
+
+          <div class="doc sheetdoc xl" id="bom" style="left: 2760px; top: 60px; width: 1180px; height: 760px">
+            <div class="bar"><i class="ic" data-icon="file-spreadsheet"></i>Halvorsen_RFQ_1907.xlsx<span>· Sheet BOM</span></div>
+            <table>
+              <colgroup><col style="width: 46px" /><col style="width: 70px" /><col style="width: 170px" /><col style="width: 300px" /><col style="width: 90px" /><col style="width: 150px" /><col /></colgroup>
+              <tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr>
+              <tbody id="bomRows"></tbody>
+            </table>
+          </div>
+
+          <div class="doc card" id="system" style="left: 900px; top: 1760px; width: 1180px; height: 560px">
+            <div class="chead"><span class="tile"><i class="ic" data-icon="database"></i></span><div><div class="who">Business system</div><div class="meta">Account record</div></div></div>
+            <div class="kv">
+              <div><span>Account</span>Halvorsen Marine AS</div>
+              <div><span>Currency</span>EUR</div>
+              <div><span>Earlier requests</span>RFQ 1842</div>
+              <div><span>AX14, last ordered as</span><b class="hl" id="hl-last" style="font-weight: 400">AX-14-M, on RFQ 1842</b><em>a precedent</em></div>
+            </div>
+          </div>
+
+          <!-- The work: Studio's own pages -->
+          <div class="doc studio" id="sheet" style="left: 4300px; top: 220px; width: 1602px; height: 1224px"><img src="stills/matrix.webp" alt="" style="left: -356.3px; top: 0; width: 1958.4px; height: 1224px" /></div>
+          <div class="doc studio" id="evid" style="left: 5980px; top: 860px; width: 790px; height: 610px"><img src="stills/finding.webp" alt="" style="left: -2060px; top: -990px; width: 2880px; height: 1800px" /></div>
+          <div class="doc studio" id="q04" style="left: 4300px; top: 1680px; width: 1088px; height: 687px"><img src="stills/needs-you.webp" alt="" style="left: -380.8px; top: -197.2px; width: 1958.4px; height: 1224px" /></div>
+          <div class="doc studio" id="sup" style="left: 5700px; top: 1960px; width: 1553px; height: 734.4px"><img src="stills/suppliers.webp" alt="" style="left: -369.9px; top: -489.6px; width: 1958.4px; height: 1224px" /></div>
+
+          <div class="doc card" id="cost" style="left: 7400px; top: 2100px; width: 720px; height: 560px">
+            <div class="chead"><span class="tile"><i class="ic" data-icon="calculator"></i></span><div><div class="who">Cost basis</div><div class="meta">RFQ 1907 · 17 of 17 lines</div></div></div>
+            <div class="r" id="costGoods"><span>Aldermann Components</span><b>EUR 191,900</b><i>Aldermann_quote_RFQ1907.xlsx · Sheet Quote</i></div>
+            <div class="r" id="costFreight"><span>Freight</span><b>EUR 5,730</b><i>Aldermann_quote_RFQ1907.xlsx · freight</i></div>
+            <div class="total" id="costTotal"><span>Cost basis</span><span id="costValue">EUR 197,630</span></div>
+          </div>
+
+          <!-- What Charlie makes -->
+          <div class="doc sheetdoc" id="quote" style="left: 5980px; top: 120px; width: 760px; height: 1075px">
+            <div class="kick">Quotation · draft</div>
+            <div class="t serif">RFQ 1907<br />Halvorsen Marine AS</div>
+            <div class="m">Twenty lines · prices in EUR, excluding VAT</div>
+            <table>
+              <tr><th style="width: 62px">Line</th><th style="width: 170px">Part</th><th>Description</th><th class="q" style="width: 70px">Qty</th></tr>
+              <tbody id="quoteRows"></tbody>
+            </table>
+            <div class="more">and eight more lines</div>
+            <div class="total"><span>Customer total</span><span>EUR 236,400.00</span></div>
+            <div class="foot">Prepared by Charlie, in Incillum Studio, for a person to check</div>
+          </div>
+          <div class="label" id="quoteLabel" style="left: 5980px; top: 62px"><i class="ic" data-icon="file-text"></i>Quotation.pdf<em>Draft</em></div>
+
+          <div class="doc sheetdoc xl" id="book" style="left: 6840px; top: 220px; width: 1000px; height: 720px">
+            <div class="bar"><i class="ic" data-icon="file-spreadsheet"></i>Workbook.xlsx<span>· Sources</span></div>
+            <table>
+              <colgroup><col style="width: 46px" /><col style="width: 80px" /><col style="width: 190px" /><col style="width: 160px" /><col /></colgroup>
+              <tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+              <tbody id="bookRows"></tbody>
+            </table>
+            <div class="tabs"><span>Lines</span><span>Suppliers</span><span class="on">Sources</span></div>
+          </div>
+          <div class="label" id="bookLabel" style="left: 6840px; top: 162px"><i class="ic" data-icon="file-spreadsheet"></i>Workbook.xlsx<em>Draft</em></div>
+
+          <div class="doc studio" id="approve" style="left: 6840px; top: 1060px; width: 893px; height: 234px"><img id="approveImg" src="stills/approve.webp" alt="" style="left: -705.6px; top: -302.4px; width: 2304px; height: 1440px" /></div>
+
+          <!-- Composed, not captured: Studio does not write to suppliers or book meetings yet (requirements/README.md). -->
+          <div id="drafts"></div>
+
+          <svg id="threads" viewBox="0 0 1 1" preserveAspectRatio="none"></svg>
+          <div id="marks"></div>
+        </div>
+      </div>
+
+      <!-- Type over the room -->
+      <div class="over" id="clock">23:47</div>
+      <div class="over serif" id="lineAnswer"></div>
+      <div class="over" id="name"><div class="m" data-mark></div><div class="t serif">Charlie</div></div>
+      <div class="say serif" id="clockMorning">08:04</div>
+      <div id="mail"><div id="mailBody">
+        <div class="from"><i class="ic" data-icon="mail"></i><b>Pernille Halvorsen</b><span>Halvorsen Marine AS</span><em>23:47</em></div>
+        <div class="subject">RFQ 1907 — 20 items for Ålesund</div>
+        <p>Our request for quotation is attached, with the bill of materials.</p>
+        <div class="att">
+          <span class="attchip"><i class="ic" data-icon="file-text"></i>Halvorsen_RFQ_1907.pdf</span>
+          <span class="attchip"><i class="ic" data-icon="file-spreadsheet"></i>Halvorsen_RFQ_1907.xlsx</span>
+        </div>
+      </div></div>
+      <div id="says"></div>
+
+      <div id="white" class="full"></div>
+      <div id="end" class="full">
+        <div class="m" data-mark></div>
+        <div class="t serif">Charlie</div>
+        <div class="s">The colleague in Incillum for commercial work.</div>
+        <div class="u">incillum.com</div>
+      </div>
+    </div>
+
+    <script src="film.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {}
+      window.__timelines.main = window.__filmTimeline
+    </script>
+  </body>
+</html>

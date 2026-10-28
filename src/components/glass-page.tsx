@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 import { GlassField } from '#/components/glass-field.tsx'
 import { GlassFilm } from '#/components/glass-film.tsx'
@@ -32,11 +32,12 @@ import { markOpeningSeen, openingSeen, rememberPlace } from '#/lib/opening.ts'
  *
  * ── The acts ───────────────────────────────────────────────────────────────
  *
- * 1. **The opening.** The night, a field of hour rules drawing down it, a
- *    landscape of dust under it (`glass-field.tsx`), and three short beats
- *    introducing intelligence, the work, and Charlie.
- *    Then the page assembles: the dust sinks, dims and clears a space for the
- *    type, and falls behind as the page scrolls.
+ * 1. **The opening.** The night, a field of hour rules drawing down it, and
+ *    three short beats introducing intelligence, the work, and Charlie, set a
+ *    word at a time. Under the last, a slit of light opens on the horizon,
+ *    and as the page assembles a landscape of dust unrolls out of it
+ *    (`glass-field.tsx`), sinks, dims and clears a space for the type, and
+ *    falls behind as the page scrolls.
  * 2. **The hero.** Centred: the headline and the home page's form.
  * 3. **The film.** One request carried from 23:47 to 08:04 in a frame, the
  *    sheet changing state as the hours pass (`glass-film.tsx`).
@@ -247,12 +248,21 @@ export function GlassPage() {
 
         {/*
           Decoration, as far as a screen reader is concerned: the beats set a
-          scene the hero then states, and they are gone within seconds.
+          scene the hero then states, and they are gone within seconds. Each
+          word is its own mask with the word inside it, so the line can be set
+          a word at a time.
         */}
         <div ref={openingRef} className="glass-opening" aria-hidden="true">
           {glass.opening.map((line, index) => (
             <p key={line} style={{ ['--beat' as string]: index }}>
-              {line}
+              {line.split(' ').map((word, at) => (
+                <Fragment key={at}>
+                  {at > 0 && ' '}
+                  <span style={{ ['--word' as string]: at }}>
+                    <span>{word}</span>
+                  </span>
+                </Fragment>
+              ))}
             </p>
           ))}
         </div>

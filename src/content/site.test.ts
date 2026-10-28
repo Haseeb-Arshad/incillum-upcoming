@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 
 import { describe, expect, it } from 'vitest'
 
@@ -1182,6 +1182,21 @@ describe('Charlie', () => {
       expect(words(step.body), step.body).toBeLessThanOrEqual(30)
       expect(step.still).toMatch(/^\/charlie\/steps\/[a-z]+\.webp$/)
       expect(step.alt.length, step.key).toBeGreaterThan(20)
+    }
+  })
+
+  /**
+   * The owner keeps both films and, on 28 October 2026, asked that Meet
+   * Charlie stay off every page: /charlie plays Charlie at work, the film the
+   * live site shows. Meet Charlie is in `public/charlie/` and placed nowhere.
+   */
+  it('plays Charlie at work, and puts Meet Charlie on no page', () => {
+    expect(charlie.reel.src).toBe('/charlie/charlie-at-work.mp4')
+    const sources = readdirSync(new URL('../', import.meta.url), { recursive: true, encoding: 'utf8' })
+      .filter((path) => /\.(tsx?|css)$/.test(path) && !/\.test\.tsx?$/.test(path))
+    expect(sources.length).toBeGreaterThan(20)
+    for (const path of sources) {
+      expect(readFileSync(new URL(`../${path.replaceAll('\\', '/')}`, import.meta.url), 'utf8'), path).not.toMatch(/meet-charlie/)
     }
   })
 

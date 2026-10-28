@@ -35,6 +35,10 @@ export default tseslint.config(
       // imported by the app. The same reason as `design/`.
       'video/**',
       '.tanstack/**',
+      // Claude Code's worktrees: whole checkouts of this repository on other
+      // branches. Linted from here, every one of them is linted again, outside
+      // the tsconfig project, until the process runs out of memory.
+      '.claude/**',
       'test-results/**',
       'playwright-report/**',
       'eslint.config.js',
