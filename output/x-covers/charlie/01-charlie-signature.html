@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Charlie · The reference, carefully adapted</title><style>
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('./fonts/Newsreader-Regular.ttf') format('truetype');
+    font-weight: 400; font-style: normal;
+  }
+  @font-face {
+    font-family: 'Instrument Sans';
+    src: url('./fonts/InstrumentSans-Regular.ttf') format('truetype');
+    font-weight: 400; font-style: normal;
+  }
+  * { box-sizing: border-box; }
+  html, body { width: 1500px; height: 500px; padding: 0; margin: 0; overflow: hidden; }
+  body { color: #111110; background: #f7f7f5; -webkit-font-smoothing: antialiased; }
+  .cover { width: 1500px; height: 500px; position: relative; overflow: hidden; }
+  .content { position: absolute; top: 77px; left: 450px; width: 600px; text-align: center; }
+  .identity { display: flex; flex-direction: column; align-items: center; }
+  .mark { width: 59px; height: 59px; flex: none; display: block; }
+  h1 { margin: 9px 0 0; font: 400 108px/1 'Newsreader', Georgia, serif; letter-spacing: -.022em; }
+  .description { margin: 12px 0 0; color: #45453f; font: 400 28px/1.2 'Instrument Sans', sans-serif; }
+  .domain { margin: 25px 0 0; color: #6e6e66; font: 400 19px/1.2 'Instrument Sans', sans-serif; }
+  .open-paper { background: #fff; }
+  .open-paper .content { top: 68px; }
+  .open-paper .mark { width: 55px; height: 55px; }
+  .open-paper h1 { font-size: 124px; margin-top: 8px; }
+  .open-paper .description { margin-top: 10px; font-size: 30px; }
+  .open-paper .domain { margin-top: 25px; }
+  .lockup { background: #fff; }
+  .lockup .content { top: 136px; }
+  .lockup .identity { flex-direction: row; justify-content: center; gap: 25px; }
+  .lockup .mark { width: 68px; height: 68px; }
+  .lockup h1 { font-size: 110px; margin: 0; }
+  .lockup .description { margin-top: 20px; font-size: 29px; }
+  .lockup .domain { margin-top: 25px; }
+  .night { background: #111110; color: #f7f7f5; }
+  .night .description { color: #d7d7d3; }
+  .night .domain { color: #aaa9a1; }
+</style></head>
+<body>
+  <main class="cover signature">
+    <div class="content">
+      <div class="identity"><svg class="mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+  <ellipse cx="50" cy="50" rx="43" ry="20.5" stroke="currentColor" stroke-width="2.4"/>
+  <ellipse cx="50" cy="50" rx="43" ry="20.5" transform="rotate(45 50 50)" stroke="currentColor" stroke-width="2.4"/>
+  <ellipse cx="50" cy="50" rx="43" ry="20.5" transform="rotate(90 50 50)" stroke="currentColor" stroke-width="2.4"/>
+  <ellipse cx="50" cy="50" rx="43" ry="20.5" transform="rotate(135 50 50)" stroke="currentColor" stroke-width="2.4"/>
+</svg><h1>Charlie</h1></div>
+      <p class="description">Intelligence for commercial work.</p>
+      <p class="domain">incillum.com</p>
+    </div>
+  </main>
+</body></html>
