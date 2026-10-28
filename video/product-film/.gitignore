@@ -1,0 +1,12 @@
+# The site's licensed faces, copied in for the render only.
+fonts/
+# Frame checks, renders and the soundtrack are rebuilt from the sources here.
+frames/
+renders/
+soundtrack.wav
+.hyperframes/
+# The plates as Higgsfield delivered them, before retiming and re-encoding.
+raw/
+*.mp4
+# The four plates are sources, not outputs.
+!plates/*.mp4
