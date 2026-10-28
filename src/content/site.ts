@@ -1329,7 +1329,7 @@ export const glass = {
     headlineEnd: hero.headlineEnd,
     lede: hero.lede,
     assurance: hero.assurance,
-    watch: 'Watch one night',
+    watch: 'Watch the film',
   },
 
   film: {
@@ -1346,6 +1346,44 @@ export const glass = {
     frames: glassFrames,
     floor: 'Floor',
     sheet: glassSheet,
+  },
+
+  /**
+   * The film under the hero (`video/product-film`): what Incillum does with a
+   * request, one statement a beat, over Studio's own screens and three
+   * daylight plates. It follows Studio's sample request from Halvorsen Marine,
+   * the one Charlie's page follows, not this page's quotation.
+   *
+   * `statements` are the film's titles in the order it shows them, so the
+   * section carries the same argument as text for a screen reader, a reader
+   * who does not play it, or a page without JavaScript; `site.test.ts` holds
+   * them to the composition word for word.
+   */
+  reel: {
+    /** The block's first line: what the film follows, in a sentence. */
+    licence: 'One request for quotation, from the moment it lands to a quotation ready to send.',
+    src: '/film/incillum.mp4',
+    poster: '/film/incillum.webp',
+    label:
+      'A film of Incillum at work on one request for quotation, in Incillum Studio. Its statements follow.',
+    statements: [
+      'Every order starts with a quotation.',
+      'Charlie picks it up the moment it lands.',
+      'Reads everything the request depends on.',
+      'Matches every line to a product you carry.',
+      'Checks every figure against its source.',
+      'With your approval, asks suppliers for a firm price.',
+      'Compares every quote. Holds your margin.',
+      'Where money moves, you decide.',
+      'The quotation, ready to send.',
+      'Intelligence for commercial work.',
+    ],
+    controls: {
+      play: 'Play the film',
+      pause: 'Pause the film',
+      soundOn: 'Turn the sound on',
+      soundOff: 'Turn the sound off',
+    },
   },
 
   sources: {

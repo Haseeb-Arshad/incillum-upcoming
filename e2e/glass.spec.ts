@@ -1,3 +1,5 @@
+import { statSync } from 'node:fs'
+
 import { expect, test } from '@playwright/test'
 
 import type { Page } from '@playwright/test'
@@ -10,8 +12,8 @@ import type { Page } from '@playwright/test'
  * the money is the thread's; nothing is claimed, nothing pulses, and the motto
  * is not spent; one form, which is never submitted here. And the
  * presentation's own: no tracked capitals anywhere, the opening gets out of the
- * way, the film plays once and stops at 08:04, the reader can pause it, the
- * documents gather and come apart with the scroll, nothing lies under the
+ * way, the film never starts by itself under reduced motion and says in text
+ * everything it shows, the documents gather and come apart with the scroll, nothing lies under the
  * photographed part, and reduced motion gets the final frame of all of it.
  *
  * Most tests read the page under reduced motion, which is its final frame and
@@ -48,24 +50,6 @@ async function holdTheOpening(page: Page) {
   })
 }
 
-/** With motion on: reload, end the opening with a key, and bring the film on screen. */
-async function watchTheFilm(page: Page, frame: string) {
-  await page.emulateMedia({ reducedMotion: 'no-preference' })
-  await holdTheOpening(page)
-  await page.goto(GLASS)
-  await page.waitForSelector('html[data-hydrated="true"]')
-  await page.addStyleTag({ content: `.glass { --glass-frame: ${frame}; }` })
-  await page.keyboard.press('Shift')
-  await expect(page.locator('.glass')).toHaveAttribute('data-opening', 'skipped')
-  // Not `scrollIntoViewIfNeeded`: the film already peeks into the first screen, which counts as
-  // in view for that and not for the film, which waits until nearly half of it is showing.
-  await page
-    .locator('.glass-film')
-    .evaluate((element) =>
-      element.scrollIntoView({ block: 'start', behavior: 'instant' }),
-    )
-}
-
 test('first screen: the headline, one form, one dark region, and no horizontal overflow', async ({
   page,
 }) => {
@@ -83,188 +67,36 @@ test('first screen: the headline, one form, one dark region, and no horizontal o
   ).toBe(true)
 })
 
-test('the film opens on one sentence, and its chapters are the thread’s hours', async ({
-  page,
-}) => {
+test('the film opens on one sentence, and says in text everything it shows', async ({ page }) => {
   const film = page.locator('#film')
-  // The licence is the frame's first line and its name: a sentence, not a label.
-  await expect(film.getByRole('heading', { level: 2 })).toHaveText(/^One quotation/)
-  await expect(film).toHaveAccessibleName(/^One quotation/)
-
-  const chapters = film
-    .getByRole('group', { name: 'Hours of the night' })
-    .getByRole('button')
-  await expect(chapters).toHaveCount(6)
-  for (const [index, hour] of [
-    '23:47',
-    '00:06',
-    '01:18',
-    '03:42',
-    '06:50',
-    '08:04',
-  ].entries()) {
-    await expect(chapters.nth(index)).toHaveAccessibleName(new RegExp(`^${hour}`))
-  }
-
-  // Reduced motion: nothing to play, six chapters to step through.
-  await expect(film.getByRole('button', { name: /play|pause|again/i })).toHaveCount(0)
-
-  await chapters.nth(2).click()
-  await expect(film.locator('.glass-beat[data-active="true"]')).toContainText('01:18')
-  await expect(film.locator('.glass-sheet-row[data-status="held"]')).toHaveCount(2)
-  await expect(film.locator('.glass-namebox')).toHaveText('F5, F12')
-
-  await chapters.nth(3).press('Enter')
-  await expect(film.locator('.glass-beat[data-active="true"]')).toContainText('03:42')
-  await expect(film.locator('.glass-sheet-row[data-status="changed"]')).toHaveCount(1)
-  await expect(film.locator('.glass-namebox')).toHaveText('E15')
-  // The cost the supplier moved, struck through above the one that replaced it, in the cell selected.
-  const moved = film.locator('.glass-sheet-row[data-status="changed"] [data-column="rate"]')
-  await expect(moved).toHaveAttribute('data-selected', 'true')
-  await expect(moved.locator('s')).toHaveText('128.00')
-  await expect(moved).toContainText('135.68')
-  // And both fit the cell. A cell clips what it cannot hold, and once cut the new cost mid-figure.
-  // Measured on the figures, not on `scrollWidth`, which also counts the fill handle.
-  const spill = await moved.evaluate((cell) => {
-    const box = cell.getBoundingClientRect()
-    const value = cell.querySelector('.glass-cell-value')!.getBoundingClientRect()
-    return Math.max(
-      box.left - value.left,
-      value.right - box.right,
-      box.top - value.top,
-      value.bottom - box.bottom,
-    )
-  })
-  expect(spill).toBeLessThanOrEqual(0)
+  // What it follows is the block's first line and its name: a sentence, not a label.
+  await expect(film.getByRole('heading', { level: 2 })).toHaveText(/^One request for quotation/)
+  await expect(film).toHaveAccessibleName(/^One request for quotation/)
+  const video = film.locator('video.reel-video')
+  await expect(video).toHaveAttribute('src', '/film/incillum.mp4')
+  await expect(video).toHaveAttribute('poster', '/film/incillum.webp')
+  // Its statements, in order, for whoever does not play it; the outward one waits for an approval.
+  const statements = film.locator('#film-statements li')
+  await expect(statements).toHaveCount(10)
+  await expect(statements.first()).toHaveText('Every order starts with a quotation.')
+  await expect(statements.nth(5)).toHaveText(/^With your approval/)
 })
 
-test('the sheet is a spreadsheet: empty while the request is a PDF, then every rate a document’s', async ({
-  page,
-}) => {
+test('under reduced motion the film never starts by itself', async ({ page }) => {
   const film = page.locator('#film')
-  const cells = film.locator('.glass-sheet-row td:not(.glass-grid-index)')
-
-  await film.getByRole('button', { name: /^23:47/ }).click()
-  await expect(film.locator('.glass-namebox')).toHaveText('A1')
-  expect((await cells.allTextContents()).join('').trim()).toBe('')
-
-  await film.getByRole('button', { name: /^00:06/ }).click()
-  await expect(film.locator('.glass-namebox')).toHaveText('A2:F21')
-  // All six columns are the sheet's; a narrow sheet hides some, as a spreadsheet hides columns.
-  expect(await film.locator('.glass-grid-head th').allTextContents()).toEqual([
-    'Line',
-    'Item',
-    'Category',
-    'Qty',
-    'Rate',
-    'Status',
-  ])
-  await expect(film.getByRole('columnheader', { name: 'Item' })).toBeVisible()
-  await expect(film.getByRole('columnheader', { name: 'Rate' })).toBeVisible()
-  const rates = film.locator('.glass-sheet-row [data-column="rate"]')
-  await expect(rates).toHaveText(['21.60', '18.40', '—', '3.15', '6.90', '—', '128.00'])
-
-  await film.getByRole('button', { name: /^08:04/ }).click()
-  await expect(film.locator('.glass-namebox')).toHaveText('Quote')
-  await expect(film.locator('.glass-sheet')).toHaveAttribute('data-range', 'all')
+  const video = film.locator('video.reel-video')
+  await video.scrollIntoViewIfNeeded()
+  await page.waitForTimeout(800)
+  expect(await video.evaluate((element: HTMLVideoElement) => element.paused)).toBe(true)
+  await expect(film.getByRole('button', { name: 'Play the film' }).first()).toBeVisible()
 })
 
-test('every pill on the sheet is whole, at every hour and every width', async ({
-  page,
-}) => {
-  const film = page.locator('#film')
-  const pills = film.locator('.glass-sheet-row .matrix-status')
-  // 23:47 has none: the request is still a PDF.
-  for (const hour of ['00:06', '01:18', '03:42', '06:50', '08:04']) {
-    await film.getByRole('button', { name: new RegExp(`^${hour}`) }).click()
-    await expect(film.locator('.glass-beat[data-active="true"]')).toContainText(hour)
-    await expect(pills).toHaveCount(await film.locator('.glass-sheet-row').count())
-    // Measured against the cell's content box, not its edge: a cell cuts a pill off at its
-    // padding, and trails an ellipsis after one that is over its content by any amount.
-    // And against the sheet, which cuts off whatever its last column cannot hold.
-    const spills = await pills.evaluateAll((elements) =>
-      elements
-        .map((pill) => {
-          const cell = pill.closest('td')!
-          const sheet = pill.closest('.glass-sheet')!
-          const box = cell.getBoundingClientRect()
-          const style = getComputedStyle(cell)
-          const value = pill.getBoundingClientRect()
-          const edge =
-            sheet.getBoundingClientRect().left + sheet.clientLeft + sheet.clientWidth
-          const spill = Math.max(
-            box.left + parseFloat(style.paddingLeft) - value.left,
-            value.right - (box.right - parseFloat(style.paddingRight)),
-            value.right - edge,
-            box.top - value.top,
-            value.bottom - box.bottom,
-          )
-          return { pill: pill.textContent, spill }
-        })
-        .filter(({ spill }) => spill > 0),
-    )
-    expect(spills, hour).toEqual([])
-  }
-
-  // The room is not taken from the item: where it wraps, on a phone, no word of it is cut.
-  const cut = await film
-    .locator('.glass-sheet-row [data-column="item"]')
-    .evaluateAll((cells) =>
-      cells
-        .filter((cell) => getComputedStyle(cell).whiteSpace !== 'nowrap')
-        .filter((cell) => cell.scrollWidth > cell.clientWidth)
-        .map((cell) => cell.textContent),
-    )
-  expect(cut).toEqual([])
-  expect(
-    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
-  ).toBe(true)
-})
-
-test('the film’s money is the thread’s money', async ({ page }) => {
-  const film = page.locator('#film')
-  await film.getByRole('button', { name: /^06:50/ }).click()
-  for (const figure of ['EUR 236,400.00', '16.4%', '20.0%', 'EUR 10,638.00']) {
-    await expect(film.locator('.glass-sheet-ledger')).toContainText(figure)
-  }
-  await expect(film.locator('.glass-sheet-row[data-status="priced"]')).toHaveCount(4)
-})
-
-test('the film plays in order, holds the morning, and goes round again', async ({ page }) => {
-  // Six hours of animation-timed playback and round again: on a loaded machine a
-  // headless browser draws frames slowly enough to need more than the default budget.
-  test.slow()
-  await watchTheFilm(page, '400ms')
-  const film = page.locator('.glass-film')
-  const seen: string[] = []
-  let wrapped = false
-  await expect
-    .poll(
-      async () => {
-        const stage = (await film.getAttribute('data-stage')) ?? ''
-        if (seen.at(-1) !== stage) seen.push(stage)
-        // Once the morning has been reached, the next hour is 23:47 again.
-        wrapped = seen.includes('5') && seen.at(-1) === '0'
-        return wrapped
-      },
-      { intervals: [100], timeout: 15_000 },
-    )
-    .toBe(true)
-  expect(seen).toEqual(['0', '1', '2', '3', '4', '5', '0'])
-  // It keeps playing: the reader is offered a pause, not a replay.
-  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible()
-})
-
-test('the reader can pause the film, and it holds where it was', async ({ page }) => {
-  await watchTheFilm(page, '1500ms')
-  const film = page.locator('.glass-film')
-  await expect(film).toHaveAttribute('data-running', 'true')
-  await page.getByRole('button', { name: 'Pause', exact: true }).click()
-  await expect(film).toHaveAttribute('data-running', 'false')
-  const held = await film.getAttribute('data-stage')
-  await page.waitForTimeout(2200)
-  await expect(film).toHaveAttribute('data-stage', held!)
-  await expect(page.getByRole('button', { name: 'Play the night' })).toBeVisible()
+test('the film and its poster are there to serve', async ({ request }) => {
+  // The poster over the wire, the film from disk: the preview server ignores byte ranges and
+  // compresses a whole video before it answers, which takes longer than a test may wait.
+  const poster = await request.get('/film/incillum.webp')
+  expect(poster.ok()).toBe(true)
+  expect(statSync(new URL('../public/film/incillum.mp4', import.meta.url)).size).toBeGreaterThan(1_000_000)
 })
 
 test('the opening ends on its own, and leaves nothing over the page', async ({
@@ -608,7 +440,7 @@ test('the dust holds one still frame under reduced motion, and drifts without it
     .toBe(true)
 
   // Scrolled past, it fades out and stops drawing rather than running behind the film.
-  await page.locator('.glass-film').evaluate((element) =>
+  await page.locator('#film .reel-frame').evaluate((element) =>
     element.scrollIntoView({ block: 'start', behavior: 'instant' }),
   )
   await expect(night).toHaveAttribute('data-motion', 'still')
@@ -667,7 +499,7 @@ test('the inline field keeps its name and validates, and nothing is sent', async
   expect(posted).toBe(false)
 })
 
-test('server HTML carries the headline, the form, the whole night and the licence', async ({
+test('server HTML carries the headline, the form, the film’s statements and its sentence', async ({
   browser,
 }) => {
   const context = await browser.newContext({ javaScriptEnabled: false })
@@ -675,11 +507,9 @@ test('server HTML carries the headline, the form, the whole night and the licenc
   await staticPage.goto(`${base}${GLASS}`)
   await expect(staticPage.getByRole('heading', { level: 1 })).toBeVisible()
   await expect(staticPage.getByRole('textbox', { name: /^Work email/ })).toBeAttached()
-  await expect(staticPage.locator('#film h2')).toHaveText(/^One quotation/)
-  await expect(staticPage.locator('.glass-beat')).toHaveCount(6)
-  for (const hour of ['23:47', '00:06', '01:18', '03:42', '06:50', '08:04']) {
-    await expect(staticPage.locator('.glass-beat', { hasText: hour })).toBeVisible()
-  }
+  await expect(staticPage.locator('#film h2')).toHaveText(/^One request for quotation/)
+  await expect(staticPage.locator('#film-statements li')).toHaveCount(10)
+  await expect(staticPage.locator('#film video')).toHaveAttribute('poster', '/film/incillum.webp')
   await expect(staticPage.getByText('Six sources that never meet.')).toBeVisible()
   await expect(staticPage.getByText('Now they meet.')).toBeVisible()
   await expect(staticPage.getByText(/^Everything one quotation needs/)).toBeVisible()
