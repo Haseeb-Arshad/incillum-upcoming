@@ -114,7 +114,9 @@ that needs it.
 the same release, on the owner's decision of 23 October 2026: an icon on the
 site is the icon in the product, not one drawn for the page. They are imported
 by name in `components/icons.tsx` and nowhere else, one stroke for all of them,
-in `currentColor`. No vendor's mark is shown: the site names no system (§5).
+in `currentColor`. One vendor's mark is shown, by the owner's call of 29 October
+2026: Gmail's, on an email in a drawing of the product (see *File marks* in
+§4). The site still names no system (§5).
 
 ---
 
@@ -124,9 +126,12 @@ in `currentColor`. No vendor's mark is shown: the site names no system (§5).
 heading but one kind — the titles on the cards of protection, which are the
 grotesk at reading size, as the reference page sets them; a grotesk does
 everything a person reads at length or operates. There
-is no third voice, no shadow, and one gradient: the scrim over the hero
+is no third voice, no shadow, and two gradients: the scrim over the hero
 photograph, which exists to hold the headline at AA and is built from the night
-token. Contrast is still most of the emphasis, which is exactly why spending it
+token, and, by the owner's call of 29 October 2026 ("only if a gradient will
+look good at the bottom"), the footer's: a wash from the page's white to the
+sunken paper, and the fade on the name set across the bottom of the page. It is
+ink and paper only and never gains a hue. Contrast is still most of the emphasis, which is exactly why spending it
 carelessly ruins this page.
 
 - Every colour, size, radius and duration is a token in `styles.css`. A literal
@@ -158,11 +163,22 @@ are two things. Anything that is not one of the four above uses ink.
 
 **File marks keep their own colours**, by the owner's call of 29 October 2026,
 and only inside the drawings of the product (`components/file-icon.tsx`): a
-PDF's red band, a workbook's green, a document's blue, a drawing's teal, mail's
-indigo, as a reader's own desktop shows them. They are generic shapes with the
-format written on them, never anybody's logo, and their tokens (`--ic-file-*`)
-are used nowhere else. They are the documents' identity, not a palette: no
+PDF's red band, a workbook's green, a document's blue, a drawing's teal, as a
+reader's own desktop shows them. They are generic shapes with the format
+written on them, never anybody's logo, and their tokens (`--ic-file-*`) are
+used nowhere else. They are the documents' identity, not a palette: no
 heading, figure, button or state takes one.
+
+**Mail is the one exception**, by the owner's call of 29 October 2026: an email
+in a drawing carries the official Gmail mark (the 2020 logo, five flat shapes
+in Google's own colours, `GmailMark` in `file-icon.tsx`), because a buyer reads
+it at once as an email arriving. It is the identity of the object drawn, in
+the product scenes only. The page never writes the name, never says anything
+works with Gmail, and the mark is never a heading, a button or a link; the
+tests fail on the word. It is Google's trademark, and the platform has no
+mailbox reader yet (`requirements/README.md`), so a reader could take it for
+an integration the site does not claim. Check Google's brand terms before the
+site is public; it is one component to change if they or the owner say so.
 
 ### The night
 
@@ -227,9 +243,20 @@ and the film says what happened in it.
   night's ground or the white paper, at 86%, blurred), never a black bar over
   white. Its tokens follow what is under it (`data-tone`, from a point half a
   masthead above the night's end): the night's, then the paper's. It never
-  shrinks and never gains a shadow. Its links are the page's own sections and
-  the contact memo, and below a laptop's width only the brand and the button
-  remain.
+  shrinks and never gains a shadow, and it **never hides**: for a day it slid
+  away while the reader scrolled down, and the owner asked for it back on 29
+  October 2026. A hairline along its lower edge draws the reader's place in the
+  page. It is legible in every state a browser can paint it in: a reload or a
+  link to a section paints the server's top-of-page guess where the reader
+  was, so a head script (`lib/masthead.ts`) reads the scroll before the page's
+  own script exists and says so on the document (`data-bar-pane`,
+  `data-bar-day`), the stylesheet draws from those until the page's own state
+  is in place (`data-bar-live`, set before paint), and without a script at all
+  it is a white pane (`@media (scripting: none)`). `e2e/glass.spec.ts` holds
+  each. Its links are the page's own sections and the contact memo; below a
+  laptop's width they are one sheet behind a button that says *Menu*, a native
+  `<details>` that opens with no script, so the Product page can be found on a
+  phone as on a desk.
 - Radii are 6px on controls and 12px on panels. Nothing else is rounded.
 - Depth comes from hairlines, never from shadows.
 - **Texture:** a fractal-noise tile at ~6%, generated by the browser's own
@@ -249,7 +276,12 @@ and the film says what happened in it.
   `CountUp`). A scene is still on the server, without a script and under
   reduced motion, which is its last frame; armed at its first frame until it is
   on screen; and played once, never again that visit. Nothing loops and nothing
-  pulses. The dust and morning parallax belong to this page. A page where every
+  pulses. The hairline that draws the reader's place follows the scroll's
+  position and is still under reduced motion. The dust, the morning's deck (the
+  photograph rising on two sheets behind it, and the two cards dealt from under
+  it) and the footer's name rising belong to this page, each one property
+  written on a frame, resting at its last frame without a script and under
+  reduced motion. A page where every
   card lifts and every row slides is a page that is nervous; a scene earns its
   motion by telling something that happens to the work.
 - The night plate does not move, and that is a decision rather than an omission.
@@ -288,34 +320,82 @@ the buyer's questions:
   moves and line 14's margin counts down through the floor to its shortfall,
   held; and the working waits until a person's yes, after which the outward
   steps are sent. Sunken panels on white, white cards with hairlines inside,
-  file marks in their own colours, Lucide glyphs for everything else, square
-  avatars, and no image or vendor's mark. Every count and figure is read from
-  the documents, the matrix, the evidence document and the channel; the copy
-  (`showcase` in `content/site.ts`) writes none, only `{tokens}`.
-- **Trust is the boundary, drawn** (`components/trust.tsx`): "Nothing leaves
-  without you." Requests and supplier answers come in; prices, costs,
-  agreements and quotations stay inside the organisation with Charlie; the path
-  to model training is drawn, struck through and refused; and the only way out
-  is a named person's approval. The owner found the ruled rows it replaced read
-  as a page of answers. The drawing is one image to a screen reader, described
-  in full by `trust.diagram.label`, and plays once like the showcase. Under it,
-  the six commitments are a spec grid of real text. The two commitments
-  already on the record, `access.decided` and the approval boundary, keep their
-  words. No framework is named anywhere on the site (§5); both suites fail if
-  one is.
-- **Questions are open.** A real `<dl>`, every answer in the HTML, nothing
-  behind a click; three answers are read from copy the site has already
-  committed to, so they cannot drift.
+  file marks in their own colours, Lucide glyphs for everything else, a
+  portrait for each person, and Gmail's mark on an email; no other image or
+  vendor's mark. Every count and figure is read from the documents, the
+  matrix, the evidence document and the channel; the copy (`showcase` in
+  `content/site.ts`) writes none, only `{tokens}`.
+- **The people are portraits, not initials** (`components/avatar.tsx`,
+  `people` in `content/site.ts`). James, Sara, the customer's buyer and the
+  supplier's contact are invented, like the customer: none is a customer, a
+  user or a member of this company, and nothing about them is a claim. Their
+  portraits are illustrated line drawings in the site's ink (`public/people`;
+  CC0 portraits from the Lorelei set by Lisa Wischofsky, chosen option by option
+  and recorded in `design/people.md`), because a stranger's photograph under a
+  job title would read as a customer and is not ours to use. A photograph can
+  replace any of them by changing its path; real photographs are the owner's to
+  supply or to commission. They appear only inside drawings of the product,
+  never as a face for the company, and are decorative to a screen reader
+  because the name is always beside them.
+- **Trust is a system, drawn** (`components/trust.tsx`): "Nothing leaves
+  without you." A customer's request and a supplier's answer arrive as real
+  emails, each from a person with their portrait and Gmail's mark; your
+  organisation is a boundary, with your price lists, costs, agreements and
+  quotations inside it, Charlie working among them, and three guards beside
+  them (isolated by organisation, credentials sealed, every decision recorded);
+  the path to model training is drawn, struck through and refused; the only way
+  out is a person's approval, named in words and with no portrait, and given by
+  one small control; and the quotation and the supplier request go out to their
+  recipients only after it. Every card is as tall as what is in it (an email's
+  attachments once ran past its border), the connectors leave the middle of the
+  card they belong to, and `e2e/glass.spec.ts` measures every card's rows against
+  its padding at every width. Two things on it were drawn two ways for the owner
+  to choose between on 29 October 2026, and `/lab/trust` shows every
+  combination (private: `noindex`, no link, no sitemap entry): the emails
+  `named` (the sender's name and role beside the portrait) or `faces` (the portrait
+  alone), and the approval as a `button` (one object that is pressed and settles
+  into the record) or a `slide` (a knob carried across a track). The front page
+  draws `trustChoice`; once one way of each is chosen the other, the lab and its
+  spec are deleted. On a wide screen it is one picture
+  on a 1120 by 620 grid with curved connectors, every size a multiple of one
+  design pixel (`--u`, the board's width over 1120) so it scales as a whole and
+  never reflows; below a laptop it is a column in the same order. The owner
+  found the ruled rows and then the small diagram that came before it read as a
+  page of answers and as a sketch. It is one image to a screen reader, described
+  in full by `trust.diagram.label`, and plays once like the showcase: lines
+  drawn in with a pulse carried along them, the approval pressed, then the
+  lines out. Under it, the six commitments are a spec grid of real text. The
+  two commitments already on the record, `access.decided` and the approval
+  boundary, keep their words. No framework is named anywhere on the site (§5);
+  both suites fail if one is.
+- **One showcase card leads to Charlie.** The pickup panel is a link, by the
+  owner's call of 29 October 2026: a button that says *Meet Charlie* stretched
+  over the whole card, so the picture is as good as the button, and the only
+  link in the grid.
+- **Questions are cards, and still open** (`components/questions.tsx`): an icon
+  on its tile, the question in the serif, and the answer under it with its first
+  sentence in ink, so it can be taken from that sentence alone. The owner found
+  the ruled list read as a FAQ. Still a real `<dl>`, every answer in the HTML,
+  nothing behind a click and no `hidden`, and both suites hold it; three
+  answers are read from copy the site has already committed to, so they cannot
+  drift. A card beside the heading sends a question that is not here to the
+  contact memo, and promises no time.
 
 ### Charlie
 
-- **`/charlie`** (`components/charlie-page.tsx`, `charlie-reel.tsx`): a
-  headline and the two ways on; the film of Charlie at work; the same six steps
-  again, each with a still of the Studio page it happens on and a link that
-  plays the film from that step; seven abilities, as cards without states; one
-  invitation. The film plays muted while half of it is on screen, never by
-  itself under reduced motion, and the reader's play or pause outranks the
-  scroll.
+- **`/charlie`** (`components/charlie-page.tsx`, `charlie-agent.tsx`,
+  `charlie-reel.tsx`): a headline and the two ways on; the film of Charlie at
+  work; then Charlie as an agent, which the film does not say: talked to in a
+  team's channel (the morning's messages from `charlie.scene`, the request in
+  plain words and the approval after it), who it talks to (the team, the
+  suppliers, the telephone: each drawn as itself, with the approval it waits
+  for), and where it stops (what it does alone, what waits for a person, what
+  it never does); one invitation. The same six steps, each with a still, used
+  to follow the film and repeated it, so the owner had them removed on 29
+  October 2026: the film keeps its chapters, and `charlie.steps` and the
+  stills are kept, unplaced. The film plays muted while half of it is on
+  screen, never by itself under reduced motion, and the reader's play or pause
+  outranks the scroll.
 - **The film is Studio's own pages** (`video/charlie`), not a drawing of them:
   stills captured from Incillum Studio's sample workspace (`capture.mjs`, at
   twice the density), cut into a HyperFrames composition (`index.html`, its
@@ -387,11 +467,11 @@ commitments, open questions and the morning: one invitation and the motto. It
 carries the front page's title, description and canonical at `/`; `/glass` is a
 permanent redirect there. `e2e/glass.spec.ts` holds both.
 
-- **The masthead stays with the reader**: fixed, above everything, clear over
-  the first screen and a see-through pane after it, in the tokens of whatever
-  is under it (see _The night_). Its links are the page's own sections and
+- **The masthead stays within a flick of the reader**: fixed, above everything,
+  clear over the first screen and a see-through pane after it, in the tokens of
+  whatever is under it, and never hidden (see _The night_). Its links are the page's own sections and
   the contact memo, with the one button, which puts the cursor in the field;
-  below a laptop's width only the brand and the button remain.
+  below a laptop's width a *Menu* button opens them as one sheet.
 
 - **No labels over headings.** No tracked capitals anywhere on it — not over a
   title, not inside a document — and no title in two tones. The first version
@@ -405,10 +485,14 @@ permanent redirect there. `e2e/glass.spec.ts` holds both.
 - **It ends in the night plate's own room at 08:04** — the morning plate,
   generated from the night source as its reference, overcast on purpose (a low
   orange sun read as evening and spent a sky's worth of the signal's hue), and
-  cleaned of the one mark the generator left on the monitor. Its caption is the
-  handover (`components/glass-handover.tsx`): the person and the decision from
-  the film's last frame, and the two figures from the 06:50 ledger, built in
-  the site's type and writing nothing of its own.
+  cleaned of the one mark the generator left on the monitor. The photograph is
+  left clean: nothing is laid over it (the owner's call of 29 October 2026).
+  What waits in the room is the handover under it
+  (`components/glass-handover.tsx`), on a sunken panel as the showcase's are:
+  Charlie's own 08:04 message in the team channel with the quotation and its
+  workbook attached, and James's decision with the two figures from the 06:50
+  ledger, the shortfall counting up in the signal. Built in the site's type
+  and writing nothing of its own.
 - **Its motion budget** is listed in `styles.css` above the block that spends
   it: the opening, the film, the dust, the morning's parallax, the case bar
   drawing once, the masthead filling in, one reveal per block after the night,
@@ -533,7 +617,9 @@ attributed. It must not read as an Incillum outcome.
 **Never write:** customer names or logos · testimonials · Incillum accuracy,
 savings or volume figures · "trusted by" · security certifications or compliance claims ·
 integration availability · a launch date or quarter · the name of any ERP, CRM
-or mail client (the form asks; the page does not claim).
+or mail client (the form asks; the page does not claim). Gmail's mark on an
+email in a drawing is not its name, and says nothing of integration: see *File
+marks* in §4.
 
 Publisher names such as Salesforce may appear only inside a linked source
 citation beside the research it published. They are never logos, customer

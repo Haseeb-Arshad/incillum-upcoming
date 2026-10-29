@@ -8,10 +8,11 @@ import type { Page } from '@playwright/test'
  * The page after the front page — Charlie — and the masthead that reaches it.
  *
  * The rules under test: the page is in the sitemap and draws its own chrome
- * once; its film has a chapter for each step, and a chapter or a step's link
- * plays it from there; Charlie's abilities carry no state labels, and every
- * outward one is described with the approval it waits for; no certification is
- * named; the masthead has one menu, Product, and a link to the contact memo; the menu
+ * once; its film has a chapter for each step, and a chapter plays it from
+ * there, and nothing under the film says those steps again; under it Charlie is
+ * shown as an agent (a channel, who it talks to, where it stops), with no
+ * state labels, and every outward step described with the approval it waits
+ * for; no certification is named; the masthead has one menu, Product, and a link to the contact memo; the menu
  * opens by pointer and by keyboard, closes on Escape, and every item lands
  * somewhere real. There is no security page.
  */
@@ -71,14 +72,10 @@ test('Charlie: one page, its own chrome, the film of Charlie at work, every outw
   const chapters = page.locator('.reel-chapter')
   await expect(chapters).toHaveCount(6)
 
-  // Six steps, each with its still of the Studio page it happens on.
-  await expect(page.locator('.cp-step')).toHaveCount(6)
-  for (const still of await page.locator('.cp-step-still img').all()) {
-    await still.scrollIntoViewIfNeeded()
-    await expect
-      .poll(() => still.evaluate((image: HTMLImageElement) => image.naturalWidth))
-      .toBeGreaterThan(0)
-  }
+  // The film's own chapters are the only way into its steps: the page does not say them again.
+  await expect(page.locator('.cp-step')).toHaveCount(0)
+  await expect(page.locator('.cp-step-still')).toHaveCount(0)
+  await expect(page.locator('.protect-card')).toHaveCount(0)
 
   // A chapter plays the film from its step, and is marked as the one playing.
   await chapters.nth(2).scrollIntoViewIfNeeded()
@@ -87,20 +84,39 @@ test('Charlie: one page, its own chrome, the film of Charlie at work, every outw
   expect(
     await video.evaluate((element: HTMLVideoElement) => element.currentTime),
   ).toBeGreaterThanOrEqual(20.9)
-  // So does a step's own link, which brings the film back on screen.
-  await page
-    .locator('.cp-step')
-    .nth(4)
-    .getByRole('button', { name: 'Watch this step' })
-    .click()
-  await expect(chapters.nth(4)).toHaveAttribute('aria-current', 'step')
-  await expect(video).toBeInViewport()
 
-  // The abilities are cards, without a state on any of them.
-  const ability = (title: string) =>
-    page.locator('.protect-card', { has: page.getByRole('heading', { name: title }) })
-  await expect(page.locator('.protect-card')).toHaveCount(7)
-  await expect(ability('Asks approved suppliers')).toContainText(/once someone approves/)
+  // Under the film, Charlie as an agent: spoken to in a team's channel, with the morning in it.
+  const talk = page.locator('.agent-talk')
+  await expect(talk.getByRole('heading', { level: 2 })).toHaveText(
+    'Talk to Charlie like a colleague.',
+  )
+  await expect(talk.locator('.agent-points li')).toHaveCount(3)
+  const channel = talk.locator('.agent-channel')
+  await expect(channel).toContainText('#rfq-8841')
+  await expect(channel.locator('.agent-message')).toHaveCount(5)
+  await expect(channel.locator('.agent-mention')).toHaveText(['@Sara', '@Charlie'])
+  // A person asks in plain words; Charlie drafts, and the request waits for a named approval.
+  await expect(channel).toContainText('ask our approved suppliers for a firm price')
+  await expect(channel.locator('.agent-draft')).toContainText('Approved by James · 08:14')
+  await expect(channel.locator('.agent-message').last()).toContainText('Sent.')
+
+  // Who it talks to: each card says what has to happen first, and none is a state label.
+  const reach = page.locator('.agent-reach')
+  await expect(reach.locator('.agent-reach-card')).toHaveCount(3)
+  await expect(reach.locator('.agent-reach-card').nth(1)).toContainText(
+    'Sent once a person approves',
+  )
+  await expect(reach.locator('.agent-reach-card').nth(2)).toContainText(
+    'Called once a person approves',
+  )
+
+  // Where it stops: what it does alone, what waits for a person, what it never does.
+  const limits = page.locator('.agent-limits')
+  await expect(limits.locator('.agent-limit')).toHaveCount(3)
+  await expect(limits.locator('.agent-limit').nth(1)).toContainText('Sends the quotation')
+  await expect(limits.locator('.agent-limit').nth(2)).toContainText(
+    'Sends or commits without an approval',
+  )
   await expect(page.locator('body')).not.toContainText(
     /Decided|In build|Planned|Not held/,
   )

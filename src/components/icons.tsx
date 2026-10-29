@@ -1,17 +1,21 @@
 import {
   ArrowRight,
+  ArrowUp,
   BadgeCheck,
   BookOpen,
   Building2,
   Check,
+  CirclePause,
   ClipboardList,
   Cpu,
+  DoorOpen,
   DraftingCompass,
   FileLock,
   FilePenLine,
   FileStack,
   FileText,
   Hand,
+  Handshake,
   KeyRound,
   Link2,
   LockKeyhole,
@@ -23,11 +27,13 @@ import {
   Pause,
   PhoneCall,
   Play,
+  Plug,
   ScanSearch,
   ScanText,
   ScrollText,
   Send,
   Sheet,
+  ShieldCheck,
   Signature,
   TrendingDown,
   Users,
@@ -110,6 +116,22 @@ export const showcaseIcons = {
   never: X,
   people: Users,
   onward: ArrowRight,
+} satisfies Record<string, LucideIcon>
+
+/** The page's own furniture: the way back to the top. */
+export const chromeIcons = {
+  top: ArrowUp,
+} satisfies Record<string, LucideIcon>
+
+/** The questions: who it is for, what it sends, who it asks, what it holds, what it keeps, what it joins, how to start. */
+export const questionIcons = {
+  who: Users,
+  sends: Send,
+  suppliers: Handshake,
+  held: CirclePause,
+  training: ShieldCheck,
+  systems: Plug,
+  access: DoorOpen,
 } satisfies Record<string, LucideIcon>
 
 /** The film's own controls on the Charlie page. */

@@ -1,5 +1,15 @@
-import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import {
+  Fragment,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 
+import type { ReactNode } from 'react'
+
+import { BackToTop, FooterWordmark } from '#/components/footer-wordmark.tsx'
 import { GlassField } from '#/components/glass-field.tsx'
 import { GlassHandover } from '#/components/glass-handover.tsx'
 import { Case } from '#/components/case.tsx'
@@ -23,6 +33,7 @@ import {
   trust,
 } from '#/content/site.ts'
 import { contactEmail } from '#/env.ts'
+import { liveAttribute } from '#/lib/masthead.ts'
 import { markOpeningSeen, openingSeen, rememberPlace } from '#/lib/opening.ts'
 
 /**
@@ -142,6 +153,24 @@ export function GlassPage() {
     if (played !== 'ended' && played !== 'skipped') return
     if (!stillRef.current) markOpeningSeen()
   }, [played])
+
+  /**
+   * Where the reader already is, read from the page itself as it mounts. The
+   * server can only draw the top of the page, and the observers below report a
+   * frame or more later; a reader put back halfway down by their browser
+   * would see the masthead in the wrong colours for that long. Before the
+   * script ran, the head script (`lib/masthead.ts`) held the same two answers
+   * in the stylesheet; this is the hand-over, and it lands before paint: the
+   * mark that ends the head script's say is set in the same breath as the state
+   * that replaces it.
+   */
+  useLayoutEffect(() => {
+    const sentinel = sentinelRef.current
+    const dusk = duskRef.current
+    if (sentinel) setScrolled(sentinel.getBoundingClientRect().bottom < 0)
+    if (dusk) setOverNight(dusk.getBoundingClientRect().top >= 0)
+    document.documentElement.setAttribute(liveAttribute, '')
+  }, [])
 
   /**
    * Whether the first screen has scrolled away, as one boolean from an
@@ -355,7 +384,10 @@ function Close() {
     <div className="desk glass-desk">
       <section className="glass-close" aria-labelledby="glass-close-title">
         <Container>
-          <MorningPlate />
+          <MorningStack>
+            <MorningPlate />
+            <GlassHandover />
+          </MorningStack>
           <Reveal className="glass-close-grid">
             <h2 id="glass-close-title" className="glass-close-title">
               {closing.headline}
@@ -402,6 +434,7 @@ function Close() {
             <a href={`#${trust.anchor}`}>{glass.nav.trust}</a>
             <a href={`#${questions.anchor}`}>{glass.nav.questions}</a>
             <a href="/contact">{glass.nav.contact}</a>
+            <BackToTop />
           </nav>
           <div className="glass-footer-inner">
             <SiteBrand />
@@ -410,46 +443,65 @@ function Close() {
             </p>
           </div>
         </Container>
+        <FooterWordmark />
       </footer>
     </div>
   )
 }
 
 /**
- * The morning plate: the photograph, what is waiting in it, and the dust.
+ * The morning, as a stack of cards: the photograph, and what is waiting
+ * under it, drawn as one deck that is dealt as the reader comes to it.
  *
- * The photograph is cropped a little larger than its frame and drifts against
- * the scroll by a few per cent, so the room reads as a place seen through the
- * page rather than a print laid on it. The drift is a custom property written
- * on an animation frame — nothing re-renders — and under reduced motion it is
- * never written at all: the frame holds still, centred.
+ * Three custom properties are written on the stack, each a fraction from 0 to
+ * 1 or, for the drift, -0.5 to 0.5, from where the pieces are on the screen. They
+ * are written on an animation frame and nothing re-renders:
  *
- * Its caption is the handover, laid over the window on a wide screen and
- * tucked under the photograph on a narrow one; behind it, the night's dust has
- * settled on the desk.
+ * - `--glass-drift`: how far through the screen the photograph is. The
+ *   photograph is cropped a little larger than its frame and moves against the
+ *   scroll by a few per cent, so the room reads as a place seen through the
+ *   page rather than a print laid on it.
+ * - `--glass-rise`: the photograph coming up and settling (it grows from a
+ *   little smaller and comes up a little) while the two sheets behind it step
+ *   out above it, one behind the other, like a deck being fanned.
+ * - `--glass-deal`: the two cards of the handover, which come out from under
+ *   the photograph into their places, one a little after the other.
+ *
+ * Each has its resting value in the stylesheet, which is the last frame: so the
+ * server, a page without a script and a reader who asked for less motion all
+ * get the deck as it ends up, and under reduced motion nothing is written.
  */
-function MorningPlate() {
-  const frameRef = useRef<HTMLDivElement>(null)
+function MorningStack({ children }: { children: ReactNode }) {
+  const stackRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const frame = frameRef.current
-    if (!frame) return
+    const stack = stackRef.current
+    if (!stack) return
     const motion = matchMedia('(prefers-reduced-motion: reduce)')
+    const names = ['--glass-drift', '--glass-rise', '--glass-deal']
+    const clamp = (value: number) => Math.min(1, Math.max(0, value))
     let request = 0
 
     function place() {
       request = 0
-      if (!frame) return
+      if (!stack) return
       if (motion.matches) {
-        frame.style.removeProperty('--glass-drift')
+        for (const name of names) stack.style.removeProperty(name)
         return
       }
-      const box = frame.getBoundingClientRect()
-      const through = (window.innerHeight - box.top) / (window.innerHeight + box.height)
-      frame.style.setProperty(
-        '--glass-drift',
-        (Math.min(1, Math.max(0, through)) - 0.5).toFixed(3),
-      )
+      const height = window.innerHeight
+      const frame = stack.querySelector('.glass-morning-frame')?.getBoundingClientRect()
+      const cards = stack.querySelector('.glass-handover')?.getBoundingClientRect()
+      if (frame) {
+        stack.style.setProperty(
+          '--glass-drift',
+          (clamp((height - frame.top) / (height + frame.height)) - 0.5).toFixed(3),
+        )
+        stack.style.setProperty('--glass-rise', clamp((height - frame.top) / (height * 0.5)).toFixed(3))
+      }
+      if (cards) {
+        stack.style.setProperty('--glass-deal', clamp((height - cards.top) / (height * 0.5)).toFixed(3))
+      }
     }
     function onScroll() {
       if (!request) request = requestAnimationFrame(place)
@@ -467,39 +519,61 @@ function MorningPlate() {
     }
   }, [])
 
+  return (
+    <div ref={stackRef} className="glass-stack">
+      {children}
+    </div>
+  )
+}
+
+/**
+ * The morning plate: the photograph, on a deck of two sheets, with the dust.
+ *
+ * The photograph is left clean: nothing is laid over it, by the owner's call
+ * of 29 October 2026. What is waiting in the room is the handover under it
+ * (`glass-handover.tsx`); round the photograph, the night's dust has settled
+ * on the desk. Behind it are two blank sheets, each a step higher and a step
+ * narrower than the one in front, which is the stair the owner asked for: the
+ * photograph is the top card of a stack, and the cards under it are the same
+ * kind of thing.
+ */
+function MorningPlate() {
   const widths = [640, 900, 1280, 1896]
   const sizes = '(min-width: 1360px) 1280px, 100vw'
   return (
     <figure className="glass-morning">
       <GlassField tone="morning" />
-      <div ref={frameRef} className="glass-morning-frame">
-        <picture>
-          <source
-            type="image/avif"
-            sizes={sizes}
-            srcSet={widths
-              .map((width) => `/glass/morning-${width}.avif ${width}w`)
-              .join(', ')}
-          />
-          <source
-            type="image/webp"
-            sizes={sizes}
-            srcSet={widths
-              .map((width) => `/glass/morning-${width}.webp ${width}w`)
-              .join(', ')}
-          />
-          <img
-            src="/glass/morning-1896.jpg"
-            alt={glass.closing.morning}
-            width={1896}
-            height={830}
-            loading="lazy"
-            decoding="async"
-            draggable="false"
-          />
-        </picture>
+      <div className="glass-deck">
+        <span className="glass-stair glass-stair--near" aria-hidden="true" />
+        <span className="glass-stair glass-stair--far" aria-hidden="true" />
+        <div className="glass-morning-frame">
+          <picture>
+            <source
+              type="image/avif"
+              sizes={sizes}
+              srcSet={widths
+                .map((width) => `/glass/morning-${width}.avif ${width}w`)
+                .join(', ')}
+            />
+            <source
+              type="image/webp"
+              sizes={sizes}
+              srcSet={widths
+                .map((width) => `/glass/morning-${width}.webp ${width}w`)
+                .join(', ')}
+            />
+            <img
+              src="/glass/morning-1896.jpg"
+              alt={glass.closing.morning}
+              width={1896}
+              height={830}
+              loading="lazy"
+              decoding="async"
+              draggable="false"
+            />
+          </picture>
+        </div>
       </div>
-      <GlassHandover />
     </figure>
   )
 }

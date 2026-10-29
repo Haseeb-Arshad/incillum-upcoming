@@ -11,6 +11,7 @@ import appCss from '#/styles.css?url'
 import { Colophon } from '#/components/colophon.tsx'
 import { Masthead } from '#/components/masthead.tsx'
 import { gtmHeadScript, gtmNoScriptSrc, posthogHeadScript } from '#/lib/analytics.ts'
+import { mastheadHeadScript } from '#/lib/masthead.ts'
 import { openingHeadScript } from '#/lib/opening.ts'
 import { organizationJsonLd, seoTags } from '#/lib/seo.ts'
 
@@ -63,12 +64,15 @@ export const Route = createRootRoute({
        * page could push to them, and `.filter` removes each one entirely when
        * its key is unset — an empty inline script tag on every page of an
        * unconfigured deployment is litter. The front page's once-a-visit mark
-       * has to be set before the first paint, so it is in the head as well.
+       * has to be set before the first paint, so it is in the head as well, and
+       * so is the masthead's reading of where the reader is: both are about the
+       * page the browser paints before its script has run.
        */
       scripts: [
         gtmHeadScript(),
         posthogHeadScript(),
         { children: openingHeadScript },
+        { children: mastheadHeadScript },
         { type: 'application/ld+json', children: organizationJsonLd() },
       ].filter((script) => script !== null),
     }
@@ -85,7 +89,15 @@ function RootComponent() {
    */
   const ownsChrome = useRouterState({
     select: (state) =>
-      ['/', '/contact', '/charlie', '/glass', '/lab/particles', '/brief'].includes(
+      [
+        '/',
+        '/contact',
+        '/charlie',
+        '/glass',
+        '/lab/particles',
+        '/lab/trust',
+        '/brief',
+      ].includes(
         state.location.pathname,
       ),
   })

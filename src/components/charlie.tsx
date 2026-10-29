@@ -47,7 +47,15 @@ export function CharlieAct() {
   )
 }
 
-/** Charlie's abilities, on the same cards as the trust section. */
+/**
+ * Charlie's abilities, on the same cards as the trust section.
+ *
+ * Retired from `/charlie` on 29 October 2026, with the six steps before it:
+ * four of the seven cards (reads, cites, makes, asks) said again what the film
+ * under the header already shows. The page now says what the film does not
+ * (`charlie-agent.tsx`). Kept, unplaced, with its words in `charlie.abilities`,
+ * which a test still holds to the approvals the outward ones wait for.
+ */
 export function CharlieAbilities() {
   const { abilities } = charlie
   return (

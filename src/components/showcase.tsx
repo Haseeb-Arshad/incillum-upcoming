@@ -1,12 +1,14 @@
 import { useRef } from 'react'
 
+import { Avatar } from '#/components/avatar.tsx'
 import { CountUp } from '#/components/count-up.tsx'
 import { FileIcon } from '#/components/file-icon.tsx'
 import { abilityIcons, Icon, showcaseIcons } from '#/components/icons.tsx'
 import { OrbitMark } from '#/components/orbit-mark.tsx'
-import { Container } from '#/components/primitives.tsx'
+import { ButtonLink, Container } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
-import { charlie, evidence, glass, home, showcase } from '#/content/site.ts'
+import { at, Swap } from '#/components/scene.tsx'
+import { charlie, evidence, glass, home, people, showcase } from '#/content/site.ts'
 import { useScene } from '#/lib/motion.ts'
 
 import type { Scene } from '#/lib/motion.ts'
@@ -64,9 +66,6 @@ const part = record.part.split(' · ')[0] ?? record.part
 const askTitle = ask?.ask?.title.replace('{part}', part) ?? ''
 const askDetail = ask?.ask?.detail.replace('{units}', visual.units.toLocaleString('en-GB')) ?? ''
 
-/** A step's start on its scene's clock, in milliseconds. */
-const at = (start: number) => ({ ['--at' as string]: start }) as CSSProperties
-
 export function Showcase() {
   return (
     <section id="showcase" aria-labelledby="showcase-title" className="showcase">
@@ -78,7 +77,12 @@ export function Showcase() {
           <p className="showcase-lede">{showcase.lede}</p>
         </Reveal>
         <div className="showcase-grid">
-          <Panel name="pickup" title={showcase.pickup.title} body={showcase.pickup.body}>
+          <Panel
+            name="pickup"
+            title={showcase.pickup.title}
+            body={showcase.pickup.body}
+            to={{ href: charlie.path, label: charlie.act.more }}
+          >
             {() => <PickupScene />}
           </Panel>
           <Panel name="sources" title={showcase.sources.title} body={showcase.sources.body}>
@@ -96,15 +100,26 @@ export function Showcase() {
   )
 }
 
+/**
+ * One panel of the bento. A panel can also lead somewhere (`to`): the one
+ * about Charlie leads to Charlie's page, by the owner's call of 29 October
+ * 2026. The whole card is the link, so a reader who reaches for the picture
+ * is not left on the page, and the button in it says where it goes: a real
+ * anchor with a visible name, stretched over the card by the stylesheet, so
+ * there is one link to focus and to announce, not a card made clickable by a
+ * script.
+ */
 function Panel({
   name,
   title,
   body,
+  to,
   children,
 }: {
   name: string
   title: string
   body: string
+  to?: { href: string; label: string }
   children: (scene: Scene) => ReactNode
 }) {
   const ref = useRef<HTMLElement>(null)
@@ -115,6 +130,7 @@ function Panel({
       className="showcase-panel"
       data-panel={name}
       data-scene={scene}
+      data-link={to ? '' : undefined}
       aria-labelledby={`showcase-${name}`}
     >
       <div className="showcase-copy">
@@ -122,25 +138,16 @@ function Panel({
           {title}
         </h3>
         <p className="showcase-body">{body}</p>
+        {to ? (
+          <ButtonLink href={to.href} arrow tone="secondary" className="showcase-more">
+            {to.label}
+          </ButtonLink>
+        ) : null}
       </div>
       <div className="showcase-art" aria-hidden="true">
         {children(scene)}
       </div>
     </article>
-  )
-}
-
-/** Two states of one thing, stacked, so a scene can change it without moving anything round it. */
-function Swap({ start, before, after, className }: { start: number; before: ReactNode; after: ReactNode; className?: string }) {
-  return (
-    <span className={`scene-swap ${className ?? ''}`}>
-      <span data-swap="before" style={at(start)}>
-        {before}
-      </span>
-      <span data-swap="after" style={at(start)}>
-        {after}
-      </span>
-    </span>
   )
 }
 
@@ -150,12 +157,15 @@ function PickupScene() {
     <div className="scene-pickup">
       <div className="scene-mail" data-step="" style={at(0)}>
         <p className="scene-mail-head">
-          <FileIcon kind="mail" className="scene-mail-icon" />
+          <Avatar person="buyer" className="scene-mail-avatar" />
           <span className="scene-mail-from">
-            <strong>{request.from}</strong>
-            <span>{request.address}</span>
+            <strong>{people.buyer.name}</strong>
+            <span>{people.buyer.role}</span>
           </span>
-          <span className="scene-time">{pickup.now}</span>
+          <span className="scene-mail-stamp">
+            <FileIcon kind="mail" className="scene-mail-icon" />
+            <span className="scene-time">{pickup.now}</span>
+          </span>
         </p>
         <p className="scene-mail-subject">{request.subject}</p>
         <p className="scene-mail-body">{request.body}</p>
@@ -275,13 +285,15 @@ function FloorScene({ scene }: { scene: Scene }) {
       }
     >
       <p className="scene-cause" data-step="" style={at(0)}>
-        <FileIcon kind="mail" className="scene-cause-icon" />
-        <span>
-          <strong>{supplier}</strong>
+        <Avatar person="supplier" className="scene-cause-avatar" />
+        <span className="scene-cause-text">
+          <strong>{people.supplier.name}</strong>
+          <span>{supplier}</span>
           <span>
             {visual.costLabel} {visual.unitCostBefore.toFixed(2)} → {visual.unitCostAfter.toFixed(2)}
           </span>
         </span>
+        <FileIcon kind="mail" className="scene-cause-icon" />
       </p>
       <p className="scene-floor-ref">{record.reference}</p>
       <p className="scene-floor-figure">
@@ -345,7 +357,7 @@ function ApprovalScene() {
 
       <div className="scene-ask" data-step="" style={at(950)}>
         <p className="scene-ask-who">
-          <span className="scene-avatar">{approver.name.charAt(0)}</span>
+          <Avatar person="director" className="scene-ask-avatar" />
           <span>
             <strong>{approver.name}</strong>
             <span>{approver.role}</span>

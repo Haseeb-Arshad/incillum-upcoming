@@ -20,11 +20,13 @@ import {
   instrument,
   menu,
   nightfall,
+  people,
   questions,
   showcase,
   thread,
   trust,
 } from '#/content/site.ts'
+import { fill } from '#/lib/channel.ts'
 
 /**
  * The copy, held to the rules it is written under.
@@ -1303,6 +1305,52 @@ describe('Charlie', () => {
     }
   })
 
+  it('shows Charlie as an agent: spoken to, who it talks to, and where it stops', () => {
+    const { talk, reach, limits } = charlie.agent
+    expect(talk.points).toHaveLength(3)
+    for (const point of talk.points) {
+      expect(words(point.title), point.title).toBeLessThanOrEqual(5)
+      expect(words(point.body), point.body).toBeLessThanOrEqual(24)
+    }
+    expect(reach.items.map((item) => item.key)).toEqual(['team', 'suppliers', 'phone'])
+    // Whatever leaves, leaves with a person's approval: both outward cards say so; the team's own channel needs none.
+    for (const item of reach.items.filter((entry) => entry.key !== 'team')) {
+      expect(item.waits, item.key).toMatch(/once a person approves/)
+    }
+    expect(limits.columns.map((column) => column.key)).toEqual(['alone', 'asks', 'never'])
+    for (const column of limits.columns) {
+      for (const item of column.items) expect(words(item), item).toBeLessThanOrEqual(8)
+    }
+    // Nothing outward is on its own, and everything that is outward waits.
+    const [alone, asks] = limits.columns
+    expect(alone!.items.join(' ')).not.toMatch(/\b(send|sends|call|calls|commit|commits)\b/i)
+    expect(asks!.items.join(' ')).toMatch(/Sends a request to a supplier/)
+    expect(asks!.items.join(' ')).toMatch(/Calls a supplier/)
+    expect(asks!.items.join(' ')).toMatch(/Sends the quotation/)
+    // The page writes no figure of its own: the channel's come from the night.
+    expect(JSON.stringify(charlie.agent)).not.toMatch(/EUR|\d+(\.\d+)?\s?%|\d+\.\d{2}|\d,\d{3}/)
+    // The channel plays `charlie.scene`, whose every token the channel can fill.
+    for (const message of charlie.scene.messages) {
+      expect(fill(message.text), message.at).not.toMatch(/\{|\}/)
+      if (message.ask) {
+        expect(fill(message.ask.title)).not.toMatch(/\{|\}/)
+        expect(fill(message.ask.detail)).not.toMatch(/\{|\}/)
+      }
+    }
+  })
+
+  it('does not say the film’s steps again under the film', () => {
+    const page = readFileSync(
+      new URL('../components/charlie-page.tsx', import.meta.url),
+      'utf8',
+    )
+    expect(page).not.toContain('steps.items')
+    expect(page).not.toContain('cp-step')
+    for (const section of ['CharlieConversation', 'CharlieReach', 'CharlieLimits']) {
+      expect(page, section).toContain(`<${section} />`)
+    }
+  })
+
   it('carries no state labels, claims nothing, names no ERP or mail client, and spends no motto', () => {
     expect(JSON.stringify(charlie)).not.toMatch(
       /Decided|In build|Planned|not yet built|being built/,
@@ -1442,6 +1490,56 @@ describe('the showcase', () => {
     for (const tile of showcase.sources.tiles) expect(kinds.has(tile.kind), tile.key).toBe(true)
     for (const file of showcase.approval.files) expect(kinds.has(file.kind), file.label).toBe(true)
     for (const item of trust.diagram.data) expect(kinds.has(item.kind), item.label).toBe(true)
+  })
+})
+
+/**
+ * The people in the example, and the questions a buyer asks. The people are
+ * invented and appear only in drawings of the product; their portraits are
+ * files the site serves, and each is a plain drawing with nothing active in
+ * it. The questions are cards, each with a key for its icon, each answered
+ * with its first sentence as the answer.
+ */
+describe('the people in the example', () => {
+  const portrait = (person: { portrait: string }) =>
+    readFileSync(new URL(`../../public${person.portrait}`, import.meta.url), 'utf8')
+
+  it('has a portrait file for each, with nothing active in it', () => {
+    for (const [key, person] of Object.entries(people)) {
+      const svg = portrait(person)
+      expect(svg, key).toMatch(/^<svg /)
+      expect(svg, key).not.toMatch(/<script|onload|onclick|foreignObject|href=/i)
+      expect(person.portrait, key).toBe(`/people/${key === 'director' ? 'james' : key === 'sales' ? 'sara' : key === 'buyer' ? 'marta' : 'tomas'}.svg`)
+    }
+  })
+
+  it('names the channel’s people from the same place', () => {
+    expect(charlie.scene.people.director).toBe(people.director)
+    expect(charlie.scene.people.sales).toBe(people.sales)
+    expect(people.director.name).toBe('James')
+    expect(charlie.scene.messages.find((message) => message.decided)?.decided).toContain(people.director.name)
+  })
+
+  it('are only the example’s: no surname of a customer, no company, no address', () => {
+    expect(JSON.stringify(people)).not.toMatch(/@|\.com|\bInc\b|\bLtd\b|\bGmbH\b/)
+    expect(people.buyer.role).toBe(glass.sources.documents.request.from)
+  })
+})
+
+describe('the questions', () => {
+  it('has a unique key for each, and a first sentence that is the answer', () => {
+    expect(new Set(questions.items.map((item) => item.key)).size).toBe(questions.items.length)
+    for (const item of questions.items) {
+      const lead = item.answer.split(/(?<=[.?!])\s+/)[0] ?? ''
+      expect(lead, item.key).toMatch(/[.?!]$/)
+      expect(lead.length, item.key).toBeLessThan(140)
+    }
+  })
+
+  it('sends a question that is not here to the memo, and promises no time', () => {
+    expect(questions.more.action).toBe('Write to us')
+    expect(JSON.stringify(questions.more)).not.toMatch(/\d|hour|same day|within|minutes/i)
+    claimsNothing(questions)
   })
 })
 

@@ -2,6 +2,8 @@ import { statSync } from 'node:fs'
 
 import { expect, test } from '@playwright/test'
 
+import { cramped } from './support.ts'
+
 import type { Page } from '@playwright/test'
 
 /**
@@ -478,8 +480,29 @@ test('the morning is the same room, and what waits in it is the night’s own', 
 }) => {
   const morning = page.locator('.glass-morning')
   await expect(morning.getByRole('img')).toHaveAttribute('alt', /08:04/)
-  const handover = morning.locator('.glass-handover')
+  // Nothing is laid over the photograph: no caption, no card.
+  await expect(morning.locator('.glass-handover, figcaption')).toHaveCount(0)
+  const handover = page.locator('.glass-handover')
+  // And what waits in the room is under it, not over it.
+  const [photo, below] = await Promise.all([
+    morning.boundingBox(),
+    handover.boundingBox(),
+  ])
+  expect(below!.y).toBeGreaterThanOrEqual(photo!.y + photo!.height - 1)
   await expect(handover).toContainText('With a person · 08:04')
+  await expect(handover.locator('.handover-message')).toContainText('#rfq-8841')
+  await expect(handover.locator('.handover-message')).toContainText(
+    '18 lines priced, 2 held',
+  )
+  await expect(handover.locator('.handover-decision .avatar')).toHaveAttribute(
+    'src',
+    '/people/james.svg',
+  )
+  // Sara, who the message is for, stands in her own mention.
+  await expect(handover.locator('.handover-mention .avatar')).toHaveAttribute(
+    'src',
+    '/people/sara.svg',
+  )
   await expect(handover).toContainText(
     'Quote under the floor, or go back on the lead time.',
   )
@@ -490,12 +513,126 @@ test('the morning is the same room, and what waits in it is the night’s own', 
   await expect(handover.locator('.glass-handover-short')).toContainText('EUR 10,638.00')
   // Reduced motion: the photograph holds still, centred.
   expect(
-    await morning
-      .locator('.glass-morning-frame')
+    await page
+      .locator('.glass-stack')
       .evaluate((element: HTMLElement) =>
         element.style.getPropertyValue('--glass-drift'),
       ),
   ).toBe('')
+})
+
+test('the morning is a deck: two sheets step out behind the photograph, and the cards come out from under it', async ({
+  page,
+}) => {
+  // Reduced motion is the last frame: the deck as it ends up.
+  const morning = page.locator('.glass-morning')
+  const stairs = morning.locator('.glass-stair')
+  await expect(stairs).toHaveCount(2)
+  for (const stair of await stairs.all()) await expect(stair).toHaveAttribute('aria-hidden', 'true')
+  const [frame, near, far] = await Promise.all([
+    morning.locator('.glass-morning-frame').boundingBox(),
+    stairs.nth(0).boundingBox(),
+    stairs.nth(1).boundingBox(),
+  ])
+  // Each sheet is a step higher and a step narrower than the one in front of it.
+  expect(near!.y).toBeLessThan(frame!.y)
+  expect(far!.y).toBeLessThan(near!.y)
+  expect(near!.width).toBeLessThan(frame!.width)
+  expect(far!.width).toBeLessThan(near!.width)
+  // Nothing is written under reduced motion, and the cards are where they belong.
+  const written = await page
+    .locator('.glass-stack')
+    .evaluate((element) =>
+      ['--glass-drift', '--glass-rise', '--glass-deal'].map((name) =>
+        (element as HTMLElement).style.getPropertyValue(name),
+      ),
+    )
+  expect(written).toEqual(['', '', ''])
+  // At rest nothing is moved: a transform that does nothing computes to none or to the identity.
+  const still = (transform: string) =>
+    transform === 'none' || transform === 'matrix(1, 0, 0, 1, 0, 0)'
+  for (const card of ['.handover-message', '.handover-decision', '.glass-deck']) {
+    expect(
+      still(await page.locator(card).evaluate((element) => getComputedStyle(element).transform)),
+      card,
+    ).toBe(true)
+  }
+})
+
+test('the deck is dealt as the reader comes to it, and is whole once they have', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto(GLASS)
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await page.keyboard.press('Shift')
+  const stack = page.locator('.glass-stack')
+  const read = () =>
+    stack.evaluate((element) => {
+      const style = (element as HTMLElement).style
+      return {
+        rise: Number(style.getPropertyValue('--glass-rise')),
+        deal: Number(style.getPropertyValue('--glass-deal')),
+      }
+    })
+  const placeAt = (fraction: number) =>
+    page.evaluate((through) => {
+      const frame = document.querySelector('.glass-morning-frame')!
+      const top = frame.getBoundingClientRect().top + window.scrollY
+      window.scrollTo({ top: top - window.innerHeight * through, behavior: 'instant' })
+    }, fraction)
+
+  // Far above it, the photograph has not come up and the cards are still under it.
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+  await expect.poll(read).toEqual({ rise: 0, deal: 0 })
+  // A little way up the screen, it is on its way.
+  await placeAt(0.75)
+  await expect.poll(async () => (await read()).rise).toBeGreaterThan(0.2)
+  await expect.poll(async () => (await read()).rise).toBeLessThan(0.8)
+  // Mid-screen, it is whole.
+  await placeAt(0.3)
+  await expect.poll(async () => (await read()).rise).toBe(1)
+  // And the cards are dealt by the time they are what the reader is looking at.
+  await stack.locator('.glass-handover').evaluate((element) =>
+    element.scrollIntoView({ block: 'center', behavior: 'instant' }),
+  )
+  await expect.poll(async () => (await read()).deal).toBe(1)
+})
+
+test('the page ends on its name, set large and half in the light, with a way back up', async ({
+  page,
+}) => {
+  const footer = page.getByRole('contentinfo')
+  await footer.scrollIntoViewIfNeeded()
+  const word = footer.locator('.glass-wordmark')
+  // A drawing of the name the footer already carries as a link, so it is not announced twice.
+  await expect(word).toHaveAttribute('aria-hidden', 'true')
+  await expect(word).toHaveText('Incillum')
+  // Ink and paper only, and one gradient each: a wash behind the footer and the fade on the word.
+  const grounds = await footer.evaluate((element) => ({
+    wash: getComputedStyle(element).backgroundImage,
+    word: getComputedStyle(element.querySelector('.glass-wordmark span')!).backgroundImage,
+  }))
+  expect(grounds.wash).toContain('linear-gradient')
+  expect(grounds.word).toContain('linear-gradient')
+  expect(grounds.word).not.toMatch(/rgb\(\s*(\d+),\s*(?!\1)\d+,\s*\d+/)
+  // It is cut off by the page, and never makes it wider.
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+  ).toBe(true)
+  const box = (await word.boundingBox())!
+  const page_ = await page.evaluate(() => ({
+    bottom: document.documentElement.scrollHeight - window.scrollY,
+    inner: window.innerHeight,
+  }))
+  expect(box.y + box.height).toBeLessThanOrEqual(page_.inner + 1)
+  expect(page_.bottom).toBeGreaterThan(0)
+
+  // The way back up goes to the top, and leaves the address as it was.
+  const address = page.url()
+  await footer.getByRole('link', { name: 'Back to top' }).click()
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
+  expect(page.url()).toBe(address)
 })
 
 test('the inline field keeps its name and validates, and nothing is sent', async ({
@@ -549,7 +686,7 @@ test('server HTML carries the headline, the form, the film’s statements and it
   await context.close()
 })
 
-test('trust: the boundary drawn, the one way out a person, and six commitments in plain words', async ({
+test('trust: the boundary drawn as a system, the one way out a named person, and six commitments in plain words', async ({
   page,
 }) => {
   const section = page.locator('#trust')
@@ -560,17 +697,43 @@ test('trust: the boundary drawn, the one way out a person, and six commitments i
   const map = section.locator('.trust-map')
   await expect(map).toHaveAttribute('role', 'img')
   await expect(map).toHaveAttribute('aria-label', /only way out is a person’s approval/)
-  // Each with its file's mark, whose format is part of the drawing's text.
-  await expect(map.locator('.trust-data li')).toHaveText([
-    /Prices$/,
+
+  // What comes in: a real email from a person, with its attachments, and a supplier's answer.
+  const emails = map.locator('.trust-email')
+  await expect(emails).toHaveCount(2)
+  await expect(emails.first()).toContainText('Marta Keller')
+  await expect(emails.first()).toContainText('RFQ 8841, framework agreement')
+  await expect(emails.first().locator('.trust-attachment')).toHaveCount(2)
+  await expect(emails.nth(1)).toContainText('Tomas Berg')
+  await expect(emails.nth(1)).toContainText('Supplier confirmation SC-4471')
+
+  // What stays: four of your own documents, and Charlie among them, behind the boundary.
+  const boundary = map.locator('.trust-boundary')
+  await expect(boundary).toContainText('Your organisation')
+  await expect(boundary.locator('.trust-data')).toHaveText([
+    /Price lists$/,
     /Costs$/,
     /Agreements$/,
     /Quotations$/,
   ])
-  await expect(map.locator('.trust-gate')).toContainText('James')
-  await expect(map.locator('.trust-approve')).toHaveText('Approve and send')
+  await expect(boundary.locator('.trust-charlie')).toContainText('Charlie')
+  await expect(boundary.locator('.trust-guards li')).toHaveCount(3)
+
+  // The path that does not exist, drawn and refused.
   await expect(map.locator('.trust-never')).toHaveText('Never')
-  await expect(map.locator('.trust-node[data-refused]')).toHaveText('Model training')
+  await expect(map.locator('.trust-training')).toHaveText('Model training')
+
+  // The gate: a named person, no portrait (the owner's call), and the approval, small and one thing; then what goes out.
+  const gate = map.locator('.trust-gate')
+  await expect(gate).toContainText('James')
+  await expect(gate).toContainText('Sales director')
+  await expect(gate.locator('.avatar')).toHaveCount(0)
+  await expect(gate.locator('.trust-approve-done')).toHaveText('Approved · 08:14')
+  const button = await gate.locator('.trust-approve').boundingBox()
+  expect(button!.height).toBeLessThan(40)
+  expect(button!.height).toBeGreaterThan(24)
+  await expect(map.locator('.trust-out')).toHaveCount(2)
+  await expect(map.locator('.trust-chip[data-done]')).toHaveText(['Sent', 'Sent'])
 
   const commitments = section.locator('.trust-commitment')
   await expect(commitments).toHaveCount(6)
@@ -586,17 +749,37 @@ test('trust: the boundary drawn, the one way out a person, and six commitments i
   await expect(page.locator('body')).not.toContainText(
     /SOC 2|ISO\/IEC|GDPR|CCPA|HIPAA|certified|compliant|Honest about what exists/,
   )
-  // Every part of the drawing stays inside it, at every width.
+  // Every card stays inside the board, at every width.
   const outside = await map.evaluate((drawing) => {
     const box = drawing.getBoundingClientRect()
-    return [...drawing.querySelectorAll('.trust-node, .trust-boundary, .trust-gate')].filter(
-      (element) => {
-        const rect = element.getBoundingClientRect()
-        return rect.left < box.left - 1 || rect.right > box.right + 1
-      },
-    ).length
+    return [
+      ...drawing.querySelectorAll('.trust-email, .trust-boundary, .trust-gate, .trust-out'),
+    ].filter((element) => {
+      const rect = element.getBoundingClientRect()
+      return rect.left < box.left - 1 || rect.right > box.right + 1
+    }).length
   })
   expect(outside).toBe(0)
+  // Nothing in a card touches its border: the last row sits above the card's own padding, at every width.
+  expect(await cramped(map)).toEqual([])
+  // And on a wide screen nothing on the board overlaps anything else that is text.
+  const wide = await page.evaluate(() => window.matchMedia('(min-width: 80rem)').matches)
+  if (wide) {
+    const overlaps = await map.evaluate((drawing) => {
+      const cards = [
+        ...drawing.querySelectorAll('.trust-email, .trust-gate, .trust-out, .trust-boundary, .trust-training'),
+      ].map((element) => element.getBoundingClientRect())
+      let found = 0
+      for (let a = 0; a < cards.length; a += 1) {
+        for (let b = a + 1; b < cards.length; b += 1) {
+          const [one, two] = [cards[a]!, cards[b]!]
+          if (one.left < two.right - 1 && two.left < one.right - 1 && one.top < two.bottom - 1 && two.top < one.bottom - 1) found += 1
+        }
+      }
+      return found
+    })
+    expect(overlaps).toBe(0)
+  }
 })
 
 test('nothing on the page paints over the masthead, from the top to the footer', async ({
@@ -653,12 +836,22 @@ test('after the night the page lies on white paper, with nothing grained into it
   expect(oddsGround).toEqual({ colour: 'rgb(242, 242, 240)', image: 'none' })
 })
 
-test('questions are answered in full, with nothing folded away', async ({ page }) => {
+test('questions are cards, each answered in full, with nothing folded away', async ({ page }) => {
   const section = page.locator('#questions')
+  await expect(section.getByRole('heading', { level: 2 })).toHaveText('What you’ll want to know.')
+  const cards = section.locator('.question-card')
+  await expect(cards).toHaveCount(7)
+  for (const card of await cards.all()) {
+    await expect(card.locator('.question-tile svg')).toBeAttached()
+    // The first sentence is the answer, set apart; the rest follows it.
+    await expect(card.locator('.question-lead')).toHaveText(/[.?!]$/)
+  }
+  await expect(cards.nth(1).locator('.question-lead')).toHaveText('Not by itself.')
+  await expect(section.locator('.questions-more a')).toHaveAttribute('href', '/contact')
   const answers = section.locator('.questions-answer')
   expect(await answers.count()).toBeGreaterThanOrEqual(5)
   for (const answer of await answers.all()) await expect(answer).toBeVisible()
-  await expect(page.locator('details')).toHaveCount(0)
+  await expect(section.locator('details')).toHaveCount(0)
   await expect(section.locator('[hidden]')).toHaveCount(0)
 })
 
@@ -683,7 +876,8 @@ test('the masthead stays with the reader, and its links land somewhere real', as
   const anchors = await page
     .locator('a[href^="#"], a[href^="/#"]')
     .evaluateAll((links) =>
-      links.map((link) => link.getAttribute('href')!.split('#')[1]!),
+      // A bare `#` is the way back to the top, not a section.
+      links.map((link) => link.getAttribute('href')!.split('#')[1]!).filter((id) => id !== ''),
     )
   for (const id of new Set(anchors)) {
     await expect(page.locator(`[id="${id}"]`), `#${id}`).toHaveCount(1)
@@ -773,6 +967,21 @@ test('the showcase: four scenes from one request, drawn from the example and cle
   ])
   await expect(pickup.locator('.scene-result')).toHaveText('18 lines priced. 2 need your input.')
   await expect(pickup.locator('.scene-held li')).toHaveCount(2)
+  // It is the one card that leads somewhere: a button that says so, stretched over the whole card.
+  const meet = pickup.getByRole('link', { name: 'Meet Charlie' })
+  await expect(meet).toHaveAttribute('href', '/charlie')
+  await expect(meet).toBeVisible()
+  await expect(section.locator('.showcase-panel a')).toHaveCount(1)
+  await pickup.scrollIntoViewIfNeeded()
+  const card = (await pickup.boundingBox())!
+  const stretched = await pickup.evaluate((panel) => {
+    const rect = panel.getBoundingClientRect()
+    // A point in the picture, away from the button, is the link's.
+    const hit = document.elementFromPoint(rect.left + rect.width * 0.7, rect.top + rect.height * 0.75)
+    return hit?.closest('a')?.getAttribute('href') ?? null
+  })
+  expect(card.height).toBeGreaterThan(200)
+  expect(stretched).toBe('/charlie')
 
   // Sources: six documents with their marks, and the agreed rate back to its clause.
   const sources = section.locator('[data-panel="sources"]')
@@ -807,7 +1016,14 @@ test('the showcase: four scenes from one request, drawn from the example and cle
     'Call or meeting',
   ])
 
-  // Every card stays inside its panel, and nobody else's mark is drawn: no image at all.
+  // The people are portraits, and an email is drawn with Gmail's mark.
+  await expect(section.locator('img')).toHaveCount(3)
+  for (const image of await section.locator('img').all()) {
+    await expect(image).toHaveClass(/avatar/)
+    await expect(image).toHaveAttribute('src', /^\/people\/\w+\.svg$/)
+  }
+  await expect(section.locator('svg[data-kind="mail"]')).toHaveCount(4)
+  // Every card stays inside its panel.
   const clipped = await section.locator('.showcase-panel').evaluateAll((panels) =>
     panels.flatMap((panel) => {
       const box = panel.getBoundingClientRect()
@@ -824,7 +1040,6 @@ test('the showcase: four scenes from one request, drawn from the example and cle
     }),
   )
   expect(clipped).toEqual([])
-  await expect(section.locator('img')).toHaveCount(0)
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
   ).toBe(true)
@@ -862,4 +1077,270 @@ test('with motion, each scene waits at its first frame and plays once to its las
   // Once played it stays played: nothing replays on the way back.
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
   await expect(panel).toHaveAttribute('data-scene', 'playing')
+})
+
+test('the people are portraits, not initials, and an email carries the Gmail mark', async ({
+  page,
+}) => {
+  const portraits = await page.locator('img.avatar').evaluateAll((images) =>
+    images.map((image) => (image as HTMLImageElement).getAttribute('src')),
+  )
+  // Every person has a face somewhere: James, Marta and Tomas in the showcase and the board, Sara in the morning.
+  for (const person of ['james', 'sara', 'marta', 'tomas']) {
+    expect(portraits, person).toContain(`/people/${person}.svg`)
+  }
+  // Nobody is a letter in a box.
+  await expect(page.locator('.scene-avatar')).toHaveCount(0)
+  // Every drawn email is Gmail's own mark, in its own colours, and the page never writes the name.
+  const marks = page.locator('svg[data-kind="mail"]')
+  expect(await marks.count()).toBeGreaterThanOrEqual(8)
+  for (const mark of await marks.all()) {
+    await expect(mark.locator('path[fill="#ea4335"]')).toHaveCount(1)
+    await expect(mark.locator('path[fill="#4285f4"]')).toHaveCount(1)
+  }
+  await expect(page.locator('body')).not.toContainText(/gmail|google/i)
+  // The portraits are real files, served.
+  const response = await page.request.get('/people/james.svg')
+  expect(response.status()).toBe(200)
+  expect(response.headers()['content-type']).toContain('svg')
+})
+
+/** Relative luminance of an `rgb()` or `rgba()` colour: 0 is black, 1 is white. */
+function luminance(color: string): number {
+  const [red = 0, green = 0, blue = 0] = (color.match(/[\d.]+/g) ?? []).slice(0, 3).map((part) => {
+    const channel = Number(part) / 255
+    return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+  })
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue
+}
+
+/** What the masthead looks like right now: its brand, its button, and how much of a pane it is. */
+async function readBar(page: Page) {
+  return page.getByRole('banner').evaluate((bar) => {
+    const brand = bar.querySelector('.site-brand')!
+    const cta = bar.querySelector('.glass-bar-inner > nav > .desk-cta')!
+    return {
+      brand: getComputedStyle(brand).color,
+      ctaFill: getComputedStyle(cta, '::before').backgroundColor,
+      ctaText: getComputedStyle(cta).color,
+      pane: Number(getComputedStyle(bar, '::before').opacity),
+    }
+  })
+}
+
+test('the navbar never hides: it stays fixed at the top going down and going up, with the reader’s place along its lower edge', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto(GLASS)
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await page.keyboard.press('Shift')
+  const banner = page.getByRole('banner')
+
+  // Going down, it is on screen after every step, however far.
+  await page.mouse.move(400, 400)
+  for (let step = 0; step < 12; step += 1) {
+    await page.mouse.wheel(0, 260)
+    await page.waitForTimeout(60)
+    // (Within a pixel: the page's own entrance is still settling the bar in the first moments.)
+    expect(
+      Math.abs((await banner.boundingBox())?.y ?? -99),
+      `after ${step + 1} steps down`,
+    ).toBeLessThan(1)
+  }
+  await expect(banner).not.toHaveAttribute('data-tucked')
+  await expect(banner.getByRole('link', { name: 'Request early access' })).toBeInViewport()
+
+  // Going up, the same.
+  for (let step = 0; step < 4; step += 1) {
+    await page.mouse.wheel(0, -200)
+    await page.waitForTimeout(60)
+    expect(
+      Math.abs((await banner.boundingBox())?.y ?? -99),
+      `after ${step + 1} steps up`,
+    ).toBeLessThan(1)
+  }
+
+  // The page's place is drawn along its lower edge.
+  const progress = await banner.evaluate((element) =>
+    Number.parseFloat((element as HTMLElement).style.getPropertyValue('--glass-progress')),
+  )
+  expect(progress).toBeGreaterThan(0)
+  expect(progress).toBeLessThan(1)
+})
+
+test('the navbar can be read wherever the reader is put back, before the page’s own script has run', async ({
+  page,
+}) => {
+  // Hold every script of the application back, so the page stays as the server drew it:
+  // the top of the page, with the bar in the night's tokens. The head script is inline and still runs.
+  // (A fresh document: the page the test opened with has long since hydrated.)
+  await page.goto('about:blank')
+  await page.route('**/*.js', (route) => route.abort())
+  await page.goto('/#trust', { waitUntil: 'domcontentloaded' })
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1500)
+
+  const root = page.locator('html')
+  await expect(root).not.toHaveAttribute('data-hydrated', 'true')
+  // The head script has seen where the reader is: past the first screen, and past the night.
+  await expect(root).toHaveAttribute('data-bar-pane', '')
+  await expect(root).toHaveAttribute('data-bar-day', '')
+
+  // So the bar is a white pane with dark ink and a dark button, not a pale bar over white paper.
+  await expect
+    .poll(async () => {
+      const bar = await readBar(page)
+      return {
+        brand: luminance(bar.brand) < 0.1,
+        pane: bar.pane,
+        ctaFill: luminance(bar.ctaFill) < 0.1,
+        ctaText: luminance(bar.ctaText) > 0.8,
+      }
+    })
+    .toEqual({ brand: true, pane: 1, ctaFill: true, ctaText: true })
+})
+
+test('the navbar keeps those colours when the page takes over, and on a reload part-way down', async ({
+  page,
+}) => {
+  await page.evaluate(() =>
+    document.querySelector('#trust')?.scrollIntoView({ behavior: 'instant' }),
+  )
+  await reload(page)
+  const banner = page.getByRole('banner')
+  await expect(banner).toHaveAttribute('data-tone', 'day')
+  await expect(page.locator('html')).toHaveAttribute('data-bar-live', '')
+  await expect
+    .poll(async () => {
+      const bar = await readBar(page)
+      return { brand: luminance(bar.brand) < 0.1, pane: bar.pane }
+    })
+    .toEqual({ brand: true, pane: 1 })
+
+  // And back at the top it is clear, in the night's tokens.
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await expect(banner).toHaveAttribute('data-tone', 'night')
+  await expect.poll(async () => luminance((await readBar(page)).brand)).toBeGreaterThan(0.8)
+})
+
+test('without a script the navbar is a plain white pane, never a pale bar over white', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    reducedMotion: 'reduce',
+    viewport: { width: 1440, height: 900 },
+  })
+  try {
+    const page = await context.newPage()
+    await page.route('**/*.mp4', (route) => route.abort())
+    await page.goto(`${base}/#questions`, { waitUntil: 'domcontentloaded' })
+    // With no script there is nothing to wait for but the stylesheet, which does not hold the document up.
+    await expect
+      .poll(async () => {
+        const bar = await readBar(page)
+        return [
+          luminance(bar.brand) < 0.1,
+          bar.pane === 1,
+          luminance(bar.ctaFill) < 0.1,
+          luminance(bar.ctaText) > 0.8,
+        ]
+      })
+      .toEqual([true, true, true, true])
+  } finally {
+    await context.close()
+  }
+})
+
+test('on a phone the Menu button opens one sheet with the Product page in it', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  const banner = page.getByRole('banner')
+  const button = banner.locator('.phone-menu-button')
+  const sheet = banner.locator('.phone-menu-sheet')
+
+  // The desktop menus have no room, so the bar says so with a button, in words.
+  await expect(button).toBeVisible()
+  await expect(button).toHaveText('Menu')
+  await expect(banner.locator('.site-menu-button')).toBeHidden()
+  await expect(sheet).toBeHidden()
+  // The button is still the bar's own, in its short form, and still named in full.
+  await expect(banner.getByRole('link', { name: 'Request early access' })).toHaveText(
+    'Early access',
+    { useInnerText: true },
+  )
+
+  await button.click()
+  await expect(sheet).toBeVisible()
+  await expect(sheet.getByText('Product', { exact: true })).toBeVisible()
+  await expect(sheet.getByRole('link', { name: /^Charlie/ })).toBeVisible()
+  await expect(sheet.getByRole('link', { name: 'Contact' })).toBeVisible()
+  await expect(sheet.getByRole('link', { name: 'Request early access' })).toBeVisible()
+  // Under the sheet the bar is a pane, so the sheet is joined to it.
+  expect((await readBar(page)).pane).toBe(1)
+
+  // Escape closes it, and so does a tap anywhere else.
+  await page.keyboard.press('Escape')
+  await expect(sheet).toBeHidden()
+  await button.click()
+  await expect(sheet).toBeVisible()
+  await page.locator('body').dispatchEvent('pointerdown')
+  await expect(sheet).toBeHidden()
+
+  // Choosing Charlie goes to her page.
+  await button.click()
+  await sheet.getByRole('link', { name: /^Charlie/ }).click()
+  await expect(page).toHaveURL(/\/charlie$/)
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+})
+
+test('the masthead fits at every phone width: nothing in it runs past the gutter', async ({
+  page,
+}) => {
+  for (const path of ['/', '/charlie']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' })
+    await page.waitForSelector('html[data-hydrated="true"]')
+    for (const width of [320, 340, 360, 375, 390, 412, 430, 480, 600, 768]) {
+      await page.setViewportSize({ width, height: 800 })
+      const fit = await page.getByRole('banner').evaluate((bar) => {
+        const items = [
+          '.site-brand',
+          '.glass-bar-inner > nav > .desk-cta',
+          '.phone-menu-button',
+          '.site-menu-button',
+        ]
+          .map((selector) => bar.querySelector(selector))
+          .filter((element): element is Element => element !== null)
+          .map((element) => element.getBoundingClientRect())
+          .filter((rect) => rect.width > 0)
+        return {
+          left: Math.min(...items.map((rect) => rect.left)),
+          right: Math.max(...items.map((rect) => rect.right)),
+          reach: window.innerWidth,
+          // Whichever way into the menus there is, there is one.
+          way:
+            (bar.querySelector('.phone-menu-button')?.getBoundingClientRect().width ?? 0) +
+            (bar.querySelector('.site-menu-button')?.getBoundingClientRect().width ?? 0),
+        }
+      })
+      expect(fit.left, `${path} at ${width}: left`).toBeGreaterThanOrEqual(16)
+      expect(fit.right, `${path} at ${width}: right`).toBeLessThanOrEqual(fit.reach - 16)
+      expect(fit.way, `${path} at ${width}: a way to the menus`).toBeGreaterThan(0)
+    }
+  }
+})
+
+test('the phone menu works before the page has hydrated, and on a tablet', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await page.route('**/*.js', (route) => route.abort())
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  const banner = page.getByRole('banner')
+  await banner.locator('.phone-menu-button').click()
+  await expect(banner.locator('.phone-menu-sheet')).toBeVisible()
+  await expect(
+    banner.locator('.phone-menu-sheet').getByRole('link', { name: /^Charlie/ }),
+  ).toBeVisible()
 })

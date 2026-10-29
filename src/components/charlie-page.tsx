@@ -1,6 +1,9 @@
-import { CharlieAbilities } from '#/components/charlie.tsx'
-import { CharlieReel, seekReel } from '#/components/charlie-reel.tsx'
-import { Icon, reelIcons } from '#/components/icons.tsx'
+import {
+  CharlieConversation,
+  CharlieLimits,
+  CharlieReach,
+} from '#/components/charlie-agent.tsx'
+import { CharlieReel } from '#/components/charlie-reel.tsx'
 import { OrbitMark } from '#/components/orbit-mark.tsx'
 import { PageFrame } from '#/components/page-frame.tsx'
 import { ButtonLink, Container } from '#/components/primitives.tsx'
@@ -11,12 +14,18 @@ import { charlie } from '#/content/site.ts'
  * /charlie — the colleague inside Incillum, shown at work.
  *
  * A headline and the two ways on; the film of Charlie working one request in
- * Incillum Studio, cut from Studio's own pages; the same six steps again, each
- * with a still of the page it happens on and a way back into the film at that
- * step; what Charlie does; and one invitation.
+ * Incillum Studio, cut from Studio's own pages; then Charlie as an agent, which
+ * the film does not say: spoken to in a team's channel, who it talks to, and
+ * where it stops (`charlie-agent.tsx`); and one invitation.
+ *
+ * Under the film there used to be the same six steps again, each with a still
+ * of the Studio page it happens on and a way back into the film. The owner
+ * found it repeated the film (29 October 2026), so the film keeps its own
+ * chapters and the page says something else. The steps' words and stills are
+ * kept, unplaced, in `charlie.steps`.
  */
 export function CharliePage() {
-  const { hero, steps, close } = charlie
+  const { hero, close } = charlie
   return (
     <PageFrame>
       <section aria-labelledby="charlie-title" className="cp-hero">
@@ -48,46 +57,9 @@ export function CharliePage() {
         </Container>
       </section>
 
-      <section aria-labelledby="charlie-steps-title" className="cp-steps">
-        <Container>
-          <Reveal className="glass-act-title">
-            <h2 id="charlie-steps-title" className="glass-heading">
-              {steps.headline}
-            </h2>
-            <p className="glass-sources-lede">{steps.lede}</p>
-          </Reveal>
-          <ol className="cp-step-list">
-            {steps.items.map((step, index) => (
-              <li key={step.key} className="cp-step">
-                <Reveal className="cp-step-copy">
-                  <p className="cp-step-number">
-                    <span className="ic-tabular">{String(index + 1).padStart(2, '0')}</span>
-                    {step.label}
-                  </p>
-                  <h3 className="cp-step-title">{step.title}</h3>
-                  <p className="cp-step-body">{step.body}</p>
-                  <button type="button" className="cp-watch" onClick={() => seekReel(step.at)}>
-                    <Icon icon={reelIcons.play} className="cp-watch-icon" />
-                    {charlie.reel.controls.watch}
-                  </button>
-                </Reveal>
-                <Reveal delay={80} className="cp-step-still">
-                  <img
-                    src={step.still}
-                    alt={step.alt}
-                    width={1600}
-                    height={1000}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </Reveal>
-              </li>
-            ))}
-          </ol>
-        </Container>
-      </section>
-
-      <CharlieAbilities />
+      <CharlieConversation />
+      <CharlieReach />
+      <CharlieLimits />
 
       <section aria-labelledby="charlie-close-title" className="page-close">
         <Container>

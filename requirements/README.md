@@ -23,7 +23,7 @@ customer pilot blocked**) and the trust review in
 | --- | --- | --- |
 | Charlie asks your approved suppliers for a firm price and lead time | Not built. Charlie's tools write only to an internal record (`continuum/internal/app/charlie_tools.go`, destination `internal_record`). A bounded Gmail *reply to a supplier* exists in code behind an approval, tested against a protocol double only; no real provider call has been made. | Qualify the mail provider (OAuth app review, sandbox), add an outbound "request for quotation" action through the Tool Gateway with its approval, and an approved-supplier list. |
 | Charlie calls a supplier and books the meeting | Not built. No telephony or calendar code exists. | Choose a voice provider and a calendar connector; both are new Tool Gateway actions behind approval. |
-| Charlie posts in Slack, Teams or email and answers when mentioned | Not built. Studio Settings lists Slack, Teams and email digests as "not yet" (`apps/studio/src/features/settings/notification-channels.tsx`). Briefs C10–C14 (Slack) need the founder's Slack app. | Create the Slack app (C10), then the mention bot and channel posts (C11–C13); Teams after. |
+| Charlie posts in Slack, Teams or email, answers when mentioned and takes an instruction in plain words (the Charlie page's channel, and the telephone, supplier and team cards under it: every outward step waits for an approval) | Not built. Studio Settings lists Slack, Teams and email digests as "not yet" (`apps/studio/src/features/settings/notification-channels.tsx`). Briefs C10–C14 (Slack) need the founder's Slack app. | Create the Slack app (C10), then the mention bot and channel posts (C11–C13); Teams after. |
 | Charlie sends the quotation to the customer once a person approves | Not built as an outbound send. Quotation drafts render as PDF (C15–C17), and approvals exist; there is no qualified customer-facing send. | The same provider qualification as above, with the customer send as its own approved action. |
 | The Charlie film sends the approved quotation to Halvorsen Marine and shows the night's record | Not built in Studio. Studio's approval says "nothing is sent to the customer"; the film's send screen and its record of the night are composed in the film (`video/charlie/index.html`), not Studio pages. | The customer send above, and an activity record of a piece of work in Studio. |
 | The Meet Charlie film (`public/charlie/meet-charlie.mp4`, not yet on a page) shows Charlie reading the business system's account record, and drafting an email to the customer, to a supplier and to a manufacturer and a Google Meet invitation, each sent once a person approves it | Not built in Studio. The record, the four drafts and their approvals are composed in the film (`video/charlie-launch`), not Studio pages. No business-system (ERP) connector, outbound mail or calendar exists; Google Meet is named in words only, with no logo. | A read-only business-system connector, the outbound mail actions and a calendar connector, each a Tool Gateway action behind its approval, as above. |
@@ -46,6 +46,27 @@ and a call marked sent once a person approves (no outbound provider is
 qualified). The approval they show, and the rule that nothing leaves without
 one, are true of the platform today. Neither adds a provider capability or a
 claim of hosted readiness.
+
+**Marks and portraits on the page (29 October 2026).** Two things in those
+drawings are not Incillum's own, and a buyer, an investor or a lawyer may ask
+about either.
+
+- **Gmail's mark** is drawn on every email in the scenes (the customer's
+  request, the supplier's answer, the quotation and supplier request going
+  out), at the owner's request. It is Google's trademark, shown as the identity
+  of an email, never named on the page. It must not be read as "works with
+  Gmail": no mailbox reader exists (see the film row above), and the platform
+  reads uploaded files, not an inbox. Before the site is public, check
+  Google's brand terms for showing the mark in a product illustration, and
+  keep the page from saying or implying an integration. Removing it is one
+  component (`GmailMark` in `src/components/file-icon.tsx`).
+- **The people** in the scenes (James, Sara, the customer's buyer, the
+  supplier's contact) are invented, and their portraits are illustrated line
+  drawings, not photographs: CC0 portraits from the Lorelei set by Lisa
+  Wischofsky, via DiceBear, chosen option by option (`design/people.md`). They
+  carry no licence obligation, but they are not real people and must never be
+  given a company, a quotation or a testimonial. Replacing one with a photograph
+  means a person who has agreed to it, in a role that is true.
 
 | The site says | Where it stands | To make it true |
 | --- | --- | --- |

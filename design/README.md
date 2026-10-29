@@ -42,6 +42,9 @@ dependency for a picture that does not change.
 - `2026-10-29-the-idea.md`: the case for the company, for the funding
   application, and the reasoning behind every section and line of the front
   page and the private brief.
+- `people.md`: the four invented people in the example quotation, where their
+  portraits come from (CC0, illustrated), exactly how each was chosen, and how
+  to replace one with a photograph.
 
 ## Marks
 

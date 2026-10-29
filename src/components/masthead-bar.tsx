@@ -25,11 +25,29 @@ import type { KeyboardEvent, MouseEvent } from 'react'
  * there is a pointer that hovers. Without a script, focus inside a menu still
  * shows its box (`:focus-within`), so every item stays reachable by keyboard.
  *
- * It is fixed to the top of the page and above everything on it. On the front
- * page it is clear over the first screen and turns to a pane of glass once that
- * has gone (`scrolled`); on the other pages it is a pane from the start. Its
- * tokens are those of whatever it is over (`tone`): the night's while the
- * night is under it, the paper's after — so it is never a dark bar over white.
+ * ── On a phone ─────────────────────────────────────────────────────────────
+ *
+ * Below a laptop's width there is no room for the menus along the bar, and the
+ * Product menu used to vanish with them: a visitor on a phone could not tell
+ * there was a product page at all. So the bar ends in a button that says
+ * *Menu*, which opens one sheet under it with every place the desktop menus
+ * reach, written out with its line, and the button again. It is a native
+ * `<details>`, so it opens with no script and before the page has hydrated;
+ * the script only adds what a disclosure does not do by itself: it closes on
+ * Escape, on a tap outside and on choosing a place.
+ *
+ * ── It stays where it is ───────────────────────────────────────────────────
+ *
+ * It is fixed to the top of the page and above everything on it, and it never
+ * hides: for a day it slid away while the reader scrolled down, and the owner
+ * asked for it back on 29 October 2026 — a bar that goes when you scroll is a
+ * bar you cannot find. On the front page it is clear over the first screen and
+ * turns to a pane of glass once that has gone (`scrolled`); on the other pages
+ * it is a pane from the start. Its tokens are those of whatever it is over
+ * (`tone`): the night's while the night is under it, the paper's after — so it
+ * is never a pale bar over white. A hairline along its lower edge draws the
+ * reader's place in the page, set as a custom property from one scroll
+ * listener, with no re-render.
  */
 export function MastheadBar({
   scrolled,
@@ -47,6 +65,28 @@ export function MastheadBar({
   const [open, setOpen] = useState<string | null>(null)
   const barRef = useRef<HTMLElement>(null)
 
+  // The reader's place in the page, from one scroll listener on an animation frame.
+  useEffect(() => {
+    let frame = 0
+    function read() {
+      frame = 0
+      const room = document.documentElement.scrollHeight - window.innerHeight
+      barRef.current?.style.setProperty(
+        '--glass-progress',
+        room > 0 ? Math.min(1, Math.max(0, window.scrollY / room)).toFixed(4) : '0',
+      )
+    }
+    function onScroll() {
+      if (!frame) frame = requestAnimationFrame(read)
+    }
+    read()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [])
+
   // A click anywhere outside the masthead closes an open menu.
   useEffect(() => {
     if (!open) return
@@ -57,6 +97,7 @@ export function MastheadBar({
     return () => window.removeEventListener('pointerdown', onPointer)
   }, [open])
 
+  const cta = onFront ? '#early-access' : '/#early-access'
   return (
     <header
       ref={barRef}
@@ -85,13 +126,16 @@ export function MastheadBar({
             </a>
           ))}
           <ButtonLink
-            href={onFront ? '#early-access' : '/#early-access'}
+            href={cta}
             arrow
             className="desk-cta"
+            aria-label={menu.cta}
             onClick={onFront ? focusEmail : undefined}
           >
-            {menu.cta}
+            <span className="desk-cta-long">{menu.cta}</span>
+            <span className="desk-cta-short">{menu.ctaShort}</span>
           </ButtonLink>
+          <PhoneMenu cta={cta} onFront={onFront} />
         </nav>
       </Container>
     </header>
@@ -200,6 +244,97 @@ function Menu({
         </ul>
       </div>
     </div>
+  )
+}
+
+/**
+ * The phone's menu: the same places as the bar's menus, in one sheet.
+ *
+ * A `<details>` rather than a button and a state: the disclosure works before
+ * the page has hydrated and with no script, and the browser keeps its
+ * expanded state for assistive technology. The sheet is the header's own
+ * width, anchored to the bar rather than to the button (nothing between them
+ * is positioned).
+ */
+function PhoneMenu({ cta, onFront }: { cta: string; onFront: boolean }) {
+  const ref = useRef<HTMLDetailsElement>(null)
+
+  useEffect(() => {
+    function close() {
+      if (ref.current) ref.current.open = false
+    }
+    function onPointer(event: PointerEvent) {
+      if (ref.current?.open && !ref.current.contains(event.target as Node)) close()
+    }
+    function onKey(event: globalThis.KeyboardEvent) {
+      if (event.key !== 'Escape' || !ref.current?.open) return
+      close()
+      ref.current.querySelector('summary')?.focus()
+    }
+    window.addEventListener('pointerdown', onPointer)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('pointerdown', onPointer)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [])
+
+  function close() {
+    if (ref.current) ref.current.open = false
+  }
+
+  return (
+    <details ref={ref} className="phone-menu">
+      <summary className="phone-menu-button">
+        <span>{menu.phone}</span>
+        <svg
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+          focusable="false"
+          className="phone-menu-icon"
+        >
+          <rect x="3" y="5.75" width="14" height="1.5" rx="0.75" />
+          <rect x="3" y="12.75" width="14" height="1.5" rx="0.75" />
+        </svg>
+      </summary>
+      <div className="phone-menu-sheet">
+        {menu.groups.map((group) => (
+          <section key={group.key} className="phone-menu-group" aria-label={group.label}>
+            <p className="phone-menu-heading">{group.label}</p>
+            <ul>
+              {group.items.map((item) => (
+                <li key={item.href}>
+                  <a href={item.href} className="phone-menu-item" onClick={close}>
+                    <span className="phone-menu-title">{item.title}</span>
+                    <span className="phone-menu-line">{item.line}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+        <ul className="phone-menu-links">
+          {menu.links.map((link) => (
+            <li key={link.href}>
+              <a href={link.href} className="phone-menu-item" onClick={close}>
+                <span className="phone-menu-title">{link.title}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <ButtonLink
+          href={cta}
+          arrow
+          className="desk-cta phone-menu-cta"
+          onClick={(event) => {
+            close()
+            if (onFront) focusEmail(event)
+          }}
+        >
+          {menu.cta}
+        </ButtonLink>
+      </div>
+    </details>
   )
 }
 

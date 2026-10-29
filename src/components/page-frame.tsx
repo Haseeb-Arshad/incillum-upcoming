@@ -1,3 +1,4 @@
+import { BackToTop, FooterWordmark } from '#/components/footer-wordmark.tsx'
 import { MastheadBar } from '#/components/masthead-bar.tsx'
 import { Container } from '#/components/primitives.tsx'
 import { SiteBrand } from '#/components/site-brand.tsx'
@@ -28,6 +29,7 @@ export function PageFrame({ children }: { children: ReactNode }) {
                   {item.title}
                 </a>
               ))}
+              <BackToTop />
             </nav>
             <div className="glass-footer-inner">
               <SiteBrand />
@@ -36,6 +38,7 @@ export function PageFrame({ children }: { children: ReactNode }) {
               </p>
             </div>
           </Container>
+          <FooterWordmark />
         </footer>
       </div>
     </div>

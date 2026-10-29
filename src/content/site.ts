@@ -772,6 +772,8 @@ export const home = {
    * there is a promise this site would be breaking in its first line.
    */
   nav: { how: 'The case', trust: 'Trust', questions: 'Questions', contact: 'Contact' },
+  /** The way back up, at the end of the footer's links: not a section, so not in `nav`. */
+  top: 'Back to top',
   cta: 'Request early access',
   emailPlaceholder: 'Your work email',
 
@@ -999,25 +1001,37 @@ export const trust = {
   lede: 'Your prices, costs and margins stay inside your organisation. Charlie works on them there, and anything that would go out stops for a person first.',
   /**
    * The boundary, drawn: what comes in, what stays inside with Charlie, the
-   * one way out through a person, and the path to model training that does
-   * not exist. Its words are here; the approver and the button are the
-   * channel's (`charlie.scene`), read by the component.
+   * path to model training that does not exist, the one way out through a
+   * person, and what goes out once they say yes. Its words are here. The
+   * emails, the people, the file marks, the figures and the approval are the
+   * example quotation's, read by the component from the documents, the
+   * evidence document and the channel (`charlie.scene`).
    */
   diagram: {
     label:
-      'Customer requests and supplier answers come in. Prices, costs, margins and agreements stay inside your organisation, where Charlie works on them. None of it is used to train a model. The only way out is a person’s approval.',
-    inbound: ['Customer requests', 'Supplier answers'],
+      'Customer requests and supplier answers arrive by email. Prices, costs, agreements and quotations stay inside your organisation, where Charlie works on them. None of it is used to train a model. The only way out is a person’s approval, after which the quotation and the supplier request are sent.',
+    comes: 'Comes in',
     inside: 'Your organisation',
+    insideNote: 'Charlie works here, on your figures',
     data: [
-      { kind: 'sheet', label: 'Prices' },
+      { kind: 'sheet', label: 'Price lists' },
       { kind: 'sheet', label: 'Costs' },
       { kind: 'doc', label: 'Agreements' },
       { kind: 'pdf', label: 'Quotations' },
     ] satisfies ReadonlyArray<{ kind: FileKind; label: string }>,
-    gate: 'The only way out',
-    out: 'Customers and suppliers',
+    guards: [
+      { glyph: 'separate', label: 'Isolated by organisation' },
+      { glyph: 'key', label: 'Credentials sealed' },
+      { glyph: 'record', label: 'Every decision recorded' },
+    ] satisfies ReadonlyArray<{ glyph: TrustGlyph; label: string }>,
     training: 'Model training',
     never: 'Never',
+    gate: 'The only way out',
+    goes: 'Goes out',
+    out: [
+      { person: 'buyer', label: 'Quotation', status: 'Sent' },
+      { person: 'supplier', label: 'Supplier request', status: 'Sent' },
+    ] satisfies ReadonlyArray<{ person: PersonKey; label: string; status: string }>,
   },
   commitments: [
     {
@@ -1068,37 +1082,50 @@ export const trust = {
 export const questions = {
   anchor: 'questions',
   headline: 'What you’ll want to know.',
+  lede: 'The things a careful buyer asks first, answered straight.',
+  more: {
+    title: 'Something we haven’t covered?',
+    body: 'Write to us and a person will answer.',
+    action: 'Write to us',
+  },
   items: [
     {
+      key: 'who',
       question: 'Who is it for?',
       answer:
-        'Teams for whom a quote is real work: parts to match, drawings to read, suppliers whose prices move while the quote is open, and a margin somebody has to sign off.',
+        'Teams that quote for a living. Parts to match, drawings to read, suppliers whose prices move while the quote is open, and a margin somebody has to sign off.',
     },
     {
+      key: 'sends',
       question: 'Does it send quotations?',
       answer:
         'Not by itself. It prepares the quotation and all the working behind it, and nothing goes to your customer until a person approves it.',
     },
     {
+      key: 'suppliers',
       question: 'Does it contact our suppliers?',
       answer:
         'Only with your approval. Charlie drafts a request for a firm price and lead time to the suppliers you have approved, and files each answer against the line it belongs to. Nothing is sent until a person approves it.',
     },
     {
+      key: 'held',
       question: 'What happens to a line it can’t resolve?',
       answer:
         'It is held, never guessed. The question is narrowed to the one thing it needs from a person, and the rest of the quotation carries on.',
     },
     {
+      key: 'training',
       question: 'Is our data used to train models?',
       answer: `No. ${access.decided.body}`,
     },
     {
+      key: 'systems',
       question: 'Which systems does it work with?',
       answer:
         'Tell us which ones you use; the contact form asks. Connections are set up with each team.',
     },
     {
+      key: 'access',
       question: 'What does early access involve?',
       answer: earlyAccess.next,
     },
@@ -1449,6 +1476,7 @@ export const glass = {
 
   /** The masthead's links: this page's own sections and the contact memo, and the one button. */
   nav: home.nav,
+  top: home.top,
   cta: home.cta,
 
   hero: {
@@ -1672,6 +1700,27 @@ export const figures = {
 } as const
 
 /**
+ * The people in the example quotation, and the portraits they are drawn with.
+ *
+ * Invented, like the customer and the figures (`customer.example`): none is a
+ * customer, a user or a member of this company, and nothing about them is a
+ * claim. Their portraits are illustrated line drawings in the site's ink
+ * (`public/people`), CC0 portraits from the Lorelei set by Lisa Wischofsky,
+ * chosen option by option so each reads at 36px; `design/people.md` records the
+ * exact choices. A photograph can replace any of them by changing its path:
+ * `Avatar` takes whatever image it is given. They appear only inside the
+ * drawings of the product, never as a face for the company.
+ */
+export const people = {
+  director: { name: 'James', role: 'Sales director', portrait: '/people/james.svg' },
+  sales: { name: 'Sara', role: 'Inside sales', portrait: '/people/sara.svg' },
+  buyer: { name: 'Marta Keller', role: 'Purchasing', portrait: '/people/marta.svg' },
+  supplier: { name: 'Tomas Berg', role: 'Supplier', portrait: '/people/tomas.svg' },
+} as const
+
+export type PersonKey = keyof typeof people
+
+/**
  * The showcase: four panels after the case, each a scene from one request
  * that plays once as it comes into view, in the shape of the bento the owner
  * pointed at and of Hebbia's own product grid. Charlie picks the request up;
@@ -1844,7 +1893,9 @@ export const briefGate = {
  *
  * One menu — Product, with Charlie in it — a link to the contact memo, and
  * the one button. Every item lands on a page that exists and carries one line,
- * so a reader can tell where it goes before going there.
+ * so a reader can tell where it goes before going there. Below a laptop's width
+ * the same places are one sheet behind a button that says *Menu*, so the
+ * Product page is as easy to find on a phone as on a desk.
  */
 export interface MenuItem {
   href: string
@@ -1874,6 +1925,10 @@ export const menu = {
   /** Plain links beside the menus. */
   links: [{ href: '/contact', title: 'Contact' }],
   cta: 'Request early access',
+  /** What the button says where the bar has no room for the whole of it. */
+  ctaShort: 'Early access',
+  /** The button that opens every place above as one sheet, below a laptop's width. */
+  phone: 'Menu',
 } as const
 
 /**
@@ -2138,8 +2193,8 @@ export const charlie = {
     channel: '#rfq-8841',
     people: {
       charlie: { name: 'Charlie', role: 'Incillum' },
-      sales: { name: 'Sara', role: 'Inside sales' },
-      director: { name: 'James', role: 'Sales director' },
+      sales: people.sales,
+      director: people.director,
     },
     messages: charlieMessages,
   },
@@ -2184,6 +2239,125 @@ export const charlie = {
         body: 'No request, quotation or document leaves without a person’s approval, and every approval is kept with the work.',
       },
     ] satisfies ReadonlyArray<CharlieAbility>,
+  },
+
+  /**
+   * What Charlie is besides the film (29 October 2026). The film shows one
+   * request worked; the page under it said the same six steps again, and the
+   * owner asked for something different: Charlie as an agent. So this is who it
+   * talks to and how, and where it stops.
+   *
+   * - `talk`: Charlie is spoken to. The channel beside it is `charlie.scene`,
+   *   the morning's messages as they were, so its figures are the thread's and
+   *   none is written here.
+   * - `reach`: the people the work depends on, each with what is needed before
+   *   anything outward happens (nothing does without a person: AGENTS.md §5).
+   * - `limits`: what it does alone, what waits for a person, what it never does.
+   *
+   * It writes no figure, names no system and uses none of the words a page may
+   * not (`site.test.ts`).
+   */
+  agent: {
+    talk: {
+      headline: 'Talk to Charlie like a colleague.',
+      lede: 'It lives in the channel your team already uses. Ask it in plain words and it does the work, says what it found, and asks the person who decides before anything leaves.',
+      points: [
+        {
+          glyph: 'tell',
+          title: 'Answers when it is mentioned',
+          body: 'Ask about a line, a margin or a supplier. It answers from the documents, with the page each figure came from.',
+        },
+        {
+          glyph: 'ask',
+          title: 'Takes instructions in plain words',
+          body: 'Tell it to get a firm price on a line. It drafts the request and puts it in front of a person first.',
+        },
+        {
+          glyph: 'approve',
+          title: 'Says who it needs',
+          body: 'It names the person with the authority and shows them the decision: the figure, the gap and the choice.',
+        },
+      ] satisfies ReadonlyArray<CharlieAbility>,
+      /** The channel's header, and what a message that is waiting on someone says. */
+      members: 'In this channel',
+      waiting: 'Waiting for',
+    },
+    reach: {
+      headline: 'Who Charlie talks to.',
+      lede: 'Your team, your suppliers and, when a call is quicker, the telephone. Whatever leaves, leaves with a person’s approval.',
+      items: [
+        {
+          key: 'team',
+          glyph: 'tell',
+          title: 'Your team',
+          body: 'Posts what changed and what needs someone, in the channel they already read, and answers when it is mentioned.',
+          waits: 'In your own channel',
+        },
+        {
+          key: 'suppliers',
+          glyph: 'ask',
+          title: 'Your suppliers',
+          body: 'Drafts a request for a firm price and lead time to the suppliers you have approved, and files each reply against the line it answers.',
+          waits: 'Sent once a person approves',
+        },
+        {
+          key: 'phone',
+          glyph: 'call',
+          title: 'The telephone',
+          body: 'Calls a supplier to confirm a price or a date, and books the meeting, with the call’s notes filed against the line.',
+          waits: 'Called once a person approves',
+        },
+      ] satisfies ReadonlyArray<{
+        key: 'team' | 'suppliers' | 'phone'
+        glyph: CharlieGlyph
+        title: string
+        body: string
+        waits: string
+      }>,
+      /** The call, in the drawing: what it is for, and where its notes go. */
+      call: { label: 'Call', purpose: 'Confirm the cost and the lead time', filed: 'Notes filed to line {line}' },
+    },
+    limits: {
+      headline: 'Where Charlie stops.',
+      lede: 'Some of the work is Charlie’s alone. Anything that leaves, or commits money, waits for a person. And three things it never does at all.',
+      columns: [
+        {
+          key: 'alone',
+          title: 'On its own',
+          items: [
+            'Reads every document',
+            'Matches each line to a product',
+            'Does the arithmetic, in whole cents',
+            'Checks the margin floor on every line',
+            'Drafts the quotation and the messages',
+          ],
+        },
+        {
+          key: 'asks',
+          title: 'After a person says yes',
+          items: [
+            'Sends a request to a supplier',
+            'Calls a supplier or books a meeting',
+            'Sends the quotation',
+            'Commits a price',
+          ],
+        },
+        {
+          key: 'never',
+          title: 'Never',
+          items: [
+            'Estimates a figure it cannot source',
+            'Settles a line the evidence cannot',
+            'Sends or commits without an approval',
+            'Trains a model on your data',
+          ],
+        },
+      ] satisfies ReadonlyArray<{
+        key: 'alone' | 'asks' | 'never'
+        title: string
+        items: ReadonlyArray<string>
+      }>,
+    },
   },
 
   close: {

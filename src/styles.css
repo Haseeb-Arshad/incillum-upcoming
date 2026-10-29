@@ -13,7 +13,9 @@
         what carries the emphasis, which is why the hero can be quiet and still
         be the loudest thing on the page.
      2. A grotesk for everything a person operates: body, labels, controls.
-     3. No third voice and no gradient. Contrast is still the emphasis, and it
+     3. No third voice and no gradient, bar the hero's scrim and, by the owner's
+        call of 29 October 2026, the footer's wash and the fade on its name:
+        ink and paper, never a hue. Contrast is still the emphasis, and it
         still has to be spent carefully.
      4. One hue, and it is lamplight rather than a brand colour — see
         `--ic-signal`. The page has a night in the middle of it now, and a night
@@ -295,8 +297,14 @@
  * photograph above it is paper. It re-points the same tokens back to their
  * daylight values, so the panel is written against `text-ink` and
  * `border-line` like everything else and does not know where it landed.
+ *
+ * The front page's masthead is the other place it is wanted, and only until
+ * the page hydrates: the head script (`lib/masthead.ts`) has seen the reader
+ * is already over the paper, and the masthead's own state is not yet there to
+ * say so.
  */
-[data-lit] {
+[data-lit],
+:root[data-bar-day]:not([data-bar-live]) .glass-bar {
   --ic-paper: #ffffff;
   --ic-paper-raised: #ffffff;
   --ic-paper-sunken: #f2f2f0;
@@ -1790,37 +1798,115 @@
   }
 }
 
-/* ── Act seven: questions (`questions.tsx`) ───────────────────────────── */
+/* ── Questions, as cards (`questions.tsx`) ────────────────────────────── */
 .questions {
   border-top: 1px solid var(--ic-line);
 }
-.questions-grid {
+.questions-layout {
   display: grid;
-  gap: clamp(2.5rem, 5vw, 4rem) 4rem;
+  gap: clamp(2.5rem, 5vw, 4rem) clamp(2rem, 5vw, 4.5rem);
 }
-.questions-list {
-  margin: 0;
-  border-top: 1px solid var(--ic-line-strong);
-}
-.questions-item {
+.questions-head {
   display: grid;
+  align-content: start;
+  gap: 1.25rem;
+}
+.questions-lede {
+  max-width: 24rem;
+  font-size: var(--glass-lede);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+/* Where to go with a question that is not here: the page's own sunken panel, with the one action. */
+.questions-more {
+  display: grid;
+  justify-items: start;
   gap: 0.625rem;
-  padding-block: 1.5rem 1.625rem;
-  border-bottom: 1px solid var(--ic-line);
+  margin-top: clamp(0.75rem, 2vw, 1.5rem);
+  padding: clamp(1.25rem, 2.2vw, 1.75rem);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-sunken);
 }
-.questions-question {
+.questions-more-title {
   font-family: var(--font-display);
-  font-size: clamp(1.25rem, 1.6vw, 1.5rem);
-  line-height: 1.2;
-  letter-spacing: -0.012em;
+  font-size: 1.5rem;
+  line-height: 1.12;
+  letter-spacing: -0.014em;
+  color: var(--ic-ink-900);
+}
+.questions-more-body {
+  margin-bottom: 0.625rem;
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.questions-cards {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+.question-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: clamp(1.25rem, 2.2vw, 1.75rem);
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper);
+}
+.question-title {
+  display: grid;
+  gap: 1.125rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.375rem, 1.9vw, 1.625rem);
+  line-height: 1.12;
+  letter-spacing: -0.014em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.question-tile {
+  display: grid;
+  place-items: center;
+  width: 2.375rem;
+  height: 2.375rem;
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper-sunken);
+}
+.question-tile svg {
+  width: 1.1875rem;
+  height: 1.1875rem;
   color: var(--ic-ink-900);
 }
 .questions-answer {
-  max-width: 62ch;
   margin: 0;
-  font-size: var(--text-body);
-  line-height: 1.62;
+  font-size: 0.9375rem;
+  line-height: 1.6;
   color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.question-lead {
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+@media (min-width: 40rem) {
+  .questions-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* The last card runs across: seven questions, three rows of two and one of its own. */
+  .question-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 64rem) {
+  .questions-layout {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    align-items: start;
+  }
+  .questions-head {
+    position: sticky;
+    top: calc(var(--glass-bar, 0px) + 2rem);
+  }
 }
 
 @media (min-width: 48rem) {
@@ -1913,14 +1999,6 @@
   .trust-foot {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     align-items: start;
-  }
-  .questions-grid {
-    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
-    align-items: start;
-  }
-  .questions-intro {
-    position: sticky;
-    top: calc(var(--glass-bar, 0px) + 2rem);
   }
 }
 
@@ -3250,7 +3328,63 @@
   transition: opacity var(--glass-fill) var(--glass-ease);
 }
 .glass-bar[data-scrolled='true']::before {
+  border-bottom: 1px solid var(--ic-line);
   opacity: 1;
+}
+/* A sheet open under it makes it a pane, over the night as over the paper. (Its own rule: a list with `:has` would be dropped whole where it is unknown.) */
+.glass-bar:has(.phone-menu[open])::before {
+  border-bottom: 1px solid var(--ic-line);
+  opacity: 1;
+}
+/*
+ * Before the page's own state is in place it cannot know where the reader is, and a
+ * browser that restores a position paints the server's guess (the top of the
+ * page) there first. The head script has read the scroll and said so on the
+ * document: this is its half of the hand-over (the day tokens are the lit
+ * scope's, above). Without a script there is no one to ask, so the bar is a
+ * white pane for that visitor, always.
+ */
+:root[data-bar-pane]:not([data-bar-live]) .glass-bar::before {
+  border-bottom: 1px solid var(--ic-line);
+  opacity: 1;
+}
+:root[data-bar-pane]:not([data-bar-live]) .glass-bar::after {
+  opacity: 0.85;
+}
+@media (scripting: none) {
+  .glass-bar {
+    --ic-paper: #ffffff;
+    --ic-paper-raised: #ffffff;
+    --ic-paper-sunken: #f2f2f0;
+    --ic-ink-900: #111110;
+    --ic-ink-800: #1c1c1a;
+    --ic-ink-600: #45453f;
+    --ic-ink-400: #6e6e66;
+    --ic-ink-200: #a3a39a;
+    --ic-line: rgba(17, 17, 16, 0.11);
+    --ic-line-strong: rgba(17, 17, 16, 0.22);
+  }
+  .glass-bar::before {
+    border-bottom: 1px solid var(--ic-line);
+    opacity: 1;
+  }
+}
+/* The reader's place in the page, as a hairline along the pane's lower edge. */
+.glass-bar::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background-color: var(--ic-ink-900);
+  opacity: 0;
+  transform: scaleX(var(--glass-progress, 0));
+  transform-origin: 0 50%;
+  transition: opacity var(--glass-fill) var(--glass-ease);
+}
+.glass-bar[data-scrolled='true']::after {
+  opacity: 0.85;
 }
 /* The masthead's button is the quiet version of the hero's: one step smaller, the same fill. */
 .glass .glass-bar .desk-cta {
@@ -3386,6 +3520,206 @@
     transition: none;
   }
 }
+
+/*
+ * The phone's menu (`masthead-bar.tsx`): below a laptop's width, one button
+ * that says *Menu* and one sheet under the bar with every place the desktop
+ * menus reach. It is a native disclosure, so it opens before the page has
+ * hydrated and with no script. The sheet hangs from the bar's lower edge at
+ * the bar's full width, in the tokens of whatever the bar is over, on a
+ * hairline, and settles 4px over 160ms like the desktop menus' boxes.
+ */
+.phone-menu {
+  display: none;
+}
+.phone-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.375rem;
+  padding: 0 0.75rem 0 0.875rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  color: var(--ic-ink-900);
+  cursor: pointer;
+  list-style: none;
+  transition: background-color var(--ic-fast) var(--ic-ease);
+}
+.phone-menu-button::-webkit-details-marker {
+  display: none;
+}
+.phone-menu[open] .phone-menu-button {
+  background-color: var(--ic-line);
+}
+.phone-menu-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+  fill: currentColor;
+}
+.phone-menu-icon rect {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--ic-fast) var(--ic-ease);
+}
+.phone-menu[open] .phone-menu-icon rect:first-child {
+  transform: translateY(3.5px) rotate(45deg);
+}
+.phone-menu[open] .phone-menu-icon rect:last-child {
+  transform: translateY(-3.5px) rotate(-45deg);
+}
+.phone-menu-sheet {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  display: grid;
+  gap: 1.25rem;
+  max-height: calc(100svh - var(--glass-bar));
+  overflow-y: auto;
+  padding: 1rem 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--ic-line-strong);
+  background-color: var(--ic-paper-raised);
+  color: var(--ic-ink-900);
+  animation: phone-menu-in var(--ic-fast) var(--ic-ease) both;
+}
+.phone-menu-sheet ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.phone-menu-heading {
+  margin: 0 0 0.25rem;
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ic-ink-400);
+}
+.phone-menu-item {
+  display: grid;
+  gap: 0.125rem;
+  margin-inline: -0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-control);
+  color: var(--ic-ink-900);
+  text-decoration: none;
+  transition: background-color var(--ic-fast) var(--ic-ease);
+}
+.phone-menu-item:active,
+.phone-menu-item:focus-visible {
+  background-color: var(--ic-line);
+}
+.phone-menu-title {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.phone-menu-line {
+  font-size: var(--text-small);
+  line-height: 1.4;
+  color: var(--ic-ink-600);
+}
+.phone-menu-links {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--ic-line);
+}
+.glass .glass-bar .phone-menu-cta {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.625rem 1.25rem 0.625rem 1.5rem;
+  font-size: var(--text-ui);
+}
+@keyframes phone-menu-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -4px, 0);
+  }
+}
+@media (min-width: 40rem) {
+  .phone-menu-sheet {
+    padding-inline: 2rem;
+  }
+}
+@media (max-width: 59.99rem) {
+  .phone-menu {
+    display: block;
+  }
+  .glass-bar .desk-nav {
+    gap: 0.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .phone-menu-sheet {
+    animation: none;
+  }
+  .phone-menu-button,
+  .phone-menu-icon rect,
+  .phone-menu-item {
+    transition: none;
+  }
+}
+
+/* The button's short form, where the bar has no room for the whole of it. */
+.desk-cta-short {
+  display: none;
+}
+@media (max-width: 35.99rem) {
+  .glass-bar .desk-cta-long {
+    display: none;
+  }
+  .glass-bar .desk-cta-short {
+    display: inline;
+  }
+}
+/*
+ * What fits on a phone. The brand, the button and the Menu button need about
+ * 365px between the gutters and the common phones have 312 to 342, so the bar
+ * gives a little everywhere (a tighter gap, a smaller mark, less padding in the
+ * two buttons), then below 390px the Menu button is its icon alone (it is still
+ * named Menu, to assistive technology), and below 352px the button goes into the
+ * sheet and the Menu button has its word back. `e2e/glass.spec.ts` measures
+ * every width from 320 up: nothing in the bar may run past the gutter.
+ */
+@media (max-width: 29.99rem) {
+  .glass-bar-inner {
+    gap: 0.75rem;
+  }
+  .glass-bar .site-brand {
+    gap: 0.5rem;
+  }
+  .glass-bar .site-brand-mark {
+    width: 2rem;
+    height: 2rem;
+  }
+  .glass .glass-bar .desk-cta {
+    padding-inline: 0.75rem;
+  }
+  .phone-menu-button {
+    gap: 0.375rem;
+    padding: 0 0.625rem 0 0.75rem;
+  }
+}
+@media (min-width: 22rem) and (max-width: 24.374rem) {
+  .phone-menu-button {
+    padding-inline: 0.6875rem;
+  }
+  .phone-menu-button > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+/* Narrower than any phone sold now, the button is in the sheet only. */
+@media (max-width: 21.99rem) {
+  .glass-bar-inner > .desk-nav > .desk-cta {
+    display: none;
+  }
+}
 @media (max-width: 59.99rem) {
   .glass-bar .desk-nav-link {
     display: none;
@@ -3397,8 +3731,12 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .glass-bar,
   .glass-bar::before {
     transition: none;
+  }
+  .glass-bar::after {
+    display: none;
   }
 }
 
@@ -5060,10 +5398,51 @@
  * The photograph is generated at the frame's own 16:7, so on a wide screen the
  * only crop is that margin.
  */
-.glass-morning {
+/*
+ * The morning as a deck (`MorningStack` in `glass-page.tsx`). Three fractions
+ * are written on `.glass-stack` as the reader scrolls; each defaults here to
+ * its last frame, which is what the server, a page with no script and
+ * reduced motion get.
+ *
+ * - `--glass-rise`, 0 to 1: the photograph's deck comes up from a little
+ *   smaller and lower, and the two sheets behind it step out above it, a
+ *   stair of two, each narrower than the one before.
+ * - `--glass-deal`, 0 to 1: the handover's two cards slide out from under the
+ *   photograph into their places, the second a little behind the first.
+ * - `--glass-drift`: the photograph moving against the scroll inside its frame.
+ */
+.glass-stack {
   position: relative;
+}
+.glass-morning {
+  --stair: clamp(0.625rem, 1.35vw, 1.125rem);
+  position: relative;
+  z-index: 1;
   isolation: isolate;
-  margin: 0 0 clamp(3.5rem, 7vw, 5.5rem);
+  margin: 0 0 clamp(0.75rem, 1.6vw, 1.25rem);
+}
+.glass-deck {
+  position: relative;
+  transform: translate3d(0, calc((1 - var(--glass-rise, 1)) * 2.25rem), 0)
+    scale(calc(0.94 + 0.06 * var(--glass-rise, 1)));
+  transform-origin: 50% 100%;
+}
+/* Each sheet is a step higher, a step narrower, and a step paler than the one in front of it. */
+.glass-stair {
+  position: absolute;
+  inset: 0 calc(var(--n) * 2%);
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: color-mix(in srgb, var(--ic-ink-900) var(--tint), var(--ic-paper));
+  transform: translate3d(0, calc(var(--n) * var(--stair) * var(--glass-rise, 1) * -1), 0);
+}
+.glass-stair--near {
+  --n: 1;
+  --tint: 10%;
+}
+.glass-stair--far {
+  --n: 2;
+  --tint: 5%;
 }
 .glass-morning-frame {
   position: relative;
@@ -5084,60 +5463,203 @@
 }
 
 /*
- * The handover (`glass-handover.tsx`): the plate's caption, set as the product
- * would set it — a lit sheet over the window, where the generated frame keeps
- * its quiet third. On a narrow screen it is tucked under the photograph
- * instead, over its lower edge, because over a phone-sized window it would hide
- * the room it is about.
+ * The handover (`glass-handover.tsx`): what is waiting at 08:04, under the
+ * photograph rather than over it. A sunken panel of two white cards, as the
+ * showcase sets its own: Charlie's message in the team channel, and James's
+ * decision with the two figures it turns on. The morning plate above it is
+ * left clean.
  */
 .glass-handover {
-  position: relative;
-  z-index: 1;
   display: grid;
-  justify-items: start;
-  gap: 0.875rem;
-  margin: -2.5rem 0.75rem 0;
-  padding: 1.125rem 1.25rem 1.25rem;
+  gap: var(--showcase-gap, 1rem);
+  margin: 0 0 clamp(3.5rem, 7vw, 5.5rem);
+  padding: clamp(0.75rem, 1.6vw, 1.25rem);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper-sunken);
+}
+.handover-message,
+.handover-decision {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.125rem, 2.2vw, 1.75rem);
   border: 1px solid var(--ic-line-strong);
   border-radius: var(--radius-panel);
-  background-color: var(--ic-paper-raised);
+  background-color: var(--ic-paper);
   color: var(--ic-ink-900);
+  /* Dealt from under the photograph: up by its own lag until `--glass-deal` reaches 1. */
+  transform: translate3d(0, calc((var(--glass-deal, 1) - 1) * var(--lag)), 0);
+}
+.handover-message {
+  --lag: 2.25rem;
+}
+.handover-decision {
+  --lag: 3.75rem;
+}
+.handover-channel {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid var(--ic-line);
+  font-size: var(--text-small);
+  color: var(--ic-ink-400);
+}
+.handover-from {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-top: 1.125rem;
+  font-size: var(--text-small);
+}
+.handover-from strong {
+  font-weight: 600;
+}
+.handover-charlie {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-control);
+  background-color: var(--ic-ink-900);
+  color: var(--ic-paper);
+}
+.handover-charlie svg {
+  width: 1.625rem;
+  height: 1.625rem;
+}
+.handover-badge,
+.handover-waiting {
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ic-ink-600);
+}
+.handover-text {
+  margin-top: 0.875rem;
+  font-size: clamp(1.0625rem, 1.5vw, 1.1875rem);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.handover-mention {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.0625rem 0.5rem 0.0625rem 0.1875rem;
+  border-radius: 6px;
+  background-color: var(--ic-paper-sunken);
+  font-weight: 600;
+  vertical-align: baseline;
+}
+.handover-mention-avatar {
+  --avatar-size: 1.375rem;
+  border-radius: 4px;
+  background-color: var(--ic-paper);
+}
+.handover-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin: auto 0 0;
+  padding: 1.5rem 0 0;
+  list-style: none;
+}
+.handover-files li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem 0.5rem 0.625rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  font-size: var(--text-small);
+}
+.handover-files .file-icon {
+  width: 2rem;
+  height: 2rem;
+}
+.handover-who {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  line-height: 1.3;
+}
+.handover-avatar {
+  --avatar-size: 2.75rem;
+}
+.handover-name {
+  display: grid;
+}
+.handover-name strong {
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+.handover-name span {
+  font-size: 0.75rem;
+  color: var(--ic-ink-400);
+}
+.handover-waiting {
+  margin-left: auto;
+  white-space: nowrap;
 }
 .glass-handover-decision {
+  margin-top: 1.375rem;
   font-family: var(--font-display);
-  font-size: clamp(1.1875rem, 1.6vw, 1.4375rem);
-  line-height: 1.18;
-  letter-spacing: -0.012em;
+  font-size: clamp(1.5rem, 2.5vw, 2.125rem);
+  line-height: 1.1;
+  letter-spacing: -0.018em;
   text-wrap: balance;
 }
 .glass-handover-figures {
   display: grid;
-  gap: 0.375rem;
-  justify-self: stretch;
-  padding-block: 0.75rem;
+  gap: 0.75rem;
+  margin: 1.5rem 0 0;
+  padding-block: 1.125rem;
   border-block: 1px solid var(--ic-line);
-  font-size: var(--text-small);
 }
 .glass-handover-figures > div {
   display: flex;
   flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
   gap: 0.25rem 1rem;
 }
 .glass-handover-figures dt,
-.glass-handover-figures dd span,
-.glass-handover-owner {
+.glass-handover-figures dd span {
+  font-size: var(--text-small);
   color: var(--ic-ink-600);
 }
 .glass-handover-figures dd {
+  margin: 0;
   font-weight: 500;
 }
 .glass-handover-short dd {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.2vw, 1.875rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
   color: var(--ic-signal);
 }
 .glass-handover-owner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 1.125rem;
   font-size: var(--text-small);
+  color: var(--ic-ink-600);
 }
+.glass-handover-owner svg {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  color: var(--ic-ink-900);
+}
+@media (min-width: 48rem) {
+  .glass-handover {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  }
+}
+
 .glass-close {
   padding-block: clamp(5.5rem, 11vw, 9rem) clamp(4.5rem, 9vw, 7rem);
 }
@@ -5174,8 +5696,74 @@
   font-size: var(--text-small);
   color: var(--ic-ink-600);
 }
+/*
+ * The footer is the last thing on the page, and it is not blank: a wash of the
+ * sunken paper that comes up from the white above it, the links with a way back
+ * up at the end of them, and the name, set across the whole width and cut off
+ * by the bottom of the page (`footer-wordmark.tsx`). Ink and paper only. It is
+ * the owner's one gradient besides the hero's scrim: asked for on 29 October
+ * 2026, "only if a gradient will look good at the bottom".
+ */
 .glass-footer {
-  padding-bottom: 2rem;
+  padding-bottom: 0;
+  background-image: linear-gradient(to bottom, transparent, var(--ic-paper-sunken) 70%);
+}
+.glass-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-left: auto;
+  text-decoration: none;
+}
+.glass-footer-nav a.glass-top {
+  text-decoration: none;
+}
+.glass-top svg {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  transition: transform var(--ic-fast) var(--ic-ease);
+}
+@media (hover: hover) {
+  .glass-top:hover svg {
+    transform: translateY(-2px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-top svg {
+    transition: none;
+  }
+}
+/*
+ * The name, as a mark on the page: the serif at a size set by the width of the
+ * screen, in ink at a few per cent that thins to nothing toward the bottom,
+ * with only its upper part showing. Its resting place is the last frame; the
+ * script moves it from lower down as the reader arrives (`--glass-end`).
+ */
+.glass-wordmark {
+  --wordmark: min(24.5vw, 22rem);
+  height: calc(var(--wordmark) * 0.66);
+  margin-top: clamp(1.5rem, 4vw, 3rem);
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+.glass-wordmark span {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--wordmark);
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  text-align: center;
+  white-space: nowrap;
+  color: transparent;
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--ic-ink-900) 15%, var(--ic-paper)) 10%,
+    color-mix(in srgb, var(--ic-ink-900) 2%, var(--ic-paper)) 88%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  transform: translate3d(0, calc((1 - var(--glass-end, 1)) * 38%), 0);
 }
 .glass-footer-inner {
   display: grid;
@@ -5512,6 +6100,10 @@
   flex: none;
   overflow: visible;
 }
+.file-icon[data-kind='mail'] {
+  height: auto;
+  aspect-ratio: 256 / 193;
+}
 .file-icon[data-kind='pdf'] {
   --file: var(--ic-file-pdf);
 }
@@ -5654,7 +6246,7 @@
 .scene-actions,
 .scene-outputs > ul:first-of-type li,
 .scene-tiles li,
-.trust-node,
+
 .trust-gate,
 .trust-boundary {
   border: 1px solid var(--ic-line-strong);
@@ -5698,20 +6290,23 @@
 .scene-chip[data-tone='done'] {
   color: var(--ic-ink-900);
 }
-.scene-avatar {
-  display: grid;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
+/*
+ * A person's portrait (`avatar.tsx`): an illustrated line drawing in the
+ * site's ink on the sunken paper, in the control radius, with a hairline so it
+ * holds its edge on white. A scene sets its size with `--avatar-size`.
+ */
+.avatar {
+  display: block;
+  width: var(--avatar-size, 2rem);
+  height: var(--avatar-size, 2rem);
   flex: none;
+  object-fit: cover;
+  border: 1px solid var(--ic-line);
   border-radius: var(--radius-control);
-  background-color: var(--ic-ink-900);
-  font-size: var(--text-small);
-  font-weight: 600;
-  color: var(--ic-paper);
+  background-color: var(--ic-paper-sunken);
+  user-select: none;
 }
 .scene-ask-who,
-.trust-gate-who,
 .scene-mail-head {
   display: flex;
   align-items: center;
@@ -5720,14 +6315,12 @@
   line-height: 1.3;
 }
 .scene-ask-who strong,
-.trust-gate-who strong,
 .scene-mail-from strong {
   display: block;
   font-weight: 500;
   color: var(--ic-ink-900);
 }
 .scene-ask-who span span,
-.trust-gate-who span span,
 .scene-mail-from span {
   display: block;
   font-size: var(--showcase-tiny, 0.75rem);
@@ -5778,6 +6371,40 @@
   border-radius: var(--radius-panel);
   background-color: var(--ic-paper-sunken);
 }
+/*
+ * A panel that leads somewhere is one link: the button in its copy is stretched
+ * over the whole card, so the picture is as good as the button. On a pointer
+ * that hovers the card takes a shade and the arrow nudges, as the button's own
+ * arrow does. Its focus ring is the button's.
+ */
+.showcase-panel[data-link] {
+  position: relative;
+  transition: background-color var(--ic-fast) var(--ic-ease);
+}
+.showcase-panel[data-link] .showcase-more {
+  position: static;
+  margin-top: 1.25rem;
+}
+.showcase-panel[data-link] .showcase-more::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: var(--radius-panel);
+}
+@media (hover: hover) {
+  .showcase-panel[data-link]:hover {
+    background-color: color-mix(in srgb, var(--ic-ink-900) 4%, var(--ic-paper-sunken));
+  }
+  .showcase-panel[data-link]:hover .ic-cta-arrow {
+    transform: translateX(3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .showcase-panel[data-link] {
+    transition: none;
+  }
+}
 .showcase-title {
   font-family: var(--font-sans);
   font-size: 1.25rem;
@@ -5812,9 +6439,23 @@
 .scene-agent {
   padding: 1rem 1.125rem;
 }
+.scene-mail-avatar,
+.scene-ask-avatar,
+.scene-cause-avatar {
+  --avatar-size: 2.5rem;
+}
+.scene-mail-stamp {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  align-self: flex-start;
+}
 .scene-mail-icon {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 1.375rem;
+}
+.scene-mail-stamp .scene-time {
+  margin-left: 0;
 }
 .scene-mail-from {
   display: grid;
@@ -5823,6 +6464,7 @@
 .scene-time {
   margin-left: auto;
   font-size: var(--showcase-tiny);
+  white-space: nowrap;
   color: var(--ic-ink-400);
 }
 .scene-mail-subject {
@@ -6081,19 +6723,26 @@
   padding: 0.75rem 0.875rem;
   font-size: var(--text-small);
 }
-.scene-cause strong {
-  display: block;
+.scene-cause-text {
+  display: grid;
+  min-width: 0;
+  line-height: 1.35;
+}
+.scene-cause-text strong {
   font-weight: 500;
   color: var(--ic-ink-900);
 }
-.scene-cause span span {
-  display: block;
+.scene-cause-text span {
   font-size: var(--showcase-tiny);
   color: var(--ic-ink-600);
 }
+.scene-cause-text span:first-of-type {
+  color: var(--ic-ink-400);
+}
 .scene-cause-icon {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 1.375rem;
+  margin-left: auto;
+  align-self: flex-start;
 }
 .scene-floor-ref {
   margin-top: 0.5rem;
@@ -6378,7 +7027,7 @@
   }
 }
 
-/* ── Trust: the boundary, drawn ───────────────────────────────────────── */
+/* ── Trust: the board ─────────────────────────────────────────────────── */
 .trust {
   border-top: 1px solid var(--ic-line);
 }
@@ -6391,257 +7040,649 @@
 .trust-title {
   max-width: 14ch;
 }
+.trust-lede {
+  max-width: 38rem;
+  font-size: var(--glass-lede);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
 .trust-map {
-  --trust-wire: var(--ic-ink-200);
-  display: grid;
-  justify-items: center;
   margin-top: clamp(3rem, 6vw, 4.5rem);
-  padding: clamp(1.5rem, 3vw, 2.75rem);
+  padding: clamp(1.25rem, 3vw, 2.75rem);
   border-radius: var(--radius-panel);
   background-color: var(--ic-paper-sunken);
 }
-.trust-in,
-.trust-out {
+.trust-board {
+  container-type: inline-size;
+}
+
+/*
+ * One design pixel. On a wide screen the board is 1120 units across and `--u`
+ * is the board's own width over 1120, so everything inside, placed by its
+ * corner and sized in units, scales as one picture. Below that it is a column
+ * and a unit is a pixel and a little more.
+ */
+/*
+ * Registered as a length so it is worked out once, on the stage, against the
+ * board's width, and inherited as pixels. Unregistered it is only text, and
+ * every element that used it would measure `cqw` against its own container:
+ * the slide is one, and drew itself 0.14px tall.
+ */
+@property --u {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 1px;
+}
+.trust-stage {
+  --u: 1.06px;
   display: grid;
   justify-items: center;
-  gap: 0.5rem;
+  gap: 0;
+  font-size: calc(var(--u) * 13);
 }
-.trust-node {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4375rem 0.75rem 0.4375rem 0.4375rem;
-  border-radius: var(--radius-control);
-  font-size: var(--text-small);
-  white-space: nowrap;
-  color: var(--ic-ink-900);
+.trust-wires,
+.trust-link {
+  display: none;
 }
-.trust-node .file-icon {
-  width: 1.5rem;
-  height: 1.5rem;
+.trust-comes,
+.trust-goes {
+  display: grid;
+  justify-items: center;
+  gap: calc(var(--u) * 10);
+  width: min(100%, 30rem);
 }
-.trust-node > svg:not(.file-icon) {
-  width: 1rem;
-  height: 1rem;
-  margin-left: 0.25rem;
+.trust-goes {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-.trust-wire {
-  position: relative;
-  display: block;
-  width: 2px;
-  height: 2.5rem;
+.trust-goes > .trust-caption {
+  grid-column: 1 / -1;
 }
-.trust-wire::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(var(--trust-wire) 55%, transparent 0);
-  background-size: 2px 8px;
+.trust-pos {
+  width: min(100%, 30rem);
 }
-.trust-wire::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  background-color: var(--ic-ink-900);
-  opacity: 0;
+.trust-caption {
+  justify-self: start;
+  font-size: calc(var(--u) * 12.5);
+  color: var(--ic-ink-400);
 }
-[data-scene='playing'] .trust-wire::after {
-  animation: trust-travel-down 900ms var(--glass-ease) both;
-  animation-delay: calc(var(--at, 0) * 1ms);
-}
-@keyframes trust-travel-down {
-  0% {
-    top: 0;
-    opacity: 0;
-  }
-  15%,
-  85% {
-    opacity: 1;
-  }
-  100% {
-    top: 100%;
-    opacity: 0;
-  }
-}
-@keyframes trust-travel-across {
-  0% {
-    left: 0;
-    opacity: 0;
-  }
-  15%,
-  85% {
-    opacity: 1;
-  }
-  100% {
-    left: 100%;
-    opacity: 0;
-  }
-}
+
+/* The cards: the paper, a hairline, and a corner that scales with the board. */
+.trust-email,
+.trust-data,
+.trust-gate,
+.trust-out,
 .trust-boundary {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  gap: 1rem;
-  width: 100%;
-  max-width: 30rem;
-  padding: 2rem 1.25rem 1.25rem;
-  border: 1.5px dashed var(--ic-ink-400);
+  border: 1px solid var(--ic-line-strong);
+  background-color: var(--ic-paper);
 }
-.trust-boundary-label {
-  position: absolute;
-  top: -0.75rem;
-  left: 1rem;
-  display: inline-flex;
+.trust-email,
+.trust-out {
+  border-radius: calc(var(--u) * 12);
+}
+
+/*
+ * An email: who sent it, the app it is in, its subject and what came with it.
+ * The rows are spread over the card's height, so whatever it holds, the first
+ * sits at the top padding and the last at the bottom one: nothing touches the
+ * border, and `e2e/glass.spec.ts` measures it.
+ */
+.trust-email {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: calc(var(--u) * 10);
+  padding: calc(var(--u) * 14);
+}
+.trust-email-from {
+  display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0 0.5rem;
-  background-color: var(--ic-paper-sunken);
-  font-size: var(--showcase-tiny, 0.75rem);
+  gap: calc(var(--u) * 10);
+}
+.trust-email-name {
+  display: grid;
+  min-width: 0;
+  line-height: 1.3;
+}
+.trust-email-name strong {
+  font-size: calc(var(--u) * 13.5);
   font-weight: 500;
   color: var(--ic-ink-900);
 }
-.trust-boundary-label svg {
-  width: 0.875rem;
-  height: 0.875rem;
+.trust-email-name span {
+  overflow: hidden;
+  font-size: calc(var(--u) * 11.5);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ic-ink-400);
 }
-.trust-data {
+.trust-email-mail {
+  width: calc(var(--u) * 24);
+  margin-left: auto;
+  flex: none;
+}
+.trust-email-subject {
+  font-size: calc(var(--u) * 13.5);
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ic-ink-900);
+}
+.trust-email-files {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
-  width: 100%;
+  gap: calc(var(--u) * 5);
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.trust-data li {
+.trust-attachment {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.625rem;
+  gap: calc(var(--u) * 7);
+  padding: calc(var(--u) * 3) calc(var(--u) * 9) calc(var(--u) * 3) calc(var(--u) * 5);
   border: 1px solid var(--ic-line);
   border-radius: var(--radius-control);
+  font-size: calc(var(--u) * 11.5);
+  line-height: 1.3;
+  color: var(--ic-ink-900);
+}
+.trust-attachment[data-plain] {
+  padding-left: calc(var(--u) * 9);
   background-color: var(--ic-paper-sunken);
-  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+}
+.trust-attachment .file-icon {
+  width: calc(var(--u) * 18);
+  height: calc(var(--u) * 18);
+}
+.trust-email .avatar {
+  --avatar-size: calc(var(--u) * 36);
+}
+
+/* Your organisation: the boundary, and everything that stays inside it. */
+.trust-boundary {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--u) * 10);
+  padding: calc(var(--u) * 30) calc(var(--u) * 16) calc(var(--u) * 16);
+  border: 1.5px dashed var(--ic-ink-400);
+  border-radius: calc(var(--u) * 18);
+}
+.trust-boundary > * {
+  min-width: 0;
+}
+.trust-boundary-label {
+  position: absolute;
+  top: calc(var(--u) * -11);
+  left: calc(var(--u) * 20);
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+  padding: 0 calc(var(--u) * 8);
+  background-color: var(--ic-paper-sunken);
+  font-size: calc(var(--u) * 12.5);
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+.trust-boundary-label svg {
+  width: calc(var(--u) * 14);
+  height: calc(var(--u) * 14);
+}
+.trust-boundary-note {
+  grid-column: 1 / -1;
+  font-size: calc(var(--u) * 12);
+  color: var(--ic-ink-400);
+}
+.trust-charlie {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 7);
+  padding-block: calc(var(--u) * 6);
+}
+.trust-charlie-tile {
+  display: grid;
+  place-items: center;
+  width: calc(var(--u) * 76);
+  height: calc(var(--u) * 76);
+  border-radius: calc(var(--u) * 20);
+  background-color: var(--ic-ink-900);
+  color: var(--ic-paper);
+}
+.trust-charlie-tile svg {
+  width: calc(var(--u) * 46);
+  height: calc(var(--u) * 46);
+}
+.trust-charlie-name {
+  font-size: calc(var(--u) * 13);
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+.trust-data {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+  padding: calc(var(--u) * 9) calc(var(--u) * 12);
+  border-radius: calc(var(--u) * 10);
+  background-color: var(--ic-paper-sunken);
+  font-size: calc(var(--u) * 13.5);
   color: var(--ic-ink-900);
 }
 .trust-data .file-icon {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: calc(var(--u) * 22);
+  height: calc(var(--u) * 22);
 }
-.trust-charlie {
+.trust-guards {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  align-content: flex-end;
+  gap: calc(var(--u) * 7);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.trust-guards li {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.875rem 0.5rem 0.5rem;
+  gap: calc(var(--u) * 6);
+  padding: calc(var(--u) * 5) calc(var(--u) * 10);
+  border: 1px solid var(--ic-line);
   border-radius: var(--radius-control);
-  background-color: var(--ic-ink-900);
-  font-size: var(--text-small);
-  font-weight: 500;
-  color: var(--ic-paper);
+  font-size: calc(var(--u) * 11.5);
+  color: var(--ic-ink-600);
 }
-.trust-charlie svg {
-  width: 1.25rem;
-  height: 1.25rem;
+.trust-guards svg {
+  width: calc(var(--u) * 13);
+  height: calc(var(--u) * 13);
+  color: var(--ic-ink-900);
+}
+
+/* The path that does not exist: model training, drawn and refused. */
+.trust-refused {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column-reverse;
+  gap: calc(var(--u) * 8);
+  margin-top: calc(var(--u) * 18);
 }
 .trust-training {
-  display: grid;
-  justify-items: center;
-  gap: 0.375rem;
-}
-.trust-training-wire {
-  width: 2px;
-  height: 1.5rem;
-  background-image: linear-gradient(var(--trust-wire) 55%, transparent 0);
-  background-size: 2px 8px;
-}
-.trust-node[data-refused] {
-  border-style: dashed;
-  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 8);
+  width: 100%;
+  padding: calc(var(--u) * 10) calc(var(--u) * 16);
+  border: 1px dashed var(--ic-ink-200);
+  border-radius: calc(var(--u) * 10);
+  font-size: calc(var(--u) * 13);
   text-decoration: line-through;
   color: var(--ic-ink-400);
+}
+.trust-training svg {
+  width: calc(var(--u) * 15);
+  height: calc(var(--u) * 15);
 }
 .trust-never {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.125rem 0.5rem;
+  gap: calc(var(--u) * 4);
+  padding: calc(var(--u) * 4) calc(var(--u) * 10);
   border-radius: var(--radius-control);
   background-color: var(--ic-ink-900);
-  font-size: var(--showcase-tiny, 0.75rem);
+  font-size: calc(var(--u) * 12);
   font-weight: 600;
   color: var(--ic-paper);
 }
 .trust-never svg {
-  width: 0.75rem;
-  height: 0.75rem;
+  width: calc(var(--u) * 12);
+  height: calc(var(--u) * 12);
   stroke-width: 3;
 }
+
+/*
+ * The gate: the one way out, with a person's approval on it. It says what is
+ * being approved, who decides, and gives the one control. No portrait: the
+ * name is enough, and the card is the quietest on the board.
+ */
 .trust-gate {
-  display: grid;
-  gap: 0.75rem;
-  min-width: 14.5rem;
-  padding: 1rem;
-  border-color: var(--ic-ink-900);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 10);
+  padding: calc(var(--u) * 15);
+  border: 1.5px solid var(--ic-ink-900);
+  border-radius: calc(var(--u) * 16);
 }
 .trust-gate-label {
-  font-size: var(--showcase-tiny, 0.75rem);
+  padding-bottom: calc(var(--u) * 9);
+  border-bottom: 1px solid var(--ic-line);
+  font-size: calc(var(--u) * 12);
   font-weight: 500;
   color: var(--ic-ink-900);
 }
+.trust-gate-ask {
+  display: grid;
+  gap: calc(var(--u) * 3);
+}
+.trust-gate-title {
+  font-size: calc(var(--u) * 13);
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ic-ink-900);
+}
+.trust-gate-detail {
+  font-size: calc(var(--u) * 12);
+  line-height: 1.35;
+  color: var(--ic-ink-600);
+}
+.trust-gate-who {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--u) * 6);
+  margin-top: auto;
+  font-size: calc(var(--u) * 12);
+  line-height: 1.3;
+}
+.trust-gate-who strong {
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+.trust-gate-who span {
+  color: var(--ic-ink-400);
+}
+
+/*
+ * The approval, as a small button. It is as tall as a line and a half of the
+ * card's own text and the width of the card's content, and it never changes
+ * size: pressed, it gives way, in the same place, to a quiet record of what was
+ * done. The pointer arrives from outside the card, rests at the button's edge
+ * and never covers its words.
+ */
+.trust-approve-wrap {
+  position: relative;
+  margin-top: calc(var(--u) * -4);
+}
 .trust-approve {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: calc(var(--u) * 28);
+  padding: 0 calc(var(--u) * 10);
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper-sunken);
+  font-size: calc(var(--u) * 12);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ic-ink-900);
+}
+.trust-approve > * {
+  display: inline-flex;
+  grid-area: 1 / 1;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+}
+/* Its last frame is the record; the ask is what it was before. */
+.trust-approve-ask {
+  opacity: 0;
+  visibility: hidden;
+}
+.trust-approve svg {
+  width: calc(var(--u) * 13);
+  height: calc(var(--u) * 13);
+  flex: none;
+  stroke-width: 2.4;
+}
+.trust-pointer {
+  position: absolute;
+  right: calc(var(--u) * 10);
+  bottom: calc(var(--u) * -8);
+  width: calc(var(--u) * 22);
+  height: calc(var(--u) * 22);
+  color: var(--ic-ink-900);
+  fill: var(--ic-paper);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*
+ * The approval, as a slide. A track the width of the card's content and a
+ * knob at one end, with the ask between. Given, the knob is carried the whole
+ * way, the ink fills in behind it on the same curve, and the words are traded
+ * for the record once it has arrived. Every distance is the track's own width
+ * (`cqw`), so it is right at any size. The knob is paper on both grounds, so
+ * it is never lost on the ink.
+ */
+.trust-slide {
+  --knob: calc(var(--u) * 24);
+  --pad: calc(var(--u) * 3);
+  position: relative;
+  container-type: inline-size;
+  height: calc(var(--u) * 30);
+  margin-top: calc(var(--u) * -2);
+  border: 1px solid var(--ic-line-strong);
+  border-radius: calc(var(--u) * 15);
+  background-color: var(--ic-paper-sunken);
+}
+.trust-slide-fill {
+  position: absolute;
+  inset: -1px;
+  overflow: hidden;
+  border-radius: inherit;
+}
+.trust-slide-fill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--ic-ink-900);
+}
+.trust-slide-text {
+  position: absolute;
+  inset: 0;
+  display: grid;
+}
+.trust-slide-text > * {
+  align-items: center;
+  font-size: calc(var(--u) * 11.5);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+.trust-slide-text > [data-swap='before'] {
+  padding-left: calc(var(--knob) + var(--pad) * 2 + var(--u) * 7);
+  color: var(--ic-ink-600);
+}
+.trust-slide-text > [data-swap='after'] {
+  padding-left: calc(var(--u) * 13);
+  color: var(--ic-paper);
+}
+.trust-slide-knob {
+  position: absolute;
+  top: var(--pad);
+  left: var(--pad);
+  display: grid;
+  place-items: center;
+  width: var(--knob);
+  height: var(--knob);
+  border: 1px solid var(--ic-line-strong);
+  border-radius: 50%;
+  background-color: var(--ic-paper);
+  color: var(--ic-ink-900);
+  transform: translateX(calc(100cqw - var(--knob) - var(--pad) * 2));
+}
+.trust-slide-knob svg {
+  grid-area: 1 / 1;
+  width: calc(var(--u) * 13);
+  height: calc(var(--u) * 13);
+  stroke-width: 2.2;
+}
+.trust-slide-arrow {
+  opacity: 0;
+}
+.trust-slide-pointer {
+  position: absolute;
+  top: 48%;
+  left: 52%;
+  width: calc(var(--u) * 20);
+  height: calc(var(--u) * 20);
+  color: var(--ic-ink-900);
+  fill: var(--ic-paper);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* What goes out, once somebody has said yes. */
+.trust-out {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: calc(var(--u) * 9);
+  padding: calc(var(--u) * 13);
+}
+.trust-out-who {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 8);
+  font-size: calc(var(--u) * 12.5);
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--ic-ink-900);
+}
+.trust-out .avatar {
+  --avatar-size: calc(var(--u) * 30);
+}
+.trust-out-what {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--u) * 8);
+  font-size: calc(var(--u) * 12.5);
+  color: var(--ic-ink-600);
+}
+.trust-out-mail {
+  margin-left: auto;
+}
+.trust-out-mail .file-icon {
+  width: calc(var(--u) * 20);
+}
+.trust-sent {
+  justify-self: start;
+}
+.trust-chip {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  padding: 0.5rem 0.875rem;
+  gap: calc(var(--u) * 5);
+  padding: calc(var(--u) * 3) calc(var(--u) * 9);
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  font-size: calc(var(--u) * 11.5);
+  line-height: 1.3;
+  color: var(--ic-ink-900);
+}
+.trust-chip[data-done] {
+  border-color: var(--ic-ink-900);
+  background-color: var(--ic-ink-900);
+  color: var(--ic-paper);
+}
+.trust-chip svg {
+  width: calc(var(--u) * 12);
+  height: calc(var(--u) * 12);
+  stroke-width: 3;
+}
+
+/* The private page that draws the board both ways (`trust-lab.tsx`); it goes when one way is chosen. */
+.trust-lab {
+  min-height: 100svh;
+  padding-block: clamp(2rem, 5vw, 4rem);
+}
+.trust-lab-head {
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+.trust-lab-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.trust-lab-lede {
+  max-width: 40rem;
+  color: var(--ic-ink-600);
+}
+.trust-lab-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 1.5rem;
+}
+.trust-lab-choice {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 14rem));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.trust-lab-choice legend {
+  margin-bottom: 0.5rem;
+  padding: 0;
+  font-size: var(--text-small);
+  font-weight: 500;
+}
+.trust-lab-choice label {
+  position: relative;
+  display: grid;
+  gap: 0.125rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+.trust-lab-choice label[data-checked='true'] {
+  border-color: var(--ic-ink-900);
+  box-shadow: inset 0 0 0 1px var(--ic-ink-900);
+}
+.trust-lab-choice input {
+  position: absolute;
+  opacity: 0;
+}
+.trust-lab-choice label:has(input:focus-visible) {
+  outline: 2px solid var(--ic-ink-900);
+  outline-offset: 2px;
+}
+.trust-lab-label {
+  font-weight: 500;
+}
+.trust-lab-note {
+  font-size: var(--text-small);
+  line-height: 1.4;
+  color: var(--ic-ink-600);
+}
+.trust-lab-replay {
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
   border: 1px solid var(--ic-ink-900);
   border-radius: var(--radius-control);
   background-color: var(--ic-ink-900);
-  font-size: var(--text-small);
-  font-weight: 500;
   color: var(--ic-paper);
+  font-weight: 500;
+  cursor: pointer;
 }
-.trust-approve svg {
-  width: 0.875rem;
-  height: 0.875rem;
+
+/* Below a laptop the board is a column, with a dotted link between each group. */
+.trust-link {
+  display: block;
+  width: 2px;
+  height: 1.75rem;
+  background-image: linear-gradient(var(--ic-ink-200) 55%, transparent 0);
+  background-size: 2px 8px;
 }
-[data-scene='armed'] .trust-approve {
-  border-color: var(--ic-line-strong);
-  background-color: var(--ic-paper);
-  color: var(--ic-ink-900);
-}
-[data-scene='armed'] .trust-approve svg {
-  opacity: 0;
-}
-[data-scene='playing'] .trust-approve {
-  animation: trust-press 620ms ease both;
-  animation-delay: calc(var(--at, 0) * 1ms);
-}
-[data-scene='playing'] .trust-approve svg {
-  animation: scene-pop 440ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  animation-delay: calc((var(--at, 0) + 260) * 1ms);
-}
-@keyframes trust-press {
-  0% {
-    border-color: var(--ic-line-strong);
-    background-color: var(--ic-paper);
-    color: var(--ic-ink-900);
-  }
-  35% {
-    transform: scale(0.94);
-  }
-  100% {
-    border-color: var(--ic-ink-900);
-    background-color: var(--ic-ink-900);
-    color: var(--ic-paper);
-    transform: none;
-  }
-}
+
 .trust-commitments {
   display: grid;
   margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
@@ -6676,60 +7717,348 @@
   color: var(--ic-ink-600);
 }
 
+/* The lines: drawn in, once, with a pulse carried along the ones that carry something. */
+.trust-line {
+  fill: none;
+  stroke: var(--ic-ink-200);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.trust-pulse {
+  fill: none;
+  stroke: var(--ic-ink-900);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 0.04 1;
+  stroke-dashoffset: 0.04;
+  opacity: 0;
+}
+.trust-refusal {
+  fill: none;
+  stroke: var(--ic-ink-400);
+  stroke-width: 2;
+  stroke-dasharray: 5 6;
+}
+[data-scene='armed'] .trust-line {
+  stroke-dashoffset: 1;
+}
+[data-scene='armed'] .trust-refusal {
+  opacity: 0;
+}
+[data-scene='playing'] .trust-line {
+  animation: trust-draw 720ms var(--glass-ease) both;
+  animation-delay: calc(var(--at, 0) * 1ms);
+}
+[data-scene='playing'] .trust-pulse {
+  animation: trust-pulse 1000ms cubic-bezier(0.45, 0, 0.55, 1) both;
+  animation-delay: calc((var(--at, 0) + 420) * 1ms);
+}
+[data-scene='playing'] .trust-refusal {
+  animation: trust-fade 500ms ease both;
+  animation-delay: 1900ms;
+}
+@keyframes trust-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes trust-pulse {
+  0% {
+    opacity: 1;
+    stroke-dashoffset: 0.04;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: -1;
+  }
+}
+@keyframes trust-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+[data-scene='armed'] .trust-pointer {
+  opacity: 0;
+}
+[data-scene='playing'] .trust-pointer {
+  animation: trust-point 1450ms var(--glass-ease) both;
+  animation-delay: 1750ms;
+}
+/* It arrives, presses, and lets go: nothing is left on the card once the record is. */
+@keyframes trust-point {
+  0% {
+    opacity: 0;
+    transform: translate(7rem, 3rem);
+  }
+  18% {
+    opacity: 1;
+  }
+  62% {
+    opacity: 1;
+    transform: none;
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.82);
+  }
+  78% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+/*
+ * The button. It starts as ink with the ask on it, is pressed (a few per cent
+ * smaller, for a tenth of a second), and its ink drains to the paper's tone as
+ * the ask rises out and the record rises in. The shell never leaves, so there
+ * is no frame with two labels on it and none with neither.
+ */
+[data-scene='armed'] .trust-approve {
+  border-color: var(--ic-ink-900);
+  background-color: var(--ic-ink-900);
+  color: var(--ic-paper);
+}
+[data-scene='armed'] .trust-approve-ask {
+  opacity: 1;
+  visibility: visible;
+}
+[data-scene='armed'] .trust-approve-done {
+  opacity: 0;
+}
+[data-scene='playing'] .trust-approve {
+  animation: trust-shell 420ms var(--glass-ease) both;
+  animation-delay: calc(var(--at, 0) * 1ms);
+}
+[data-scene='playing'] .trust-approve-ask {
+  animation: trust-ask 180ms ease both;
+  animation-delay: calc((var(--at, 0) + 110) * 1ms);
+}
+[data-scene='playing'] .trust-approve-done {
+  animation: trust-done 360ms var(--glass-ease) both;
+  animation-delay: calc((var(--at, 0) + 290) * 1ms);
+}
+@keyframes trust-shell {
+  0% {
+    border-color: var(--ic-ink-900);
+    background-color: var(--ic-ink-900);
+    color: var(--ic-paper);
+    transform: none;
+  }
+  26% {
+    border-color: var(--ic-ink-900);
+    background-color: var(--ic-ink-900);
+    color: var(--ic-paper);
+    transform: scale(0.97);
+  }
+  100% {
+    border-color: var(--ic-line-strong);
+    background-color: var(--ic-paper-sunken);
+    color: var(--ic-ink-900);
+    transform: none;
+  }
+}
+@keyframes trust-ask {
+  from {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-3px);
+  }
+}
+@keyframes trust-done {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * The slide. The knob and the ink travel the same distance on the same curve
+ * (so the ink's edge is always under the knob), the arrow becomes a check as
+ * the knob lands, and the words are traded once the ink has filled the track.
+ * The pointer takes hold of the knob before it moves, goes with it, and lets go.
+ */
+[data-scene='armed'] .trust-slide-knob {
+  transform: none;
+}
+[data-scene='armed'] .trust-slide-fill::before {
+  transform: translateX(-100%);
+}
+[data-scene='armed'] .trust-slide-arrow {
+  opacity: 1;
+}
+[data-scene='armed'] .trust-slide-check {
+  opacity: 0;
+}
+[data-scene='playing'] .trust-slide-knob {
+  animation: trust-carry 740ms cubic-bezier(0.65, 0, 0.35, 1) 3000ms both;
+}
+[data-scene='playing'] .trust-slide-fill::before {
+  animation: trust-ink 740ms cubic-bezier(0.65, 0, 0.35, 1) 3000ms both;
+}
+[data-scene='playing'] .trust-slide-arrow {
+  animation: trust-arrow 220ms ease 3500ms both;
+}
+[data-scene='playing'] .trust-slide-check {
+  animation: trust-check 320ms var(--glass-ease) 3560ms both;
+}
+[data-scene='playing'] .trust-slide-pointer {
+  animation: trust-grab 1300ms var(--glass-ease) 2650ms both;
+}
+/* The ask leaves as the knob sets off; the record arrives once the ink has filled the track. */
+[data-scene='playing'] .trust-slide-text > [data-swap='before'] {
+  animation: scene-leave 220ms ease both;
+  animation-delay: calc((var(--at, 0) - 700) * 1ms);
+}
+@keyframes trust-carry {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateX(calc(100cqw - var(--knob) - var(--pad) * 2));
+  }
+}
+@keyframes trust-ink {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes trust-arrow {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes trust-check {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes trust-grab {
+  0% {
+    opacity: 0;
+    transform: translate(10px, 12px);
+  }
+  18% {
+    opacity: 1;
+    transform: none;
+  }
+  26% {
+    transform: scale(0.85);
+  }
+  86% {
+    opacity: 1;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
 @media (min-width: 48rem) {
   .trust-commitments {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-@media (min-width: 64rem) {
-  .trust-map {
-    grid-template-areas:
-      'in w1 box w2 gate w3 out'
-      '. . train . . . .';
-    grid-template-columns: auto minmax(2rem, 1fr) minmax(0, 2.6fr) minmax(2rem, 1fr) auto minmax(2rem, 1fr) auto;
-    align-items: center;
-    justify-items: stretch;
-    row-gap: 0.5rem;
+
+/* On a wide screen the board is one picture, placed on its own grid. From here its smallest text is 11px or more. */
+@media (min-width: 80rem) {
+  .trust-stage {
+    --u: calc(100cqw / 1120);
+    position: relative;
+    display: block;
+    aspect-ratio: 1120 / 620;
   }
-  .trust-in {
-    grid-area: in;
+  /* Above the cards, so a line into the organisation or among its figures is seen; it never crosses text. */
+  .trust-wires {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
   }
-  .trust-wire[data-wire='in'] {
-    grid-area: w1;
+  .trust-link {
+    display: none;
+  }
+  .trust-comes,
+  .trust-goes {
+    display: contents;
+  }
+  .trust-pos {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--w);
+    height: var(--h);
   }
   .trust-boundary {
-    grid-area: box;
-    justify-self: center;
+    display: block;
+    padding: 0;
   }
-  .trust-wire[data-wire='out'] {
-    grid-area: w2;
+  .trust-boundary-note {
+    position: absolute;
+    top: calc(var(--u) * 26);
+    left: calc(var(--u) * 24);
   }
-  .trust-gate {
-    grid-area: gate;
+  .trust-charlie {
+    padding-block: 0;
+    justify-content: center;
   }
-  .trust-wire[data-wire='onward'] {
-    grid-area: w3;
+  .trust-data {
+    padding-block: 0;
   }
-  .trust-out {
-    grid-area: out;
+  .trust-data .file-icon {
+    width: calc(var(--u) * 28);
+    height: calc(var(--u) * 28);
   }
-  .trust-training {
-    grid-area: train;
+  .trust-guards {
+    gap: calc(var(--u) * 7);
   }
-  .trust-wire {
-    width: auto;
-    height: 2px;
+  .trust-refused {
+    justify-content: space-between;
+    margin-top: 0;
+    padding-top: calc(var(--u) * 24);
+    flex-direction: column;
   }
-  .trust-wire::before {
-    background-image: linear-gradient(90deg, var(--trust-wire) 55%, transparent 0);
-    background-size: 8px 2px;
-  }
-  .trust-wire::after {
-    top: 50%;
-    left: 0;
-  }
-  [data-scene='playing'] .trust-wire::after {
-    animation-name: trust-travel-across;
+  .trust-gate-swap {
+    margin-top: auto;
   }
   .trust-commitments {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -6741,12 +8070,58 @@
   [data-scene] [data-step],
   [data-scene] [data-pop],
   [data-scene] .scene-pointer,
-  [data-scene] .trust-approve,
-  [data-scene] .trust-approve svg,
   [data-scene] .scene-track-fill,
   [data-scene] .scene-track-marker,
-  [data-scene] .scene-clause mark {
+  [data-scene] .scene-clause mark,
+  [data-scene] .trust-refusal {
     opacity: 1 !important;
+    animation: none !important;
+  }
+  [data-scene] .trust-pointer {
+    opacity: 0 !important;
+    animation: none !important;
+  }
+  [data-scene] .trust-approve {
+    border-color: var(--ic-line-strong) !important;
+    background-color: var(--ic-paper-sunken) !important;
+    color: var(--ic-ink-900) !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  [data-scene] .trust-approve-ask {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    animation: none !important;
+  }
+  [data-scene] .trust-approve-done {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  [data-scene] .trust-slide-knob {
+    transform: translateX(calc(100cqw - var(--knob) - var(--pad) * 2)) !important;
+    animation: none !important;
+  }
+  [data-scene] .trust-slide-fill::before {
+    transform: none !important;
+    animation: none !important;
+  }
+  [data-scene] .trust-slide-arrow,
+  [data-scene] .trust-slide-pointer {
+    opacity: 0 !important;
+    animation: none !important;
+  }
+  [data-scene] .trust-slide-check {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  [data-scene] .trust-line {
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
+  }
+  [data-scene] .trust-pulse {
+    opacity: 0 !important;
     animation: none !important;
   }
   [data-scene] .scene-swap > [data-swap='before'] {
@@ -6757,7 +8132,6 @@
     visibility: visible !important;
     animation: none !important;
   }
-  .trust-wire::after,
   .case-landing::after {
     display: none;
   }
@@ -7050,6 +8424,374 @@
   .reel-start-pill,
   .reel-chapter-bar > span {
     transition: none;
+  }
+}
+
+/*
+ * Charlie as an agent (`charlie-agent.tsx`): a team's channel with the morning
+ * in it, who Charlie talks to as three small drawings, and where it stops as
+ * three columns. White paper, a sunken band for the middle one, hairlines and
+ * the two typefaces; the channel plays once and is still at its last message.
+ */
+.agent-talk,
+.agent-limits {
+  padding-block: clamp(4.5rem, 9vw, 7.5rem);
+  border-top: 1px solid var(--ic-line);
+}
+.agent-reach {
+  padding-block: clamp(4.5rem, 9vw, 7.5rem);
+  background-color: var(--ic-paper-sunken);
+}
+.agent-talk-grid {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+  align-items: start;
+}
+.agent-talk-copy {
+  display: grid;
+  gap: 1.25rem;
+  align-content: start;
+}
+.agent-points {
+  display: grid;
+  gap: 1.75rem;
+  margin: clamp(1rem, 3vw, 2rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.agent-points li {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  column-gap: 1rem;
+  row-gap: 0.25rem;
+  align-items: start;
+}
+.agent-tile {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper-sunken);
+}
+.agent-tile svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--ic-ink-900);
+}
+.agent-point-title {
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ic-ink-900);
+}
+.agent-point-body {
+  max-width: 38ch;
+  font-size: var(--text-small);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+}
+
+/* The channel: a header, and the morning's messages one under another. */
+.agent-channel {
+  overflow: hidden;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper);
+}
+.agent-channel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--ic-line);
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+.agent-members {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.agent-members-label {
+  margin-right: 0.25rem;
+  font-weight: 400;
+  color: var(--ic-ink-400);
+}
+.agent-messages {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0.75rem 0;
+  list-style: none;
+}
+.agent-message {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  gap: 0.875rem;
+  padding: 0.75rem 1.25rem;
+}
+.agent-charlie {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-control);
+  background-color: var(--ic-ink-900);
+  color: var(--ic-paper);
+}
+.agent-charlie svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.agent-charlie--small {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.agent-charlie--small svg {
+  width: 1rem;
+  height: 1rem;
+}
+.agent-avatar {
+  --avatar-size: 2.25rem;
+}
+.agent-avatar--small {
+  --avatar-size: 1.5rem;
+}
+.agent-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: var(--text-small);
+}
+.agent-meta strong {
+  font-weight: 600;
+}
+.agent-role,
+.agent-meta time {
+  font-size: 0.75rem;
+  color: var(--ic-ink-400);
+}
+.agent-meta time {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.agent-text {
+  margin-top: 0.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ic-ink-900);
+  text-wrap: pretty;
+}
+.agent-mention {
+  padding: 0 0.3125rem;
+  border-radius: 4px;
+  background-color: var(--ic-paper-sunken);
+  font-weight: 600;
+}
+.agent-cite {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.625rem;
+  padding: 0.375rem 0.75rem 0.375rem 0.5rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  font-size: 0.8125rem;
+}
+.agent-cite .file-icon {
+  width: 1.25rem;
+}
+.agent-draft {
+  display: grid;
+  gap: 0.625rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+}
+.agent-draft-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: var(--text-small);
+  font-weight: 500;
+  line-height: 1.35;
+}
+.agent-draft-title .file-icon {
+  width: 1.5rem;
+  flex: none;
+}
+.agent-draft-title > span > span {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--ic-ink-600);
+}
+.agent-draft-status {
+  justify-self: start;
+}
+
+/* Who Charlie talks to: three cards, each with a small drawing of the thing itself. */
+.agent-reach-grid {
+  display: grid;
+  gap: var(--showcase-gap, 1rem);
+  margin: clamp(3rem, 6vw, 4.5rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.agent-reach-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: clamp(1.25rem, 2.4vw, 1.75rem);
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-panel);
+  background-color: var(--ic-paper);
+}
+.agent-art {
+  display: grid;
+  align-items: center;
+  min-height: 11rem;
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper-sunken);
+}
+.agent-art-card {
+  display: grid;
+  gap: 0.625rem;
+  padding: 0.875rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  background-color: var(--ic-paper);
+}
+.agent-art-from {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+}
+.agent-art-from strong {
+  font-weight: 600;
+}
+.agent-art-sub {
+  font-size: 0.75rem;
+  color: var(--ic-ink-400);
+}
+.agent-art-mail {
+  width: 1.375rem;
+  margin-left: auto;
+}
+.agent-art-line {
+  font-size: var(--text-small);
+  line-height: 1.4;
+  color: var(--ic-ink-900);
+}
+.agent-art-chip {
+  display: flex;
+}
+.agent-call {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-control);
+  background-color: var(--ic-ink-900);
+  color: var(--ic-paper);
+}
+.agent-call svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.agent-reach-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-family: var(--font-sans);
+  font-size: 1.1875rem;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ic-ink-900);
+}
+.agent-reach-title svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+.agent-reach-body {
+  max-width: 38ch;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+}
+.agent-reach-waits {
+  margin-top: auto;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--ic-line);
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--ic-ink-900);
+}
+
+/* Where Charlie stops: what it does alone, what waits for a person, what it never does. */
+.agent-limits-grid {
+  display: grid;
+  gap: clamp(2.5rem, 4vw, 3rem);
+  margin: clamp(3rem, 6vw, 4.5rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.agent-limit {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ic-ink-900);
+}
+.agent-limit-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 1.1875rem;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ic-ink-900);
+}
+.agent-limit-items {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.agent-limit-items li {
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--ic-ink-900);
+}
+.agent-limit-items svg {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.1rem;
+  color: var(--ic-ink-400);
+}
+@media (min-width: 64rem) {
+  .agent-talk-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: clamp(3rem, 6vw, 6rem);
+  }
+  .agent-reach-grid,
+  .agent-limits-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -8271,15 +10013,6 @@
   .glass-film-body {
     grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
     align-items: start;
-  }
-}
-@media (min-width: 48rem) {
-  .glass-handover {
-    position: absolute;
-    top: clamp(1rem, 2.4vw, 2rem);
-    right: clamp(1rem, 2.4vw, 2rem);
-    width: min(23rem, 42%);
-    margin: 0;
   }
 }
 @media (min-width: 48rem) and (max-width: 63.99rem) {
