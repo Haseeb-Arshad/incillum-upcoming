@@ -103,7 +103,7 @@ export const waitlistSchema = z.object({
     .pipe(z.email('That does not look like a valid email address.'))
     .refine(
       isWorkEmail,
-      'Use your work email address — the list is for operating teams rather than individuals.',
+      'Use your work email address. The list is for operating teams rather than individuals.',
     ),
 
   commercialWork: z
@@ -124,10 +124,30 @@ export const waitlistSchema = z.object({
    * caps are generous enough that nobody legitimate hits them and small enough
    * that the endpoint cannot be used to post an essay at us.
    */
-  company: z.string().trim().max(120).optional().transform((value) => value || undefined),
-  role: z.string().trim().max(120).optional().transform((value) => value || undefined),
-  erp: z.string().trim().max(120).optional().transform((value) => value || undefined),
-  pain: z.string().trim().max(1_000).optional().transform((value) => value || undefined),
+  company: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .transform((value) => value || undefined),
+  role: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .transform((value) => value || undefined),
+  erp: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .transform((value) => value || undefined),
+  pain: z
+    .string()
+    .trim()
+    .max(1_000)
+    .optional()
+    .transform((value) => value || undefined),
 
   companyWebsite: z.string().max(0).optional(),
   renderedAt: z.number().int().nonnegative(),

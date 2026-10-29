@@ -89,7 +89,7 @@ export function seoTags(page: PageSeo = {}) {
        */
       {
         property: 'og:image:alt',
-        content: `${brand.name} — ${launch.headline}`,
+        content: `${brand.name} | ${launch.headline}`,
       },
 
       { name: 'twitter:card', content: 'summary_large_image' },

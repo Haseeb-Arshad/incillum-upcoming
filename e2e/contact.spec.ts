@@ -34,7 +34,13 @@ const joined = {
       {
         t: 10,
         i: 1,
-        p: { k: ['status', 'reference'], v: [{ t: 1, s: 'joined' }, { t: 1, s: 'IC-TEST0001-ABC' }] },
+        p: {
+          k: ['status', 'reference'],
+          v: [
+            { t: 1, s: 'joined' },
+            { t: 1, s: 'IC-TEST0001-ABC' },
+          ],
+        },
         o: 0,
       },
     ],
@@ -54,7 +60,9 @@ async function stubSuccess(page: Page) {
   )
 }
 
-test('one sheet, one form, no proof column, and no horizontal overflow', async ({ page }) => {
+test('one sheet, one form, no proof column, and no horizontal overflow', async ({
+  page,
+}) => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Tell us about the work that outlasts the day.',
   )
@@ -91,18 +99,22 @@ test('a label lifts off the line and the field keeps its name', async ({ page })
 
 test('only the address is required, and the error says why', async ({ page }) => {
   await page.getByRole('button', { name: 'Send to Incillum' }).click()
-  await expect(page.getByRole('alert').filter({ hasText: /Enter an email address/ })).toBeVisible()
+  await expect(
+    page.getByRole('alert').filter({ hasText: /Enter an email address/ }),
+  ).toBeVisible()
   await expect(page.getByRole('textbox', { name: 'Work email' })).toHaveAttribute(
     'aria-invalid',
     'true',
   )
   for (const name of ['Company', 'Your role', 'Current ERP', /What costs you most/]) {
-    await expect(page.getByRole('textbox', { name })).not.toHaveAttribute('aria-invalid', 'true')
+    await expect(page.getByRole('textbox', { name })).not.toHaveAttribute(
+      'aria-invalid',
+      'true',
+    )
   }
-  await expect(page.getByRole('combobox', { name: 'Kind of commercial work' })).not.toHaveAttribute(
-    'aria-invalid',
-    'true',
-  )
+  await expect(
+    page.getByRole('combobox', { name: 'Kind of commercial work' }),
+  ).not.toHaveAttribute('aria-invalid', 'true')
 
   const email = page.getByRole('textbox', { name: 'Work email' })
   await email.fill('person@gmail.com')
@@ -112,14 +124,18 @@ test('only the address is required, and the error says why', async ({ page }) =>
   await expect(email).not.toHaveAttribute('aria-invalid', 'true')
 })
 
-test('the select works from the keyboard and the pointer, and can be cleared', async ({ page }) => {
+test('the select works from the keyboard and the pointer, and can be cleared', async ({
+  page,
+}) => {
   const kind = page.getByRole('combobox', { name: 'Kind of commercial work' })
   await expect(kind).toHaveAttribute('aria-expanded', 'false')
 
   await kind.focus()
   await kind.press('ArrowDown')
   await expect(kind).toHaveAttribute('aria-expanded', 'true')
-  await expect(page.getByRole('listbox', { name: 'Kind of commercial work' })).toBeVisible()
+  await expect(
+    page.getByRole('listbox', { name: 'Kind of commercial work' }),
+  ).toBeVisible()
   await kind.press('ArrowDown')
   await kind.press('Enter')
   await expect(kind).toHaveAttribute('aria-expanded', 'false')
@@ -152,21 +168,29 @@ test('a network failure keeps what was typed and offers the email', async ({ pag
   await page.getByRole('textbox', { name: 'Company' }).fill('Northwind Trading')
   await page.getByRole('button', { name: 'Send to Incillum' }).click()
 
-  const notice = page.getByRole('alert').filter({ hasText: 'We couldn’t confirm delivery' })
+  const notice = page
+    .getByRole('alert')
+    .filter({ hasText: 'We couldn’t confirm delivery' })
   await expect(notice).toBeVisible()
   await expect(notice.getByRole('link', { name: /Email us/ })).toHaveAttribute(
     'href',
     /^mailto:.+@.+/,
   )
   await expect(email).toHaveValue('director@northwind-trading.example')
-  await expect(page.getByRole('textbox', { name: 'Company' })).toHaveValue('Northwind Trading')
+  await expect(page.getByRole('textbox', { name: 'Company' })).toHaveValue(
+    'Northwind Trading',
+  )
   await expect(page.getByRole('button', { name: 'Send to Incillum' })).toBeEnabled()
 })
 
-test('success stamps the copy, repeats the record and spends the motto once', async ({ page }) => {
+test('success stamps the copy, repeats the record and spends the motto once', async ({
+  page,
+}) => {
   await stubSuccess(page)
 
-  await page.getByRole('textbox', { name: 'Work email' }).fill('director@northwind-trading.example')
+  await page
+    .getByRole('textbox', { name: 'Work email' })
+    .fill('director@northwind-trading.example')
   await page.getByRole('textbox', { name: 'Company' }).fill('Northwind Trading')
   await page.getByRole('combobox', { name: 'RFQs a month' }).click()
   await page.getByRole('option', { name: '200 to 1,000 a month' }).click()
@@ -187,7 +211,9 @@ test('success stamps the copy, repeats the record and spends the motto once', as
   await expect(receipt).toContainText(/we’ll write once/i)
   await expect(page.locator('body')).not.toContainText(/check your inbox/i)
   await expect(page.locator('body')).toContainText(/stay with the work/i)
-  expect((await page.locator('body').innerText()).match(/stay with the work/gi)).toHaveLength(1)
+  expect(
+    (await page.locator('body').innerText()).match(/stay with the work/gi),
+  ).toHaveLength(1)
 
   // The stamp is decoration; the heading is the announcement.
   await expect(page.locator('.memo-stamp')).toHaveAttribute('aria-hidden', 'true')
@@ -217,7 +243,9 @@ test('reduced motion renders the final frame', async ({ page }) => {
 test('server HTML carries the heading and the address field without JavaScript', async ({
   browser,
 }) => {
-  const base = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3210'
+  const base =
+    process.env.PLAYWRIGHT_BASE_URL ??
+    `http://localhost:${process.env.PLAYWRIGHT_PORT ?? '3210'}`
   const context = await browser.newContext({ javaScriptEnabled: false })
   const staticPage = await context.newPage()
   await staticPage.goto(`${base}/contact`)
@@ -230,7 +258,9 @@ test('the home page reaches it at every width, and the page is in the sitemap', 
   page,
   request,
 }) => {
-  await page.goto('/')
+  await page.route('**/film/incillum.mp4', (route) => route.abort())
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  await page.waitForSelector('html[data-hydrated="true"]')
   await page.waitForSelector('html[data-hydrated="true"]')
   // The masthead's link is hidden on a phone and the footer's is not, so
   // whichever is visible has to land here.

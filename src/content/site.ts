@@ -74,11 +74,16 @@ export const brand = {
 } as const
 
 export const hero = {
-  /** Two deliberate lines; the explanation keeps the full commercial arc. */
+  /**
+   * Two deliberate lines, and under them two short sentences: what happens to
+   * a request, and what stays a person's. The lede named the whole arc in one
+   * long sentence until the owner asked for it short on 29 October 2026; the
+   * headline still carries the breadth.
+   */
   headline: 'Intelligence for commercial work.',
   headlineStart: 'Intelligence for',
   headlineEnd: 'commercial work.',
-  lede: 'From the first request to the decisions, follow-ups, documents and financial consequences that follow. Incillum carries the work forward — and brings you back where judgement matters.',
+  lede: 'Every request read, priced and checked the moment it lands. The decisions stay yours.',
   invitation: 'Bring your hardest quotation.',
   storyLink: 'Follow one night of work',
   /**
@@ -326,7 +331,7 @@ const beats: ReadonlyArray<ThreadBeat> = [
   {
     at: '03:42',
     title: 'A supplier answer changes the economics.',
-    body: 'A confirmation lands against the largest line: lead time out by three weeks, unit cost up six per cent. It is filed against the line it belongs to and the quotation is recalculated on the spot — so the change is a number by morning rather than a discovery on Thursday.',
+    body: 'A confirmation lands against the largest line: lead time out by three weeks, unit cost up six per cent. It is filed against the line it belongs to and the quotation is recalculated on the spot, so by morning the change is a number on the sheet rather than a discovery on Thursday.',
   },
   {
     at: '06:50',
@@ -390,7 +395,7 @@ export const boundary = {
   points: [
     {
       title: 'Ambiguity',
-      body: 'When the evidence does not settle which part, which price or which date, nothing is chosen. The line is held with the question narrowed to the one thing it needs from a person — not returned as a shrug, and not resolved on the balance of probability.',
+      body: 'When the evidence does not settle which part, which price or which date, nothing is chosen. The line is held with the question narrowed to the one thing it needs from a person. It is not returned as a shrug, and it is not settled on the balance of probability.',
     },
     {
       title: 'Approval',
@@ -495,7 +500,7 @@ export const evidence = {
       label: 'Source',
       lede: 'What was read, and where each number came from.',
       items: [
-        { term: 'Customer RFQ 8841', value: 'Line 14 — part, quantity, delivery week.' },
+        { term: 'Customer RFQ 8841', value: 'Line 14: part, quantity, delivery week.' },
         {
           term: 'Framework agreement',
           value:
@@ -572,7 +577,7 @@ export const firstBuild = {
   points: [
     {
       title: 'What arrives',
-      body: 'A customer request, in whatever form it turned up in — an RFQ document, a drawing pack, a spreadsheet, or a paragraph in the body of an email — together with the supplier answers and price changes that land against it afterwards.',
+      body: 'A customer request, in whatever form it turned up in (an RFQ document, a drawing pack, a spreadsheet, or a paragraph in the body of an email), together with the supplier answers and price changes that land against it afterwards.',
     },
     {
       title: 'What happens to it',
@@ -580,7 +585,7 @@ export const firstBuild = {
     },
     {
       title: 'What comes back',
-      body: 'A quotation ready for a person to decide on, with the working attached and the held lines named — not a draft to check line by line, and not a decision already taken.',
+      body: 'A quotation ready for a person to decide on, with the working attached and the held lines named. Not a draft to check line by line, and not a decision already taken.',
     },
   ],
 } as const
@@ -657,15 +662,15 @@ export const earlyAccess = {
   lede: 'We are looking for a small number of teams to build against, not a mailing list. If the work below is your week, the form is worth two minutes.',
 
   fits: [
-    'Quotes are complex enough that preparing one is real work — parts to match, drawings to read, options to price.',
+    'Quotes are complex enough that preparing one is real work: parts to match, drawings to read, options to price.',
     'Suppliers move your costs and lead times while a quotation is still open.',
     'Margin is governed: there is a floor, an approval, or somebody whose signature is needed under a certain number.',
-    'The answer has to end up somewhere — a CRM, an ERP, a quotation document a customer will hold you to.',
+    'The answer has to end up somewhere: a CRM, an ERP, a quotation document a customer will hold you to.',
   ],
 
   /** What actually happens next. The same promise as `hero.assurance`, once more, in full. */
   nextLabel: 'What happens next',
-  next: 'A call first, so we understand how you quote today. Then, if it fits, one real case run alongside your existing process — yours to compare, no commitment and no payment. We are not going to ask you to change anything to find out whether this is useful.',
+  next: 'A call first, so we understand how you quote today. Then, if it fits, one real case run alongside your existing process, for you to compare, with no commitment and no payment. We won’t ask you to change anything to find out whether this is useful.',
 } as const
 
 /**
@@ -700,13 +705,13 @@ export const close = {
  * not a richer pitch, it is a reader wondering whether they clicked the right
  * link.
  *
- * Lower case after the dash, because the wordmark is the proper noun and the
- * rest is a description of what the company does.
+ * A straight line between the name and the description, by the owner's call
+ * of 29 October 2026: no dash in anything a reader sees.
  */
 export const seoCopy = {
-  title: 'Incillum — intelligence for commercial work',
+  title: 'Incillum | Intelligence for commercial work',
   description:
-    'Incillum stays with commercial work: an RFQ that arrives at night, the supplier costs and margin decisions that follow it, and a quotation ready for a person by morning. Request early access.',
+    'Incillum reads every request for quotation the moment it lands, prices each line, checks the margin, and brings a person in for the decision. Request early access.',
 } as const
 
 /** The intentionally unrevealing public launch surface. Editorial copy above is archived. */
@@ -728,22 +733,20 @@ export const launch = {
 } as const
 
 /**
- * The front page's shared copy: its head, its navigation, the quotation's
- * lines as the film's sheet sets them, and the close the presentation reads.
+ * The front page's shared copy: its head, its navigation, the quotation used
+ * by the handover and retained spreadsheet components, and the close the
+ * presentation reads. The product film and sourced case have their own copy.
  *
  * The front page is the presentation (`glass` below, `components/glass-page.tsx`).
  * What lives here is what more than one surface reads: the masthead's links and
- * button, the matrix the film, the gathered sheet and the tabs all draw, and
- * the close's headline, body and action.
+ * button, the matrix the handover and retained spreadsheet components draw,
+ * and the close's headline, body and action.
  *
  * ── Shaped like the pages it is measured against, proved differently ───────
  *
- * The front page follows the order Harvey and Hebbia use — a product film, the
- * context it draws on, product tabs, a band of figures, a security grid, then
- * the close. Their proof is not available here (AGENTS.md §5), so every act
- * carries the honest substitute instead: documents for a logo wall, states for
- * metrics, written answers for testimonials, and commitments with their real
- * state for certification badges.
+ * The front page follows the product film with a sourced case, six trust
+ * commitments, the questions and the close. Its evidence is published research,
+ * not customer proof or Incillum performance data (AGENTS.md §5).
  *
  * ── The matrix is illustrative, and reconciles ─────────────────────────────
  *
@@ -768,7 +771,7 @@ export const home = {
    * on this page or the contact memo — because a link to a page that is not
    * there is a promise this site would be breaking in its first line.
    */
-  nav: { how: 'How it works', trust: 'Trust', questions: 'Questions', contact: 'Contact' },
+  nav: { how: 'The case', trust: 'Trust', questions: 'Questions', contact: 'Contact' },
   cta: 'Request early access',
   emailPlaceholder: 'Your work email',
 
@@ -792,14 +795,56 @@ export const home = {
       held: 'Needs review',
     } satisfies Record<MatrixStatus, string>,
     rows: [
-      { line: '01', item: 'Machined bracket, 6061-T6', status: 'priced', evidence: 'Framework agreement, schedule B' },
-      { line: '02', item: 'Cast housing, A380', status: 'priced', evidence: 'Supplier price list, page 4' },
-      { line: '04', item: 'Bearing seat, catalogue part', status: 'held', evidence: 'Part number matches three catalogue entries; only the tolerance separates them' },
-      { line: '05', item: 'Gasket set', status: 'priced', evidence: 'Framework agreement, schedule B' },
-      { line: '06', item: 'Cover plate, laser cut', status: 'priced', evidence: 'Supplier price list, page 9' },
-      { line: '11', item: 'Sensor mount, customer drawing', status: 'held', evidence: 'Drawing carries no revision' },
-      { line: '14', item: 'Flanged housing, machined', status: 'changed', evidence: 'Supplier confirmation at 03:42 — unit cost up six per cent, lead time out three weeks' },
-    ] satisfies ReadonlyArray<{ line: string; item: string; status: MatrixStatus; evidence: string }>,
+      {
+        line: '01',
+        item: 'Machined bracket, 6061-T6',
+        status: 'priced',
+        evidence: 'Framework agreement, schedule B',
+      },
+      {
+        line: '02',
+        item: 'Cast housing, A380',
+        status: 'priced',
+        evidence: 'Supplier price list, page 4',
+      },
+      {
+        line: '04',
+        item: 'Bearing seat, catalogue part',
+        status: 'held',
+        evidence:
+          'Part number matches three catalogue entries; only the tolerance separates them',
+      },
+      {
+        line: '05',
+        item: 'Gasket set',
+        status: 'priced',
+        evidence: 'Framework agreement, schedule B',
+      },
+      {
+        line: '06',
+        item: 'Cover plate, laser cut',
+        status: 'priced',
+        evidence: 'Supplier price list, page 9',
+      },
+      {
+        line: '11',
+        item: 'Sensor mount, customer drawing',
+        status: 'held',
+        evidence: 'Drawing carries no revision',
+      },
+      {
+        line: '14',
+        item: 'Flanged housing, machined',
+        status: 'changed',
+        evidence:
+          'Supplier confirmation at 03:42: unit cost up six per cent, lead time out three weeks',
+      },
+    ] satisfies ReadonlyArray<{
+      line: string
+      item: string
+      status: MatrixStatus
+      evidence: string
+    }>,
     more: { count: 13, text: 'more lines priced, each with its source attached' },
   },
 
@@ -811,11 +856,12 @@ export const home = {
 
   title: seoCopy.title,
   description:
-    'Incillum carries commercial work forward and brings people back where judgement matters: an RFQ that arrives at night, and a decision ready for a person by morning. Request early access.',
+    'Every request for quotation read, priced and checked the moment it lands, with the decisions left to a person. Request early access.',
 } as const
 
 /**
- * How it works — four tabs, one quotation.
+ * How it works — four tabs, one quotation. Retained as an unplaced section;
+ * the current front page's product film already shows these steps.
  *
  * ── The tabs are the boundaries ────────────────────────────────────────────
  *
@@ -909,8 +955,16 @@ export const how = {
     },
     decide: {
       options: [
-        { key: 'keep', title: 'Keep the price', detail: 'and accept the lower margin on the largest line' },
-        { key: 'floor', title: 'Price to the floor', detail: 'and go back to the supplier on the lead time' },
+        {
+          key: 'keep',
+          title: 'Keep the price',
+          detail: 'and accept the lower margin on the largest line',
+        },
+        {
+          key: 'floor',
+          title: 'Price to the floor',
+          detail: 'and go back to the supplier on the lead time',
+        },
         { key: 'split', title: 'Split the quantity', detail: 'across both' },
       ],
       quotation: 'The whole quotation',
@@ -931,14 +985,7 @@ export const how = {
  * no customer, usage figure or date is stated. `site.test.ts` holds both.
  */
 export type TrustGlyph =
-  | 'training'
-  | 'sending'
-  | 'approval'
-  | 'record'
-  | 'source'
-  | 'separate'
-  | 'key'
-  | 'test'
+  'training' | 'sending' | 'approval' | 'record' | 'source' | 'separate' | 'key' | 'test'
 
 export interface TrustCommitment {
   glyph: TrustGlyph
@@ -948,8 +995,8 @@ export interface TrustCommitment {
 
 export const trust = {
   anchor: 'trust',
-  headline: 'Built for the figures you guard most.',
-  lede: 'Prices, costs and margins never leave your control, and nothing leaves your business without a person.',
+  headline: 'Your numbers stay yours.',
+  lede: 'Prices, costs and margins are the most sensitive figures a business has. This is what Incillum does with them, in plain words.',
   commitments: [
     {
       glyph: 'training',
@@ -998,27 +1045,27 @@ export const trust = {
  */
 export const questions = {
   anchor: 'questions',
-  headline: 'Before you ask.',
+  headline: 'What you’ll want to know.',
   items: [
     {
       question: 'Who is it for?',
       answer:
-        'Teams for whom a quote is real work: parts to match and drawings to read, suppliers who move costs while it is open, and a margin somebody has to approve.',
+        'Teams for whom a quote is real work: parts to match, drawings to read, suppliers whose prices move while the quote is open, and a margin somebody has to sign off.',
     },
     {
       question: 'Does it send quotations?',
       answer:
-        'Not on its own. It prepares the quotation and the working behind it, and it goes to your customer only when a person approves it.',
+        'Not by itself. It prepares the quotation and all the working behind it, and nothing goes to your customer until a person approves it.',
     },
     {
       question: 'Does it contact our suppliers?',
       answer:
-        'Only with your approval. Charlie asks your approved suppliers for a firm price and lead time, and files each answer against the line it belongs to. Nothing is sent until a person approves it.',
+        'Only with your approval. Charlie drafts a request for a firm price and lead time to the suppliers you have approved, and files each answer against the line it belongs to. Nothing is sent until a person approves it.',
     },
     {
-      question: 'What happens to a line it cannot resolve?',
+      question: 'What happens to a line it can’t resolve?',
       answer:
-        'It is held rather than guessed, with the question narrowed to the one thing it needs from a person. The rest of the quotation carries on.',
+        'It is held, never guessed. The question is narrowed to the one thing it needs from a person, and the rest of the quotation carries on.',
     },
     {
       question: 'Is our data used to train models?',
@@ -1078,7 +1125,8 @@ export const questions = {
 export type GlassStatus = MatrixStatus | 'read'
 
 /** The six places one quotation's facts are kept. Also the icon a source carries. */
-export type GlassSource = 'request' | 'drawing' | 'catalogue' | 'prices' | 'agreement' | 'supplier'
+export type GlassSource =
+  'request' | 'drawing' | 'catalogue' | 'prices' | 'agreement' | 'supplier'
 
 export interface GlassFrame {
   /** An hour of the thread. A test holds every frame to a beat. */
@@ -1158,20 +1206,44 @@ const glassSheet = {
   /** The name box's name for the selection that takes the whole sheet, at 08:04. */
   all: 'Quote',
   lines: {
-    '01': { category: 'Machined', quantity: '400', rate: { from: 'agreement', part: 'BR-6061' } },
-    '02': { category: 'Cast', quantity: '250', rate: { from: 'prices', part: 'CH-A380' } },
+    '01': {
+      category: 'Machined',
+      quantity: '400',
+      rate: { from: 'agreement', part: 'BR-6061' },
+    },
+    '02': {
+      category: 'Cast',
+      quantity: '250',
+      rate: { from: 'prices', part: 'CH-A380' },
+    },
     '04': { category: 'Catalogue', quantity: '600' },
-    '05': { category: 'Sealing', quantity: '1,000', rate: { from: 'agreement', part: 'GS-12' } },
-    '06': { category: 'Sheet metal', quantity: '300', rate: { from: 'prices', part: 'CP-LC3' } },
+    '05': {
+      category: 'Sealing',
+      quantity: '1,000',
+      rate: { from: 'agreement', part: 'GS-12' },
+    },
+    '06': {
+      category: 'Sheet metal',
+      quantity: '300',
+      rate: { from: 'prices', part: 'CP-LC3' },
+    },
     '11': { category: 'Machined', quantity: '150' },
-    '14': { category: 'Machined', quantity: '1,200', rate: { from: 'prices', part: 'FH-6082' } },
+    '14': {
+      category: 'Machined',
+      quantity: '1,200',
+      rate: { from: 'prices', part: 'FH-6082' },
+    },
   },
 } as const satisfies {
   columns: Record<string, string>
   all: string
   lines: Record<
     string,
-    { category: string; quantity: string; rate?: { from: 'prices' | 'agreement'; part: string } }
+    {
+      category: string
+      quantity: string
+      rate?: { from: 'prices' | 'agreement'; part: string }
+    }
   >
 }
 
@@ -1195,7 +1267,7 @@ const glassDocuments = {
   request: {
     title: 'Shared mailbox',
     at: '23:47',
-    subject: 'RFQ 8841 — framework agreement',
+    subject: 'RFQ 8841, framework agreement',
     from: 'Purchasing',
     address: 'rfq@customer.example',
     body: 'Please quote the twenty lines attached, against our framework agreement. We need your response by Thursday.',
@@ -1230,8 +1302,18 @@ const glassDocuments = {
     columns: ['Part', 'Description', 'Unit cost', 'Lead time'],
     rows: [
       { part: 'CH-A380', description: 'Cast housing, A380', cost: '18.40', lead: '21 d' },
-      { part: 'FH-6082', description: 'Flanged housing, machined', cost: '128.00', lead: '21 d' },
-      { part: 'CP-LC3', description: 'Cover plate, laser cut', cost: '6.90', lead: '10 d' },
+      {
+        part: 'FH-6082',
+        description: 'Flanged housing, machined',
+        cost: '128.00',
+        lead: '21 d',
+      },
+      {
+        part: 'CP-LC3',
+        description: 'Cover plate, laser cut',
+        cost: '6.90',
+        lead: '10 d',
+      },
       { part: 'SR-20', description: 'Spacer ring', cost: '1.85', lead: '7 d' },
       { part: 'LP-6', description: 'Locating pin', cost: '0.62', lead: '7 d' },
     ],
@@ -1297,15 +1379,38 @@ export interface GlassThreadRow {
 
 const glassThread: ReadonlyArray<GlassThreadRow> = [
   { key: 'request', title: 'Shared mailbox', text: 'Twenty line items, due Thursday' },
-  { key: 'drawing', title: 'Drawing pack', line: '11', text: 'No revision on the drawing', status: 'held' },
-  { key: 'catalogue', title: 'Catalogue', line: '04', text: 'Three entries match the part', status: 'held' },
-  { key: 'prices', title: 'Supplier price list', text: 'Unit costs for the priced lines', status: 'priced' },
+  {
+    key: 'drawing',
+    title: 'Drawing pack',
+    line: '11',
+    text: 'No revision on the drawing',
+    status: 'held',
+  },
+  {
+    key: 'catalogue',
+    title: 'Catalogue',
+    line: '04',
+    text: 'Three entries match the part',
+    status: 'held',
+  },
+  {
+    key: 'prices',
+    title: 'Supplier price list',
+    text: 'Unit costs for the priced lines',
+    status: 'priced',
+  },
   { key: 'agreement', title: 'Framework agreement', text: 'Margin floor', floor: true },
-  { key: 'supplier', title: 'Supplier confirmation', line: '14', text: 'Six per cent up, three weeks later', status: 'changed' },
+  {
+    key: 'supplier',
+    title: 'Supplier confirmation',
+    line: '14',
+    text: 'Six per cent up, three weeks later',
+    status: 'changed',
+  },
 ]
 
 export const glass = {
-  title: 'Incillum — one request, one night',
+  title: 'Incillum | One request, one night',
   description:
     'One request for quotation, carried through one night and handed back to a person by morning: what Incillum does, in one night.',
 
@@ -1336,7 +1441,10 @@ export const glass = {
     /** The licence, as the frame's first line: a sentence, not a label. */
     licence: 'One quotation, followed through one night.',
     title: home.matrix.title,
-    statusLabels: { ...home.matrix.statusLabels, read: 'Read' } satisfies Record<GlassStatus, string>,
+    statusLabels: { ...home.matrix.statusLabels, read: 'Read' } satisfies Record<
+      GlassStatus,
+      string
+    >,
     more: 'more lines',
     controls: {
       play: 'Play the night',
@@ -1361,7 +1469,8 @@ export const glass = {
    */
   reel: {
     /** The block's first line: what the film follows, in a sentence. */
-    licence: 'One request for quotation, from the moment it lands to a quotation ready to send.',
+    licence:
+      'One request for quotation, from the moment it lands to a quotation ready to send.',
     src: '/film/incillum.mp4',
     poster: '/film/incillum.webp',
     label:
@@ -1419,7 +1528,124 @@ export const glass = {
     morning:
       'The same office at 08:04, photographed from inside. Grey morning daylight comes through the glass wall; the desk lamp is still on over the printed quotation, the chair behind it is empty and pushed back, and the monitor is still switched off.',
   },
+} as const
 
+/**
+ * The figures: two short sections after the film, and the only figures on the
+ * site that are not the example quotation's.
+ *
+ * ── Whose figures ──────────────────────────────────────────────────────────
+ *
+ * On 29 October 2026 the owner asked for the case to be made in figures, short
+ * enough to take in at a glance: speed first, because a request answered
+ * within the hour is worth several answered the next day. This site still has
+ * none of its own (no customers, no usage, nothing measured, AGENTS.md §5),
+ * and an invented one is the claim a buyer checks first. So every figure here
+ * is a third party's, about the work, with its source printed under it. None
+ * is about Incillum, and none may be added without a source a reader can open.
+ *
+ * The long form (every figure, what it measured, and the case for the
+ * company) is the private brief at /brief, which lives on the server
+ * (`server/brief-content.ts`) and never reaches a page that has not been
+ * unlocked. `design/2026-10-29-research.md` records how each source was
+ * checked. A research publisher is named here only as a figure's source,
+ * never as a system Incillum works with.
+ *
+ * ── The voice ──────────────────────────────────────────────────────────────
+ *
+ * The figures do the shouting. Labels of a few words, one sentence of lede,
+ * no dash in place of a comma, and the night kept to the one place it belongs,
+ * the morning at the close.
+ */
+export interface Source {
+  key: 'hbr' | 'salesforce' | 'mckinsey'
+  /** As it is printed under a figure. */
+  short: string
+  href: string
+}
+
+export interface Odds {
+  key: string
+  value: string
+  label: string
+  source: Source['key']
+}
+
+export const figures = {
+  sources: [
+    {
+      key: 'hbr',
+      short: 'Harvard Business Review, 2011',
+      href: 'https://hbr.org/2011/03/the-short-life-of-online-sales-leads',
+    },
+    {
+      key: 'mckinsey',
+      short: 'McKinsey Quarterly, 2003',
+      href: 'https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/the-power-of-pricing',
+    },
+    {
+      key: 'salesforce',
+      short: 'Salesforce, State of Sales, 2025 survey',
+      href: 'https://www.salesforce.com/en-us/wp-content/uploads/sites/4/documents/reports/sales/salesforce-state-of-sales-report-2026.pdf',
+    },
+  ] satisfies ReadonlyArray<Source>,
+  sourcesLabel: 'Sources',
+
+  /**
+   * The reference page's sunken panel on the paper: a headline, one sentence,
+   * four figures, and the world in dots beside them with a note over its
+   * corner. The note is the one sentence about Charlie, and it is about speed.
+   */
+  odds: {
+    headline: 'A slow quote costs you twice.',
+    lede: 'Once in the buyer who moved on, and again in the margin nobody had time to check.',
+    stats: [
+      {
+        key: 'wait',
+        value: '42h',
+        label: 'Average reply among companies that replied within 30 days',
+        source: 'hbr',
+      },
+      {
+        key: 'hour',
+        value: '7×',
+        label: 'Nearly seven times likelier to reach a decision maker within the hour',
+        source: 'hbr',
+      },
+      {
+        key: 'never',
+        value: '23%',
+        label: 'Of 2,241 companies never replied at all',
+        source: 'hbr',
+      },
+      {
+        key: 'price',
+        value: '8%',
+        label: 'More operating profit from a 1% higher price, volume unchanged (S&P 1500)',
+        source: 'mckinsey',
+      },
+    ] satisfies ReadonlyArray<Odds>,
+    note: 'Charlie picks up every request the moment it lands, prices it and checks the margin, so a draft is waiting for your approval while the buyer is still listening.',
+    map: 'The Americas, Europe and Africa, drawn in dots.',
+  },
+
+  /**
+   * The reference page's bar: Salesforce's chart of a rep's working week in
+   * three parts, each as wide as its share and set large inside it. The
+   * survey's own seven parts are folded into three: time with customers,
+   * creating quotes and entering data by hand, and everything else.
+   */
+  week: {
+    headline: 'More of a sales week goes on quotes and data entry than on customers.',
+    lede: 'In a survey of 4,050 sales professionals, building quotes and typing figures in by hand took almost a third of the week. That is the work Charlie is for.',
+    chart: 'A sales rep’s working week',
+    segments: [
+      { key: 'customers', label: 'With customers', share: 22 },
+      { key: 'quotes', label: 'Quotes and data entry', share: 30 },
+      { key: 'other', label: 'Everything else', share: 48 },
+    ],
+    source: 'salesforce',
+  },
 } as const
 
 /**
@@ -1440,7 +1666,7 @@ export const glass = {
  * `brand.motto` itself, which is one of its two permitted placements.
  */
 export const contact = {
-  title: 'Contact — Incillum',
+  title: 'Contact | Incillum',
   description:
     'Tell us about the commercial work you carry. If it looks like a fit, we will write to arrange a call.',
   heading: 'Tell us about the work that outlasts the day.',
@@ -1463,7 +1689,8 @@ export const contact = {
   back: 'Incillum',
   memo: {
     formLabel: 'Contact Incillum',
-    description: 'Tell us about the work you quote. If it looks like a fit, we’ll write to set up a call.',
+    description:
+      'Tell us about the work you quote. If it looks like a fit, we’ll write to set up a call.',
     requiredNote: 'Only your email is required.',
     fields: {
       email: 'Work email',
@@ -1498,6 +1725,23 @@ export const contact = {
 } as const
 
 /**
+ * The private brief's gate: the only words of /brief a visitor sees before
+ * the password. The brief itself is server-only (`server/brief-content.ts`)
+ * and is not here, because nothing in this module may be private.
+ */
+export const briefGate = {
+  brand: 'Incillum',
+  title: 'A private brief.',
+  hint: 'Enter the password shared with you to read the investor and partner brief.',
+  label: 'Password',
+  submit: 'Open the brief',
+  opening: 'Opening',
+  wrong: 'That password did not match. Try again.',
+  unavailable: 'This brief is not available right now.',
+  failed: 'This brief could not be opened. Try again.',
+} as const
+
+/**
  * The masthead's menus — the reference pages' dropdown boxes.
  *
  * One menu — Product, with Charlie in it — a link to the contact memo, and
@@ -1517,10 +1761,18 @@ export const menu = {
       key: 'product',
       label: 'Product',
       items: [
-        { href: '/charlie', title: 'Charlie', line: 'The agent that carries a quotation from the request to a decision.' },
+        {
+          href: '/charlie',
+          title: 'Charlie',
+          line: 'The agent that carries a quotation from the request to a decision.',
+        },
       ],
     },
-  ] satisfies ReadonlyArray<{ key: string; label: string; items: ReadonlyArray<MenuItem> }>,
+  ] satisfies ReadonlyArray<{
+    key: string
+    label: string
+    items: ReadonlyArray<MenuItem>
+  }>,
   /** Plain links beside the menus. */
   links: [{ href: '/contact', title: 'Contact' }],
   cta: 'Request early access',
@@ -1591,7 +1843,7 @@ const charlieMessages: ReadonlyArray<CharlieMessage> = [
   {
     at: '08:04',
     from: 'charlie',
-    text: '@Sara RFQ 8841 is ready for you: {priced} lines priced, {held} held. One call is yours — quote under the floor, or go back on the lead time.',
+    text: '@Sara RFQ 8841 is ready for you: {priced} lines priced, {held} held. One call is yours: quote under the floor, or go back on the lead time.',
   },
   {
     at: '08:11',
@@ -1620,7 +1872,7 @@ const charlieMessages: ReadonlyArray<CharlieMessage> = [
 export const charlie = {
   anchor: 'charlie',
   path: '/charlie',
-  title: 'Charlie — Incillum',
+  title: 'Charlie | Incillum',
   description:
     'Charlie, in Incillum: reads every request as it lands, puts it on one sheet, cites every figure, costs the supplier quotes, and asks a person before anything leaves.',
 
@@ -1641,14 +1893,42 @@ export const charlie = {
   film: {
     licence: 'One quotation, from the request to the approval.',
     /** Named for the film they control: the night above has its own pause. */
-    controls: { play: 'Play Charlie', pause: 'Pause Charlie', steps: 'Charlie’s abilities' },
+    controls: {
+      play: 'Play Charlie',
+      pause: 'Pause Charlie',
+      steps: 'Charlie’s abilities',
+    },
     steps: [
-      { key: 'reads', title: 'Reads what arrives', line: 'Mail, PDFs, drawings and price lists, read into lines.' },
-      { key: 'cites', title: 'Cites every source', line: 'Each figure links back to the page it came from.' },
-      { key: 'holds', title: 'Holds what it can’t settle', line: 'A line it cannot settle waits for a person.' },
-      { key: 'makes', title: 'Makes the documents', line: 'The quotation, ready for someone to check.' },
-      { key: 'tells', title: 'Tells your team', line: 'Posts what changed in your channel.' },
-      { key: 'asks', title: 'Asks before anything leaves', line: 'Nothing is sent until a person approves.' },
+      {
+        key: 'reads',
+        title: 'Reads what arrives',
+        line: 'Mail, PDFs, drawings and price lists, read into lines.',
+      },
+      {
+        key: 'cites',
+        title: 'Cites every source',
+        line: 'Each figure links back to the page it came from.',
+      },
+      {
+        key: 'holds',
+        title: 'Holds what it can’t settle',
+        line: 'A line it cannot settle waits for a person.',
+      },
+      {
+        key: 'makes',
+        title: 'Makes the documents',
+        line: 'The quotation, ready for someone to check.',
+      },
+      {
+        key: 'tells',
+        title: 'Tells your team',
+        line: 'Posts what changed in your channel.',
+      },
+      {
+        key: 'asks',
+        title: 'Asks before anything leaves',
+        line: 'Nothing is sent until a person approves.',
+      },
     ],
     stage: {
       reading: 'Reading',
@@ -1664,7 +1944,7 @@ export const charlie = {
   hero: {
     eyebrow: 'Charlie, in Incillum',
     headline: 'Every request worked. Every decision yours.',
-    lede: 'Charlie reads what arrives, puts it on one sheet, cites the page each figure came from and costs the supplier quotes — then stops, and asks the person who decides.',
+    lede: 'Charlie reads what arrives, puts it on one sheet, cites the page each figure came from and costs the supplier quotes. Then it stops, and asks the person who decides.',
     watch: 'Watch Charlie at work',
     contact: 'Tell us about the work',
   },
@@ -1729,7 +2009,7 @@ export const charlie = {
         at: 26.6,
         label: 'Costs',
         title: 'Supplier quotes, compared and costed',
-        body: 'Five supplier quotations, compared for the lines each one covers, the quantity it assumes and what it costs — and the one it could not read, named.',
+        body: 'Five supplier quotations, compared for the lines each one covers, the quantity it assumes and what it costs, with the one it could not read named.',
         still: '/charlie/steps/costs.webp',
         alt: 'Supplier intelligence in Incillum Studio: five supplier sources, their coverage and the current cost basis.',
       },
@@ -1768,15 +2048,43 @@ export const charlie = {
 
   abilities: {
     headline: 'What Charlie does.',
-    lede: 'Everything a quotation needs between the request and the decision — and the one thing it never does: send without a person.',
+    lede: 'Everything a quotation needs between the request and the decision, and the one thing it never does: send without a person.',
     items: [
-      { glyph: 'read', title: 'Reads every document', body: 'The request, the drawings, the catalogue, the price list, the agreement and every supplier reply, read into lines.' },
-      { glyph: 'cite', title: 'Cites the page', body: 'Every figure is shown with the document and the place it came from. A figure with no source is reported as missing.' },
-      { glyph: 'make', title: 'Makes the documents', body: 'Takes a PDF or a spreadsheet and makes the quotation, a workbook or a chart from it, for a person to check.' },
-      { glyph: 'tell', title: 'Tells your channel', body: 'Posts what changed and what needs someone in Slack, Teams or by email, and answers when it is mentioned.' },
-      { glyph: 'ask', title: 'Asks approved suppliers', body: 'Drafts a request for a firm price and lead time to the suppliers you have approved, and sends it once someone approves.' },
-      { glyph: 'call', title: 'Calls and books', body: 'Calls a supplier to confirm a price or a date, and books the meeting, with the call’s notes filed against the line.' },
-      { glyph: 'approve', title: 'Asks before anything leaves', body: 'No request, quotation or document leaves without a person’s approval, and every approval is kept with the work.' },
+      {
+        glyph: 'read',
+        title: 'Reads every document',
+        body: 'The request, the drawings, the catalogue, the price list, the agreement and every supplier reply, read into lines.',
+      },
+      {
+        glyph: 'cite',
+        title: 'Cites the page',
+        body: 'Every figure is shown with the document and the place it came from. A figure with no source is reported as missing.',
+      },
+      {
+        glyph: 'make',
+        title: 'Makes the documents',
+        body: 'Takes a PDF or a spreadsheet and makes the quotation, a workbook or a chart from it, for a person to check.',
+      },
+      {
+        glyph: 'tell',
+        title: 'Tells your channel',
+        body: 'Posts what changed and what needs someone in Slack, Teams or by email, and answers when it is mentioned.',
+      },
+      {
+        glyph: 'ask',
+        title: 'Asks approved suppliers',
+        body: 'Drafts a request for a firm price and lead time to the suppliers you have approved, and sends it once someone approves.',
+      },
+      {
+        glyph: 'call',
+        title: 'Calls and books',
+        body: 'Calls a supplier to confirm a price or a date, and books the meeting, with the call’s notes filed against the line.',
+      },
+      {
+        glyph: 'approve',
+        title: 'Asks before anything leaves',
+        body: 'No request, quotation or document leaves without a person’s approval, and every approval is kept with the work.',
+      },
     ] satisfies ReadonlyArray<CharlieAbility>,
   },
 

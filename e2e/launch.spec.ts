@@ -8,6 +8,9 @@ import { expect, test } from '@playwright/test'
  * out of search and out of the sitemap.
  */
 const LAB = '/lab/particles'
+const base =
+  process.env.PLAYWRIGHT_BASE_URL ??
+  `http://localhost:${process.env.PLAYWRIGHT_PORT ?? '3210'}`
 
 test.beforeEach(async ({ page }) => {
   await page.goto(LAB)
@@ -112,7 +115,7 @@ test('keyboard reaches form and server HTML contains the invitation', async ({
   await expect(page.getByRole('button', { name: 'Join the waitlist' })).toBeFocused()
   const context = await browser.newContext({ javaScriptEnabled: false })
   const staticPage = await context.newPage()
-  await staticPage.goto(`http://localhost:3210${LAB}`)
+  await staticPage.goto(`${base}${LAB}`)
   await expect(staticPage.getByRole('heading', { level: 1 })).toBeVisible()
   await expect(staticPage.getByRole('textbox', { name: /^Work email/ })).toBeVisible()
   await expect(staticPage.locator('.particle-core-still')).toBeVisible()
@@ -165,6 +168,8 @@ test('stays private: noindex, unlisted, and linked from nowhere public', async (
   )
   const sitemap = await (await request.get('/sitemap.xml')).text()
   expect(sitemap).not.toContain(LAB)
-  await page.goto('/')
+  await page.route('**/film/incillum.mp4', (route) => route.abort())
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  await page.waitForSelector('html[data-hydrated="true"]')
   await expect(page.locator(`a[href="${LAB}"]`)).toHaveCount(0)
 })

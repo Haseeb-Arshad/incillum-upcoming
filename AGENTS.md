@@ -9,15 +9,14 @@ The operating contract for this repository. Read it before changing code.
 The public site at **incillum.com** while there is no product to show yet. One
 page, one argument, one conversion: an email address for the waitlist.
 
-**The front page is the presentation** (`components/glass-page.tsx`, §4 *The
-presentation*): the night told as a film, then the same quotation taken apart
-on the desk — six sources, Charlie's film, four tabs that end where the work
-stops, six cards of protection, the questions — and the morning. It moved to `/` from
-`/glass`, which now redirects there. Its acts on the desk are specified in §4
-*The acts on the desk*; the eight-act page they were first built for
-has been retired; its component and its styles are gone. Every act is the same
-invented quotation, and every proof device the reference pages use (Harvey,
-Hebbia) is replaced by an honest one.
+**The front page is the presentation** (`components/glass-page.tsx`, §4 _The
+presentation_): the night told as a film, then a short sourced case about
+response time, pricing and the work in a sales week, six commitments about
+data and trust, the questions, and the morning. It moved to `/` from `/glass`,
+which now redirects there. Its sections are specified in §4 _The acts on the
+desk_. The quotation in the film remains one illustrative example; the case
+uses third-party research with a source beside every figure. It makes no claim
+about Incillum's own results.
 
 It is deliberately **not** a marketing site with the product pages removed. Its
 navigation is one menu, Product, with Charlie in it (`/charlie`), and a link to
@@ -42,11 +41,12 @@ the hero names the whole arc — request, decisions, follow-ups, documents,
 financial consequences — and §06 names the one job being built first. Do not
 widen §06 and do not narrow the hero.
 
-**One story, not a catalogue.** Everything the product is being built to do
-happens once, to one quotation, between 23:47 and 08:04. A capability list is
-what a reader skims; a thread is what a reader follows. The test for anything
-added is not "is this true and interesting" — most of what could be added is —
-but "does a stranger need this before deciding whether to leave an address".
+**One product story, with evidence for the argument.** The product film follows
+one quotation, from 23:47 to 08:04. The case beside it uses published third-party
+research, never Incillum's own performance or customer data. The test for
+anything added is not "is this true and interesting" — most of what could be
+added is — but "does a stranger need this before deciding whether to leave an
+address".
 
 ### The motto
 
@@ -55,6 +55,22 @@ the success state after somebody joins. It survives on scarcity — a phrase thi
 short is a signature the third time it appears and a slogan the fourth. It is
 never extended: "AI that stays with your work" is the same idea with the
 conviction removed. `content/site.test.ts` and `e2e/site.spec.ts` both count it.
+
+### The words
+
+The owner's calls of 29 October 2026, for every word a reader sees:
+
+- **No em dash.** Not in copy, not in a title, not in alt text. It is the first
+  thing that makes writing read as generated. A page title separates the page
+  from the site with a straight line: `Incillum | Intelligence for commercial
+  work`, `Charlie | Incillum`. Code comments may keep theirs; readers never see
+  them. `content/site.test.ts` and `e2e/glass.spec.ts` both check.
+- **Speed is the message; the night appears once.** The page leads with what
+  Charlie does the moment a request lands. The night and the office at 08:04
+  are kept for the close, where they are the payoff, and are not repeated in
+  the hero or the case.
+- **Short.** A figure's label is a few words; a lede is one or two sentences.
+  The long form belongs in the private brief, not on the front page.
 
 ---
 
@@ -66,8 +82,8 @@ incillum/
 │   ├── content/site.ts        every word the site renders
 │   ├── components/            one file per section, used once each
 │   ├── lib/                   schema, spam heuristic, seo, analytics, motion, dust, cn
-│   ├── server/                the one server function, its env, its notifier
-│   ├── routes/                __root, index, contact, glass, robots, sitemap
+│   ├── server/                server functions, env, notifier, store, private brief
+│   ├── routes/                __root, index, contact, glass, brief, robots, sitemap
 │   ├── fonts/                 self-hosted woff2
 │   └── styles.css             tokens, type scale, the two scopes
 ├── design/                    generators for the mark and the share card, photo encoders
@@ -123,15 +139,14 @@ There is **one hue**, `--ic-signal`, and it is lamplight rather than a brand
 colour: a burnt sienna on paper, opening to amber in the dark scope. Two values
 of one light, not one colour at two lightnesses.
 
-It means one thing — *something is still lit* — and it appears in **four**
+It means one thing — _something is still lit_ — and it appears in **four**
 places, which is the whole licence:
 
 1. the lamp and the lit windows in the night photograph,
 2. the reader's own hour on the instrument, where it is on the page,
-3. the held state — on the film's sheet, the gathered sheet and the held lines
-   in the tabs,
-4. the figure that breaks the commercial floor — in the film's ledger, the
-   gathered sheet, the handover, and the tabs' line and quotation shortfalls.
+3. the held state, on the spreadsheet inside the product film,
+4. the figure that breaks the commercial floor — on that spreadsheet and in
+   the handover.
 
 Every one of those is the same quotation at another magnification, not a new
 place for the colour. `e2e/home.spec.ts` and `e2e/glass.spec.ts` fail on any
@@ -153,7 +168,7 @@ person picks the work back up. A reader scrolls out of a night.
 > shown on any routed page. The rules that follow — one `[data-inverted]` region, no hairline
 > at its seams, the desk after it, the texture, the motion discipline and
 > reduced motion — are the presentation's rules too. Its own specifics are in
-> *The presentation* below.
+> _The presentation_ below.
 
 It used to open on paper and go dark further down. It opens dark now because
 the commissioned photograph — an empty office, one lamp, a quotation under it —
@@ -168,7 +183,7 @@ and the film says what happened in it.
 
 - **The film** (`components/glass-film.tsx`, shared with /glass) is the
   product's own object — one request's lines with status and evidence, set as a
-  spreadsheet on a *lit* panel: `[data-lit]` re-points the tokens back to paper
+  spreadsheet on a _lit_ panel: `[data-lit]` re-points the tokens back to paper
   inside the band, because the one lit thing in the photograph is paper. It
   plays the night from 23:47 to 08:04 once while it is on screen, the reader
   can pause it or pick an hour, and it stops at 08:04 — where the band ends and
@@ -217,12 +232,11 @@ and the film says what happened in it.
   unsticks the masthead.
 - Motion is restrained and has a job. The home page's whole budget, written down
   in `styles.css` above the block that spends it: the hero's one entrance; the
-  film, once through while on screen; the sources gathering, one change of state
-  tied to the scroll; a tab change, one 220ms crossfade the reader asked for;
-  one reveal per section; the masthead filling in, 300ms; the arrow nudge and
-  the press. Nothing loops, and there is no dust and no parallax on this page —
-  those are /glass's. A page where every card lifts and every row slides is a
-  page that is nervous; if something new wants to move, something old stops.
+  film, once through while on screen; the case bar drawing once; one reveal per
+  section; the masthead filling in, 300ms; the arrow nudge and the press.
+  Nothing loops. The dust and morning parallax belong to this page. A page where
+  every card lifts and every row slides is a page that is nervous; if something
+  new wants to move, something old stops.
 - The night plate does not move, and that is a decision rather than an omission.
   Its subject is a room where nothing is happening; a flickering window or a
   drifting light would turn the one honest image on the site into a screensaver.
@@ -233,37 +247,26 @@ and the film says what happened in it.
 
 ### The acts on the desk
 
-After the night the page takes the same quotation apart, act by act. Each one
-stands where a reference page puts a proof device this site cannot use, and
-each says so in its component's header:
+After the night, the page makes the argument for the work with published
+research, then says what Incillum does with a business's figures and answers
+the buyer's questions:
 
-| Act | Stands where they put | Component |
-| --- | --- | --- |
-| Six sources, scattered then gathered | the logo wall | `glass-sources.tsx` |
-| How it works — four tabs | the product modules | `how-it-works.tsx` |
-| Charlie keeps the work moving — a six-beat film | the product video | `charlie.tsx`, `charlie-film.tsx` |
-| Data and trust — six cards of protection | the certification badges | `trust.tsx` |
-| Questions, answered in full | the testimonials | `questions.tsx` |
-| The morning — the 08:04 room, the handover, the ask, the next steps | the closing band | `glass-page.tsx` |
+| Act                                                                 | Stands where they put           | Component        |
+| ------------------------------------------------------------------- | ------------------------------- | ---------------- |
+| A sourced case: response time, pricing, and the working week        | customer logos and testimonials | `case.tsx`       |
+| Data and trust — six commitments in ruled rows                      | certification badges            | `trust.tsx`      |
+| Questions, answered in full                                         | the testimonials                | `questions.tsx`  |
+| The morning — the 08:04 room, the handover, the ask, the next steps | the closing band                | `glass-page.tsx` |
 
-- **The tabs are the boundaries.** Read · Hold · Price · Decide, one line of the
-  quotation each, and each ends on one entry of `boundary` — all four, once
-  each. They write no figure: margins, floor, shortfalls and the price at the
-  floor are computed from `evidence` or read off the ledger. Without a script
-  the four steps are listed in order, each with its heading; with one they are a
-  real ARIA tablist (arrows, Home, End, roving focus) whose panels share one
-  cell, so a tab change never moves the page under it.
-- **The desk photographs** under the tabs are the night plate's own desk from
-  directly above, empty, at night and at 08:04 (`design/encode-how.sh`). Nothing
-  in them is legible because nothing is on them: the documents laid on them are
-  built, in the site's type, from `glass.sources.documents`. The light turns to
-  morning on the last tab, and that is the only thing the photographs say.
-- **Trust is six cards, with no state on any of them**, in the reference
-  page's shape, which the owner pointed at: no box around a card, white paper
-  under it, the icon on a small sunken tile, the title in the grotesk at
-  reading size — not the serif, which shouts at that size — and two or three
-  lines in the muted ink (`ProtectionCards`, shared with the Charlie page), each
-  saying what Incillum does with a business's figures, in the present tense.
+- **The case is not Incillum's performance.** Each figure has a linked source
+  beside it, keeps its original scope, and is third-party research. Publisher
+  names may appear only as citations attached to the figures, never as customer
+  logos or claims of integration. The world map is a neutral dot drawing; the
+  week bar shows the survey's three grouped shares and totals 100%.
+- **Trust is six commitments in ruled rows**, on white paper, with a small
+  Lucide icon, a title in the grotesk at reading size and two or three lines in
+  muted ink (`ProtectionCards`, shared with the Charlie page). They describe
+  what Incillum does with a business's figures, in the present tense.
   The two commitments already on the record — `access.decided` and the
   approval boundary — keep their words. No framework is named anywhere on the
   site (§5); both suites fail if one is.
@@ -305,14 +308,10 @@ each says so in its component's header:
   out through the paper where a person is needed, and back in at 08:04 for the
   person's decisions. Its room is one generated frame in four states of light and
   a generated clip of the night turning to morning; its score is original and
-  played in code. It does not replace *Charlie at work*, which the owner keeps,
+  played in code. It does not replace _Charlie at work_, which the owner keeps,
   and it is on no page yet. Its business-system record, drafts and approvals are
   composed, and listed in `requirements/README.md`; its `README.md` records how
   it is made.
-- **The front page's act** is Charlie's film in the site's type
-  (`charlie-film.tsx`), after the night; its channel beats read their messages
-  from `charlie.scene`, whose figures are tokens the component fills from the
-  evidence document and the 06:50 ledger.
 - **The page** is laid in `components/page-frame.tsx`: the masthead a pane
   over white from the start, in the paper's tokens — the page has no dark
   region at all — the white paper, and the front page's footer without the
@@ -343,28 +342,21 @@ have it and will write once.
 
 ### The presentation
 
-The front page (`/`) is the night told as a film, for somebody who wants to be
-shown rather than read to. Three short beats in Incillum's own words —
+The front page (`/`) opens with three short beats in Incillum's own words —
 "Intelligence should move work forward.", "From request to decision.",
-"Meet Charlie." — over a field of hour rules, each set a word at a time, every
-word rising into place from below its own mask, and each line gone before the
-next arrives. Only opacity and transform move in them, so they keep their
-pace while the page hydrates under them; a blur was tried and froze mid-word,
-because the browser draws it on the main thread —
-played once a visit, and again on a reload at the top, never on a return from
-another page, a reload further down or an address with a section in it — it
-belongs over the first screen and nowhere else (`lib/opening.ts`) — a centred
-hero with the form, then the film (*The film under the hero*, below);
-after it, the six documents a quotation is assembled from lie on a desk with the
-part itself among them, and gather onto one sheet; then the acts on the desk —
-Charlie, the four tabs, data and trust, the questions — and the
-morning, one invitation, and the motto. It carries the front page's head — the
-title, description and canonical at `/` — and `/glass`, where it used to live
-off the spine, is a permanent redirect to it. `e2e/glass.spec.ts` holds both.
+"Meet Charlie." — over a field of hour rules. Each beat arrives a word at a
+time, rises from below its own mask, then leaves before the next. Only opacity
+and transform move. The opening plays once a visit, and again on a reload at
+the top, never on a return from another page, a reload further down or an
+address with a section in it (`lib/opening.ts`). The centered hero has the
+waitlist form, followed by the product film, the sourced case, six trust
+commitments, open questions and the morning: one invitation and the motto. It
+carries the front page's title, description and canonical at `/`; `/glass` is a
+permanent redirect there. `e2e/glass.spec.ts` holds both.
 
 - **The masthead stays with the reader**: fixed, above everything, clear over
   the first screen and a see-through pane after it, in the tokens of whatever
-  is under it (see *The night*). Its links are the page's own sections and
+  is under it (see _The night_). Its links are the page's own sections and
   the contact memo, with the one button, which puts the cursor in the field;
   below a laptop's width only the brand and the button remain.
 
@@ -372,11 +364,11 @@ off the spine, is a permanent redirect to it. `e2e/glass.spec.ts` holds both.
   title, not inside a document — and no title in two tones. The first version
   had both and read as assembled. What a block follows is said in a sentence
   at reading size; `e2e/glass.spec.ts` fails on any uppercase text.
-- **The documents are built, not pictured** (`components/glass-documents.tsx`):
-  real contents from the same quotation, in the site's own type, because a
-  generated document's text is nonsense and the reader zooms in. The part on
-  the desk is a photograph (`design/encode-glass.sh`), shown with `multiply` —
-  so nothing may lie under it, and a test checks that nothing does.
+- **The case follows the film** (`components/case.tsx`). Four sourced figures
+  sit beside a neutral dot map; a grouped survey of a sales week follows. Every
+  figure is linked to its source and keeps the source's scope. The map and the
+  chart use ink, never the signal. This is evidence for why the work matters,
+  not evidence of Incillum's results.
 - **It ends in the night plate's own room at 08:04** — the morning plate,
   generated from the night source as its reference, overcast on purpose (a low
   orange sun read as evening and spent a sky's worth of the signal's hue), and
@@ -384,22 +376,17 @@ off the spine, is a permanent redirect to it. `e2e/glass.spec.ts` holds both.
   handover (`components/glass-handover.tsx`): the person and the decision from
   the film's last frame, and the two figures from the 06:50 ledger, built in
   the site's type and writing nothing of its own.
-- **One story still.** Every hour, line and figure on it is the thread's or the
-  matrix's, read by the components rather than written again; `glass` in
-  `content/site.ts` writes none of the quotation's own figures, and the one cost
-  that moves, moves by the thread's six per cent and three weeks. Tests hold it.
-- **Its own motion budget**, larger than the home page's because a presentation
-  tells by moving, and listed in `styles.css` above the block that spends it:
-  the opening, the film, the gathering, the dust, the morning's parallax, a tab
-  change (one 220ms crossfade the reader asked for), the masthead filling in,
-  one reveal per block after the night, the nudge and the press. The film plays
-  muted only while half of it is on screen and never by itself under reduced
-  motion; nothing pulses; reduced motion gets the final frame of all of it.
+- **Its motion budget** is listed in `styles.css` above the block that spends
+  it: the opening, the film, the dust, the morning's parallax, the case bar
+  drawing once, the masthead filling in, one reveal per block after the night,
+  the nudge and the press. The film plays muted only while half of it is on
+  screen and never by itself under reduced motion; nothing pulses; reduced
+  motion gets the final frame of all of it.
 - **The film under the hero** (`components/glass-reel.tsx`, rendered from
   `video/product-film`, served as `public/film/incillum.mp4`) says what
   Incillum does with a request, not how a night went: one statement a beat —
   Charlie picks it up, reads what it depends on, matches and checks every
-  line, asks suppliers *with your approval*, compares the quotes and holds the
+  line, asks suppliers _with your approval_, compares the quotes and holds the
   margin — the one decision that is a person's, and the documents ready to
   send. Studio's own pages float on a dark stage between three daylight plates
   (a port, a warehouse, a highway; Kling 3.0 Pro through Higgsfield). It
@@ -410,7 +397,7 @@ off the spine, is a permanent redirect to it. `e2e/glass.spec.ts` holds both.
   to the composition word for word. On 28 October 2026 the owner replaced the
   night played hour by hour (`components/glass-film.tsx`) with it, as reading
   as progress rather than as the idea; that component and its styles are kept,
-  unplaced, and the bullet on *the film's sheet* below describes it.
+  unplaced, and the bullet on _the film's sheet_ below describes it.
 - **The dust is the one exception to "nothing moves while the reader is
   still"**, and it is the owner's call rather than a lapse
   (`components/glass-field.tsx`, drawn by `lib/dust.ts` in WebGL with no
@@ -447,8 +434,8 @@ off the spine, is a permanent redirect to it. `e2e/glass.spec.ts` holds both.
   prices from the agreement — and a held line has none. No grey bars stand in
   for text; at 23:47 the cells are simply empty.
 - **The same licence for the signal**: the held state and the figure that breaks
-  the floor — on the film's sheet, the gathered sheet, the handover and the
-  tabs. `e2e/glass.spec.ts` fails on any other text in it.
+  the floor — on the film's sheet and the handover. The sourced case uses ink.
+  `e2e/glass.spec.ts` fails on any other text in it.
 - **The motto signs it off**, at the head of the footer: this is the front page,
   and its close is one of the motto's two placements; the other is the success
   state of its form. `e2e/glass.spec.ts` counts it.
@@ -487,31 +474,37 @@ Two rules go with it:
 
 ### Illustrative material
 
-The film, the six sources, Charlie and the tabs all follow one example
-quotation, RFQ 8841, for an example customer at `customer.example`. Each opens
-on a sentence that names what it follows — one quotation, one night — in the
-server's HTML. On the owner's decision of 22 October 2026 they no longer carry
-the word *invented*, a state label or a licence line: the copy describes the
-product as it works, in the present tense. Nothing in them names a real
-customer, supplier or figure, and that does not change.
+The product film follows one example quotation, RFQ 8841, for an example
+customer at `customer.example`. Its copy names what it follows in the server's
+HTML. On the owner's decision of 22 October 2026 it no longer carries the word
+_invented_, a state label or a licence line: the copy describes the product as
+it works, in the present tense. It names no real customer, supplier or
+commercial outcome.
 
-The figures in them are exact and they **reconcile across every section**, to
-the cent, because they are one quotation at several magnifications — the
-thread's ledger and the evidence document's line 14, read by the components
-rather than written again. A commercial reader will check. Edit one number and
-`content/site.test.ts` names the others that have to move with it.
+The sourced case is separate from the quotation. Its response and pricing
+figures and its sales-week survey belong to their named, linked publishers;
+preserve each figure's scope and denominator. They are not Incillum usage,
+customer or performance metrics. Tests keep the values, labels, grouped shares
+and citations together.
 
 ---
 
 ## 5. What may never be claimed
 
-This is a pre-launch site. It has no customers, no metrics and no launch date,
-and it must never imply otherwise.
+This is a pre-launch site. It has no customers, no Incillum performance
+metrics and no launch date, and it must never imply otherwise. Published
+third-party research may be used in the sourced case and private brief when
+each figure has a linked source, accurate scope and denominator, and is clearly
+attributed. It must not read as an Incillum outcome.
 
-**Never write:** customer names or logos · testimonials · accuracy, savings or
-volume figures · "trusted by" · security certifications or compliance claims ·
+**Never write:** customer names or logos · testimonials · Incillum accuracy,
+savings or volume figures · "trusted by" · security certifications or compliance claims ·
 integration availability · a launch date or quarter · the name of any ERP, CRM
 or mail client (the form asks; the page does not claim).
+
+Publisher names such as Salesforce may appear only inside a linked source
+citation beside the research it published. They are never logos, customer
+proof, or claims that Incillum integrates with that publisher's products.
 
 **No certification is named — held or not.** On 22 October 2026 the owner
 first asked for the frameworks a buyer looks for to be named on a security
@@ -524,8 +517,8 @@ suites hold it.
 
 **The site is written in the present tense; what is not built is kept off it.**
 The owner decided, on 22 October 2026, that the site describes the product as
-it works, because it is being built — no *being built*, *planned*, *in build*
-or *not yet* on any page. What the copy describes and the platform does not do
+it works, because it is being built — no _being built_, _planned_, _in build_
+or _not yet_ on any page. What the copy describes and the platform does not do
 yet is listed in `requirements/README.md`, with the platform's status beside
 each line. Change a claim on the site and change that file in the same
 commit; `site.test.ts` checks it lists every outward ability the site names.
@@ -535,21 +528,33 @@ describing it at all. The owner decided, on 22 October 2026, that Charlie asks
 approved suppliers for a firm price, tells a team's channel what changed, and
 calls and books a meeting. So the Charlie page describes those abilities, each
 with the approval it waits for, and the front page's answer to "does it
-contact our suppliers?" opens *Only with your approval*. Nothing outward may
+contact our suppliers?" opens _Only with your approval_. Nothing outward may
 ever be described as happening without an approval. `site.test.ts` holds it.
 
-**The instrument's mark is a measurement, never a verb.** It says *this is your
-hour*. It may never say "working now", carry a counter, or pulse — that would be
+**The instrument's mark is a measurement, never a verb.** It says _this is your
+hour_. It may never say "working now", carry a counter, or pulse — that would be
 a claim made simultaneously to every visitor about work nobody is doing.
 
-**Never write:** *magic* · *revolutionary* · *fully autonomous* · *replaces your
-team* · *one-click automation of everything* · *AGI*.
+**Never write:** _magic_ · _revolutionary_ · _fully autonomous_ · _replaces your
+team_ · _one-click automation of everything_ · _AGI_.
 
 Progress is never put on a calendar. A date is a promise made by whoever wrote
 it to whoever has to keep it, and it becomes a lie on a fixed schedule.
 
 `e2e/site.spec.ts` enforces the worst of these. The test is a backstop, not the
 rule.
+
+### The private brief
+
+`/brief` is a password-protected investor and partner page. It is not linked
+from the public site or sitemap and sends `noindex, nofollow`. `BRIEF_PASSWORD`
+is server-only; when it is unset or shorter than eight characters, the page is
+unavailable. The brief's words live in `server/brief-content.ts`, imported only
+after the server verifies the password. The browser receives them only after
+unlock, over a private, no-store response, and the session is an HttpOnly,
+Secure, SameSite=Lax cookie. Never move the content into a route, client
+component, shared site-copy module, or public asset. `e2e/brief.spec.ts` checks
+the locked page, wrong password, successful unlock, reload, and metadata.
 
 ---
 

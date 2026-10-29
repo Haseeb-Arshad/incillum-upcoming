@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BriefRouteImport } from './routes/brief'
 import { Route as CharlieRouteImport } from './routes/charlie'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as GlassRouteImport } from './routes/glass'
@@ -21,6 +22,11 @@ import { Route as WorkJanusRouteImport } from './routes/work.janus'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BriefRoute = BriefRouteImport.update({
+  id: '/brief',
+  path: '/brief',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CharlieRoute = CharlieRouteImport.update({
@@ -61,6 +67,7 @@ const WorkJanusRoute = WorkJanusRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/brief': typeof BriefRoute
   '/charlie': typeof CharlieRoute
   '/contact': typeof ContactRoute
   '/glass': typeof GlassRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/brief': typeof BriefRoute
   '/charlie': typeof CharlieRoute
   '/contact': typeof ContactRoute
   '/glass': typeof GlassRoute
@@ -82,6 +90,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/brief': typeof BriefRoute
   '/charlie': typeof CharlieRoute
   '/contact': typeof ContactRoute
   '/glass': typeof GlassRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/brief'
     | '/charlie'
     | '/contact'
     | '/glass'
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/brief'
     | '/charlie'
     | '/contact'
     | '/glass'
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/brief'
     | '/charlie'
     | '/contact'
     | '/glass'
@@ -125,6 +137,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BriefRoute: typeof BriefRoute
   CharlieRoute: typeof CharlieRoute
   ContactRoute: typeof ContactRoute
   GlassRoute: typeof GlassRoute
@@ -141,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/brief': {
+      id: '/brief'
+      path: '/brief'
+      fullPath: '/brief'
+      preLoaderRoute: typeof BriefRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/charlie': {
@@ -197,6 +217,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BriefRoute: BriefRoute,
   CharlieRoute: CharlieRoute,
   ContactRoute: ContactRoute,
   GlassRoute: GlassRoute,

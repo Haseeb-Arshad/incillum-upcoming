@@ -6,10 +6,12 @@ import {
   access,
   boundary,
   brand,
+  briefGate,
   charlie,
   contact,
   earlyAccess,
   evidence,
+  figures,
   glass,
   home,
   how,
@@ -250,7 +252,7 @@ describe('nothing claims outbound supplier contact', () => {
     firstBuild,
     boundary,
     hero,
-      how,
+    how,
     trust,
     questions,
   ])
@@ -290,7 +292,7 @@ describe('no system is named on the page', () => {
     boundary,
     evidence,
     firstBuild,
-      access,
+    access,
     earlyAccess,
     contact,
     home,
@@ -337,7 +339,7 @@ describe('the motto', () => {
       boundary,
       evidence,
       firstBuild,
-          access,
+      access,
       earlyAccess,
       contact,
       home,
@@ -357,9 +359,12 @@ describe('the hero', () => {
     expect(thread.beats[0]!.at).toBe(hour)
   })
 
-  it('says what Incillum does, in the present tense', () => {
-    expect(hero.lede).toMatch(/Incillum carries the work forward/)
+  it('says what Incillum does, in the present tense, and keeps the decisions a person’s', () => {
+    expect(hero.lede).toMatch(/The decisions stay yours\.$/)
     expect(hero.lede).not.toMatch(/being built|will be/i)
+    // Short, by the owner's call: two sentences, one breath.
+    expect(hero.lede.split(/(?<=\.)\s+/)).toHaveLength(2)
+    expect(hero.lede.length).toBeLessThan(120)
   })
 
   it('promises no confirmation email', () => {
@@ -382,7 +387,9 @@ describe('where it stops', () => {
   })
 
   it('states the boundary in the present tense', () => {
-    expect(boundary.lede).toMatch(/^Incillum moves the work forward within the limits you set\./)
+    expect(boundary.lede).toMatch(
+      /^Incillum moves the work forward within the limits you set\./,
+    )
   })
 })
 
@@ -444,7 +451,13 @@ describe('the contact page', () => {
   })
 
   it('never says magic, autonomous or replaces your team', () => {
-    for (const forbidden of ['magic', 'revolutionary', 'fully autonomous', 'replaces your team', 'AGI']) {
+    for (const forbidden of [
+      'magic',
+      'revolutionary',
+      'fully autonomous',
+      'replaces your team',
+      'AGI',
+    ]) {
       expect(everything).not.toContain(forbidden)
     }
   })
@@ -457,7 +470,11 @@ describe('the contact page', () => {
 
   it('keeps the wedge narrow and contacts nobody on anyone’s behalf', () => {
     expect(contact.steps[0].text).toMatch(/request for quotation/i)
-    for (const forbidden of ['asks the supplier', 'chases the supplier', 'contacts the supplier']) {
+    for (const forbidden of [
+      'asks the supplier',
+      'chases the supplier',
+      'contacts the supplier',
+    ]) {
       expect(everything.toLowerCase()).not.toContain(forbidden)
     }
   })
@@ -484,7 +501,8 @@ describe('the home matrix', () => {
   const { matrix } = home
 
   it('counts its rows into the totals it prints', () => {
-    const priced = matrix.rows.filter((row) => row.status !== 'held').length + matrix.more.count
+    const priced =
+      matrix.rows.filter((row) => row.status !== 'held').length + matrix.more.count
     const held = matrix.rows.filter((row) => row.status === 'held').length
     expect(priced).toBe(matrix.lines.priced)
     expect(held).toBe(matrix.lines.held)
@@ -497,7 +515,10 @@ describe('the home matrix', () => {
   })
 
   it('agrees with what the thread says in words', () => {
-    const prose = thread.beats.map((beat) => `${beat.title} ${beat.body}`).join(' ').toLowerCase()
+    const prose = thread.beats
+      .map((beat) => `${beat.title} ${beat.body}`)
+      .join(' ')
+      .toLowerCase()
     expect(prose).toContain('twenty line items')
     expect(prose).toContain('eighteen lines priced')
     expect(prose).toContain('two lines held')
@@ -505,7 +526,9 @@ describe('the home matrix', () => {
   })
 
   it('holds the same two lines the thread holds, and moves the cost the thread moves', () => {
-    const held = matrix.rows.filter((row) => row.status === 'held').map((row) => row.evidence)
+    const held = matrix.rows
+      .filter((row) => row.status === 'held')
+      .map((row) => row.evidence)
     expect(held.some((text) => /three catalogue entries/i.test(text))).toBe(true)
     expect(held.some((text) => /no revision/i.test(text))).toBe(true)
     const moved = matrix.rows.filter((row) => row.status === 'changed')
@@ -554,7 +577,8 @@ describe('the home matrix', () => {
 describe('the presentation', () => {
   const everything = JSON.stringify(glass)
   const { documents } = glass.sources
-  const words = (text: string) => text.split(/\s+/).filter((word) => /\w/.test(word)).length
+  const words = (text: string) =>
+    text.split(/\s+/).filter((word) => /\w/.test(word)).length
   const amount = (value: string) => Number(value.replaceAll(',', ''))
 
   it('tells the thread’s night, hour for hour', () => {
@@ -587,13 +611,18 @@ describe('the presentation', () => {
   })
 
   it('holds and moves the lines the matrix holds and moves, for the matrix’s reasons', () => {
-    const lines = (rows: ReadonlyArray<{ line?: string; status?: string }>, status: string) =>
+    const lines = (
+      rows: ReadonlyArray<{ line?: string; status?: string }>,
+      status: string,
+    ) =>
       rows
         .filter((row) => row.status === status)
         .map((row) => row.line)
         .sort()
     expect(lines(glass.sources.thread, 'held')).toEqual(lines(home.matrix.rows, 'held'))
-    expect(lines(glass.sources.thread, 'changed')).toEqual(lines(home.matrix.rows, 'changed'))
+    expect(lines(glass.sources.thread, 'changed')).toEqual(
+      lines(home.matrix.rows, 'changed'),
+    )
 
     const evidenceFor = (key: string) => {
       const line = glass.sources.thread.find((row) => row.key === key)?.line
@@ -612,7 +641,9 @@ describe('the presentation', () => {
   })
 
   it('moves the supplier’s cost by exactly the thread’s six per cent and three weeks', () => {
-    const moving = documents.prices.rows.find((row) => row.part === documents.prices.moving)
+    const moving = documents.prices.rows.find(
+      (row) => row.part === documents.prices.moving,
+    )
     expect(moving, 'the price list carries the row the supplier changes').toBeTruthy()
 
     const [cost, lead] = documents.supplier.changes
@@ -639,7 +670,9 @@ describe('the presentation', () => {
 
   it('sets the sheet’s lines as the matrix’s, and reads every rate off a document on the desk', () => {
     const { sheet } = glass.film
-    expect(Object.keys(sheet.lines).sort()).toEqual(home.matrix.rows.map((row) => row.line).sort())
+    expect(Object.keys(sheet.lines).sort()).toEqual(
+      home.matrix.rows.map((row) => row.line).sort(),
+    )
     const agreed = documents.agreement.clauses.flatMap((clause) =>
       'rates' in clause ? clause.rates : [],
     )
@@ -656,7 +689,9 @@ describe('the presentation', () => {
           : agreed.find((entry) => entry.part === rate.part)
       expect(found, `${row.line} reads ${rate.part}`).toBeTruthy()
       // Read from where the matrix says the line is priced from.
-      expect(row.evidence, row.line).toMatch(rate.from === 'agreement' ? /schedule B/i : /supplier/i)
+      expect(row.evidence, row.line).toMatch(
+        rate.from === 'agreement' ? /schedule B/i : /supplier/i,
+      )
     }
     // The line that moves is priced off the row the supplier moves.
     const moved = home.matrix.rows.find((row) => row.status === 'changed')!
@@ -664,7 +699,10 @@ describe('the presentation', () => {
     expect('rate' in movedLine ? movedLine.rate.part : null).toBe(documents.prices.moving)
     // The agreed rates name the items they price, as the matrix names them.
     for (const entry of agreed) {
-      expect(home.matrix.rows.map((row) => row.item), entry.item).toContain(entry.item)
+      expect(
+        home.matrix.rows.map((row) => row.item),
+        entry.item,
+      ).toContain(entry.item)
     }
   })
 
@@ -954,7 +992,17 @@ const banned = [
   'check your inbox',
   'stay with the work',
 ] as const
-const calendar = ['2026', '2027', 'Q1', 'Q2', 'Q3', 'Q4', 'January', 'February', 'September']
+const calendar = [
+  '2026',
+  '2027',
+  'Q1',
+  'Q2',
+  'Q3',
+  'Q4',
+  'January',
+  'February',
+  'September',
+]
 const words = (text: string) => text.split(/\s+/).filter((word) => /\w/.test(word)).length
 
 function claimsNothing(section: unknown) {
@@ -1046,9 +1094,13 @@ describe('data and trust', () => {
   })
 
   it('keeps the two commitments that are already on the record in the same words', () => {
-    const training = trust.commitments.find((commitment) => commitment.glyph === 'training')!
+    const training = trust.commitments.find(
+      (commitment) => commitment.glyph === 'training',
+    )!
     expect(training.body).toMatch(/never used to train or fine-tune a model/)
-    const sending = trust.commitments.find((commitment) => commitment.glyph === 'sending')!
+    const sending = trust.commitments.find(
+      (commitment) => commitment.glyph === 'sending',
+    )!
     expect(sending.body).toMatch(/until a person approves it/)
   })
 
@@ -1071,7 +1123,7 @@ describe('questions', () => {
   })
 
   it('puts every outward step behind a person’s approval', () => {
-    expect(answer(/send quotations/)).toMatch(/^Not on its own\./)
+    expect(answer(/send quotations/)).toMatch(/^Not by itself\./)
     expect(answer(/send quotations/)).toMatch(/approves/)
     expect(answer(/suppliers/)).toMatch(/^Only with your approval\./)
     expect(answer(/suppliers/)).toMatch(/until a person approves/)
@@ -1122,11 +1174,25 @@ describe('the masthead', () => {
  */
 describe('Charlie', () => {
   it('writes no figure of its own: the scene reads them from the evidence and the ledger', () => {
-    expect(JSON.stringify(charlie.scene)).not.toMatch(/EUR|\d+(\.\d+)?\s?%|\d+\.\d{2}|\d,\d{3}/)
+    expect(JSON.stringify(charlie.scene)).not.toMatch(
+      /EUR|\d+(\.\d+)?\s?%|\d+\.\d{2}|\d,\d{3}/,
+    )
     for (const message of charlie.scene.messages) {
       for (const token of message.text.match(/\{(\w+)\}/g) ?? []) {
         expect(
-          ['{line}', '{was}', '{now}', '{leadWas}', '{leadNow}', '{margin}', '{floor}', '{priced}', '{held}', '{units}', '{part}'],
+          [
+            '{line}',
+            '{was}',
+            '{now}',
+            '{leadWas}',
+            '{leadNow}',
+            '{margin}',
+            '{floor}',
+            '{priced}',
+            '{held}',
+            '{units}',
+            '{part}',
+          ],
           token,
         ).toContain(token)
       }
@@ -1149,7 +1215,9 @@ describe('Charlie', () => {
   it('describes every outward ability with the approval it waits for', () => {
     const ask = charlie.abilities.items.find((ability) => ability.glyph === 'ask')!
     expect(ask.body).toMatch(/once someone approves/)
-    const approve = charlie.abilities.items.find((ability) => ability.glyph === 'approve')!
+    const approve = charlie.abilities.items.find(
+      (ability) => ability.glyph === 'approve',
+    )!
     expect(approve.body).toMatch(/without a person’s approval/)
     for (const ability of charlie.abilities.items) {
       expect(words(ability.title), ability.title).toBeLessThanOrEqual(5)
@@ -1157,7 +1225,14 @@ describe('Charlie', () => {
   })
 
   it('films six abilities in a few words each, and writes no figure', () => {
-    expect(charlie.film.steps.map((step) => step.key)).toEqual(['reads', 'cites', 'holds', 'makes', 'tells', 'asks'])
+    expect(charlie.film.steps.map((step) => step.key)).toEqual([
+      'reads',
+      'cites',
+      'holds',
+      'makes',
+      'tells',
+      'asks',
+    ])
     for (const step of charlie.film.steps) {
       expect(words(step.title), step.title).toBeLessThanOrEqual(5)
       expect(words(step.line), step.line).toBeLessThanOrEqual(10)
@@ -1168,14 +1243,33 @@ describe('Charlie', () => {
 
   it('works one request in six steps, each a chapter of the film, in the film’s own seconds', () => {
     const { items } = charlie.steps
-    expect(items.map((step) => step.key)).toEqual(['reads', 'populates', 'cites', 'costs', 'asks', 'sends'])
+    expect(items.map((step) => step.key)).toEqual([
+      'reads',
+      'populates',
+      'cites',
+      'costs',
+      'asks',
+      'sends',
+    ])
     // The film's clock (video/charlie/cues.js): a chapter starts on the moment its scene does.
     const cues = JSON.parse(
-      /window\.CUES = (\{[\s\S]*\})/.exec(readFileSync(new URL('../../video/charlie/cues.js', import.meta.url), 'utf8'))![1]!,
+      /window\.CUES = (\{[\s\S]*\})/.exec(
+        readFileSync(new URL('../../video/charlie/cues.js', import.meta.url), 'utf8'),
+      )![1]!,
     ) as { duration: number; moments: Record<string, number> }
     expect(charlie.reel.duration).toBe(cues.duration)
-    const moments = { reads: 'email', populates: 'toMatrix', cites: 'click1', costs: 'toSuppliers', asks: 'toApprove', sends: 'toSend' } as const
-    for (const step of items) expect(step.at, step.key).toBe(cues.moments[moments[step.key as keyof typeof moments]])
+    const moments = {
+      reads: 'email',
+      populates: 'toMatrix',
+      cites: 'click1',
+      costs: 'toSuppliers',
+      asks: 'toApprove',
+      sends: 'toSend',
+    } as const
+    for (const step of items)
+      expect(step.at, step.key).toBe(
+        cues.moments[moments[step.key as keyof typeof moments]],
+      )
     for (const step of items) {
       expect(words(step.label), step.label).toBe(1)
       expect(words(step.title), step.title).toBeLessThanOrEqual(6)
@@ -1192,16 +1286,26 @@ describe('Charlie', () => {
    */
   it('plays Charlie at work, and puts Meet Charlie on no page', () => {
     expect(charlie.reel.src).toBe('/charlie/charlie-at-work.mp4')
-    const sources = readdirSync(new URL('../', import.meta.url), { recursive: true, encoding: 'utf8' })
-      .filter((path) => /\.(tsx?|css)$/.test(path) && !/\.test\.tsx?$/.test(path))
+    const sources = readdirSync(new URL('../', import.meta.url), {
+      recursive: true,
+      encoding: 'utf8',
+    }).filter((path) => /\.(tsx?|css)$/.test(path) && !/\.test\.tsx?$/.test(path))
     expect(sources.length).toBeGreaterThan(20)
     for (const path of sources) {
-      expect(readFileSync(new URL(`../${path.replaceAll('\\', '/')}`, import.meta.url), 'utf8'), path).not.toMatch(/meet-charlie/)
+      expect(
+        readFileSync(
+          new URL(`../${path.replaceAll('\\', '/')}`, import.meta.url),
+          'utf8',
+        ),
+        path,
+      ).not.toMatch(/meet-charlie/)
     }
   })
 
   it('carries no state labels, claims nothing, names no ERP or mail client, and spends no motto', () => {
-    expect(JSON.stringify(charlie)).not.toMatch(/Decided|In build|Planned|not yet built|being built/)
+    expect(JSON.stringify(charlie)).not.toMatch(
+      /Decided|In build|Planned|not yet built|being built/,
+    )
     claimsNothing({ ...charlie, scene: { ...charlie.scene, messages: [] } })
     claimsNothing({ hero: charlie.hero, reel: charlie.reel, steps: charlie.steps })
     claimsNothing(charlie.scene.messages)
@@ -1214,23 +1318,144 @@ describe('Charlie', () => {
  * These hold the file to the outward abilities the site names.
  */
 describe('the requirements file', () => {
-  const file = readFileSync(new URL('../../requirements/README.md', import.meta.url), 'utf-8')
+  const file = readFileSync(
+    new URL('../../requirements/README.md', import.meta.url),
+    'utf-8',
+  )
 
   it('exists, and lists every outward ability the site describes', () => {
-    for (const ability of ['asks your approved suppliers', 'calls a supplier', 'Slack, Teams or email', 'sends the quotation to the customer']) {
+    for (const ability of [
+      'asks your approved suppliers',
+      'calls a supplier',
+      'Slack, Teams or email',
+      'sends the quotation to the customer',
+    ]) {
       expect(file.toLowerCase(), ability).toContain(ability.toLowerCase())
     }
   })
 
   it('keeps the certifications the site no longer names', () => {
-    for (const name of ['SOC 2', 'ISO/IEC 27001', 'GDPR']) expect(file, name).toContain(name)
+    for (const name of ['SOC 2', 'ISO/IEC 27001', 'GDPR'])
+      expect(file, name).toContain(name)
+  })
+})
+
+/**
+ * The sourced case: four figures about response and pricing, and the survey's
+ * three parts of a sales week. Publisher names are allowed only as citations;
+ * the page makes no claim about Incillum's own results.
+ */
+describe('the sourced case', () => {
+  const { sources, odds, week } = figures
+  const keys = new Set(sources.map((source) => source.key))
+  const citations = [...new Set([...odds.stats.map((stat) => stat.source), week.source])]
+
+  it('lists every source in the order the page first cites it', () => {
+    expect(citations).toEqual(sources.map((source) => source.key))
+    for (const source of sources) {
+      expect(source.href, source.key).toMatch(/^https:\/\//)
+      expect(source.short, source.key).toMatch(/(19|20)\d\d/)
+    }
+    for (const key of citations) expect(keys.has(key), key).toBe(true)
+  })
+
+  it('qualifies the third-party figures instead of implying Incillum results', () => {
+    expect(odds.stats.map((stat) => stat.value)).toEqual(['42h', '7×', '23%', '8%'])
+    expect(odds.stats[0]?.label).toMatch(/companies that replied within 30 days/i)
+    expect(odds.stats[1]?.label).toMatch(/nearly seven times/i)
+    expect(odds.stats[1]?.label).toMatch(/decision maker/i)
+    expect(odds.stats[2]?.label).toMatch(/never replied/i)
+    expect(odds.stats[3]?.label).toMatch(/volume unchanged/i)
+    expect(odds.stats[3]?.label).toMatch(/S&P 1500/i)
+    expect(JSON.stringify({ odds, week })).not.toMatch(
+      /\b(Incillum|our customers|our users)\b/i,
+    )
+  })
+
+  it('draws the surveyed working week whole and preserves its source categories', () => {
+    expect(week.segments.map((segment) => segment.share)).toEqual([22, 30, 48])
+    expect(week.segments.reduce((total, segment) => total + segment.share, 0)).toBe(100)
+    expect(week.segments.map((segment) => segment.label)).toEqual([
+      'With customers',
+      'Quotes and data entry',
+      'Everything else',
+    ])
+    expect(week.lede).toMatch(/4,050 sales professionals/)
+    expect(week.lede).toMatch(/almost a third of the week/)
+  })
+
+  it('keeps the public figures sourced and avoids claims the site cannot make', () => {
+    const text = JSON.stringify({ odds, week })
+    for (const forbidden of banned) {
+      const pattern = /^[A-Z0-9 ]+$/.test(forbidden)
+        ? new RegExp(`\\b${forbidden}\\b`)
+        : new RegExp(forbidden.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&'), 'i')
+      expect(text, forbidden).not.toMatch(pattern)
+    }
+    expect(text).not.toMatch(/autonomous|customer names|usage figures/i)
+    expect(text).not.toMatch(/chas(es|ing) (a|the) supplier|contacts? (a|the) supplier/i)
+    expect(text).not.toMatch(/stay with the work/i)
+  })
+})
+/**
+ * No dash in place of a comma, anywhere a reader sees words: the owner's
+ * call of 29 October 2026, because it is the first thing that makes copy read
+ * as generated. Titles use a straight line instead.
+ */
+describe('no em dash in anything a reader sees', () => {
+  it('writes none in any section the pages render', () => {
+    const rendered = {
+      brand,
+      briefGate,
+      hero,
+      home,
+      glass,
+      figures,
+      trust,
+      questions,
+      access,
+      earlyAccess,
+      contact,
+      menu,
+      charlie,
+      evidence,
+    }
+    const dashed = [...JSON.stringify(rendered).matchAll(/"([^"]*—[^"]*)"/g)]
+      .map((match) => match[1])
+      // A drawing's empty revision and an empty cell are typography, not prose.
+      .filter((text) => text !== '—')
+    expect(dashed).toEqual([])
+  })
+
+  it('separates a page from the site in its title with a straight line', () => {
+    expect(home.title).toBe('Incillum | Intelligence for commercial work')
+    expect(charlie.title).toBe('Charlie | Incillum')
+    expect(contact.title).toBe('Contact | Incillum')
   })
 })
 
 describe('no certification is named anywhere on the site', () => {
   it('names no framework in any section', () => {
-    const everything = JSON.stringify([home, glass, how, trust, questions, menu, charlie, contact, access])
-    for (const name of ['SOC 2', 'SOC2', 'ISO/IEC', 'ISO 27001', 'GDPR', 'CCPA', 'HIPAA']) {
+    const everything = JSON.stringify([
+      home,
+      glass,
+      how,
+      trust,
+      questions,
+      menu,
+      charlie,
+      contact,
+      access,
+    ])
+    for (const name of [
+      'SOC 2',
+      'SOC2',
+      'ISO/IEC',
+      'ISO 27001',
+      'GDPR',
+      'CCPA',
+      'HIPAA',
+    ]) {
       expect(everything, name).not.toContain(name)
     }
   })
@@ -1243,10 +1468,15 @@ describe('no certification is named anywhere on the site', () => {
  * named, the motto kept for its two places.
  */
 describe('the film under the hero', () => {
-  const composition = readFileSync(new URL('../../video/product-film/index.html', import.meta.url), 'utf-8')
+  const composition = readFileSync(
+    new URL('../../video/product-film/index.html', import.meta.url),
+    'utf-8',
+  )
 
   it('says on the page exactly what the film says, in its order', () => {
-    const titles = [...composition.matchAll(/title\('[a-z]+', '([^']+)'/g)].map((match) => match[1])
+    const titles = [...composition.matchAll(/title\('[a-z]+', '([^']+)'/g)].map(
+      (match) => match[1],
+    )
     const close = /<div class="s">([^<]+)<\/div>/.exec(composition)?.[1]
     expect([...titles, close]).toEqual([...glass.reel.statements])
   })
@@ -1256,12 +1486,23 @@ describe('the film under the hero', () => {
   })
 
   it('asks suppliers only with an approval, and does not spend the motto', () => {
-    expect(glass.reel.statements.find((line) => /suppliers/.test(line))).toMatch(/^With your approval/)
+    expect(glass.reel.statements.find((line) => /suppliers/.test(line))).toMatch(
+      /^With your approval/,
+    )
     expect(JSON.stringify(glass.reel)).not.toMatch(/stay with the work/i)
   })
 
   it('names no system, in the page or in the film', () => {
-    for (const name of ['Gmail', 'Outlook', 'HubSpot', 'Salesforce', 'SAP', 'Odoo', 'NetSuite', 'Slack']) {
+    for (const name of [
+      'Gmail',
+      'Outlook',
+      'HubSpot',
+      'Salesforce',
+      'SAP',
+      'Odoo',
+      'NetSuite',
+      'Slack',
+    ]) {
       expect(JSON.stringify(glass.reel), name).not.toContain(name)
       expect(composition, name).not.toMatch(new RegExp(`\\b${name}\\b`, 'i'))
     }

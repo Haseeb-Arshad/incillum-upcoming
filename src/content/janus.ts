@@ -45,7 +45,7 @@ export const janus = {
 
   headline: 'An agent that can do the work, and cannot do the deciding.',
 
-  lede: 'JANUS rehearses a launch before it happens. It runs three structured futures of the same launch, names what they have in common, and helps prepare a response — and it hands a browser agent the same typed actions a person uses for all of it, except the one that matters.',
+  lede: 'JANUS rehearses a launch before it happens. It runs three structured futures of the same launch, names what they have in common, and helps prepare a response. It hands a browser agent the same typed actions a person uses for all of it, except the one that matters.',
 
   demoLabel: 'Open the demo',
   demoUrl: 'https://janus-vert.vercel.app/',
@@ -55,7 +55,7 @@ export const janus = {
   premise: {
     label: 'What it does',
     headline: 'Three ways the same launch could go.',
-    body: 'Somebody describes a launch as a set of assumptions — expected visitors, target conversion, how ready checkout is, who is covering support, how much trust the brand has. JANUS runs three futures of that launch and shows what happens in each, why it happens, and what the first visible sign would be.',
+    body: 'Somebody describes a launch as a set of assumptions: expected visitors, target conversion, how ready checkout is, who is covering support, how much trust the brand has. JANUS runs three futures of that launch and shows what happens in each, why it happens, and what the first visible sign would be.',
     futures: [
       {
         title: 'Upside',
@@ -76,7 +76,7 @@ export const janus = {
      * is not decoration.
      */
     reading:
-      'At the example launch those come out at 39, 58 and 46 — modelled pressure out of 100, not a probability and not a prediction. Below 40 reads as low, 55 and above as high.',
+      'At the example launch those come out at 39, 58 and 46: modelled pressure out of 100, not a probability and not a prediction. Below 40 reads as low, 55 and above as high.',
   },
 
   /** 02 — the sequence. The centre of the page. */
@@ -88,7 +88,7 @@ export const janus = {
       {
         actor: 'Agent',
         title: 'Reads the launch and runs the three futures',
-        body: 'It calls typed actions the page has published — read the launch, run a future, compare them, trace what causes the breakdown. The three futures appear on screen as it goes.',
+        body: 'It calls typed actions the page has published: read the launch, run a future, compare them, trace what causes the breakdown. The three futures appear on screen as it goes.',
       },
       {
         actor: 'Agent',
@@ -98,7 +98,7 @@ export const janus = {
       {
         actor: 'Person',
         title: 'Changes one assumption',
-        body: 'Expected visitors go from 20,000 to 80,000. The prepared response immediately desaturates and reads “Needs reassessment” — it was built against a launch that no longer exists.',
+        body: 'Expected visitors go from 20,000 to 80,000. The prepared response immediately desaturates and reads “Needs reassessment”, because it was built against a launch that no longer exists.',
       },
       {
         actor: 'Agent',
@@ -108,7 +108,7 @@ export const janus = {
       {
         actor: 'Person',
         title: 'Approves it',
-        body: 'This is the one action no tool can perform. There is no approve, ratify, publish or override action on the agent surface — not disabled, not permission-gated. It is not there.',
+        body: 'This is the one action no tool can perform. There is no approve, ratify, publish or override action on the agent surface. Not disabled, not permission-gated: it is not there.',
       },
       {
         actor: 'Agent',
@@ -147,7 +147,7 @@ export const janus = {
   build: {
     label: 'How it is built',
     headline: 'One path, two callers.',
-    body: 'A person’s click and an agent’s call land on the same application command, which calls the same engine and writes the same state. There is no second implementation of any rule for the agent — which is why an agent cannot reach a field, like an approval or a revision, that the command does not accept from anybody.',
+    body: 'A person’s click and an agent’s call land on the same application command, which calls the same engine and writes the same state. There is no second implementation of any rule for the agent, which is why an agent cannot reach a field, like an approval or a revision, that the command does not accept from anybody.',
     points: [
       {
         title: 'Six typed actions, published to the browser',
@@ -163,7 +163,7 @@ export const janus = {
       },
       {
         title: 'Agent activity is observed, never narrated',
-        body: 'While an agent works, the page shows what it actually did — one line per real call, taken from the record. It shows no reasoning, because it has none to show, and inventing some is the one thing that would make the demonstration a lie.',
+        body: 'While an agent works, the page shows what it actually did: one line per real call, taken from the record. It shows no reasoning, because it has none to show, and inventing some is the one thing that would make the demonstration a lie.',
       },
     ],
   },
@@ -180,7 +180,7 @@ export const janus = {
       },
       {
         term: '28 checks against production',
-        body: 'The full sequence — six actions, a refused verification, a changed assumption, a recovered plan, a human approval, a passing verification — with no page error and no reload at any point.',
+        body: 'The full sequence of six actions, a refused verification, a changed assumption, a recovered plan, a human approval and a passing verification, with no page error and no reload at any point.',
       },
       {
         term: 'Nothing stored, nothing to sign in to',
@@ -191,13 +191,13 @@ export const janus = {
 
   /** The close. Deliberately quiet, and it does not ask for anything. */
   close: {
-    body: 'JANUS is a small thing built quickly, and it is on this site for one reason: the question it is about — where an autonomous system stops and a person decides — is the same question the rest of this site is about.',
+    body: 'JANUS is a small thing built quickly, and it is on this site for one reason: the question it is about, where an autonomous system stops and a person decides, is the same question the rest of this site is about.',
     backLabel: 'Back to Incillum',
   },
 } as const
 
 export const janusSeo = {
-  title: 'JANUS — an agent that can do the work, and cannot do the deciding',
+  title: 'JANUS | An agent that can do the work, and cannot do the deciding',
   description:
     'A launch rehearsal tool built for a WebMCP hackathon. It publishes six typed actions to the browser so an agent can run the whole rehearsal, and deliberately publishes no way to approve anything.',
 } as const

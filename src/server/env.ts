@@ -12,8 +12,9 @@ import { z } from 'zod'
  *
  * This module reads `process.env` instead. It must never be imported from a
  * component, a route, or anything under `src/lib/` that a component can reach:
- * a single client import would pull it into the client graph. It has exactly
- * one importer, `server/notify.ts`, and that is the whole design.
+ * a single client import would pull it into the client graph. Its importers
+ * are all under `server/` (`notify.ts`, `store.ts`, `brief.ts`), and that is
+ * the whole design.
  *
  * ── Why it is read lazily ──────────────────────────────────────────────────
  *
@@ -66,6 +67,15 @@ const serverEnvSchema = z.object({
    * like a missing mail key: nothing breaks, the record just lands in the log.
    */
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+
+  /**
+   * The password to the private brief at /brief (`server/brief.ts`). Absent
+   * means the brief is closed to everybody: it fails shut, never open. Any
+   * non-empty value is accepted here, so a short one cannot invalidate the
+   * whole schema and take mail and storage down with it; `brief.ts` refuses
+   * one under eight characters on its own.
+   */
+  BRIEF_PASSWORD: z.string().min(1).optional(),
 })
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>
@@ -91,6 +101,7 @@ export function serverEnv(): ServerEnv {
     WAITLIST_NOTIFY_FROM: fromEnv(process.env.WAITLIST_NOTIFY_FROM),
     SUPABASE_URL: fromEnv(process.env.SUPABASE_URL),
     SUPABASE_SERVICE_ROLE_KEY: fromEnv(process.env.SUPABASE_SERVICE_ROLE_KEY),
+    BRIEF_PASSWORD: fromEnv(process.env.BRIEF_PASSWORD),
   })
 
   if (!result.success) {

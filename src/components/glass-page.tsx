@@ -2,10 +2,8 @@ import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from 'rea
 
 import { GlassField } from '#/components/glass-field.tsx'
 import { GlassHandover } from '#/components/glass-handover.tsx'
+import { Case } from '#/components/case.tsx'
 import { GlassReel } from '#/components/glass-reel.tsx'
-import { GlassSources } from '#/components/glass-sources.tsx'
-import { CharlieAct } from '#/components/charlie.tsx'
-import { HowItWorks } from '#/components/how-it-works.tsx'
 import { MastheadBar } from '#/components/masthead-bar.tsx'
 import { ButtonLink, Container, TextLink } from '#/components/primitives.tsx'
 import { Questions } from '#/components/questions.tsx'
@@ -18,7 +16,6 @@ import {
   brand,
   contact,
   glass,
-  how,
   instrument,
   questions,
   thread,
@@ -45,19 +42,25 @@ import { markOpeningSeen, openingSeen, rememberPlace } from '#/lib/opening.ts'
  *    (`glass-reel.tsx`, rendered from `video/product-film`). It replaced the
  *    night played hour by hour in a frame (`glass-film.tsx`), which is kept,
  *    unplaced, with its styles, so it can be put back by one line.
- * 4. **Six sources.** The documents a quotation is assembled from, lying on a
- *    desk, then gathered onto one sheet (`glass-sources.tsx`).
- * 5. **How it works.** Four tabs — read, hold, price, decide — each one line of
- *    the quotation laid on the desk under the lamp, each ending where the work
- *    stops (`how-it-works.tsx`).
- * 6. **Data and trust, questions.** Six cards of protection, and what a
- *    buyer asks, answered in full (`trust.tsx`, `questions.tsx`).
- * 7. **The close.** The same office at 08:04 with what is waiting in it
+ * 4. **The case.** Two short sections in figures: what a slow reply costs and
+ *    how a sales rep's week is spent, with a map in dots, one bar and every
+ *    source named beside the figures (`case.tsx`). These are third-party
+ *    findings, not Incillum's results.
+ * 5. **Data and trust, questions.** Six commitments about a business's
+ *    figures, followed by what a buyer asks, answered in full (`trust.tsx`,
+ *    `questions.tsx`).
+ * 6. **The close.** The same office at 08:04 with what is waiting in it
  *    (`glass-handover.tsx`), the night's dust settled around it, and one
  *    invitation.
  *
- * Acts one to three are the page's one `[data-inverted]` region, and the page
- * turns to paper after the film.
+ * The night and the film are the page's one `[data-inverted]` region. The case,
+ * trust, questions and close sit on paper after it.
+ *
+ * Charlie's six beats (`charlie.tsx`), the six sources gathering
+ * (`glass-sources.tsx`) and the four tabs (`how-it-works.tsx`) stood between
+ * the film and the trust cards until 29 October 2026, when the owner found
+ * that each told the film's steps again. They are kept, unplaced, with their
+ * styles.
  *
  * ── What it leaves out ─────────────────────────────────────────────────────
  *
@@ -248,7 +251,11 @@ export function GlassPage() {
           ))}
         </div>
 
-        <GlassField opening={openingRef} skipped={opening === 'skipped'} until={filmRef} />
+        <GlassField
+          opening={openingRef}
+          skipped={opening === 'skipped'}
+          until={filmRef}
+        />
 
         {/*
           Decoration, as far as a screen reader is concerned: the beats set a
@@ -309,16 +316,12 @@ export function GlassPage() {
       </div>
 
       {/*
-        The agent first, as features: what Charlie does, in a few words a beat.
-        The quotation's own detail — its sources and its four steps — follows
-        for the reader who wants it.
+        The film shows the work step by step, so nothing after it walks the
+        steps again: the case for it, in figures with their sources, what
+        Incillum does with a business's figures, and the questions.
       */}
       <div className="desk glass-acts">
-        <CharlieAct />
-      </div>
-      <GlassSources />
-      <div className="desk glass-acts">
-        <HowItWorks />
+        <Case />
         <Trust />
         <Questions />
       </div>
@@ -393,7 +396,7 @@ function Close() {
           */}
           <p className="glass-motto">{brand.motto}</p>
           <nav aria-label="Sections" className="glass-footer-nav">
-            <a href={`#${how.anchor}`}>{glass.nav.how}</a>
+            <a href="#odds">{glass.nav.how}</a>
             <a href={`#${trust.anchor}`}>{glass.nav.trust}</a>
             <a href={`#${questions.anchor}`}>{glass.nav.questions}</a>
             <a href="/contact">{glass.nav.contact}</a>

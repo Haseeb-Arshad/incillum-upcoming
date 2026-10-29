@@ -18,7 +18,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Four local workers can starve hydration while Chromium runs the animated
+  // opening and its WebGL field. Keep local runs predictable; CI stays serial.
+  workers: process.env.CI ? 1 : 2,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   timeout: 30_000,
   expect: { timeout: 7_000 },
@@ -54,5 +56,8 @@ export default defineConfig({
         url: BASE_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,
+        // A disposable test credential exercises the private brief. It is not a
+        // deployment secret and never leaves the local Playwright server.
+        env: { ...process.env, BRIEF_PASSWORD: 'incillum-playwright-brief-password' },
       },
 })

@@ -1,6 +1,6 @@
 # Design tooling
 
-Two generators. Neither is imported by the site; both write assets it ships.
+Three generators. None is imported by the site; each writes an asset it ships.
 
 ## The share card
 
@@ -18,6 +18,30 @@ the link.
 Redesigning it means **renaming** it. Platforms cache a card against its URL, so
 new bytes at an old path are shown to nobody; bump the number in the script and
 in `src/lib/seo.ts`, and delete the file the old path pointed at.
+
+## The world in dots
+
+```bash
+npm pack world-atlas@2.0.2 && tar -xzf world-atlas-2.0.2.tgz
+node design/generate-world.mjs package/land-110m.json
+```
+
+Samples Natural Earth's 1:110m land (public domain, as the ISC-licensed
+`world-atlas` package ships it) onto a regular grid in Miller's projection and
+writes `src/lib/world.ts`: one string a row, `#` for land. The front page draws
+it as dots beside its figures (`components/case.tsx`), cropped the way the
+reference map the owner pointed at is cropped. The TopoJSON is decoded in the
+script itself, so nothing from the package runs and the site carries no
+dependency for a picture that does not change.
+
+## Research and the idea
+
+- `2026-10-29-research.md`: every figure the site prints that is not the
+  example quotation's, where it comes from, how far it was checked, what it can
+  and cannot be used to say, and the figures turned down.
+- `2026-10-29-the-idea.md`: the case for the company, for the funding
+  application, and the reasoning behind every section and line of the front
+  page and the private brief.
 
 ## Marks
 

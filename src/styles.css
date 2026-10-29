@@ -2149,8 +2149,16 @@
   --paper-mask:
     linear-gradient(to bottom, #0000 var(--feed-end), #000 var(--feed-end)),
     linear-gradient(#000 0 0),
-    radial-gradient(circle, #000 calc(var(--hole-radius) - 0.25px), #0000 calc(var(--hole-radius) + 0.25px)),
-    radial-gradient(circle, #000 calc(var(--hole-radius) - 0.25px), #0000 calc(var(--hole-radius) + 0.25px));
+    radial-gradient(
+      circle,
+      #000 calc(var(--hole-radius) - 0.25px),
+      #0000 calc(var(--hole-radius) + 0.25px)
+    ),
+    radial-gradient(
+      circle,
+      #000 calc(var(--hole-radius) - 0.25px),
+      #0000 calc(var(--hole-radius) + 0.25px)
+    );
 
   position: relative;
   isolation: isolate;
@@ -2164,10 +2172,26 @@
   color: var(--ic-ink-900);
   -webkit-mask-image: var(--paper-mask);
   mask-image: var(--paper-mask);
-  -webkit-mask-size: 100% 100%, 100% 100%, var(--hole-pitch) var(--hole-pitch), var(--hole-pitch) var(--hole-pitch);
-  mask-size: 100% 100%, 100% 100%, var(--hole-pitch) var(--hole-pitch), var(--hole-pitch) var(--hole-pitch);
-  -webkit-mask-position: 0 0, 0 0, var(--hole-offset) 0, calc(100% - var(--hole-offset)) 0;
-  mask-position: 0 0, 0 0, var(--hole-offset) 0, calc(100% - var(--hole-offset)) 0;
+  -webkit-mask-size:
+    100% 100%,
+    100% 100%,
+    var(--hole-pitch) var(--hole-pitch),
+    var(--hole-pitch) var(--hole-pitch);
+  mask-size:
+    100% 100%,
+    100% 100%,
+    var(--hole-pitch) var(--hole-pitch),
+    var(--hole-pitch) var(--hole-pitch);
+  -webkit-mask-position:
+    0 0,
+    0 0,
+    var(--hole-offset) 0,
+    calc(100% - var(--hole-offset)) 0;
+  mask-position:
+    0 0,
+    0 0,
+    var(--hole-offset) 0,
+    calc(100% - var(--hole-offset)) 0;
   -webkit-mask-repeat: no-repeat, no-repeat, repeat-y, repeat-y;
   mask-repeat: no-repeat, no-repeat, repeat-y, repeat-y;
   -webkit-mask-composite: source-over, xor, xor;
@@ -2202,7 +2226,11 @@
   top: 0;
   bottom: 0;
   width: 1px;
-  background: repeating-linear-gradient(180deg, var(--ic-line-strong) 0 2.5px, transparent 2.5px 5px);
+  background: repeating-linear-gradient(
+    180deg,
+    var(--ic-line-strong) 0 2.5px,
+    transparent 2.5px 5px
+  );
 }
 .memo-perforations::before {
   left: var(--perforation-inset);
@@ -2906,7 +2934,9 @@
      2. the film: one hour per `--glass-frame` while it is on screen, once
         through, paused by the reader, never looped — its sheet filling, its
         selection moving to what each hour changed;
-     3. the gathering: one change of state, tied to where the reader is;
+     3. the week's bar drawing itself in once, left to right, as its section
+        is revealed (the six sources' gathering, which this replaced, is kept
+        unplaced with its styles);
      4. the field: dust drifting at thirty frames a second while it is on
         screen — a landscape, dark under the beats, that comes up behind the
         headline as the page assembles, rises a little into place, and falls
@@ -3119,7 +3149,9 @@
 .glass-opening p > span > span {
   display: inline-block;
   animation: glass-word var(--glass-word-in) var(--glass-ease) both;
-  animation-delay: calc(var(--glass-beat) * var(--beat, 0) + var(--glass-word) * var(--word, 0));
+  animation-delay: calc(
+    var(--glass-beat) * var(--beat, 0) + var(--glass-word) * var(--word, 0)
+  );
 }
 
 /* The page assembles as the final beat finishes leaving; ended early, it assembles at once. */
@@ -3438,8 +3470,9 @@
 .glass-title > span {
   display: block;
 }
+/* Two short sentences under the headline, held to a narrow measure so they read as one thought. */
 .glass-lede {
-  max-width: 40rem;
+  max-width: 34rem;
   margin-top: clamp(1.5rem, 3vh, 2rem);
   font-size: var(--glass-lede);
   line-height: 1.6;
@@ -3965,7 +3998,8 @@
     opacity var(--ic-slow) var(--glass-ease),
     visibility 0s linear 0s;
 }
-.glass-sheet-foot[data-ledger='false'] :is(.glass-margin-label, .glass-margin-floor, .glass-sheet-short) {
+.glass-sheet-foot[data-ledger='false']
+  :is(.glass-margin-label, .glass-margin-floor, .glass-sheet-short) {
   opacity: 0;
   visibility: hidden;
   transition:
@@ -4788,7 +4822,9 @@
   z-index: 1;
   display: grid;
   grid-area: sheet;
-  grid-template-columns: [source] minmax(12rem, 16rem) [wire] minmax(2rem, 1fr) [cell] minmax(0, 2.6fr);
+  grid-template-columns:
+    [source] minmax(12rem, 16rem) [wire] minmax(2rem, 1fr)
+    [cell] minmax(0, 2.6fr);
   align-content: center;
   width: 100%;
   max-width: 68rem;
@@ -4992,7 +5028,8 @@
   }
   .glass-sources[data-phase='gathered'] .glass-piece {
     opacity: 0;
-    transform: translate(calc(22cqw - 50%), calc((20 + var(--i) * 10.5) * 1cqh - 50%)) scale(0.22);
+    transform: translate(calc(22cqw - 50%), calc((20 + var(--i) * 10.5) * 1cqh - 50%))
+      scale(0.22);
   }
   .glass-sources[data-phase='scattered'] .glass-thread {
     pointer-events: none;
@@ -5148,6 +5185,256 @@
   line-height: 1.5;
   color: var(--ic-ink-600);
 }
+/* ══════════════════════════════════════════════════════════════════════════
+   The case (`case.tsx`): two short sections after the film, in the shapes of
+   the two reference pages, full width on the paper. The odds lie on the
+   sunken band with the world in dots beside them; the week is one bar on
+   white. No colour: ink, greys and the serif set large.
+   ══════════════════════════════════════════════════════════════════════════ */
+.case {
+  --case-title: clamp(2.25rem, 4.4vw, 4.25rem);
+  --case-stat: clamp(2.75rem, 4.8vw, 4.5rem);
+  --case-share: clamp(2rem, 5.2vw, 4.75rem);
+  --case-bar: clamp(7rem, 13vw, 11.5rem);
+  --case-band: clamp(5rem, 10vw, 8.5rem);
+  /* The map's dots, in its own ten-unit grid, and how far it runs past the column into the band's edge. */
+  --case-dot: 4;
+  --case-bleed: clamp(0rem, 6vw, 7rem);
+  /* The bar draws itself in once, left to right. */
+  --case-draw: 1100ms;
+}
+.case-title {
+  font-family: var(--font-display);
+  font-size: var(--case-title);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.022em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.case-lede {
+  max-width: 30rem;
+  margin-top: 1.25rem;
+  font-size: var(--glass-lede);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.case-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin-top: 2rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ic-ink-400);
+}
+.case-sources > span {
+  color: var(--ic-ink-600);
+}
+.case-sources a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--ic-line-strong);
+  text-underline-offset: 0.2em;
+}
+@media (hover: hover) {
+  .case-sources a:hover {
+    color: var(--ic-ink-900);
+  }
+}
+
+/* ── The odds: four figures beside the world in dots ──────────────────── */
+.case-odds {
+  overflow: clip;
+  padding-block: var(--case-band);
+  background-color: var(--ic-paper-sunken);
+}
+.case-odds-grid {
+  display: grid;
+  gap: clamp(3rem, 6vw, 4rem);
+}
+.case-odds .case-title {
+  max-width: 11ch;
+}
+.case-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(2rem, 4vw, 2.75rem) clamp(1.25rem, 3vw, 2.5rem);
+  margin-top: clamp(2.25rem, 4vw, 3rem);
+  padding-top: clamp(2.25rem, 4vw, 3rem);
+  border-top: 1px solid var(--ic-line-strong);
+}
+.case-stat-value {
+  font-family: var(--font-display);
+  font-size: var(--case-stat);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ic-ink-900);
+}
+.case-stat-label {
+  max-width: 14rem;
+  margin-top: 0.75rem;
+  font-size: var(--text-small);
+  line-height: 1.45;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.case-map {
+  position: relative;
+  align-self: center;
+}
+.case-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.case-land {
+  fill: none;
+  stroke: var(--ic-ink-200);
+  stroke-width: var(--case-dot);
+  stroke-linecap: round;
+}
+/* The reference's note: a hairline frame over the map's corner, on the band's own ground. */
+.case-note {
+  max-width: 24rem;
+  margin-top: 1.5rem;
+  margin-left: auto;
+  padding: 1.125rem 1.375rem;
+  border: 1px solid var(--ic-line-strong);
+  background-color: var(--ic-paper-sunken);
+  font-size: var(--text-small);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+
+/* ── The week: one bar in three parts ─────────────────────────────────── */
+.case-week {
+  padding-block: var(--case-band);
+}
+.case-week .case-title {
+  max-width: 19ch;
+}
+.case-week-figure {
+  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+  padding-top: clamp(2rem, 4vw, 3rem);
+  border-top: 1px solid var(--ic-line-strong);
+}
+.case-key {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  margin-bottom: 1.25rem;
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ic-ink-900);
+}
+.case-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  color: var(--ic-ink-600);
+}
+.case-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.case-legend > span::before {
+  content: '';
+  width: 0.625rem;
+  height: 0.625rem;
+}
+.case-bar {
+  display: flex;
+  height: var(--case-bar);
+}
+.case-bar-part {
+  position: relative;
+  flex: var(--case-part) 1 0;
+  min-width: 0;
+}
+.case-bar-part[data-part='customers'],
+.case-legend > [data-part='customers']::before {
+  background-color: var(--ic-ink-200);
+}
+.case-bar-part[data-part='quotes'],
+.case-legend > [data-part='quotes']::before {
+  background-color: var(--ic-ink-900);
+}
+.case-bar-part[data-part='other'],
+.case-legend > [data-part='other']::before {
+  background-color: var(--ic-line-strong);
+}
+.case-bar-share {
+  position: absolute;
+  bottom: clamp(0.75rem, 1.6vw, 1.375rem);
+  left: clamp(0.625rem, 1.6vw, 1.375rem);
+  font-family: var(--font-display);
+  font-size: var(--case-share);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ic-ink-900);
+}
+.case-bar-part[data-part='quotes'] .case-bar-share {
+  color: var(--ic-paper);
+}
+.case-week-figure[data-animatable='true'] .case-bar {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path var(--case-draw) var(--glass-ease) var(--ic-slow);
+}
+.case-week-figure[data-animatable='true'][data-revealed='true'] .case-bar {
+  clip-path: inset(0 0 0 0);
+}
+
+@media (min-width: 64rem) {
+  .case-odds-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: center;
+  }
+  /* The map runs off the band's right-hand edge, as the reference's runs off its panel. */
+  .case-map {
+    margin-right: calc(-1 * var(--case-bleed));
+  }
+  .case-note {
+    position: absolute;
+    right: var(--case-bleed);
+    bottom: 0;
+    margin: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .case-week-figure .case-bar {
+    clip-path: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── Trust, as ruled rows beside its heading (`trust.tsx`) ────────────── */
+.trust {
+  border-top: 1px solid var(--ic-line);
+}
+.trust-rule-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 1.1875rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ic-ink-900);
+}
+.trust-rule-title .trust-glyph {
+  flex: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  color: var(--ic-ink-900);
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    Charlie (`components/charlie.tsx`, `charlie-page.tsx`) and the inner pages'
    frame (`page-frame.tsx`).
@@ -6810,5 +7097,243 @@
   .glass-thread-foot,
   .glass-thread-wire::before {
     transition: none !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   The private brief (`brief-page.tsx`): a password sheet, then a sourced
+   document. It uses the site's paper, ink, serif and grotesk, with hairlines
+   between sections. The source notes sit beside the figures they support.
+   ══════════════════════════════════════════════════════════════════════════ */
+.brief-access,
+.brief-document {
+  --brief-block: clamp(4rem, 8vw, 7rem);
+  --brief-gap: clamp(1.5rem, 4vw, 3rem);
+  /* Its own figure size: the brief is outside the front page's scope, so it cannot borrow --glass-heading. */
+  --brief-figure: clamp(2.5rem, 4.2vw, 3.75rem);
+  padding-block: var(--brief-block);
+}
+.brief-access-sheet {
+  max-width: 40rem;
+  margin-inline: auto;
+  border-block: 1px solid var(--ic-line-strong);
+  padding-block: var(--brief-gap);
+}
+.brief-kicker {
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ic-ink-400);
+}
+.brief-access-title,
+.brief-document-title {
+  margin-top: 1rem;
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: -0.021em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.brief-access-copy,
+.brief-document-lead,
+.brief-section-lede {
+  max-width: 58ch;
+  margin-top: 1.5rem;
+  font-size: var(--text-lede);
+  line-height: 1.6;
+  color: var(--ic-ink-600);
+  text-wrap: pretty;
+}
+.brief-access-form {
+  display: grid;
+  justify-items: start;
+  gap: 0.875rem;
+  margin-top: var(--brief-gap);
+}
+.brief-password-label {
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ic-ink-900);
+}
+.brief-access-form input {
+  width: min(100%, 28rem);
+  min-height: 3rem;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--radius-control);
+  padding-inline: 0.875rem;
+  background: var(--ic-paper);
+  color: var(--ic-ink-900);
+  font: inherit;
+}
+.brief-access-form input:focus-visible {
+  outline: 2px solid var(--ic-ink-900);
+  outline-offset: 2px;
+}
+.brief-password-error {
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ic-ink-600);
+}
+.brief-document-head {
+  max-width: 68ch;
+  padding-bottom: var(--brief-block);
+}
+.brief-document-title {
+  max-width: 17ch;
+}
+.brief-section {
+  display: grid;
+  gap: var(--brief-gap);
+  border-top: 1px solid var(--ic-line-strong);
+  padding-block: var(--brief-gap);
+}
+.brief-section-heading {
+  max-width: 34rem;
+}
+.brief-section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-title);
+  font-weight: 400;
+  line-height: 1.04;
+  letter-spacing: -0.018em;
+  color: var(--ic-ink-900);
+  text-wrap: balance;
+}
+.brief-figure-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--brief-gap);
+}
+.brief-figure-value {
+  font-family: var(--font-display);
+  font-size: var(--brief-figure);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ic-ink-900);
+}
+.brief-figure-label {
+  max-width: 40ch;
+  margin-top: 0.75rem;
+  font-size: var(--text-body);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+}
+.brief-source-mark {
+  margin-left: 0.25em;
+  vertical-align: super;
+  font-size: 0.75em;
+}
+.brief-source-mark a,
+.brief-sources a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--ic-line-strong);
+  text-underline-offset: 0.2em;
+}
+.brief-section-closing {
+  max-width: 64ch;
+  border-top: 1px solid var(--ic-line);
+  padding-top: 1.25rem;
+  font-size: var(--text-body);
+  line-height: 1.62;
+  color: var(--ic-ink-600);
+}
+.brief-prose {
+  display: grid;
+  gap: 1rem;
+  max-width: 68ch;
+  font-size: var(--text-body);
+  line-height: 1.7;
+  color: var(--ic-ink-600);
+}
+.brief-rows {
+  border-top: 1px solid var(--ic-line-strong);
+}
+.brief-row {
+  display: grid;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--ic-line);
+  padding-block: 1.25rem;
+}
+.brief-row dt {
+  font-size: var(--text-heading);
+  line-height: 1.2;
+  color: var(--ic-ink-900);
+}
+.brief-row dd {
+  max-width: 72ch;
+  font-size: var(--text-body);
+  line-height: 1.62;
+  color: var(--ic-ink-600);
+}
+.brief-status-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border-block: 1px solid var(--ic-line-strong);
+}
+.brief-status {
+  width: 100%;
+  min-width: 42rem;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--text-small);
+  line-height: 1.55;
+}
+.brief-status th,
+.brief-status td {
+  border-bottom: 1px solid var(--ic-line);
+  padding: 0.875rem;
+  vertical-align: top;
+}
+.brief-status thead th,
+.brief-status tbody th {
+  color: var(--ic-ink-900);
+  font-weight: 500;
+}
+.brief-status td {
+  color: var(--ic-ink-600);
+}
+.brief-status tbody tr:last-child th,
+.brief-status tbody tr:last-child td {
+  border-bottom: 0;
+}
+.brief-sources {
+  border-top: 1px solid var(--ic-line-strong);
+  padding-top: var(--brief-gap);
+}
+.brief-sources ol {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-left: 1.25rem;
+  font-size: var(--text-small);
+  line-height: 1.55;
+  color: var(--ic-ink-600);
+}
+.brief-sources li {
+  padding-left: 0.25rem;
+  scroll-margin-top: var(--ic-anchor-offset);
+}
+@media (min-width: 64rem) {
+  .brief-section {
+    grid-template-columns: minmax(14rem, 0.8fr) minmax(0, 1.2fr);
+  }
+  .brief-section
+    > :is(.brief-figure-grid, .brief-prose, .brief-rows, .brief-status-wrap) {
+    grid-column: 2;
+  }
+  .brief-section > .brief-section-closing {
+    grid-column: 2;
+  }
+}
+@media (max-width: 40rem) {
+  .brief-figure-grid {
+    grid-template-columns: 1fr;
+  }
+  .brief-status th,
+  .brief-status td {
+    padding-inline: 0.625rem;
   }
 }

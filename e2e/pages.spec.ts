@@ -17,7 +17,7 @@ import type { Page } from '@playwright/test'
  */
 
 async function open(page: Page, path: string) {
-  await page.goto(path)
+  await page.goto(path, { waitUntil: 'domcontentloaded' })
   await page.waitForSelector('html[data-hydrated="true"]')
 }
 
@@ -28,7 +28,9 @@ async function open(page: Page, path: string) {
  * from its step here, though it does on the site.
  */
 async function serveFilmInRanges(page: Page) {
-  const film = readFileSync(new URL('../public/charlie/charlie-at-work.mp4', import.meta.url))
+  const film = readFileSync(
+    new URL('../public/charlie/charlie-at-work.mp4', import.meta.url),
+  )
   await page.route('**/charlie/charlie-at-work.mp4', async (route) => {
     const range = /bytes=(\d+)-(\d*)/.exec(route.request().headers()['range'] ?? '')
     const start = range ? Number(range[1]) : 0
@@ -73,16 +75,24 @@ test('Charlie: one page, its own chrome, the film of Charlie at work, every outw
   await expect(page.locator('.cp-step')).toHaveCount(6)
   for (const still of await page.locator('.cp-step-still img').all()) {
     await still.scrollIntoViewIfNeeded()
-    await expect.poll(() => still.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0)
+    await expect
+      .poll(() => still.evaluate((image: HTMLImageElement) => image.naturalWidth))
+      .toBeGreaterThan(0)
   }
 
   // A chapter plays the film from its step, and is marked as the one playing.
   await chapters.nth(2).scrollIntoViewIfNeeded()
   await chapters.nth(2).click()
   await expect(chapters.nth(2)).toHaveAttribute('aria-current', 'step')
-  expect(await video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThanOrEqual(20.9)
+  expect(
+    await video.evaluate((element: HTMLVideoElement) => element.currentTime),
+  ).toBeGreaterThanOrEqual(20.9)
   // So does a step's own link, which brings the film back on screen.
-  await page.locator('.cp-step').nth(4).getByRole('button', { name: 'Watch this step' }).click()
+  await page
+    .locator('.cp-step')
+    .nth(4)
+    .getByRole('button', { name: 'Watch this step' })
+    .click()
   await expect(chapters.nth(4)).toHaveAttribute('aria-current', 'step')
   await expect(video).toBeInViewport()
 
@@ -91,7 +101,9 @@ test('Charlie: one page, its own chrome, the film of Charlie at work, every outw
     page.locator('.protect-card', { has: page.getByRole('heading', { name: title }) })
   await expect(page.locator('.protect-card')).toHaveCount(7)
   await expect(ability('Asks approved suppliers')).toContainText(/once someone approves/)
-  await expect(page.locator('body')).not.toContainText(/Decided|In build|Planned|Not held/)
+  await expect(page.locator('body')).not.toContainText(
+    /Decided|In build|Planned|Not held/,
+  )
 
   await expect(page.locator('body')).not.toContainText(
     /trusted by|customers include|testimonial|SOC 2|ISO\/IEC|GDPR|stay with the work/i,

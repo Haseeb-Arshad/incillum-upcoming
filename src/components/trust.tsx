@@ -7,37 +7,42 @@ import type { TrustGlyph } from '#/content/site.ts'
 import type { ReactNode } from 'react'
 
 /**
- * Data and trust — six cards of protection, in the reference page's shape.
+ * Data and trust — six commitments about a business's figures.
  *
- * An icon on a small tile, a title and two or three lines, on white paper with
- * no card around them: the reference page closes its argument this way, and
- * so does this one. The cards say what Incillum does
- * with a business's figures, in the present tense; what the platform does not
- * do yet lives in `requirements/README.md`, not on the card.
+ * On the front page they are set the way the questions under them are: the
+ * heading holds still on the left, and the commitments run down the right as
+ * ruled rows, each its icon, a title in the grotesk at reading size, and a
+ * plain sentence. A grid of icon cards was the shape of a template, and the
+ * page after the case reads as one document, so the two sections that close
+ * it share one layout. The commitments say what Incillum does with a
+ * business's figures, in the present tense; what the platform does not do yet
+ * lives in `requirements/README.md`, not on the page.
  *
- * `ProtectionCards` is shared with the Charlie page, whose abilities are the
- * same shape.
+ * `ProtectionCards` stays the Charlie page's, whose abilities are cards.
  */
 export function Trust() {
   return (
     <section id={trust.anchor} aria-labelledby="trust-title" className="trust">
-      <Container>
-        <Reveal className="glass-act-title">
+      <Container className="questions-grid">
+        <Reveal className="questions-intro">
           <h2 id="trust-title" className="glass-heading">
             {trust.headline}
           </h2>
-          <p className="glass-sources-lede">{trust.lede}</p>
+          <p className="trust-lede">{trust.lede}</p>
         </Reveal>
 
         <Reveal delay={80}>
-          <ProtectionCards
-            items={trust.commitments.map((commitment) => ({
-              key: commitment.glyph,
-              glyph: <TrustGlyphIcon glyph={commitment.glyph} />,
-              title: commitment.title,
-              body: commitment.body,
-            }))}
-          />
+          <dl className="questions-list trust-rules">
+            {trust.commitments.map((commitment) => (
+              <div key={commitment.glyph} className="questions-item trust-rule">
+                <dt className="trust-rule-title">
+                  <TrustGlyphIcon glyph={commitment.glyph} />
+                  {commitment.title}
+                </dt>
+                <dd className="questions-answer">{commitment.body}</dd>
+              </div>
+            ))}
+          </dl>
         </Reveal>
       </Container>
     </section>
