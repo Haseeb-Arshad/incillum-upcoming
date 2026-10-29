@@ -13,7 +13,7 @@ import { Masthead } from '#/components/masthead.tsx'
 import { gtmHeadScript, gtmNoScriptSrc, posthogHeadScript } from '#/lib/analytics.ts'
 import { mastheadHeadScript } from '#/lib/masthead.ts'
 import { openingHeadScript } from '#/lib/opening.ts'
-import { organizationJsonLd, seoTags } from '#/lib/seo.ts'
+import { organizationJsonLd, seoTags, websiteJsonLd } from '#/lib/seo.ts'
 
 import type { ReactNode } from 'react'
 
@@ -57,6 +57,8 @@ export const Route = createRootRoute({
       links: [
         { rel: 'stylesheet', href: appCss },
         { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
+        { rel: 'icon', href: '/icon-48.png', type: 'image/png', sizes: '48x48' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
       ],
       /**
        * Order matters. The GTM and PostHog loaders go first so their globals
@@ -74,6 +76,7 @@ export const Route = createRootRoute({
         { children: openingHeadScript },
         { children: mastheadHeadScript },
         { type: 'application/ld+json', children: organizationJsonLd() },
+        { type: 'application/ld+json', children: websiteJsonLd() },
       ].filter((script) => script !== null),
     }
   },

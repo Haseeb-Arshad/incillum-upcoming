@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { launch } from '#/content/site.ts'
-import { seoTags } from '#/lib/seo.ts'
+import { readFileSync } from 'node:fs'
+
+import { brand, charlie, hero, home } from '#/content/site.ts'
+import { organizationJsonLd, seoTags, websiteJsonLd } from '#/lib/seo.ts'
 
 /**
  * The head, held to the two rules that were broken once already.
@@ -49,12 +51,14 @@ describe('the title', () => {
    * from the one it opens.
    */
   it('carries the hero’s headline', () => {
-    const headline = launch.headline.replace(/\.$/, '').toLowerCase()
-    expect(launch.title.toLowerCase()).toContain(headline)
+    const headline = hero.headline.replace(/\.$/, '').toLowerCase()
+    expect(home.title.toLowerCase()).toContain(headline)
+    expect(seoTags().meta[0]).toEqual({ title: home.title })
   })
 
   it('names the company before it describes it', () => {
-    expect(launch.title.startsWith('Incillum')).toBe(true)
+    expect(home.title.startsWith('Incillum')).toBe(true)
+    expect(charlie.title.startsWith('Charlie')).toBe(true)
   })
 
   /**
@@ -63,13 +67,21 @@ describe('the title', () => {
    * written rather than discovered in a search result.
    */
   it('survives a search result without truncation', () => {
-    expect(launch.title.length).toBeLessThanOrEqual(60)
+    expect(home.title.length).toBeLessThanOrEqual(60)
+    expect(home.description.length).toBeLessThanOrEqual(160)
+    expect(charlie.title.length).toBeLessThanOrEqual(60)
+    expect(charlie.description.length).toBeLessThanOrEqual(200)
   })
 
   it('does not carry the previous positioning', () => {
     const stale = /doesn’t leave when you do/i
-    expect(launch.title).not.toMatch(stale)
-    expect(launch.description).not.toMatch(stale)
+    expect(home.title).not.toMatch(stale)
+    expect(home.description).not.toMatch(stale)
+    // Nor the retired launch page's: the defaults are the front page's.
+    expect(seoTags().meta).not.toContainEqual({
+      property: 'og:title',
+      content: 'Incillum - A different kind of intelligence.',
+    })
   })
 })
 
@@ -84,6 +96,9 @@ describe('the share card’s tags', () => {
    */
   it('points at a versioned path so a redesign is re-fetched', () => {
     expect(og(tags, 'og:image')).toMatch(/\/og-image-v\d+\.png$/)
+    expect(og(seoTags({ card: 'charlie' }), 'og:image')).toMatch(
+      /\/og-charlie-v\d+\.png$/,
+    )
   })
 
   it('is absolute, which is the only form a crawler resolves', () => {
@@ -93,7 +108,27 @@ describe('the share card’s tags', () => {
   it('describes what is actually printed on the card', () => {
     const alt = og(tags, 'og:image:alt')
     expect(alt).toContain('Incillum')
-    expect(alt).toContain(launch.headline)
+    expect(alt).toContain(hero.headline)
+    expect(og(seoTags({ card: 'charlie' }), 'og:image:alt')).toContain(
+      charlie.hero.headline,
+    )
+    expect(named(tags, 'twitter:image:alt')).toBe(alt)
+  })
+
+  it('is a real PNG at the declared size, and the retired card is gone', () => {
+    for (const card of [tags, seoTags({ card: 'charlie' })]) {
+      const file = new URL(
+        `../../public${new URL(og(card, 'og:image')).pathname}`,
+        import.meta.url,
+      )
+      const bytes = readFileSync(file)
+      expect(bytes.subarray(1, 4).toString()).toBe('PNG')
+      expect(bytes.readUInt32BE(16)).toBe(Number(og(card, 'og:image:width')))
+      expect(bytes.readUInt32BE(20)).toBe(Number(og(card, 'og:image:height')))
+    }
+    expect(() =>
+      readFileSync(new URL('../../public/og-image-v3.png', import.meta.url)),
+    ).toThrow()
   })
 
   it('declares the dimensions the generator renders', () => {
@@ -112,6 +147,23 @@ describe('the share card’s tags', () => {
     expect(named(tags, 'twitter:title')).toBe(og(tags, 'og:title'))
     expect(named(tags, 'twitter:description')).toBe(og(tags, 'og:description'))
     expect(named(tags, 'twitter:card')).toBe('summary_large_image')
+  })
+})
+
+describe('the structured data', () => {
+  it('names the company and the site, and claims nothing it cannot back', () => {
+    type Data = { '@type': string; name: string; description: string }
+    const organization = JSON.parse(organizationJsonLd()) as Data
+    const website = JSON.parse(websiteJsonLd()) as Data
+    expect(organization['@type']).toBe('Organization')
+    expect(website['@type']).toBe('WebSite')
+    for (const data of [organization, website]) {
+      expect(data.name).toBe(brand.name)
+      expect(data.description).toBe(home.description)
+    }
+    expect(JSON.stringify([organization, website])).not.toMatch(
+      /aggregateRating|review|SearchAction|employee/i,
+    )
   })
 })
 

@@ -1,5 +1,5 @@
 import { absoluteUrl, siteUrl } from '#/env.ts'
-import { brand, launch } from '#/content/site.ts'
+import { brand, charlie, hero, home } from '#/content/site.ts'
 
 /**
  * A page's own title, description and canonical path. Everything is optional
@@ -9,6 +9,8 @@ interface PageSeo {
   path?: string
   title?: string
   description?: string
+  /** Which share card: the company's (the default) or Charlie's. */
+  card?: keyof typeof shareCards
 }
 
 /**
@@ -39,11 +41,13 @@ interface PageSeo {
  * card out wrong before it has finished loading it. `e2e/site.spec.ts` fetches
  * this path and checks the PNG's own header against the two numbers below.
  */
-const shareCard = {
-  path: '/og-image-v3.png',
-  width: '1200',
-  height: '630',
+const shareCards = {
+  home: { path: '/og-image-v4.png', headline: hero.headline },
+  charlie: { path: '/og-charlie-v1.png', headline: charlie.hero.headline },
 } as const
+
+/** The size every card is rendered at, and declared at, so no platform lays one out wrong. */
+const cardSize = { width: '1200', height: '630' } as const
 
 /**
  * Head construction.
@@ -60,10 +64,12 @@ const shareCard = {
  */
 export function seoTags(page: PageSeo = {}) {
   const path = page.path ?? '/'
-  const title = page.title ?? launch.title
-  const description = page.description ?? launch.description
+  const title = page.title ?? home.title
+  const description = page.description ?? home.description
   const url = absoluteUrl(path)
-  const image = absoluteUrl(shareCard.path)
+  const card = shareCards[page.card ?? 'home']
+  const image = absoluteUrl(card.path)
+  const alt = `${brand.name} | ${card.headline}`
 
   return {
     meta: [
@@ -78,8 +84,8 @@ export function seoTags(page: PageSeo = {}) {
       { property: 'og:locale', content: 'en_US' },
       { property: 'og:image', content: image },
       { property: 'og:image:type', content: 'image/png' },
-      { property: 'og:image:width', content: shareCard.width },
-      { property: 'og:image:height', content: shareCard.height },
+      { property: 'og:image:width', content: cardSize.width },
+      { property: 'og:image:height', content: cardSize.height },
       /**
        * Read off the card rather than written for it. The image is the wordmark
        * over the hero's own headline, so composing the alt text from the same
@@ -87,19 +93,30 @@ export function seoTags(page: PageSeo = {}) {
        * and makes it impossible for the two to drift the way the card itself
        * drifted from the page.
        */
-      {
-        property: 'og:image:alt',
-        content: `${brand.name} | ${launch.headline}`,
-      },
+      { property: 'og:image:alt', content: alt },
 
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: title },
       { name: 'twitter:description', content: description },
       { name: 'twitter:image', content: image },
+      { name: 'twitter:image:alt', content: alt },
     ],
     links: [{ rel: 'canonical', href: url }],
   }
 }
+
+/**
+ * The pages a crawler is told about, in one list: the sitemap is built from it
+ * and `e2e/seo.spec.ts` visits every entry. A page that is private (`/brief`,
+ * the `/lab` pages) is not here and says `noindex` itself; a page that is here
+ * must have its own canonical and title, which the test checks.
+ */
+export const sitePages = [
+  { path: '/', changefreq: 'weekly', priority: '1.0' },
+  { path: '/charlie', changefreq: 'monthly', priority: '0.8' },
+  { path: '/contact', changefreq: 'monthly', priority: '0.6' },
+  { path: '/work/janus', changefreq: 'yearly', priority: '0.4' },
+] as const
 
 /**
  * Organization structured data.
@@ -115,8 +132,24 @@ export function organizationJsonLd(): string {
     '@type': 'Organization',
     name: brand.name,
     url: siteUrl,
-    description: launch.description,
+    description: home.description,
     logo: absoluteUrl('/logo.png'),
     sameAs: [],
+  })
+}
+
+/**
+ * The site itself, as a `WebSite`, so a search result can name it. No
+ * `SearchAction`: the site has no search, and structured data for a feature
+ * that is not there is a claim the page cannot back.
+ */
+export function websiteJsonLd(): string {
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: brand.name,
+    url: siteUrl,
+    description: home.description,
+    inLanguage: 'en',
   })
 }

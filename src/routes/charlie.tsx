@@ -9,6 +9,7 @@ export const Route = createFileRoute('/charlie')({
   head: () => {
     const base = seoTags({
       path: charlie.path,
+      card: 'charlie',
       title: charlie.title,
       description: charlie.description,
     })
