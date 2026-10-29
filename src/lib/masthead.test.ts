@@ -52,9 +52,14 @@ describe('the masthead head script', () => {
   })
 })
 
-describe('the masthead hides nothing', () => {
-  it('has no tucked state left in its markup or its stylesheet', () => {
-    expect(source('components/masthead-bar.tsx')).not.toMatch(/tuck/i)
-    expect(source('styles.css')).not.toMatch(/data-tucked/)
+describe('the masthead goes out of the way going down', () => {
+  it('hides on a scroll down, returns on a scroll up, and has no progress line', () => {
+    const bar = source('components/masthead-bar.tsx')
+    expect(bar).toContain('data-tucked')
+    expect(bar).not.toContain('glass-progress')
+    const styles = source('styles.css')
+    expect(styles).toContain("[data-tucked='true']")
+    expect(styles).not.toMatch(/\.glass-bar::after/)
+    expect(styles).not.toContain('--glass-progress')
   })
 })

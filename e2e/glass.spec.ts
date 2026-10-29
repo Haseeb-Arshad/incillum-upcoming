@@ -1128,7 +1128,7 @@ async function readBar(page: Page) {
   })
 }
 
-test('the navbar never hides: it stays fixed at the top going down and going up, with the reader’s place along its lower edge', async ({
+test('the navbar slides away going down and comes back the moment the reader scrolls up, with no progress line', async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
@@ -1136,37 +1136,49 @@ test('the navbar never hides: it stays fixed at the top going down and going up,
   await page.waitForSelector('html[data-hydrated="true"]')
   await page.keyboard.press('Shift')
   const banner = page.getByRole('banner')
+  const top = async () => (await banner.boundingBox())?.y ?? 0
+  await expect(banner).toHaveAttribute('data-tucked', 'false')
 
-  // Going down, it is on screen after every step, however far.
+  // Going down it leaves, and is off the screen.
   await page.mouse.move(400, 400)
-  for (let step = 0; step < 12; step += 1) {
+  for (let step = 0; step < 8; step += 1) {
     await page.mouse.wheel(0, 260)
     await page.waitForTimeout(60)
-    // (Within a pixel: the page's own entrance is still settling the bar in the first moments.)
-    expect(
-      Math.abs((await banner.boundingBox())?.y ?? -99),
-      `after ${step + 1} steps down`,
-    ).toBeLessThan(1)
   }
-  await expect(banner).not.toHaveAttribute('data-tucked')
-  await expect(banner.getByRole('link', { name: 'Request early access' })).toBeInViewport()
+  await expect(banner).toHaveAttribute('data-tucked', 'true')
+  await expect.poll(top).toBeLessThan(-40)
 
-  // Going up, the same.
+  // One flick up and it is back.
+  await page.mouse.wheel(0, -120)
+  await expect(banner).toHaveAttribute('data-tucked', 'false')
+  await expect.poll(async () => Math.abs(await top())).toBeLessThan(1)
+
+  // Keyboard focus inside it brings it back, so no link is out of reach.
   for (let step = 0; step < 4; step += 1) {
-    await page.mouse.wheel(0, -200)
+    await page.mouse.wheel(0, 300)
     await page.waitForTimeout(60)
-    expect(
-      Math.abs((await banner.boundingBox())?.y ?? -99),
-      `after ${step + 1} steps up`,
-    ).toBeLessThan(1)
   }
+  await expect(banner).toHaveAttribute('data-tucked', 'true')
+  await banner.getByRole('link', { name: 'Request early access' }).focus()
+  await expect(banner).toHaveAttribute('data-tucked', 'false')
 
-  // The page's place is drawn along its lower edge.
-  const progress = await banner.evaluate((element) =>
-    Number.parseFloat((element as HTMLElement).style.getPropertyValue('--glass-progress')),
-  )
-  expect(progress).toBeGreaterThan(0)
-  expect(progress).toBeLessThan(1)
+  // At the very top it is always there; and nothing draws the reader's place along it.
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+  await expect.poll(async () => Math.abs(await top())).toBeLessThan(1)
+  expect(
+    await banner.evaluate((element) => getComputedStyle(element, '::after').content),
+  ).toBe('none')
+})
+
+test('under reduced motion the navbar never moves', async ({ page }) => {
+  const banner = page.getByRole('banner')
+  await page.mouse.move(400, 400)
+  for (let step = 0; step < 8; step += 1) {
+    await page.mouse.wheel(0, 260)
+    await page.waitForTimeout(60)
+  }
+  await expect(banner).toHaveAttribute('data-tucked', 'false')
+  expect(Math.abs((await banner.boundingBox())?.y ?? -99)).toBeLessThan(1)
 })
 
 test('the navbar can be read wherever the reader is put back, before the page’s own script has run', async ({

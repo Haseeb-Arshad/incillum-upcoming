@@ -4,6 +4,7 @@ import { ButtonLink, Container } from '#/components/primitives.tsx'
 import { SiteBrand } from '#/components/site-brand.tsx'
 import { menu } from '#/content/site.ts'
 import { cn } from '#/lib/cn.ts'
+import { useReducedMotion } from '#/lib/motion.ts'
 
 import type { KeyboardEvent, MouseEvent } from 'react'
 
@@ -36,18 +37,20 @@ import type { KeyboardEvent, MouseEvent } from 'react'
  * the script only adds what a disclosure does not do by itself: it closes on
  * Escape, on a tap outside and on choosing a place.
  *
- * ── It stays where it is ───────────────────────────────────────────────────
+ * ── Out of the way going down, back the moment the reader turns ────────────
  *
- * It is fixed to the top of the page and above everything on it, and it never
- * hides: for a day it slid away while the reader scrolled down, and the owner
- * asked for it back on 29 October 2026 — a bar that goes when you scroll is a
- * bar you cannot find. On the front page it is clear over the first screen and
- * turns to a pane of glass once that has gone (`scrolled`); on the other pages
- * it is a pane from the start. Its tokens are those of whatever it is over
- * (`tone`): the night's while the night is under it, the paper's after — so it
- * is never a pale bar over white. A hairline along its lower edge draws the
- * reader's place in the page, set as a custom property from one scroll
- * listener, with no re-render.
+ * It is fixed to the top of the page and above everything on it. Scrolling
+ * down it slides up out of sight, and the first scroll back up brings it
+ * back, as bars do in the applications people use: it never covers what is
+ * being read, and it is one flick away. (It was kept in place for a day, and
+ * the owner asked for this on 30 October 2026.) It is always there at the top
+ * of the page, while a menu is open and while focus is inside it, so no link
+ * is ever out of a keyboard's reach; under reduced motion it never moves.
+ * On the front page it is clear over the first screen and turns to a pane of
+ * glass once that has gone (`scrolled`); on the other pages it is a pane from
+ * the start. Its tokens are those of whatever it is over (`tone`): the
+ * night's while the night is under it, the paper's after, so it is never a
+ * pale bar over white. There is no progress line along it.
  */
 export function MastheadBar({
   scrolled,
@@ -63,29 +66,44 @@ export function MastheadBar({
   className?: string
 }) {
   const [open, setOpen] = useState<string | null>(null)
+  const [tucked, setTucked] = useState(false)
+  const reduced = useReducedMotion()
   const barRef = useRef<HTMLElement>(null)
-
-  // The reader's place in the page, from one scroll listener on an animation frame.
+  const openRef = useRef<string | null>(null)
   useEffect(() => {
+    openRef.current = open
+  }, [open])
+
+  // Direction, from one scroll listener on an animation frame: down hides it, up brings it back.
+  useEffect(() => {
+    if (reduced) return
+    let last = window.scrollY
     let frame = 0
     function read() {
       frame = 0
-      const room = document.documentElement.scrollHeight - window.innerHeight
-      barRef.current?.style.setProperty(
-        '--glass-progress',
-        room > 0 ? Math.min(1, Math.max(0, window.scrollY / room)).toFixed(4) : '0',
-      )
+      const y = window.scrollY
+      const delta = y - last
+      if (y <= 80) {
+        last = y
+        setTucked(false)
+        return
+      }
+      if (Math.abs(delta) < 6) return
+      last = y
+      // A menu that is open keeps it where it is.
+      const held =
+        openRef.current !== null || barRef.current?.querySelector('details[open]') !== null
+      setTucked(delta > 0 && !held)
     }
     function onScroll() {
       if (!frame) frame = requestAnimationFrame(read)
     }
-    read()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => {
       cancelAnimationFrame(frame)
       window.removeEventListener('scroll', onScroll)
     }
-  }, [])
+  }, [reduced])
 
   // A click anywhere outside the masthead closes an open menu.
   useEffect(() => {
@@ -104,7 +122,9 @@ export function MastheadBar({
       className={cn('glass-bar', className)}
       role="banner"
       data-scrolled={scrolled ? 'true' : 'false'}
+      data-tucked={tucked && !reduced ? 'true' : 'false'}
       data-tone={tone}
+      onFocus={() => setTucked(false)}
     >
       <Container className="glass-bar-inner">
         <SiteBrand />

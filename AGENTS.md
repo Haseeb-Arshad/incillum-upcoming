@@ -243,10 +243,13 @@ and the film says what happened in it.
   night's ground or the white paper, at 86%, blurred), never a black bar over
   white. Its tokens follow what is under it (`data-tone`, from a point half a
   masthead above the night's end): the night's, then the paper's. It never
-  shrinks and never gains a shadow, and it **never hides**: for a day it slid
-  away while the reader scrolled down, and the owner asked for it back on 29
-  October 2026. A hairline along its lower edge draws the reader's place in the
-  page. It is legible in every state a browser can paint it in: a reload or a
+  shrinks and never gains a shadow. It slides up out of sight while the reader
+  scrolls down and returns on the first scroll up, as bars do in the
+  applications people use (the owner's call of 30 October 2026, after a day of
+  keeping it fixed): always there at the top, with a menu open and while focus
+  is inside it, and never moving under reduced motion. It moves by `translate`
+  because the entrance animation's last frame holds `transform`. There is no
+  progress line along it (the owner removed it). It is legible in every state a browser can paint it in: a reload or a
   link to a section paints the server's top-of-page guess where the reader
   was, so a head script (`lib/masthead.ts`) reads the scroll before the page's
   own script exists and says so on the document (`data-bar-pane`,
@@ -276,8 +279,8 @@ and the film says what happened in it.
   `CountUp`). A scene is still on the server, without a script and under
   reduced motion, which is its last frame; armed at its first frame until it is
   on screen; and played once, never again that visit. Nothing loops and nothing
-  pulses. The hairline that draws the reader's place follows the scroll's
-  position and is still under reduced motion. The dust, the morning's deck (the
+  pulses. The masthead's slide away and back follows the scroll's direction
+  and is absent under reduced motion. The dust, the morning's deck (the
   photograph rising on two sheets behind it, and the two cards dealt from under
   it) and the footer's name rising belong to this page, each one property
   written on a frame, resting at its last frame without a script and under
@@ -469,7 +472,8 @@ permanent redirect there. `e2e/glass.spec.ts` holds both.
 
 - **The masthead stays within a flick of the reader**: fixed, above everything,
   clear over the first screen and a see-through pane after it, in the tokens of
-  whatever is under it, and never hidden (see _The night_). Its links are the page's own sections and
+  whatever is under it, out of the way going down and back going up (see
+  _The night_). Its links are the page's own sections and
   the contact memo, with the one button, which puts the cursor in the field;
   below a laptop's width a *Menu* button opens them as one sheet.
 

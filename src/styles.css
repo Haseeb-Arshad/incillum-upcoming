@@ -3348,9 +3348,6 @@
   border-bottom: 1px solid var(--ic-line);
   opacity: 1;
 }
-:root[data-bar-pane]:not([data-bar-live]) .glass-bar::after {
-  opacity: 0.85;
-}
 @media (scripting: none) {
   .glass-bar {
     --ic-paper: #ffffff;
@@ -3369,22 +3366,22 @@
     opacity: 1;
   }
 }
-/* The reader's place in the page, as a hairline along the pane's lower edge. */
-.glass-bar::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 2px;
-  background-color: var(--ic-ink-900);
-  opacity: 0;
-  transform: scaleX(var(--glass-progress, 0));
-  transform-origin: 0 50%;
-  transition: opacity var(--glass-fill) var(--glass-ease);
+/*
+ * Going down it slides up out of sight; the first scroll up brings it back. It
+ * moves by `translate`, not `transform`: on the front page the bar also carries
+ * the page's entrance animation, whose last frame is `transform: none` and
+ * would hold it in place. It leaves a little slower than it returns, on the
+ * page's own curve, so a flick up feels answered at once.
+ */
+.glass-bar {
+  transition: translate 460ms cubic-bezier(0.32, 0.72, 0, 1);
 }
-.glass-bar[data-scrolled='true']::after {
-  opacity: 0.85;
+.glass-bar[data-tucked='true'] {
+  translate: 0 -100%;
+  transition-duration: 380ms;
+}
+.glass-bar[data-tucked='false'] {
+  transition-duration: 300ms;
 }
 /* The masthead's button is the quiet version of the hero's: one step smaller, the same fill. */
 .glass .glass-bar .desk-cta {
@@ -3734,9 +3731,6 @@
   .glass-bar,
   .glass-bar::before {
     transition: none;
-  }
-  .glass-bar::after {
-    display: none;
   }
 }
 
