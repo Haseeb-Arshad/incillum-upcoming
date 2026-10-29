@@ -1,211 +1,378 @@
-import { Icon, showcaseIcons } from '#/components/icons.tsx'
-import { Mark } from '#/components/mark.tsx'
+import { useRef } from 'react'
+
+import { CountUp } from '#/components/count-up.tsx'
+import { FileIcon } from '#/components/file-icon.tsx'
+import { abilityIcons, Icon, showcaseIcons } from '#/components/icons.tsx'
+import { OrbitMark } from '#/components/orbit-mark.tsx'
 import { Container } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
-import { charlie, evidence, glass, home, showcase, thread } from '#/content/site.ts'
+import { charlie, evidence, glass, home, showcase } from '#/content/site.ts'
+import { useScene } from '#/lib/motion.ts'
+
+import type { Scene } from '#/lib/motion.ts'
+import type { CSSProperties, ReactNode } from 'react'
 
 /**
- * The showcase: what working with Charlie looks like, in four panels.
+ * The showcase: four scenes from one request, in the bento the owner pointed
+ * at and the shape of Hebbia's own product grid.
  *
- * The shape is the reference the owner pointed at, and the one Hebbia's own
- * product grid uses: a centred heading, then panels of mixed width, each a
- * short title, one line, and a drawing of the product's own objects filling
- * the rest. A tall panel reads a request into lines; a figure panel shows a
- * value with its source; a gauge holds the margin against the floor; a wide
- * panel runs from the files that arrive to the approval that lets anything
- * leave.
+ *   1. Charlie picks the request up the moment it lands, works through it,
+ *      and hands back the two lines that need a person.
+ *   2. Every figure goes back to its page: a rate, its clause, highlighted.
+ *   3. A supplier's price moves; the margin on the line falls through the
+ *      floor; the line is held for a decision.
+ *   4. The working is ready, the outward steps wait, and a person says yes.
  *
- * Every word and value in a drawing is the example quotation's, read here
- * from the documents, the matrix and the 06:50 ledger, so the showcase cannot
- * say anything the rest of the page does not. The drawings are pictures as
- * far as a screen reader is concerned: each panel's title and line say what
- * the drawing shows. No colour, no logo of anybody else's, and nothing moves
- * but the section's one reveal.
+ * Each panel plays its scene once, when it comes into view (`useScene`), as a
+ * sequence of steps on one clock: every step carries its start in
+ * milliseconds as `--at`, and the stylesheet does the moving. On the server,
+ * without a script and under reduced motion, each is drawn at its last frame,
+ * which is the whole story at once. Nothing loops.
+ *
+ * Every word and value in a scene is the example quotation's, read here from
+ * the documents, the matrix, the evidence document and the channel. The
+ * drawings are pictures to a screen reader; each panel's title and line say
+ * what its scene shows.
  */
 
-const request = glass.sources.documents.request
-const lines = home.matrix.rows
-const cited = home.matrix.rows.filter((row) => row.status === 'priced').slice(0, 2)
+const documents = glass.sources.documents
+const request = documents.request
+const rateClause = documents.agreement.clauses.find((clause) => 'rates' in clause)
+const rates = rateClause && 'rates' in rateClause ? rateClause.rates : []
+const cited = rates[0]
+const held = home.matrix.rows.filter((row) => row.status === 'held')
+const { lines } = home.matrix
+const fill = (text: string) =>
+  text
+    .replace('{files}', String(request.attachments.length))
+    .replace('{lines}', String(lines.total))
+    .replace('{held}', String(lines.held))
+    .replace('{priced}', String(lines.priced))
 
-const ledger = thread.beats.find((beat) => beat.figures)?.figures ?? []
-const margin = ledger.find((entry) => entry.term === home.matrix.summary.margin)
-const floor = ledger.find((entry) => entry.term === 'Commercial floor')
-const approve = charlie.scene.messages.find((message) => message.ask)?.ask?.approve ?? ''
+const { visual, record } = evidence
+const margin = (cost: number) =>
+  `${(((visual.unitPrice - cost) / visual.unitPrice) * 100).toFixed(1)}%`
+const before = margin(visual.unitCostBefore)
+const after = margin(visual.unitCostAfter)
+const floor = `${visual.floorPercent.toFixed(1)}%`
+const onScale = (value: string) => `${(Number.parseFloat(value) / visual.scaleMax) * 100}%`
+const supplier = visual.sourceReference.split(' · ')[0] ?? visual.sourceReference
+
+const ask = charlie.scene.messages.find((message) => message.ask)
+const approver = charlie.scene.people.director
+const part = record.part.split(' · ')[0] ?? record.part
+const askTitle = ask?.ask?.title.replace('{part}', part) ?? ''
+const askDetail = ask?.ask?.detail.replace('{units}', visual.units.toLocaleString('en-GB')) ?? ''
+
+/** A step's start on its scene's clock, in milliseconds. */
+const at = (start: number) => ({ ['--at' as string]: start }) as CSSProperties
 
 export function Showcase() {
   return (
     <section id="showcase" aria-labelledby="showcase-title" className="showcase">
       <Container>
-        <Reveal as="h2" className="showcase-heading">
-          <span id="showcase-title">{showcase.headline}</span>
+        <Reveal className="showcase-intro">
+          <h2 id="showcase-title" className="showcase-heading">
+            {showcase.headline}
+          </h2>
+          <p className="showcase-lede">{showcase.lede}</p>
         </Reveal>
-
-        <Reveal delay={80} className="showcase-grid">
-          <article className="showcase-panel" data-panel="reads" aria-labelledby="showcase-reads">
-            <h3 id="showcase-reads" className="showcase-title">
-              {showcase.reads.title}
-            </h3>
-            <p className="showcase-body">{showcase.reads.body}</p>
-            <div className="showcase-art" aria-hidden="true">
-              <RequestDrawing />
-            </div>
-          </article>
-
-          <article className="showcase-panel" data-panel="cites" aria-labelledby="showcase-cites">
-            <div className="showcase-art" aria-hidden="true">
-              <ul className="showcase-cited">
-                {cited.map((row) => (
-                  <li key={row.line}>
-                    <span className="showcase-cell">{row.item}</span>
-                    <span className="showcase-source">
-                      <Icon icon={showcaseIcons.source} className="showcase-source-icon" />
-                      {row.evidence}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <p className="showcase-value">{showcase.cites.value}</p>
-            <h3 id="showcase-cites" className="showcase-title">
-              {showcase.cites.title}
-            </h3>
-            <p className="showcase-body">{showcase.cites.body}</p>
-          </article>
-
-          <article className="showcase-panel" data-panel="floor" aria-labelledby="showcase-floor">
-            <div className="showcase-art" aria-hidden="true">
-              <MarginGauge />
-            </div>
-            <h3 id="showcase-floor" className="showcase-title">
-              {showcase.floor.title}
-            </h3>
-            <p className="showcase-body">{showcase.floor.body}</p>
-          </article>
-
-          <article className="showcase-panel" data-panel="flow" aria-labelledby="showcase-flow">
-            <h3 id="showcase-flow" className="showcase-title">
-              {showcase.flow.title}
-            </h3>
-            <p className="showcase-body">{showcase.flow.body}</p>
-            <div className="showcase-art" aria-hidden="true">
-              <ApprovalFlow />
-            </div>
-          </article>
-        </Reveal>
+        <div className="showcase-grid">
+          <Panel name="pickup" title={showcase.pickup.title} body={showcase.pickup.body}>
+            {() => <PickupScene />}
+          </Panel>
+          <Panel name="sources" title={showcase.sources.title} body={showcase.sources.body}>
+            {() => <SourcesScene />}
+          </Panel>
+          <Panel name="floor" title={showcase.floor.title} body={showcase.floor.body}>
+            {(scene) => <FloorScene scene={scene} />}
+          </Panel>
+          <Panel name="approval" title={showcase.approval.title} body={showcase.approval.body}>
+            {() => <ApprovalScene />}
+          </Panel>
+        </div>
       </Container>
     </section>
   )
 }
 
-/** The request as it lands, and the first of its lines underneath, the way the sheet holds them. */
-function RequestDrawing() {
+function Panel({
+  name,
+  title,
+  body,
+  children,
+}: {
+  name: string
+  title: string
+  body: string
+  children: (scene: Scene) => ReactNode
+}) {
+  const ref = useRef<HTMLElement>(null)
+  const scene = useScene(ref)
   return (
-    <div className="showcase-request">
-      <div className="showcase-mail">
-        <p className="showcase-mail-from">
-          <span className="showcase-avatar">
-            <Icon icon={showcaseIcons.mail} className="showcase-avatar-icon" />
-          </span>
-          <span>
+    <article
+      ref={ref}
+      className="showcase-panel"
+      data-panel={name}
+      data-scene={scene}
+      aria-labelledby={`showcase-${name}`}
+    >
+      <div className="showcase-copy">
+        <h3 id={`showcase-${name}`} className="showcase-title">
+          {title}
+        </h3>
+        <p className="showcase-body">{body}</p>
+      </div>
+      <div className="showcase-art" aria-hidden="true">
+        {children(scene)}
+      </div>
+    </article>
+  )
+}
+
+/** Two states of one thing, stacked, so a scene can change it without moving anything round it. */
+function Swap({ start, before, after, className }: { start: number; before: ReactNode; after: ReactNode; className?: string }) {
+  return (
+    <span className={`scene-swap ${className ?? ''}`}>
+      <span data-swap="before" style={at(start)}>
+        {before}
+      </span>
+      <span data-swap="after" style={at(start)}>
+        {after}
+      </span>
+    </span>
+  )
+}
+
+function PickupScene() {
+  const { pickup } = showcase
+  return (
+    <div className="scene-pickup">
+      <div className="scene-mail" data-step="" style={at(0)}>
+        <p className="scene-mail-head">
+          <FileIcon kind="mail" className="scene-mail-icon" />
+          <span className="scene-mail-from">
             <strong>{request.from}</strong>
             <span>{request.address}</span>
           </span>
+          <span className="scene-time">{pickup.now}</span>
         </p>
-        <p className="showcase-mail-subject">{request.subject}</p>
-        <ul className="showcase-files">
-          {request.attachments.map((attachment) => (
-            <li key={attachment.name}>
-              <b>{attachment.format}</b>
-              {attachment.name}
+        <p className="scene-mail-subject">{request.subject}</p>
+        <p className="scene-mail-body">{request.body}</p>
+        <ul className="scene-files">
+          {request.attachments.map((file) => (
+            <li key={file.name}>
+              <FileIcon kind={file.format === 'PDF' ? 'pdf' : 'archive'} />
+              {file.name}
+            </li>
+          ))}
+        </ul>
+        <span className="scene-picked" data-step="" style={at(500)}>
+          <OrbitMark className="scene-picked-mark" />
+          {pickup.picked}
+        </span>
+      </div>
+
+      <div className="scene-agent" data-step="" style={at(750)}>
+        <p className="scene-agent-head">
+          <span className="scene-agent-mark">
+            <OrbitMark />
+          </span>
+          <strong>{charlie.scene.people.charlie.name}</strong>
+          <Swap
+            start={2600}
+            className="scene-status-swap"
+            before={<span className="scene-status">{pickup.working}</span>}
+            after={
+              <span className="scene-status" data-tone="done">
+                <Icon icon={showcaseIcons.check} />
+                {pickup.done}
+              </span>
+            }
+          />
+        </p>
+        <ol className="scene-steps">
+          {pickup.steps.map((text, index) => (
+            <li key={text} data-step="" style={at(950 + index * 420)}>
+              <span className="scene-tick" data-pop="" style={at(1250 + index * 420)}>
+                <Icon icon={showcaseIcons.check} />
+              </span>
+              {fill(text)}
+            </li>
+          ))}
+        </ol>
+        <p className="scene-result" data-step="" style={at(2750)}>
+          {fill(pickup.result)}
+        </p>
+        <ul className="scene-held" data-step="" style={at(2900)}>
+          {held.map((row, index) => (
+            <li key={row.line} data-step="" style={at(2950 + index * 160)}>
+              <span className="scene-line">{row.line}</span>
+              <span className="scene-item">{row.item}</span>
+              <span className="scene-chip" data-tone="held">
+                <Icon icon={showcaseIcons.held} />
+                {home.matrix.statusLabels[row.status]}
+              </span>
             </li>
           ))}
         </ul>
       </div>
-      <span className="showcase-wire" />
-      <div className="showcase-sheet">
-        <p className="showcase-sheet-head">
-          <span>{showcase.reads.lines}</span>
-          <span>{home.matrix.lines.total}</span>
+    </div>
+  )
+}
+
+function SourcesScene() {
+  const { sources } = showcase
+  return (
+    <div className="scene-sources">
+      <ul className="scene-tiles">
+        {sources.tiles.map((tile, index) => (
+          <li
+            key={tile.key}
+            data-step=""
+            data-cited={tile.key === 'agreement' ? 'true' : undefined}
+            style={at(index * 90)}
+          >
+            <FileIcon kind={tile.kind} />
+            <span>{tile.label}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="scene-cited" data-step="" style={at(900)}>
+        <p className="scene-cited-row">
+          <span>{cited?.item}</span>
+          <strong>{cited?.rate}</strong>
         </p>
-        <ol>
-          {lines.map((row) => (
-            <li key={row.line} data-status={row.status}>
-              <span className="showcase-line">{row.line}</span>
-              <span className="showcase-item">{row.item}</span>
-              <span className="showcase-status">{home.matrix.statusLabels[row.status]}</span>
-            </li>
-          ))}
-        </ol>
+        <p className="scene-cited-source">
+          <Icon icon={showcaseIcons.source} />
+          {sources.from} {documents.agreement.title}, {rateClause?.number}
+        </p>
+        <p className="scene-clause">
+          <span className="scene-clause-number">{rateClause?.number}</span>
+          <span>
+            {rateClause?.text}{' '}
+            <mark data-sweep="" style={at(1450)}>
+              {cited?.part} {cited?.rate}
+            </mark>
+            {rates[1] ? ` · ${rates[1].part} ${rates[1].rate}` : null}
+          </span>
+        </p>
       </div>
     </div>
   )
 }
 
-/**
- * The margin against the floor, as a dial: nought to the evidence document's
- * scale, a tick for every point, the floor marked, and the needle at the
- * ledger's expected margin. Both readings are the ledger's own words.
- */
-function MarginGauge() {
-  const scale = evidence.visual.scaleMax
-  const at = (value: number) => Math.PI * (1 - value / scale)
-  const point = (value: number, radius: number) =>
-    [120 + radius * Math.cos(at(value)), 124 - radius * Math.sin(at(value))] as const
-  const expected = Number.parseFloat(margin?.value ?? '0')
-  const [needleX, needleY] = point(expected, 76)
-  const [floorInner, floorOuter] = [point(evidence.visual.floorPercent, 84), point(evidence.visual.floorPercent, 108)]
-
+function FloorScene({ scene }: { scene: Scene }) {
   return (
-    <div className="showcase-gauge">
-      <svg viewBox="0 0 240 132">
-        <path className="showcase-gauge-arc" d="M 20 124 A 100 100 0 0 1 220 124" />
-        {Array.from({ length: scale + 1 }, (_, value) => {
-          const [x1, y1] = point(value, value % 5 === 0 ? 86 : 92)
-          const [x2, y2] = point(value, 100)
-          return <line key={value} className="showcase-gauge-tick" x1={x1} y1={y1} x2={x2} y2={y2} />
-        })}
-        <line
-          className="showcase-gauge-floor"
-          x1={floorInner[0]}
-          y1={floorInner[1]}
-          x2={floorOuter[0]}
-          y2={floorOuter[1]}
-        />
-        <line className="showcase-gauge-needle" x1="120" y1="124" x2={needleX} y2={needleY} />
-        <circle className="showcase-gauge-hub" cx="120" cy="124" r="6" />
-      </svg>
-      <dl className="showcase-readings">
-        <div>
-          <dt>{margin?.term}</dt>
-          <dd>{margin?.value}</dd>
-        </div>
-        <div>
-          <dt>{floor?.term}</dt>
-          <dd>{floor?.value}</dd>
-        </div>
-      </dl>
+    <div
+      className="scene-floor"
+      style={
+        {
+          '--from-at': onScale(before),
+          '--to-at': onScale(after),
+          '--floor-at': onScale(floor),
+        } as CSSProperties
+      }
+    >
+      <p className="scene-cause" data-step="" style={at(0)}>
+        <FileIcon kind="mail" className="scene-cause-icon" />
+        <span>
+          <strong>{supplier}</strong>
+          <span>
+            {visual.costLabel} {visual.unitCostBefore.toFixed(2)} → {visual.unitCostAfter.toFixed(2)}
+          </span>
+        </span>
+      </p>
+      <p className="scene-floor-ref">{record.reference}</p>
+      <p className="scene-floor-figure">
+        <CountUp value={after} from={before} scene={scene} delay={700} duration={1500} />
+        <Icon icon={showcaseIcons.falling} className="scene-falling" />
+      </p>
+      <div className="scene-track" style={at(700)}>
+        <span className="scene-track-fill" />
+        <span className="scene-track-floor">
+          <span>
+            {visual.floorLabel} {floor}
+          </span>
+        </span>
+        <span className="scene-track-marker" />
+      </div>
+      <p className="scene-short" data-step="" style={at(2350)}>
+        <span>{visual.shortfallLabel}</span>
+        <strong>{record.calculation.shortfall.amount}</strong>
+      </p>
+      <span className="scene-chip scene-floor-held" data-tone="held" data-step="" style={at(2650)}>
+        <Icon icon={showcaseIcons.held} />
+        {showcase.floor.held}
+      </span>
     </div>
   )
 }
 
-/** The files that arrive, Charlie in the middle, and the one approval that lets anything leave. */
-function ApprovalFlow() {
+function ApprovalScene() {
+  const { approval } = showcase
   return (
-    <div className="showcase-flow">
-      <ul className="showcase-flow-files">
-        {showcase.flow.files.map((file) => (
-          <li key={file}>{file}</li>
-        ))}
-      </ul>
-      <span className="showcase-wire" />
-      <span className="showcase-node">
-        <Mark className="showcase-mark" />
-      </span>
-      <span className="showcase-wire" />
-      <span className="showcase-approve">
-        {approve}
-        <Icon icon={showcaseIcons.pointer} className="showcase-pointer" />
-      </span>
+    <div className="scene-approval">
+      <div className="scene-outputs">
+        <p className="scene-label">{approval.ready}</p>
+        <ul>
+          {approval.files.map((file, index) => (
+            <li key={file.label} data-step="" style={at(index * 130)}>
+              <FileIcon kind={file.kind} />
+              <span>{file.label}</span>
+            </li>
+          ))}
+        </ul>
+        <ul className="scene-actions" data-step="" style={at(420)}>
+          {approval.actions.map((action, index) => (
+            <li key={action.kind} data-step="" style={at(500 + index * 130)}>
+              <Icon icon={abilityIcons[action.kind]} />
+              <span className="scene-action-label">{action.label}</span>
+              <Swap
+                start={2850 + index * 160}
+                before={<span className="scene-chip">{approval.waiting}</span>}
+                after={
+                  <span className="scene-chip" data-tone="done">
+                    <Icon icon={showcaseIcons.check} />
+                    {approval.sent}
+                  </span>
+                }
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="scene-ask" data-step="" style={at(950)}>
+        <p className="scene-ask-who">
+          <span className="scene-avatar">{approver.name.charAt(0)}</span>
+          <span>
+            <strong>{approver.name}</strong>
+            <span>{approver.role}</span>
+          </span>
+        </p>
+        <p className="scene-ask-title">{askTitle}</p>
+        <p className="scene-ask-detail">{askDetail}</p>
+        <Swap
+          start={2550}
+          className="scene-ask-swap"
+          before={
+            <span className="scene-buttons">
+              <span className="scene-button" data-primary="">
+                {ask?.ask?.approve}
+              </span>
+              <span className="scene-button">{ask?.ask?.other}</span>
+            </span>
+          }
+          after={
+            <span className="scene-stamp">
+              <Icon icon={showcaseIcons.check} />
+              {ask?.decided}
+            </span>
+          }
+        />
+        <Icon icon={showcaseIcons.pointer} className="scene-pointer" />
+      </div>
     </div>
   )
 }

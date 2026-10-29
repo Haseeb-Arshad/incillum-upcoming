@@ -1,16 +1,20 @@
 import {
+  ArrowRight,
   BadgeCheck,
   BookOpen,
   Building2,
+  Check,
   ClipboardList,
-  CornerDownRight,
+  Cpu,
   DraftingCompass,
   FileLock,
   FilePenLine,
   FileStack,
   FileText,
+  Hand,
   KeyRound,
   Link2,
+  LockKeyhole,
   Mail,
   MailCheck,
   MessageSquare,
@@ -25,8 +29,11 @@ import {
   Send,
   Sheet,
   Signature,
+  TrendingDown,
+  Users,
   Volume2,
   VolumeX,
+  X,
 } from 'lucide-react'
 
 import type { CharlieGlyph, GlassSource, TrustGlyph } from '#/content/site.ts'
@@ -39,8 +46,16 @@ import type { LucideIcon } from 'lucide-react'
  * stroke for all of them, and the colour is `currentColor`, so the tile or the
  * line they sit in sets it.
  */
-export function Icon({ icon: Glyph, className }: { icon: LucideIcon; className?: string }) {
-  return <Glyph aria-hidden="true" focusable="false" strokeWidth={1.5} className={className} />
+export function Icon({
+  icon: Glyph,
+  className,
+}: {
+  icon: LucideIcon
+  className?: string
+}) {
+  return (
+    <Glyph aria-hidden="true" focusable="false" strokeWidth={1.5} className={className} />
+  )
 }
 
 /** The data-and-trust cards. */
@@ -83,11 +98,18 @@ export const stepIcons = {
   case: ClipboardList,
 } satisfies Record<string, LucideIcon>
 
-/** The showcase's drawings: a value's line to its source, and the pointer on the approval. */
+/** The showcase and the trust diagram: a source, a check, the pointer, a held line, the boundary and the way out. */
 export const showcaseIcons = {
-  source: CornerDownRight,
+  source: Link2,
+  check: Check,
   pointer: MousePointer2,
-  mail: Mail,
+  held: Hand,
+  falling: TrendingDown,
+  lock: LockKeyhole,
+  training: Cpu,
+  never: X,
+  people: Users,
+  onward: ArrowRight,
 } satisfies Record<string, LucideIcon>
 
 /** The film's own controls on the Charlie page. */

@@ -33,3 +33,17 @@ export function drawLand(): string {
 }
 
 export const view = { width: world.columns * pitch, height: world.rows * pitch } as const
+
+const radians = (degrees: number) => (degrees * Math.PI) / 180
+/** Miller's cylindrical projection, as the generator samples it. */
+const miller = (latitude: number) =>
+  1.25 * Math.log(Math.tan(Math.PI / 4 + 0.4 * radians(latitude)))
+
+/** Where a longitude and latitude fall in the drawing, on the same grid as the dots. */
+export function project(longitude: number, latitude: number): [x: number, y: number] {
+  return [
+    ((longitude - world.west) / world.step) * pitch,
+    ((miller(world.north) - miller(latitude)) / radians(world.step)) * pitch,
+  ]
+}
+

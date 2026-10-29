@@ -156,6 +156,14 @@ There is deliberately no red. A held line and a missed floor are the same event
 — work that stopped and is waiting for a person — and two colours would say they
 are two things. Anything that is not one of the four above uses ink.
 
+**File marks keep their own colours**, by the owner's call of 29 October 2026,
+and only inside the drawings of the product (`components/file-icon.tsx`): a
+PDF's red band, a workbook's green, a document's blue, a drawing's teal, mail's
+indigo, as a reader's own desktop shows them. They are generic shapes with the
+format written on them, never anybody's logo, and their tokens (`--ic-file-*`)
+are used nowhere else. They are the documents' identity, not a palette: no
+heading, figure, button or state takes one.
+
 ### The night
 
 The front page opens in the night and ends at 08:04, back on paper, where a
@@ -232,11 +240,18 @@ and the film says what happened in it.
   unsticks the masthead.
 - Motion is restrained and has a job. The home page's whole budget, written down
   in `styles.css` above the block that spends it: the hero's one entrance; the
-  film, once through while on screen; the case bar drawing once; one reveal per
-  section; the masthead filling in, 300ms; the arrow nudge and the press.
-  Nothing loops. The dust and morning parallax belong to this page. A page where
-  every card lifts and every row slides is a page that is nervous; if something
-  new wants to move, something old stops.
+  film, once through while on screen; one reveal per section; the masthead
+  filling in, 300ms; the arrow nudge and the press; and, by the owner's call of
+  29 October 2026 for real product energy, **scenes**: the case's figures
+  counting to themselves and requests landing across the map, the week's bar
+  drawing in, the showcase's four panels and the trust drawing each playing
+  their story once as they come into view (`useScene` in `lib/motion.ts`,
+  `CountUp`). A scene is still on the server, without a script and under
+  reduced motion, which is its last frame; armed at its first frame until it is
+  on screen; and played once, never again that visit. Nothing loops and nothing
+  pulses. The dust and morning parallax belong to this page. A page where every
+  card lifts and every row slides is a page that is nervous; a scene earns its
+  motion by telling something that happens to the work.
 - The night plate does not move, and that is a decision rather than an omission.
   Its subject is a room where nothing is happening; a flickering window or a
   drifting light would turn the one honest image on the site into a screensaver.
@@ -255,7 +270,7 @@ the buyer's questions:
 | ------------------------------------------------------------------- | ------------------------------- | ---------------- |
 | A sourced case: response time, pricing, and the working week        | customer logos and testimonials | `case.tsx`       |
 | The showcase: four panels of what working with Charlie looks like   | the product modules             | `showcase.tsx`   |
-| Data and trust — six commitments in ruled rows                      | certification badges            | `trust.tsx`      |
+| Data and trust: the boundary drawn, then six commitments            | certification badges            | `trust.tsx`      |
 | Questions, answered in full                                         | the testimonials                | `questions.tsx`  |
 | The morning — the 08:04 room, the handover, the ask, the next steps | the closing band                | `glass-page.tsx` |
 
@@ -264,23 +279,30 @@ the buyer's questions:
   names may appear only as citations attached to the figures, never as customer
   logos or claims of integration. The world map is a neutral dot drawing; the
   week bar shows the survey's three grouped shares and totals 100%.
-- **The showcase is the product, drawn** (`components/showcase.tsx`), in the
+- **The showcase is the product at work** (`components/showcase.tsx`), in the
   bento the owner pointed at on 29 October 2026 and the shape of Hebbia's own
-  product grid: a tall panel reading the request into lines, a figure panel
-  pairing values with their sources, a dial holding the ledger's margin
-  against the floor, and a wide panel from the files that arrive to the
-  approval. Sunken panels on white, white cards with hairlines inside, no
-  colour and no vendor's mark. Every value in a drawing is read from the
-  documents, the matrix and the 06:50 ledger; the copy (`showcase` in
-  `content/site.ts`) writes none, and its one large number, nought figures
-  without a source, is a rule rather than a measure.
-- **Trust is six commitments in ruled rows**, on white paper, with a small
-  Lucide icon, a title in the grotesk at reading size and two or three lines in
-  muted ink (`ProtectionCards`, shared with the Charlie page). They describe
-  what Incillum does with a business's figures, in the present tense.
-  The two commitments already on the record — `access.decided` and the
-  approval boundary — keep their words. No framework is named anywhere on the
-  site (§5); both suites fail if one is.
+  product grid: "Your quoting desk, without the queue." Four scenes from one
+  request, each played once as it comes into view: Charlie picks the request up
+  the moment it lands and ticks through it to the two lines that need a person;
+  a value goes back to its clause and is highlighted there; a supplier's price
+  moves and line 14's margin counts down through the floor to its shortfall,
+  held; and the working waits until a person's yes, after which the outward
+  steps are sent. Sunken panels on white, white cards with hairlines inside,
+  file marks in their own colours, Lucide glyphs for everything else, square
+  avatars, and no image or vendor's mark. Every count and figure is read from
+  the documents, the matrix, the evidence document and the channel; the copy
+  (`showcase` in `content/site.ts`) writes none, only `{tokens}`.
+- **Trust is the boundary, drawn** (`components/trust.tsx`): "Nothing leaves
+  without you." Requests and supplier answers come in; prices, costs,
+  agreements and quotations stay inside the organisation with Charlie; the path
+  to model training is drawn, struck through and refused; and the only way out
+  is a named person's approval. The owner found the ruled rows it replaced read
+  as a page of answers. The drawing is one image to a screen reader, described
+  in full by `trust.diagram.label`, and plays once like the showcase. Under it,
+  the six commitments are a spec grid of real text. The two commitments
+  already on the record, `access.decided` and the approval boundary, keep their
+  words. No framework is named anywhere on the site (§5); both suites fail if
+  one is.
 - **Questions are open.** A real `<dl>`, every answer in the HTML, nothing
   behind a click; three answers are read from copy the site has already
   committed to, so they cannot drift.

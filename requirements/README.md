@@ -35,6 +35,18 @@ customer pilot blocked**) and the trust review in
 
 ## The quotation itself
 
+The front-page showcase and trust drawing (29 October 2026) are composed
+scenes of RFQ 8841, not captured Studio screens or a generated UI image, and
+every count and figure in them comes from that example's documents, matrix,
+evidence document and channel. They show four things the platform does not do
+yet, each already listed above: Charlie picking a request up from the mailbox
+the moment it lands (no mailbox reader yet); repricing a line when a supplier's
+answer arrives (not built end to end); and a supplier request, a team update
+and a call marked sent once a person approves (no outbound provider is
+qualified). The approval they show, and the rule that nothing leaves without
+one, are true of the platform today. Neither adds a provider capability or a
+claim of hosted readiness.
+
 | The site says | Where it stands | To make it true |
 | --- | --- | --- |
 | Incillum reads the six sources onto one sheet | Partly built: request, catalogue and price list are read; the framework agreement's floor and a supplier confirmation are entered or read per case, not joined automatically across all six. | The source-bound bridge and the change ledger (06-CHANGE-LEDGER-SPEC). |

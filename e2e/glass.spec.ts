@@ -356,11 +356,24 @@ test('reduced motion renders the final frame', async ({ page }) => {
     })
     expect(style, selector).toEqual({ opacity: '1', animation: 'none' })
   }
-  await expect(page.locator('.case-week-figure .case-bar')).toHaveCSS('clip-path', 'none')
-  await expect(page.locator('.case-week-figure .case-bar')).toHaveCSS(
-    'transition-duration',
-    '0s',
+  // Every scene after the film is drawn at its last frame: nothing waiting to rise, every change made.
+  for (const scene of await page.locator('[data-scene]').all()) {
+    await expect(scene).toHaveAttribute('data-scene', 'still')
+  }
+  const waiting = await page.evaluate(
+    () =>
+      [...document.querySelectorAll('[data-scene] [data-step], [data-scene] [data-pop]')].filter(
+        (element) => getComputedStyle(element).opacity !== '1',
+      ).length,
   )
+  expect(waiting).toBe(0)
+  for (const before of await page.locator('[data-swap="before"]').all()) {
+    await expect(before).toHaveCSS('visibility', 'hidden')
+  }
+  for (const after of await page.locator('[data-swap="after"]').all()) {
+    await expect(after).toHaveCSS('visibility', 'visible')
+  }
+  await expect(page.locator('.case-bar-part').first()).toHaveCSS('clip-path', 'none')
 })
 
 test('the sourced case: its figures, citations and week bar follow the research', async ({
@@ -385,7 +398,7 @@ test('the sourced case: its figures, citations and week bar follow the research'
 
   const week = page.locator('.case-week')
   await expect(week.getByRole('heading', { level: 2 })).toHaveText(
-    'More of a sales week goes on quotes and data entry than on customers.',
+    'Your sellers spend more of the week on paperwork than with customers.',
   )
   await expect(week.locator('.case-sources a')).toHaveText(
     'Salesforce, State of Sales, 2025 survey',
@@ -531,23 +544,38 @@ test('server HTML carries the headline, the form, the film’s statements and it
     '48%',
   ])
   await expect(staticPage.locator('.case-sources a').first()).toBeVisible()
-  await expect(staticPage.locator('#trust .trust-rule')).toHaveCount(6)
+  await expect(staticPage.locator('#trust .trust-commitment')).toHaveCount(6)
   await expect(staticPage.locator('#questions .questions-answer').first()).toBeVisible()
   await context.close()
 })
 
-test('trust: six commitments as ruled rows, no state labels, and no certification named', async ({
+test('trust: the boundary drawn, the one way out a person, and six commitments in plain words', async ({
   page,
 }) => {
   const section = page.locator('#trust')
   await expect(section.getByRole('heading', { level: 2 })).toHaveText(
-    'Your numbers stay yours.',
+    'Nothing leaves without you.',
   )
-  const rules = section.locator('.trust-rule')
-  await expect(rules).toHaveCount(6)
-  for (const rule of await rules.all()) {
-    await expect(rule.locator('dt svg')).toBeAttached()
-    await expect(rule.locator('dd')).toBeVisible()
+  // One picture to a screen reader, described in full; the parts inside it are its drawing.
+  const map = section.locator('.trust-map')
+  await expect(map).toHaveAttribute('role', 'img')
+  await expect(map).toHaveAttribute('aria-label', /only way out is a person’s approval/)
+  // Each with its file's mark, whose format is part of the drawing's text.
+  await expect(map.locator('.trust-data li')).toHaveText([
+    /Prices$/,
+    /Costs$/,
+    /Agreements$/,
+    /Quotations$/,
+  ])
+  await expect(map.locator('.trust-gate')).toContainText('James')
+  await expect(map.locator('.trust-approve')).toHaveText('Approve and send')
+  await expect(map.locator('.trust-never')).toHaveText('Never')
+  await expect(map.locator('.trust-node[data-refused]')).toHaveText('Model training')
+
+  const commitments = section.locator('.trust-commitment')
+  await expect(commitments).toHaveCount(6)
+  for (const commitment of await commitments.all()) {
+    await expect(commitment.locator('svg')).toBeAttached()
   }
   // The approval boundary keeps its words, wherever it is set.
   await expect(section).toContainText(
@@ -558,6 +586,17 @@ test('trust: six commitments as ruled rows, no state labels, and no certificatio
   await expect(page.locator('body')).not.toContainText(
     /SOC 2|ISO\/IEC|GDPR|CCPA|HIPAA|certified|compliant|Honest about what exists/,
   )
+  // Every part of the drawing stays inside it, at every width.
+  const outside = await map.evaluate((drawing) => {
+    const box = drawing.getBoundingClientRect()
+    return [...drawing.querySelectorAll('.trust-node, .trust-boundary, .trust-gate')].filter(
+      (element) => {
+        const rect = element.getBoundingClientRect()
+        return rect.left < box.left - 1 || rect.right > box.right + 1
+      },
+    ).length
+  })
+  expect(outside).toBe(0)
 })
 
 test('nothing on the page paints over the masthead, from the top to the footer', async ({
@@ -598,10 +637,13 @@ test('after the night the page lies on white paper, with nothing grained into it
   }
   // The sections on the desk paint no ground of their own: the white is the desk's, under them.
   for (const selector of ['.case-week', '.trust', '.questions']) {
-    const ground = await page.locator(selector).first().evaluate((element) => {
-      const style = getComputedStyle(element)
-      return { colour: style.backgroundColor, image: style.backgroundImage }
-    })
+    const ground = await page
+      .locator(selector)
+      .first()
+      .evaluate((element) => {
+        const style = getComputedStyle(element)
+        return { colour: style.backgroundColor, image: style.backgroundImage }
+      })
     expect(ground, selector).toEqual({ colour: 'rgba(0, 0, 0, 0)', image: 'none' })
   }
   const oddsGround = await page.locator('.case-odds').evaluate((element) => {
@@ -675,18 +717,21 @@ test('is the front page: indexable, canonical at the root, and where /glass now 
 test('no em dash anywhere a reader sees, and every title uses a straight line', async ({
   page,
 }) => {
+  // This audit hydrates three routes in addition to the shared front-page setup.
+  test.setTimeout(60_000)
   for (const [path, title] of [
     ['/', 'Incillum | Intelligence for commercial work'],
     ['/charlie', 'Charlie | Incillum'],
     ['/contact', 'Contact | Incillum'],
   ] as const) {
-    await page.goto(path)
-    await page.waitForSelector('html[data-hydrated="true"]')
+    await visit(page, path)
     await expect(page).toHaveTitle(title)
     const seen = await page.evaluate(() =>
       [
         document.body.innerText,
-        ...[...document.querySelectorAll('[alt], [aria-label], meta[name="description"]')].map(
+        ...[
+          ...document.querySelectorAll('[alt], [aria-label], meta[name="description"]'),
+        ].map(
           (element) =>
             element.getAttribute('alt') ??
             element.getAttribute('aria-label') ??
@@ -699,7 +744,7 @@ test('no em dash anywhere a reader sees, and every title uses a straight line', 
   }
 })
 
-test('the showcase: four panels, each a title and a line over a drawing of the example quotation', async ({
+test('the showcase: four scenes from one request, drawn from the example and clear at every width', async ({
   page,
 }) => {
   const section = page.locator('#showcase')
@@ -708,22 +753,113 @@ test('the showcase: four panels, each a title and a line over a drawing of the e
   )
   await expect(section.locator('.showcase-panel')).toHaveCount(4)
   await expect(section.getByRole('heading', { level: 3 })).toHaveText([
-    'Reads whatever arrives',
-    'Figures without a source',
-    'Holds your margin',
-    'Read, price, approve',
+    'Picks it up the moment it lands',
+    'Every figure, back to its page',
+    'Your floor, held',
+    'Nothing leaves without your yes',
   ])
-  // The drawings are pictures to a screen reader: each panel's title and line say what they show.
+  // The scenes are pictures to a screen reader: each panel's title and line say what they show.
   for (const art of await section.locator('.showcase-art').all()) {
     await expect(art).toHaveAttribute('aria-hidden', 'true')
   }
-  // The dial reads the 06:50 ledger, and the held lines are the matrix's two.
-  await expect(section.locator('.showcase-readings dd')).toHaveText(['16.4%', '20.0%'])
-  await expect(section.locator('.showcase-sheet li[data-status="held"]')).toHaveCount(2)
-  await expect(section.locator('.showcase-approve')).toContainText('Approve and send')
-  // Nobody else's mark: the one image in it is Incillum's own.
-  await expect(section.locator('img')).toHaveCount(1)
+
+  // Pickup: the counts are the matrix's, the held lines its two.
+  const pickup = section.locator('[data-panel="pickup"]')
+  await expect(pickup.locator('.scene-steps li')).toHaveText([
+    'Read the email and its 2 attachments',
+    'Matched 20 lines to your catalogue',
+    'Checked every price against its source',
+    'Held 2 lines for a person',
+  ])
+  await expect(pickup.locator('.scene-result')).toHaveText('18 lines priced. 2 need your input.')
+  await expect(pickup.locator('.scene-held li')).toHaveCount(2)
+
+  // Sources: six documents with their marks, and the agreed rate back to its clause.
+  const sources = section.locator('[data-panel="sources"]')
+  await expect(sources.locator('.scene-tiles li')).toHaveCount(6)
+  await expect(sources.locator('.scene-tiles .file-icon')).toHaveCount(6)
+  await expect(sources.locator('.scene-cited-row strong')).toHaveText('21.60')
+  await expect(sources.locator('.scene-cited-source')).toContainText('Framework agreement, B.6')
+
+  // Floor: line 14's margin, from the evidence document, under the floor, and the shortfall it names.
+  const floor = section.locator('[data-panel="floor"]')
+  await expect(floor.locator('.scene-floor-figure')).toHaveText('15.2%')
+  await expect(floor.locator('.scene-short strong')).toHaveText('EUR 11,520.00')
+  const positions = await floor.locator('.scene-track').evaluate((track) => {
+    const { left, width } = track.getBoundingClientRect()
+    return ['.scene-track-marker', '.scene-track-floor'].map((selector) => {
+      const mark = track.querySelector(selector)!.getBoundingClientRect()
+      return (mark.left + mark.width / 2 - left) / width
+    })
+  })
+  expect(positions[0]).toBeCloseTo(15.2 / 25, 1)
+  expect(positions[1]).toBeCloseTo(20 / 25, 1)
+
+  // Approval: the channel's own request, approved by the person it names.
+  const approval = section.locator('[data-panel="approval"]')
+  await expect(approval.locator('.scene-ask-title')).toHaveText(
+    'Request for quotation · Flanged housing, machined',
+  )
+  await expect(approval.locator('.scene-stamp')).toHaveText('Approved by James · 08:14')
+  await expect(approval.locator('.scene-action-label')).toHaveText([
+    'Supplier request',
+    'Team update',
+    'Call or meeting',
+  ])
+
+  // Every card stays inside its panel, and nobody else's mark is drawn: no image at all.
+  const clipped = await section.locator('.showcase-panel').evaluateAll((panels) =>
+    panels.flatMap((panel) => {
+      const box = panel.getBoundingClientRect()
+      return [
+        ...panel.querySelectorAll(
+          '.showcase-copy, .scene-mail, .scene-agent, .scene-cited, .scene-cause, .scene-short, .scene-ask, .scene-actions',
+        ),
+      ]
+        .filter((element) => {
+          const rect = element.getBoundingClientRect()
+          return rect.left < box.left - 1 || rect.right > box.right + 1 || rect.bottom > box.bottom + 1
+        })
+        .map((element) => element.className)
+    }),
+  )
+  expect(clipped).toEqual([])
+  await expect(section.locator('img')).toHaveCount(0)
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
   ).toBe(true)
+})
+
+test('with motion, each scene waits at its first frame and plays once to its last as it comes into view', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto(GLASS)
+  await page.waitForSelector('html[data-hydrated="true"]')
+  await page.keyboard.press('Shift')
+
+  const panel = page.locator('.showcase-panel[data-panel="approval"]')
+  // Below the fold it is held at its first frame: the request still waiting for a yes.
+  await expect(panel).toHaveAttribute('data-scene', 'armed')
+  await expect(panel.locator('[data-swap="after"]').first()).toHaveCSS('visibility', 'hidden')
+
+  await panel.evaluate((element) => element.scrollIntoView({ block: 'center', behavior: 'instant' }))
+  await expect(panel).toHaveAttribute('data-scene', 'playing')
+  // It ends where the still frame is: approved, and everything that waited on it sent.
+  await expect(panel.locator('.scene-stamp')).toBeVisible({ timeout: 6000 })
+  await expect(panel.locator('[data-swap="before"]').first()).toHaveCSS('visibility', 'hidden', {
+    timeout: 6000,
+  })
+
+  // A figure counts to itself, and lands on exactly what is printed.
+  const odds = page.locator('#odds')
+  await odds.evaluate((element) => element.scrollIntoView({ block: 'center', behavior: 'instant' }))
+  await expect(odds).toHaveAttribute('data-scene', 'playing')
+  await expect(odds.locator('.case-stat-value [aria-hidden="true"]').first()).toHaveText('42h', {
+    timeout: 6000,
+  })
+
+  // Once played it stays played: nothing replays on the way back.
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+  await expect(panel).toHaveAttribute('data-scene', 'playing')
 })

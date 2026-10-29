@@ -995,8 +995,30 @@ export interface TrustCommitment {
 
 export const trust = {
   anchor: 'trust',
-  headline: 'Your numbers stay yours.',
-  lede: 'Prices, costs and margins are the most sensitive figures a business has. This is what Incillum does with them, in plain words.',
+  headline: 'Nothing leaves without you.',
+  lede: 'Your prices, costs and margins stay inside your organisation. Charlie works on them there, and anything that would go out stops for a person first.',
+  /**
+   * The boundary, drawn: what comes in, what stays inside with Charlie, the
+   * one way out through a person, and the path to model training that does
+   * not exist. Its words are here; the approver and the button are the
+   * channel's (`charlie.scene`), read by the component.
+   */
+  diagram: {
+    label:
+      'Customer requests and supplier answers come in. Prices, costs, margins and agreements stay inside your organisation, where Charlie works on them. None of it is used to train a model. The only way out is a person’s approval.',
+    inbound: ['Customer requests', 'Supplier answers'],
+    inside: 'Your organisation',
+    data: [
+      { kind: 'sheet', label: 'Prices' },
+      { kind: 'sheet', label: 'Costs' },
+      { kind: 'doc', label: 'Agreements' },
+      { kind: 'pdf', label: 'Quotations' },
+    ] satisfies ReadonlyArray<{ kind: FileKind; label: string }>,
+    gate: 'The only way out',
+    out: 'Customers and suppliers',
+    training: 'Model training',
+    never: 'Never',
+  },
   commitments: [
     {
       glyph: 'training',
@@ -1005,7 +1027,7 @@ export const trust = {
     },
     {
       glyph: 'sending',
-      title: 'Nothing leaves without you',
+      title: 'Approved before it goes',
       body: 'No quotation, request or document is sent, and no price committed, until a person approves it.',
     },
     {
@@ -1621,7 +1643,8 @@ export const figures = {
       {
         key: 'price',
         value: '8%',
-        label: 'More operating profit from a 1% higher price, volume unchanged (S&P 1500)',
+        label:
+          'More operating profit from a 1% higher price, volume unchanged (S&P 1500)',
         source: 'mckinsey',
       },
     ] satisfies ReadonlyArray<Odds>,
@@ -1636,8 +1659,8 @@ export const figures = {
    * creating quotes and entering data by hand, and everything else.
    */
   week: {
-    headline: 'More of a sales week goes on quotes and data entry than on customers.',
-    lede: 'In a survey of 4,050 sales professionals, building quotes and typing figures in by hand took almost a third of the week. That is the work Charlie is for.',
+    headline: 'Your sellers spend more of the week on paperwork than with customers.',
+    lede: 'In a survey of 4,050 sales professionals, building quotes and typing figures in by hand took almost a third of the week. That is the part Charlie takes off their desk.',
     chart: 'A sales rep’s working week',
     segments: [
       { key: 'customers', label: 'With customers', share: 22 },
@@ -1649,39 +1672,77 @@ export const figures = {
 } as const
 
 /**
- * The showcase: what working with Charlie looks like, as four panels after
- * the case, in the shape of the reference the owner pointed at on 29 October
- * 2026 (and of Hebbia's own product grid). Each panel is a title of a few
- * words, one line, and a drawing of the product's own objects, built in the
- * site's type from the example quotation: the email, its lines, a value and
- * its source, the margin against the floor, the approval. The words below
- * name the panels; every value in a drawing is read by the component from the
- * documents, the matrix and the ledger, never written here.
+ * The showcase: four panels after the case, each a scene from one request
+ * that plays once as it comes into view, in the shape of the bento the owner
+ * pointed at and of Hebbia's own product grid. Charlie picks the request up;
+ * every figure goes back to its page; a supplier's change is carried to the
+ * margin and stopped at the floor; and nothing leaves until a person says yes.
  *
- * The one large number is a rule, not a measure: no figure on the sheet is
- * without a source, because a figure with none is reported as missing. It is
- * the trust section's "Every figure cited", said as a count.
+ * The words below name the scenes and their steps. Every value a scene shows
+ * (the email and its files, the lines, the rate and its clause, the margins,
+ * the floor, the shortfall, the approval) is read by the component from the
+ * documents, the matrix, the evidence document and the channel; `{tokens}`
+ * are filled from them. On the server, without a script and under reduced
+ * motion, each scene is drawn at its last frame.
+ *
+ * File marks keep their own colours here, by the owner's call of 29 October
+ * 2026: they are the documents' identity, the way a reader's own desktop
+ * shows them, and appear nowhere outside a drawing.
  */
+export type FileKind = 'pdf' | 'sheet' | 'doc' | 'drawing' | 'mail' | 'archive'
+
 export const showcase = {
   headline: 'Your quoting desk, without the queue.',
-  reads: {
-    title: 'Reads whatever arrives',
-    body: 'Email, PDFs, drawings and spreadsheets, read into lines the moment a request lands.',
-    lines: 'Read into lines',
+  lede: 'Charlie picks up every request the moment it lands, does the reading, matching and checking, and hands you only the calls that need you.',
+  pickup: {
+    title: 'Picks it up the moment it lands',
+    body: 'No inbox to clear in the morning. Charlie opens the request, reads every attachment and gets straight to work.',
+    now: 'Just now',
+    picked: 'Picked up by Charlie',
+    working: 'Working',
+    done: 'Ready for you',
+    steps: [
+      'Read the email and its {files} attachments',
+      'Matched {lines} lines to your catalogue',
+      'Checked every price against its source',
+      'Held {held} lines for a person',
+    ],
+    result: '{priced} lines priced. {held} need your input.',
   },
-  cites: {
-    value: '0',
-    title: 'Figures without a source',
-    body: 'Every value opens to the document and the page it came from.',
+  sources: {
+    title: 'Every figure, back to its page',
+    body: 'Open any value and see the document, the clause and the line it came from.',
+    tiles: [
+      { key: 'request', label: 'Request', kind: 'mail' },
+      { key: 'drawing', label: 'Drawings', kind: 'drawing' },
+      { key: 'catalogue', label: 'Catalogue', kind: 'pdf' },
+      { key: 'prices', label: 'Price list', kind: 'sheet' },
+      { key: 'agreement', label: 'Agreement', kind: 'doc' },
+      { key: 'supplier', label: 'Supplier reply', kind: 'mail' },
+    ] satisfies ReadonlyArray<{ key: GlassSource; label: string; kind: FileKind }>,
+    from: 'From',
   },
   floor: {
-    title: 'Holds your margin',
-    body: 'Every line checked against your floor, and a shortfall named before anyone quotes it.',
+    title: 'Your floor, held',
+    body: 'When a supplier’s price moves, the margin is worked out again, and a line under your floor waits for you.',
+    held: 'Held for your decision',
   },
-  flow: {
-    title: 'Read, price, approve',
-    body: 'From the request as it lands to a quotation ready to send. Nothing leaves until a person approves it.',
-    files: ['PDF', 'XLSX', 'DWG', 'EML'],
+  approval: {
+    title: 'Nothing leaves without your yes',
+    body: 'Quotations, supplier requests, team updates and calls are prepared for you. Nothing goes out until a person approves it.',
+    ready: 'Ready for review',
+    files: [
+      { kind: 'pdf', label: 'Quotation' },
+      { kind: 'sheet', label: 'Workbook' },
+      { kind: 'doc', label: 'Cover letter' },
+    ] satisfies ReadonlyArray<{ kind: FileKind; label: string }>,
+    actions: [
+      { kind: 'ask', label: 'Supplier request' },
+      { kind: 'tell', label: 'Team update' },
+      { kind: 'call', label: 'Call or meeting' },
+    ] satisfies ReadonlyArray<{ kind: CharlieGlyph; label: string }>,
+    waiting: 'Waiting for approval',
+    sent: 'Sent',
   },
 } as const
 

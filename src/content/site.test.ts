@@ -1406,28 +1406,66 @@ describe('the sourced case', () => {
 /**
  * The showcase: four panels of what working with Charlie looks like. Its
  * words name the panels and its drawings read every value from the example
- * quotation, so it is held to writing no figure of its own but the one count
- * that is a rule, to the ledger's own readings, and to claiming nothing.
+ * quotation. No performance counter or invented figure belongs in the copy.
  */
 describe('the showcase', () => {
-  it('writes no figure of its own but the count of figures without a source', () => {
-    const { cites, ...rest } = showcase
-    expect(JSON.stringify(rest)).not.toMatch(/\d/)
-    expect(cites.value).toBe('0')
-    expect(cites.title).toMatch(/without a source/)
+  it('writes no figures of its own: every count is a token the scenes fill', () => {
+    expect(JSON.stringify(showcase)).not.toMatch(/\d/)
+    const tokens = JSON.stringify(showcase.pickup).match(/\{\w+\}/g) ?? []
+    expect(new Set(tokens)).toEqual(new Set(['{files}', '{lines}', '{held}', '{priced}']))
   })
 
   it('draws from figures the ledger and the evidence document already carry', () => {
     const ledger = thread.beats.find((beat) => beat.figures)?.figures ?? []
-    expect(ledger.find((entry) => entry.term === home.matrix.summary.margin)?.value).toMatch(/%$/)
+    expect(
+      ledger.find((entry) => entry.term === home.matrix.summary.margin)?.value,
+    ).toMatch(/%$/)
     expect(ledger.find((entry) => entry.term === 'Commercial floor')?.value).toMatch(/%$/)
     expect(evidence.visual.scaleMax).toBeGreaterThan(evidence.visual.floorPercent)
     expect(glass.sources.documents.request.attachments.length).toBeGreaterThan(0)
   })
 
+  it('draws the approval from the channel, with the person who gave it', () => {
+    const ask = charlie.scene.messages.find((message) => message.ask)
+    expect(ask?.ask?.approve).toBe('Approve and send')
+    expect(ask?.decided).toMatch(new RegExp(charlie.scene.people.director.name))
+  })
+
   it('keeps every outward step behind a person, and claims nothing', () => {
-    expect(showcase.flow.body).toMatch(/until a person approves/)
+    expect(showcase.approval.body).toMatch(/until a person approves/)
+    expect(showcase.approval.actions.map((action) => action.kind)).toEqual(['ask', 'tell', 'call'])
     claimsNothing(showcase)
+  })
+
+  it('marks every file it draws with a kind the file marks know', () => {
+    const kinds = new Set(['pdf', 'sheet', 'doc', 'drawing', 'mail', 'archive'])
+    for (const tile of showcase.sources.tiles) expect(kinds.has(tile.kind), tile.key).toBe(true)
+    for (const file of showcase.approval.files) expect(kinds.has(file.kind), file.label).toBe(true)
+    for (const item of trust.diagram.data) expect(kinds.has(item.kind), item.label).toBe(true)
+  })
+})
+
+/**
+ * Trust, drawn: the boundary and the one way out. The drawing's words are
+ * held to the commitments under it, and the approval boundary keeps the words
+ * it has always had.
+ */
+describe('trust, drawn', () => {
+  it('says the boundary in its headline, and describes the drawing in full', () => {
+    expect(trust.headline).toBe('Nothing leaves without you.')
+    expect(trust.diagram.label).toMatch(/only way out is a person’s approval/)
+    expect(trust.diagram.label).toMatch(/train a model/)
+  })
+
+  it('keeps six commitments, and the approval boundary in its own words', () => {
+    expect(trust.commitments).toHaveLength(6)
+    expect(trust.commitments.map((commitment) => commitment.body)).toContain(
+      'No quotation, request or document is sent, and no price committed, until a person approves it.',
+    )
+  })
+
+  it('claims nothing and names no certification', () => {
+    claimsNothing(trust)
   })
 })
 describe('no em dash in anything a reader sees', () => {

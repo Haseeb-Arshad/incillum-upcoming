@@ -92,3 +92,36 @@ export function useInView(ref: RefObject<Element | null>, threshold: number): bo
 
   return inView
 }
+
+/**
+ * Where a scene stands: `still` draws its last frame and is what the server,
+ * a page with no observer and a reader who asked for reduced motion all get;
+ * `armed` holds it at its first frame until it is on screen; `playing` runs
+ * it once and leaves it at its last frame. It plays once a visit, so
+ * scrolling past it again never replays it.
+ */
+export type Scene = 'still' | 'armed' | 'playing'
+
+export function useScene(ref: RefObject<Element | null>, threshold = 0.35): Scene {
+  const observable = useObservable()
+  const reduced = useReducedMotion()
+  const [played, setPlayed] = useState(false)
+
+  useEffect(() => {
+    const element = ref.current
+    if (!element || !observable || reduced || played) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting) return
+        setPlayed(true)
+        observer.disconnect()
+      },
+      { threshold },
+    )
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [ref, observable, reduced, played, threshold])
+
+  if (!observable || reduced) return 'still'
+  return played ? 'playing' : 'armed'
+}
