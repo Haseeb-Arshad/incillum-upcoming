@@ -3,6 +3,7 @@ import {
   BookOpen,
   Building2,
   ClipboardList,
+  CornerDownRight,
   DraftingCompass,
   FileLock,
   FilePenLine,
@@ -14,6 +15,7 @@ import {
   MailCheck,
   MessageSquare,
   MessageSquareText,
+  MousePointer2,
   Pause,
   PhoneCall,
   Play,
@@ -79,6 +81,13 @@ export const stepIcons = {
   quotation: FileText,
   call: MessageSquare,
   case: ClipboardList,
+} satisfies Record<string, LucideIcon>
+
+/** The showcase's drawings: a value's line to its source, and the pointer on the approval. */
+export const showcaseIcons = {
+  source: CornerDownRight,
+  pointer: MousePointer2,
+  mail: Mail,
 } satisfies Record<string, LucideIcon>
 
 /** The film's own controls on the Charlie page. */

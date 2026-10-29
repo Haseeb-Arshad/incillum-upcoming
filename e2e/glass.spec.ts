@@ -698,3 +698,32 @@ test('no em dash anywhere a reader sees, and every title uses a straight line', 
     expect(seen.match(/[^\n]*—[^\n]*/g) ?? [], path).toEqual([])
   }
 })
+
+test('the showcase: four panels, each a title and a line over a drawing of the example quotation', async ({
+  page,
+}) => {
+  const section = page.locator('#showcase')
+  await expect(section.getByRole('heading', { level: 2 })).toHaveText(
+    'Your quoting desk, without the queue.',
+  )
+  await expect(section.locator('.showcase-panel')).toHaveCount(4)
+  await expect(section.getByRole('heading', { level: 3 })).toHaveText([
+    'Reads whatever arrives',
+    'Figures without a source',
+    'Holds your margin',
+    'Read, price, approve',
+  ])
+  // The drawings are pictures to a screen reader: each panel's title and line say what they show.
+  for (const art of await section.locator('.showcase-art').all()) {
+    await expect(art).toHaveAttribute('aria-hidden', 'true')
+  }
+  // The dial reads the 06:50 ledger, and the held lines are the matrix's two.
+  await expect(section.locator('.showcase-readings dd')).toHaveText(['16.4%', '20.0%'])
+  await expect(section.locator('.showcase-sheet li[data-status="held"]')).toHaveCount(2)
+  await expect(section.locator('.showcase-approve')).toContainText('Approve and send')
+  // Nobody else's mark: the one image in it is Incillum's own.
+  await expect(section.locator('img')).toHaveCount(1)
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+  ).toBe(true)
+})

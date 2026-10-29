@@ -8,6 +8,7 @@ import { MastheadBar } from '#/components/masthead-bar.tsx'
 import { ButtonLink, Container, TextLink } from '#/components/primitives.tsx'
 import { Questions } from '#/components/questions.tsx'
 import { Reveal } from '#/components/reveal.tsx'
+import { Showcase } from '#/components/showcase.tsx'
 import { SiteBrand } from '#/components/site-brand.tsx'
 import { StepIcon } from '#/components/step-icon.tsx'
 import { Trust } from '#/components/trust.tsx'
@@ -322,6 +323,7 @@ export function GlassPage() {
       */}
       <div className="desk glass-acts">
         <Case />
+        <Showcase />
         <Trust />
         <Questions />
       </div>

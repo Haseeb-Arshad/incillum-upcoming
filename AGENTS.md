@@ -254,6 +254,7 @@ the buyer's questions:
 | Act                                                                 | Stands where they put           | Component        |
 | ------------------------------------------------------------------- | ------------------------------- | ---------------- |
 | A sourced case: response time, pricing, and the working week        | customer logos and testimonials | `case.tsx`       |
+| The showcase: four panels of what working with Charlie looks like   | the product modules             | `showcase.tsx`   |
 | Data and trust — six commitments in ruled rows                      | certification badges            | `trust.tsx`      |
 | Questions, answered in full                                         | the testimonials                | `questions.tsx`  |
 | The morning — the 08:04 room, the handover, the ask, the next steps | the closing band                | `glass-page.tsx` |
@@ -263,6 +264,16 @@ the buyer's questions:
   names may appear only as citations attached to the figures, never as customer
   logos or claims of integration. The world map is a neutral dot drawing; the
   week bar shows the survey's three grouped shares and totals 100%.
+- **The showcase is the product, drawn** (`components/showcase.tsx`), in the
+  bento the owner pointed at on 29 October 2026 and the shape of Hebbia's own
+  product grid: a tall panel reading the request into lines, a figure panel
+  pairing values with their sources, a dial holding the ledger's margin
+  against the floor, and a wide panel from the files that arrive to the
+  approval. Sunken panels on white, white cards with hairlines inside, no
+  colour and no vendor's mark. Every value in a drawing is read from the
+  documents, the matrix and the 06:50 ledger; the copy (`showcase` in
+  `content/site.ts`) writes none, and its one large number, nought figures
+  without a source, is a rule rather than a measure.
 - **Trust is six commitments in ruled rows**, on white paper, with a small
   Lucide icon, a title in the grotesk at reading size and two or three lines in
   muted ink (`ProtectionCards`, shared with the Charlie page). They describe

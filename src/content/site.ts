@@ -1649,6 +1649,43 @@ export const figures = {
 } as const
 
 /**
+ * The showcase: what working with Charlie looks like, as four panels after
+ * the case, in the shape of the reference the owner pointed at on 29 October
+ * 2026 (and of Hebbia's own product grid). Each panel is a title of a few
+ * words, one line, and a drawing of the product's own objects, built in the
+ * site's type from the example quotation: the email, its lines, a value and
+ * its source, the margin against the floor, the approval. The words below
+ * name the panels; every value in a drawing is read by the component from the
+ * documents, the matrix and the ledger, never written here.
+ *
+ * The one large number is a rule, not a measure: no figure on the sheet is
+ * without a source, because a figure with none is reported as missing. It is
+ * the trust section's "Every figure cited", said as a count.
+ */
+export const showcase = {
+  headline: 'Your quoting desk, without the queue.',
+  reads: {
+    title: 'Reads whatever arrives',
+    body: 'Email, PDFs, drawings and spreadsheets, read into lines the moment a request lands.',
+    lines: 'Read into lines',
+  },
+  cites: {
+    value: '0',
+    title: 'Figures without a source',
+    body: 'Every value opens to the document and the page it came from.',
+  },
+  floor: {
+    title: 'Holds your margin',
+    body: 'Every line checked against your floor, and a shortfall named before anyone quotes it.',
+  },
+  flow: {
+    title: 'Read, price, approve',
+    body: 'From the request as it lands to a quotation ready to send. Nothing leaves until a person approves it.',
+    files: ['PDF', 'XLSX', 'DWG', 'EML'],
+  },
+} as const
+
+/**
  * The contact page — a memo, not a form.
  *
  * `/contact` is where somebody who has decided to say more goes, so it can ask

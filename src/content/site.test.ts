@@ -21,6 +21,7 @@ import {
   menu,
   nightfall,
   questions,
+  showcase,
   thread,
   trust,
 } from '#/content/site.ts'
@@ -1402,6 +1403,33 @@ describe('the sourced case', () => {
  * call of 29 October 2026, because it is the first thing that makes copy read
  * as generated. Titles use a straight line instead.
  */
+/**
+ * The showcase: four panels of what working with Charlie looks like. Its
+ * words name the panels and its drawings read every value from the example
+ * quotation, so it is held to writing no figure of its own but the one count
+ * that is a rule, to the ledger's own readings, and to claiming nothing.
+ */
+describe('the showcase', () => {
+  it('writes no figure of its own but the count of figures without a source', () => {
+    const { cites, ...rest } = showcase
+    expect(JSON.stringify(rest)).not.toMatch(/\d/)
+    expect(cites.value).toBe('0')
+    expect(cites.title).toMatch(/without a source/)
+  })
+
+  it('draws from figures the ledger and the evidence document already carry', () => {
+    const ledger = thread.beats.find((beat) => beat.figures)?.figures ?? []
+    expect(ledger.find((entry) => entry.term === home.matrix.summary.margin)?.value).toMatch(/%$/)
+    expect(ledger.find((entry) => entry.term === 'Commercial floor')?.value).toMatch(/%$/)
+    expect(evidence.visual.scaleMax).toBeGreaterThan(evidence.visual.floorPercent)
+    expect(glass.sources.documents.request.attachments.length).toBeGreaterThan(0)
+  })
+
+  it('keeps every outward step behind a person, and claims nothing', () => {
+    expect(showcase.flow.body).toMatch(/until a person approves/)
+    claimsNothing(showcase)
+  })
+})
 describe('no em dash in anything a reader sees', () => {
   it('writes none in any section the pages render', () => {
     const rendered = {
@@ -1411,6 +1439,7 @@ describe('no em dash in anything a reader sees', () => {
       home,
       glass,
       figures,
+      showcase,
       trust,
       questions,
       access,
