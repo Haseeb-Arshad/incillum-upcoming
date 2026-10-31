@@ -8,6 +8,7 @@ import { OrbitMark } from '#/components/orbit-mark.tsx'
 import { brand, contact } from '#/content/site.ts'
 import { contactEmail } from '#/env.ts'
 import { trackEvent } from '#/lib/analytics.ts'
+import { captureWaitlistAttribution } from '#/lib/waitlist-attribution.ts'
 import { commercialWork, quoteVolumes, waitlistSchema } from '#/lib/waitlist.ts'
 import { joinWaitlist } from '#/server/waitlist.ts'
 
@@ -61,6 +62,7 @@ const { memo, receipt } = contact
 
 export function MemoForm() {
   const [submission, setSubmission] = useState<Submission>({ kind: 'idle' })
+  const started = useRef(false)
 
   const {
     register,
@@ -109,7 +111,10 @@ export function MemoForm() {
 
   async function onSubmit(values: WaitlistFormValues) {
     try {
-      const result = await joinWaitlist({ data: values })
+      const attribution = captureWaitlistAttribution()
+      const result = await joinWaitlist({
+        data: { ...values, ...attribution },
+      })
 
       const fields = memo.fields
       const record = (
@@ -128,13 +133,12 @@ export function MemoForm() {
 
       setSubmission({ kind: 'success', reference: result.reference, record })
 
-      /** Same two fixed-option answers as the home form, and nothing that identifies anybody. */
       trackEvent('waitlist_join', {
-        commercial_work: values.commercialWork || 'not_answered',
-        quote_volume: values.quoteVolume || 'not_answered',
+        source_path: attribution.sourcePath,
       })
     } catch (error) {
       console.error('[contact] submission failed', error)
+      trackEvent('waitlist_submission_failed')
       setSubmission({ kind: 'error' })
     }
   }
@@ -174,9 +178,17 @@ export function MemoForm() {
             noValidate
             aria-busy={isSubmitting}
             onSubmit={(event) => {
-              void handleSubmit(onSubmit)(event)
+              void handleSubmit(onSubmit, () => trackEvent('waitlist_validation_error'))(
+                event,
+              )
             }}
-            className="memo-form"
+            onFocusCapture={() => {
+              if (started.current) return
+              started.current = true
+              trackEvent('waitlist_form_started')
+            }}
+            data-ph-private="true"
+            className="memo-form ph-no-autocapture"
           >
             <Honeypot {...register('companyWebsite')} name="companyWebsite" />
 
@@ -439,10 +451,25 @@ function Notice({ open, children }: { open: boolean; children: ReactNode }) {
   return (
     <div className="form-reveal" data-open={open} inert={!open}>
       <div className="form-reveal-content">
-        <div ref={ref} role={open ? 'alert' : undefined} tabIndex={-1} className="memo-notice">
-          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className="memo-notice-icon">
+        <div
+          ref={ref}
+          role={open ? 'alert' : undefined}
+          tabIndex={-1}
+          className="memo-notice"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden="true"
+            className="memo-notice-icon"
+          >
             <circle cx="8" cy="8" r="6.25" stroke="currentColor" strokeWidth="1.3" />
-            <path d="M8 4.75v3.9M8 10.9v.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path
+              d="M8 4.75v3.9M8 10.9v.1"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
           </svg>
           <div>{children}</div>
         </div>
@@ -470,7 +497,11 @@ function Receipt({
   }, [])
 
   return (
-    <section className="memo-paper memo-paper--copy memo-enter" aria-labelledby="memo-receipt-title">
+    <section
+      className="memo-paper memo-paper--copy memo-enter"
+      aria-labelledby="memo-receipt-title"
+      data-ph-private="true"
+    >
       <div className="memo-texture" aria-hidden="true" />
       <div className="memo-perforations" aria-hidden="true" />
 
@@ -483,7 +514,12 @@ function Receipt({
       <div className="memo-body">
         <div className="memo-content memo-receipt">
           <p className="memo-kicker memo-worn">{receipt.kicker}</p>
-          <h2 id="memo-receipt-title" ref={heading} tabIndex={-1} className="memo-receipt-title">
+          <h2
+            id="memo-receipt-title"
+            ref={heading}
+            tabIndex={-1}
+            className="memo-receipt-title"
+          >
             {receipt.heading}
           </h2>
           <p className="memo-receipt-body">{receipt.body}</p>
@@ -539,13 +575,31 @@ function Stamp({ reference }: { reference: string }) {
           <rect x="11" y="11" width="218" height="106" rx="4" strokeWidth="1" />
         </g>
         <g filter="url(#memo-stamp-ink)" fill="currentColor" textAnchor="middle">
-          <text x="120" y="42" fontSize="10" letterSpacing="3.2" className="memo-stamp-small">
+          <text
+            x="120"
+            y="42"
+            fontSize="10"
+            letterSpacing="3.2"
+            className="memo-stamp-small"
+          >
             {brand.name.toUpperCase()}
           </text>
-          <text x="120" y="80" fontSize="31" letterSpacing="4.5" className="memo-stamp-word">
+          <text
+            x="120"
+            y="80"
+            fontSize="31"
+            letterSpacing="4.5"
+            className="memo-stamp-word"
+          >
             {receipt.stamp.toUpperCase()}
           </text>
-          <text x="120" y="104" fontSize="10.5" letterSpacing="1.6" className="memo-stamp-small">
+          <text
+            x="120"
+            y="104"
+            fontSize="10.5"
+            letterSpacing="1.6"
+            className="memo-stamp-small"
+          >
             {reference}
           </text>
         </g>

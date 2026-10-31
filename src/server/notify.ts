@@ -5,10 +5,8 @@ import { serverEnv } from '#/server/env.ts'
  *
  * ── What this is for ───────────────────────────────────────────────────────
  *
- * Until there is a real store, this **is** the store. Somebody joins the
- * waitlist and the record arrives in an inbox, where it can be read, replied to
- * and searched. That is a legitimate system of record for a pre-launch list of
- * a few hundred, and it is a far better position than the log line it replaces.
+ * Supabase is the durable record. This email puts a new submission in front of
+ * a person so it can be read and replied to without opening the database.
  *
  * The mail goes to *us*, not to the person who joined. Nothing confirms a
  * signup to the joiner, which is exactly why the success state on the form
@@ -72,6 +70,11 @@ export interface WaitlistNotification {
   role: string
   erp: string
   pain: string
+  sourcePath: string
+  referrerHost: string | null
+  utmSource: string | null
+  utmMedium: string | null
+  utmCampaign: string | null
   /** ISO 8601, stamped on the server so every record is in one timezone. */
   receivedAt: string
 }
@@ -115,6 +118,11 @@ function body(notification: WaitlistNotification): string {
     `Volume       ${notification.quoteVolume}`,
     `ERP          ${notification.erp}`,
     `Received     ${notification.receivedAt}`,
+    `Page         ${notification.sourcePath}`,
+    `Referrer     ${notification.referrerHost ?? 'not recorded'}`,
+    `UTM source   ${notification.utmSource ?? 'not tagged'}`,
+    `UTM medium   ${notification.utmMedium ?? 'not tagged'}`,
+    `UTM campaign ${notification.utmCampaign ?? 'not tagged'}`,
     '',
     'What costs them the most:',
     notification.pain,

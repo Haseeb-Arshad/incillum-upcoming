@@ -73,6 +73,15 @@ export const brand = {
   motto: 'Stay with the work.',
 } as const
 
+/** The opt-in for analytics and session recordings. */
+export const analyticsPreferences = {
+  notice:
+    'Optional analytics include page views, clicks and masked session replays. Form text and input values are masked in recordings.',
+  allow: 'Allow analytics',
+  decline: 'Decline',
+  settings: 'Privacy settings',
+} as const
+
 export const hero = {
   /**
    * Two deliberate lines, and under them two short sentences: what happens to
@@ -2315,7 +2324,11 @@ export const charlie = {
         waits: string
       }>,
       /** The call, in the drawing: what it is for, and where its notes go. */
-      call: { label: 'Call', purpose: 'Confirm the cost and the lead time', filed: 'Notes filed to line {line}' },
+      call: {
+        label: 'Call',
+        purpose: 'Confirm the cost and the lead time',
+        filed: 'Notes filed to line {line}',
+      },
     },
     limits: {
       headline: 'Where Charlie stops.',

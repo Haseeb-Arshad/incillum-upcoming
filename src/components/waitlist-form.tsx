@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -7,6 +7,7 @@ import { Button } from '#/components/primitives.tsx'
 import { cn } from '#/lib/cn.ts'
 import { brand, home, launch } from '#/content/site.ts'
 import { trackEvent } from '#/lib/analytics.ts'
+import { captureWaitlistAttribution } from '#/lib/waitlist-attribution.ts'
 import { commercialWork, quoteVolumes, waitlistSchema } from '#/lib/waitlist.ts'
 import { joinWaitlist } from '#/server/waitlist.ts'
 
@@ -97,6 +98,7 @@ export function WaitlistForm({
 }) {
   const brief = compact || inline
   const [submitState, setSubmitState] = useState<SubmitState>({ kind: 'idle' })
+  const started = useRef(false)
 
   const {
     register,
@@ -150,33 +152,26 @@ export function WaitlistForm({
 
   async function onSubmit(values: WaitlistFormValues) {
     try {
-      const result = await joinWaitlist({ data: values })
+      const attribution = captureWaitlistAttribution()
+      const result = await joinWaitlist({
+        data: { ...values, ...attribution },
+      })
       setSubmitState({ kind: 'success', reference: result.reference })
 
       /**
        * The conversion event, and what is deliberately not in it.
        *
-       * No email address, no company, no role, no free text. `dataLayer` is
-       * readable by every tag in the container and forwarded to whichever
-       * vendors are configured there — so anything pushed here should be
-       * assumed to end up in an analytics product, and a person's employer and
-       * job title in an analytics product is a data problem nobody signed up
-       * for.
-       *
-       * The two that go are safe and are the two worth measuring: both are
-       * fixed option sets, neither identifies anybody, and between them they
-       * say which vertical and which size of operation this page is actually
-       * reaching — which is what decides who the first ten calls are with.
-       *
-       * A no-op when GTM is unconfigured, so this needs no guard.
+       * The path says which page converted. No address, company, role, form
+       * answer, or free text goes to analytics; those answers stay in Supabase.
+       * The event is a no-op unless the visitor has allowed analytics.
        */
       trackEvent('waitlist_join', {
-        commercial_work: values.commercialWork || 'not_answered',
-        quote_volume: values.quoteVolume || 'not_answered',
+        source_path: attribution.sourcePath,
       })
     } catch (error) {
       // Never swallow: surface a recovery path, keep the detail in the console.
       console.error('[waitlist] submission failed', error)
+      trackEvent('waitlist_submission_failed')
       setSubmitState({
         kind: 'error',
         message: 'That did not send. Try again, or email us and we will add you by hand.',
@@ -194,6 +189,7 @@ export function WaitlistForm({
        */
       <div
         role="status"
+        data-ph-private="true"
         className="flex flex-col gap-3 rounded-panel border border-line-strong bg-paper-raised p-6 sm:p-7"
       >
         <p className="text-label uppercase text-ink-400">Request recorded</p>
@@ -225,11 +221,19 @@ export function WaitlistForm({
     <form
       noValidate
       onSubmit={(event) => {
-        void handleSubmit(onSubmit)(event)
+        void handleSubmit(onSubmit, () => trackEvent('waitlist_validation_error'))(event)
       }}
+      onFocusCapture={() => {
+        if (started.current) return
+        started.current = true
+        trackEvent('waitlist_form_started')
+      }}
+      data-ph-private="true"
       className={cn(
-        'relative flex gap-5',
-        inline ? 'waitlist-inline flex-col sm:flex-row sm:flex-wrap sm:items-start sm:gap-3' : 'flex-col',
+        'ph-no-autocapture relative flex gap-5',
+        inline
+          ? 'waitlist-inline flex-col sm:flex-row sm:flex-wrap sm:items-start sm:gap-3'
+          : 'flex-col',
       )}
     >
       {/*

@@ -1,6 +1,7 @@
 import { useRouterState } from '@tanstack/react-router'
 
 import { Mark } from '#/components/mark.tsx'
+import { AnalyticsSettingsButton } from '#/components/analytics-consent.tsx'
 import { Container, Label, TextLink } from '#/components/primitives.tsx'
 import { Reveal } from '#/components/reveal.tsx'
 import { contactEmail } from '#/env.ts'
@@ -106,6 +107,7 @@ export function Colophon() {
             © {year} {brand.name}
           </p>
           <p className="text-small text-ink-400">{brand.domain}</p>
+          <AnalyticsSettingsButton />
         </div>
       </Container>
     </footer>

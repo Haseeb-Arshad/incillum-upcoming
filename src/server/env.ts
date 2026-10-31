@@ -60,12 +60,9 @@ const serverEnvSchema = z.object({
    * browser.
    */
   SUPABASE_URL: z.url().optional(),
-  /**
-   * Supabase `service_role` key. It bypasses RLS, so it is server-only in the
-   * strongest sense — inlining it would hand every visitor write access to the
-   * waitlist table. Absent means signups are logged rather than stored, exactly
-   * like a missing mail key: nothing breaks, the record just lands in the log.
-   */
+  /** Preferred Supabase server key (`sb_secret_…`); server-only and bypasses RLS. */
+  SUPABASE_SECRET_KEY: z.string().min(1).optional(),
+  /** Legacy JWT service_role key, retained for existing deployments. */
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 
   /**
@@ -100,6 +97,7 @@ export function serverEnv(): ServerEnv {
     WAITLIST_NOTIFY_TO: fromEnv(process.env.WAITLIST_NOTIFY_TO),
     WAITLIST_NOTIFY_FROM: fromEnv(process.env.WAITLIST_NOTIFY_FROM),
     SUPABASE_URL: fromEnv(process.env.SUPABASE_URL),
+    SUPABASE_SECRET_KEY: fromEnv(process.env.SUPABASE_SECRET_KEY),
     SUPABASE_SERVICE_ROLE_KEY: fromEnv(process.env.SUPABASE_SERVICE_ROLE_KEY),
     BRIEF_PASSWORD: fromEnv(process.env.BRIEF_PASSWORD),
   })

@@ -10,6 +10,7 @@ import {
 import type { ReactNode } from 'react'
 
 import { BackToTop, FooterWordmark } from '#/components/footer-wordmark.tsx'
+import { AnalyticsSettingsButton } from '#/components/analytics-consent.tsx'
 import { GlassField } from '#/components/glass-field.tsx'
 import { GlassHandover } from '#/components/glass-handover.tsx'
 import { Case } from '#/components/case.tsx'
@@ -434,6 +435,7 @@ function Close() {
             <a href={`#${trust.anchor}`}>{glass.nav.trust}</a>
             <a href={`#${questions.anchor}`}>{glass.nav.questions}</a>
             <a href="/contact">{glass.nav.contact}</a>
+            <AnalyticsSettingsButton />
             <BackToTop />
           </nav>
           <div className="glass-footer-inner">
@@ -497,10 +499,16 @@ function MorningStack({ children }: { children: ReactNode }) {
           '--glass-drift',
           (clamp((height - frame.top) / (height + frame.height)) - 0.5).toFixed(3),
         )
-        stack.style.setProperty('--glass-rise', clamp((height - frame.top) / (height * 0.5)).toFixed(3))
+        stack.style.setProperty(
+          '--glass-rise',
+          clamp((height - frame.top) / (height * 0.5)).toFixed(3),
+        )
       }
       if (cards) {
-        stack.style.setProperty('--glass-deal', clamp((height - cards.top) / (height * 0.5)).toFixed(3))
+        stack.style.setProperty(
+          '--glass-deal',
+          clamp((height - cards.top) / (height * 0.5)).toFixed(3),
+        )
       }
     }
     function onScroll() {

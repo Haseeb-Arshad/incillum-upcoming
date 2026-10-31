@@ -2,7 +2,7 @@
 --
 -- Run this once against the project — either `supabase db push`, or paste it
 -- into the SQL editor at
--- https://supabase.com/dashboard/project/rsburzsagfpsconfyvrl/sql/new
+-- https://supabase.com/dashboard/project/nrubifcvldimjxcufgbh/sql/new
 --
 -- ── What writes here ───────────────────────────────────────────────────────
 --
@@ -52,3 +52,8 @@ create index if not exists waitlist_created_at_idx on public.waitlist (created_a
 -- denied. Do not add an anon policy without also moving the write off the
 -- publishable key.
 alter table public.waitlist enable row level security;
+
+-- The Data API no longer grants access to newly-created public tables by
+-- default. The server uses the secret/service role key and needs INSERT only.
+revoke all on public.waitlist from public, anon, authenticated, service_role;
+grant insert on public.waitlist to service_role;

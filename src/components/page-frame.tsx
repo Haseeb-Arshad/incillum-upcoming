@@ -1,4 +1,5 @@
 import { BackToTop, FooterWordmark } from '#/components/footer-wordmark.tsx'
+import { AnalyticsSettingsButton } from '#/components/analytics-consent.tsx'
 import { MastheadBar } from '#/components/masthead-bar.tsx'
 import { Container } from '#/components/primitives.tsx'
 import { SiteBrand } from '#/components/site-brand.tsx'
@@ -24,11 +25,14 @@ export function PageFrame({ children }: { children: ReactNode }) {
         <footer className="glass-footer" role="contentinfo">
           <Container>
             <nav aria-label="Sections" className="glass-footer-nav">
-              {[...menu.groups.flatMap((group) => group.items), ...menu.links].map((item) => (
-                <a key={item.href} href={item.href}>
-                  {item.title}
-                </a>
-              ))}
+              {[...menu.groups.flatMap((group) => group.items), ...menu.links].map(
+                (item) => (
+                  <a key={item.href} href={item.href}>
+                    {item.title}
+                  </a>
+                ),
+              )}
+              <AnalyticsSettingsButton />
               <BackToTop />
             </nav>
             <div className="glass-footer-inner">

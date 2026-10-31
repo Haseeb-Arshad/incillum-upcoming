@@ -9,26 +9,25 @@ import type { WaitlistNotification } from '#/server/notify.ts'
  *
  * The durable copy of a signup. It sits *beside* the notifier in
  * `server/waitlist.ts` rather than replacing it — the mail is still how a
- * person hears about a signup and replies to it; this is the row that is still
- * there in six months when the inbox has been archived.
+ * person hears about a signup and replies to it. The unique-email list keeps
+ * the contact, while the submission table preserves each accepted request.
  *
  * ── The provider is Supabase, over its REST endpoint ───────────────────────
  *
- * PostgREST exposes every table at `POST /rest/v1/<table>`. That is one
- * documented HTTP call, and it is deliberately used here instead of
- * `@supabase/supabase-js`: the SDK is that call wrapped in a client, plus a
- * dependency, plus a realtime/auth/storage surface this project does not have,
- * plus a bundle in the server output. AGENTS.md §3 — a dependency needs a
- * reason written into the file that needs it, and "one POST" is not one.
+ * PostgREST exposes every table at `POST /rest/v1/<table>`. The two required
+ * HTTP calls are deliberately used here instead of `@supabase/supabase-js`:
+ * the SDK is those calls wrapped in a client, plus a dependency, plus a
+ * realtime/auth/storage surface this project does not have, plus a bundle in
+ * the server output. AGENTS.md §3 — a dependency needs a reason written into
+ * the file that needs it, and these calls do not need one.
  *
  * ── The key ────────────────────────────────────────────────────────────────
  *
- * `SUPABASE_SERVICE_ROLE_KEY`, read from `server/env.ts`, which is never
- * inlined into the browser bundle. It bypasses RLS, which is why the write
- * runs here on the server and behind the same spam screen as the mail — never
- * from the client with the public `sb_publishable_…` key. The migration in
- * `supabase/migrations/` enables RLS with no policy, so the publishable key
- * cannot reach this table at all.
+ * `SUPABASE_SECRET_KEY`, or the legacy `SUPABASE_SERVICE_ROLE_KEY`, is read
+ * from `server/env.ts` and never inlined into the browser bundle. It bypasses
+ * RLS, which is why the write runs here on the server and behind the same spam
+ * screen as the mail. The migrations enable RLS with no public policy and
+ * grant the server role only INSERT.
  *
  * ── Swapping it ────────────────────────────────────────────────────────────
  *
@@ -42,7 +41,7 @@ import type { WaitlistNotification } from '#/server/notify.ts'
  * **A failed write must never fail the submission** — the same rule the mailer
  * follows, for the same reason (AGENTS.md §6). The caller runs this in its own
  * try/catch, logs the full record at `error` on failure, and returns success.
- * A signup that reached the server is on the list whether or not this row got
+ * A signup that reached the server is on the list whether or not both rows got
  * written.
  */
 
@@ -54,6 +53,7 @@ export interface WaitlistStore {
 
 /** PostgREST table path. `on_conflict` names the column the upsert dedupes on. */
 const REST_PATH = '/rest/v1/waitlist?on_conflict=work_email'
+const SUBMISSIONS_PATH = '/rest/v1/waitlist_submissions'
 
 /**
  * The no-op store, used whenever Supabase is not configured.
@@ -76,7 +76,7 @@ const loggingStore: WaitlistStore = {
  * the mapping is explicit here rather than a clever key transform — the one
  * that gets renamed silently is how a column stops being written.
  */
-function row(record: WaitlistNotification): Record<string, string> {
+function contactRow(record: WaitlistNotification): Record<string, string> {
   return {
     reference: record.reference,
     // Lower-cased so the `unique` constraint on `work_email` actually
@@ -92,35 +92,84 @@ function row(record: WaitlistNotification): Record<string, string> {
   }
 }
 
+function submissionRow(record: WaitlistNotification): Record<string, string | null> {
+  return {
+    ...contactRow(record),
+    source_path: record.sourcePath,
+    referrer_host: record.referrerHost,
+    utm_source: record.utmSource,
+    utm_medium: record.utmMedium,
+    utm_campaign: record.utmCampaign,
+  }
+}
+
 /**
  * The provider call.
  *
- * `apikey` *and* `Authorization: Bearer` both carry the key — PostgREST wants
- * the first, the Supabase gateway in front of it wants the second, and sending
- * only one is a 401 with no other symptom. `Prefer: return=minimal` skips the
- * echoed row; `resolution=ignore-duplicates` turns a repeat signup into a
- * no-op instead of a 409.
+ * `apikey` carries either key type. Legacy JWT keys also use the Authorization
+ * header; opaque `sb_secret_` keys must not be sent as bearer tokens. `Prefer:
+ * return=minimal` skips the echoed row; `resolution=ignore-duplicates` keeps
+ * the contact list at one row per address.
  */
 function httpStore(url: string, key: string): WaitlistStore {
+  const write = async (
+    path: string,
+    payload: Record<string, string | null>,
+    prefer: string,
+  ) => {
+    const headers: Record<string, string> = {
+      apikey: key,
+      'content-type': 'application/json',
+      prefer,
+    }
+
+    // Opaque secret keys authenticate through `apikey`; they are not JWTs and
+    // cannot be used in Authorization. The legacy service_role key is a JWT.
+    if (!key.startsWith('sb_secret_')) {
+      headers.authorization = `Bearer ${key}`
+    }
+
+    const response = await fetch(`${url}${path}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      // Read the body before throwing: PostgREST explains refusals (missing
+      // table, RLS denial, bad key) in it, and a bare status sends whoever is
+      // debugging this to a dashboard for no reason.
+      const detail = await response.text().catch(() => '<unreadable>')
+      throw new Error(`Supabase responded ${response.status}: ${detail}`)
+    }
+  }
+
   return {
     save: async (record) => {
-      const response = await fetch(`${url}${REST_PATH}`, {
-        method: 'POST',
-        headers: {
-          apikey: key,
-          authorization: `Bearer ${key}`,
-          'content-type': 'application/json',
-          prefer: 'return=minimal,resolution=ignore-duplicates',
-        },
-        body: JSON.stringify(row(record)),
+      const results = await Promise.allSettled([
+        // The first table remains a unique-email contact list. The second is an
+        // append-only record of every accepted submission, including repeats.
+        write(
+          REST_PATH,
+          contactRow(record),
+          'return=minimal,resolution=ignore-duplicates',
+        ),
+        write(SUBMISSIONS_PATH, submissionRow(record), 'return=minimal'),
+      ])
+      const failures = results.flatMap((result): Error[] => {
+        if (result.status !== 'rejected') return []
+
+        const reason: unknown = result.reason
+        return [reason instanceof Error ? reason : new Error(String(reason))]
       })
 
-      if (!response.ok) {
-        // Read the body before throwing: PostgREST explains refusals (missing
-        // table, RLS denial, bad key) in it, and a bare status sends whoever is
-        // debugging this to a dashboard for no reason.
-        const detail = await response.text().catch(() => '<unreadable>')
-        throw new Error(`Supabase responded ${response.status}: ${detail}`)
+      if (failures.length > 0) {
+        const detail = failures
+          .map((failure) =>
+            failure instanceof Error ? failure.message : String(failure),
+          )
+          .join('; ')
+        throw new AggregateError(failures, detail)
       }
     },
   }
@@ -134,11 +183,12 @@ function httpStore(url: string, key: string): WaitlistStore {
  * the first signup after a deploy.
  */
 export function waitlistStore(): WaitlistStore {
-  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = serverEnv()
+  const { SUPABASE_URL, SUPABASE_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY } = serverEnv()
+  const key = SUPABASE_SECRET_KEY ?? SUPABASE_SERVICE_ROLE_KEY
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  if (!SUPABASE_URL || !key) {
     return loggingStore
   }
 
-  return httpStore(SUPABASE_URL.replace(/\/$/, ''), SUPABASE_SERVICE_ROLE_KEY)
+  return httpStore(SUPABASE_URL.replace(/\/$/, ''), key)
 }

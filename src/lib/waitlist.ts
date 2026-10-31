@@ -95,6 +95,47 @@ export const quoteVolumes = [
   'Over 1,000 a month',
 ] as const
 
+function cleanSourcePath(value: string): string | undefined {
+  const path = value.trim().slice(0, 255)
+  if (
+    path === 'unknown' ||
+    (path.startsWith('/') &&
+      !path.startsWith('//') &&
+      !/[\s?#@\\]/u.test(path))
+  ) {
+    return path
+  }
+  return undefined
+}
+
+function cleanReferrerHost(value: string): string | undefined {
+  const host = value.trim().slice(0, 255)
+  if (!host || /[\s/@?#\\]/u.test(host)) return undefined
+
+  try {
+    const parsed = new URL(`https://${host}`)
+    if (
+      parsed.username ||
+      parsed.password ||
+      parsed.pathname !== '/' ||
+      parsed.search ||
+      parsed.hash ||
+      parsed.host.toLowerCase() !== host.toLowerCase()
+    ) {
+      return undefined
+    }
+    return parsed.host
+  } catch {
+    return undefined
+  }
+}
+
+function cleanCampaignValue(value: string): string | undefined {
+  const campaign = value.trim().slice(0, 120)
+  if (!campaign || !/^[\p{L}\p{N} ._-]+$/u.test(campaign)) return undefined
+  return campaign
+}
+
 export const waitlistSchema = z.object({
   workEmail: z
     .string()
@@ -148,6 +189,13 @@ export const waitlistSchema = z.object({
     .max(1_000)
     .optional()
     .transform((value) => value || undefined),
+
+  /** Attribution is captured at submit time and is never rendered in the form. */
+  sourcePath: z.string().transform(cleanSourcePath).optional(),
+  referrerHost: z.string().transform(cleanReferrerHost).optional(),
+  utmSource: z.string().transform(cleanCampaignValue).optional(),
+  utmMedium: z.string().transform(cleanCampaignValue).optional(),
+  utmCampaign: z.string().transform(cleanCampaignValue).optional(),
 
   companyWebsite: z.string().max(0).optional(),
   renderedAt: z.number().int().nonnegative(),

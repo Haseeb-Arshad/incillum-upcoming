@@ -16,9 +16,10 @@ import type { WaitlistResult } from '#/lib/waitlist.ts'
  *
  * ── Where a signup actually goes ───────────────────────────────────────────
  *
- * Two places, independently: an inbox via `server/notify.ts`, and a Supabase
- * row via `server/store.ts`. The store is the durable copy; the mail is how a
- * person hears about it and replies. Either can be unconfigured — then that
+ * Two systems, independently: an inbox via `server/notify.ts`, and Supabase
+ * via `server/store.ts`, which keeps the unique contact and each accepted
+ * submission. The store is the durable copy; the mail is how a person hears
+ * about it and replies. Either can be unconfigured — then that
  * half logs instead — and **neither failing fails the submission** (AGENTS.md
  * §6): a signup that reached this function is on the list regardless.
  *
@@ -69,6 +70,11 @@ export const joinWaitlist = createServerFn({ method: 'POST' })
       role: answered(data.role),
       erp: answered(data.erp),
       pain: answered(data.pain),
+      sourcePath: data.sourcePath ?? 'unknown',
+      referrerHost: data.referrerHost ?? null,
+      utmSource: data.utmSource ?? null,
+      utmMedium: data.utmMedium ?? null,
+      utmCampaign: data.utmCampaign ?? null,
       receivedAt: new Date().toISOString(),
     }
 

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { commercialWork, isWorkEmail, quoteVolumes, waitlistSchema } from '#/lib/waitlist.ts'
+import {
+  commercialWork,
+  isWorkEmail,
+  quoteVolumes,
+  waitlistSchema,
+} from '#/lib/waitlist.ts'
 
 /**
  * The waitlist contract.
@@ -23,7 +28,12 @@ describe('isWorkEmail', () => {
   })
 
   it('rejects the common free-mail providers', () => {
-    for (const address of ['a@gmail.com', 'b@outlook.com', 'c@icloud.com', 'd@proton.me']) {
+    for (const address of [
+      'a@gmail.com',
+      'b@outlook.com',
+      'c@icloud.com',
+      'd@proton.me',
+    ]) {
       expect(isWorkEmail(address)).toBe(false)
     }
   })
@@ -46,9 +56,9 @@ describe('waitlistSchema', () => {
   })
 
   it('trims surrounding whitespace from the address', () => {
-    expect(waitlistSchema.parse({ ...valid, workEmail: '  ap@acme.io  ' }).workEmail).toBe(
-      'ap@acme.io',
-    )
+    expect(
+      waitlistSchema.parse({ ...valid, workEmail: '  ap@acme.io  ' }).workEmail,
+    ).toBe('ap@acme.io')
   })
 
   it('rejects a free-mail address, and says why', () => {
@@ -58,9 +68,9 @@ describe('waitlistSchema', () => {
   })
 
   it('rejects a malformed address', () => {
-    expect(waitlistSchema.safeParse({ ...valid, workEmail: 'northwind.co' }).success).toBe(
-      false,
-    )
+    expect(
+      waitlistSchema.safeParse({ ...valid, workEmail: 'northwind.co' }).success,
+    ).toBe(false)
   })
 
   it('rejects an empty address with a recoverable message', () => {
@@ -110,6 +120,23 @@ describe('waitlistSchema', () => {
     )
   })
 
+  it('drops untrusted attribution values that contain queries or personal data', () => {
+    const parsed = waitlistSchema.parse({
+      ...valid,
+      sourcePath: '/contact?email=private@example.com',
+      referrerHost: 'private@example.com/story',
+      utmSource: 'private@example.com',
+      utmMedium: 'paid-social',
+      utmCampaign: 'Autumn 2026',
+    })
+
+    expect(parsed.sourcePath).toBeUndefined()
+    expect(parsed.referrerHost).toBeUndefined()
+    expect(parsed.utmSource).toBeUndefined()
+    expect(parsed.utmMedium).toBe('paid-social')
+    expect(parsed.utmCampaign).toBe('Autumn 2026')
+  })
+
   it('rejects a kind of work that is not on the list', () => {
     expect(
       waitlistSchema.safeParse({ ...valid, commercialWork: 'Anything at all' }).success,
@@ -118,7 +145,9 @@ describe('waitlistSchema', () => {
 
   it('accepts every option the form actually renders', () => {
     for (const kind of commercialWork) {
-      expect(waitlistSchema.safeParse({ ...valid, commercialWork: kind }).success).toBe(true)
+      expect(waitlistSchema.safeParse({ ...valid, commercialWork: kind }).success).toBe(
+        true,
+      )
     }
     for (const band of quoteVolumes) {
       expect(waitlistSchema.safeParse({ ...valid, quoteVolume: band }).success).toBe(true)
@@ -131,11 +160,21 @@ describe('waitlistSchema', () => {
    * exactly why nobody would notice them being removed.
    */
   it('caps the free-text answers', () => {
-    expect(waitlistSchema.safeParse({ ...valid, company: 'x'.repeat(121) }).success).toBe(false)
-    expect(waitlistSchema.safeParse({ ...valid, role: 'x'.repeat(121) }).success).toBe(false)
-    expect(waitlistSchema.safeParse({ ...valid, erp: 'x'.repeat(121) }).success).toBe(false)
-    expect(waitlistSchema.safeParse({ ...valid, pain: 'x'.repeat(1_001) }).success).toBe(false)
-    expect(waitlistSchema.safeParse({ ...valid, pain: 'x'.repeat(1_000) }).success).toBe(true)
+    expect(waitlistSchema.safeParse({ ...valid, company: 'x'.repeat(121) }).success).toBe(
+      false,
+    )
+    expect(waitlistSchema.safeParse({ ...valid, role: 'x'.repeat(121) }).success).toBe(
+      false,
+    )
+    expect(waitlistSchema.safeParse({ ...valid, erp: 'x'.repeat(121) }).success).toBe(
+      false,
+    )
+    expect(waitlistSchema.safeParse({ ...valid, pain: 'x'.repeat(1_001) }).success).toBe(
+      false,
+    )
+    expect(waitlistSchema.safeParse({ ...valid, pain: 'x'.repeat(1_000) }).success).toBe(
+      true,
+    )
   })
 
   /**
@@ -146,7 +185,8 @@ describe('waitlistSchema', () => {
    */
   it('rejects a filled honeypot', () => {
     expect(
-      waitlistSchema.safeParse({ ...valid, companyWebsite: 'http://spam.example' }).success,
+      waitlistSchema.safeParse({ ...valid, companyWebsite: 'http://spam.example' })
+        .success,
     ).toBe(false)
   })
 
@@ -165,5 +205,17 @@ describe('waitlistSchema', () => {
    */
   it('accepts the pre-mount zero timestamp', () => {
     expect(waitlistSchema.safeParse({ ...valid, renderedAt: 0 }).success).toBe(true)
+  })
+
+  it('accepts a site path and drops a full URL from attribution', () => {
+    expect(waitlistSchema.safeParse({ ...valid, sourcePath: '/contact' }).success).toBe(
+      true,
+    )
+    expect(
+      waitlistSchema.parse({
+        ...valid,
+        sourcePath: 'https://outside.example/contact',
+      }).sourcePath,
+    ).toBeUndefined()
   })
 })

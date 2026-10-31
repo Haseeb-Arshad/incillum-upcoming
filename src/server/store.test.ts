@@ -24,6 +24,11 @@ const record: WaitlistNotification = {
   role: 'Commercial Director',
   erp: 'not answered',
   pain: 'Matching customer part numbers to our own catalogue.',
+  sourcePath: '/contact',
+  referrerHost: 'incillum.com',
+  utmSource: null,
+  utmMedium: null,
+  utmCampaign: null,
   receivedAt: '2026-01-14T03:20:00.000Z',
 }
 
@@ -57,12 +62,20 @@ describe('with the store configured', () => {
     const store = await loadStore(FULL_CONFIG)
     await store.save(record)
 
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    const [submissionUrl, submissionInit] = fetchMock.mock.calls[1] as [
+      string,
+      RequestInit,
+    ]
     // Trailing slash on the base URL is stripped so this can never double up,
     // and `on_conflict` names the column the upsert dedupes on.
-    expect(url).toBe('https://project.supabase.co/rest/v1/waitlist?on_conflict=work_email')
+    expect(url).toBe(
+      'https://project.supabase.co/rest/v1/waitlist?on_conflict=work_email',
+    )
     expect(init.method).toBe('POST')
+    expect(submissionUrl).toBe('https://project.supabase.co/rest/v1/waitlist_submissions')
+    expect(submissionInit.method).toBe('POST')
 
     // Both header forms carry the key: PostgREST reads `apikey`, the gateway in
     // front of it reads the bearer token, and sending one without the other is
@@ -84,6 +97,17 @@ describe('with the store configured', () => {
     expect(body.company).toBe('Northwind Trading')
     expect(body.role).toBe('Commercial Director')
     expect(body.received_at).toBe('2026-01-14T03:20:00.000Z')
+
+    const submissionBody = JSON.parse(submissionInit.body as string) as Record<
+      string,
+      unknown
+    >
+    expect(submissionBody.reference).toBe('IC-ABC123-XYZ')
+    expect(submissionBody.work_email).toBe('controller@northwind.co')
+    expect(submissionBody.source_path).toBe('/contact')
+    expect(submissionBody.referrer_host).toBe('incillum.com')
+    expect(submissionBody.utm_source).toBeNull()
+    expect(submissionBody.utm_campaign).toBeNull()
   })
 
   /**
@@ -94,15 +118,13 @@ describe('with the store configured', () => {
   it('throws with the response body when the write is refused', async () => {
     vi.stubGlobal(
       'fetch',
-      vi
-        .fn()
-        .mockImplementation(() =>
-          Promise.resolve(
-            new Response('{"message":"relation \\"public.waitlist\\" does not exist"}', {
-              status: 404,
-            }),
-          ),
+      vi.fn().mockImplementation(() =>
+        Promise.resolve(
+          new Response('{"message":"relation \\"public.waitlist\\" does not exist"}', {
+            status: 404,
+          }),
         ),
+      ),
     )
 
     const store = await loadStore(FULL_CONFIG)
@@ -122,6 +144,24 @@ describe('with the store configured', () => {
 
     const store = await loadStore(FULL_CONFIG)
     await expect(store.save(record)).rejects.toThrow(/500/)
+  })
+
+  it('sends opaque secret keys only in the apikey header', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 201 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const store = await loadStore({
+      SUPABASE_URL: 'https://project.supabase.co',
+      SUPABASE_SECRET_KEY: 'sb_secret_test-key',
+    })
+    await store.save(record)
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    for (const [, init] of fetchMock.mock.calls as [string, RequestInit][]) {
+      const headers = init.headers as Record<string, string>
+      expect(headers.apikey).toBe('sb_secret_test-key')
+      expect(headers.authorization).toBeUndefined()
+    }
   })
 })
 

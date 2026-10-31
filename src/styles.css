@@ -161,6 +161,20 @@
   --ic-chart-row-gap: 1.75rem;
   --ic-shortfall-size: clamp(1.75rem, 3vw, 2.75rem);
   --ic-anchor-offset: 7rem;
+  --ic-consent-width: 42rem;
+  --ic-consent-inset: 1rem;
+  --ic-consent-radius: 0.75rem;
+  --ic-consent-layer: 35;
+  --ic-consent-row-gap: 1rem;
+  --ic-consent-column-gap: 1.5rem;
+  --ic-consent-action-gap: 0.5rem;
+  --ic-consent-padding-block: 1rem;
+  --ic-consent-padding-inline: 1.25rem;
+  --ic-consent-mobile-gap: 0.875rem;
+  --ic-consent-mobile-padding: 1rem;
+  --ic-consent-underline-offset: 0.3em;
+  --ic-consent-focus-width: 2px;
+  --ic-consent-focus-offset: 3px;
 }
 
 @theme inline {
@@ -5684,7 +5698,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 1rem 1.5rem;
+  gap: var(--ic-consent-row-gap) var(--ic-consent-column-gap);
 }
 .glass-close-write {
   font-size: var(--text-small);
@@ -6240,7 +6254,6 @@
 .scene-actions,
 .scene-outputs > ul:first-of-type li,
 .scene-tiles li,
-
 .trust-gate,
 .trust-boundary {
   border: 1px solid var(--ic-line-strong);
@@ -10390,5 +10403,78 @@
   .brief-status th,
   .brief-status td {
     padding-inline: 0.625rem;
+  }
+}
+
+/* Optional analytics: a neutral opt-in, with a footer link to change it later. */
+.analytics-consent {
+  position: fixed;
+  z-index: var(--ic-consent-layer);
+  inset: auto var(--ic-consent-inset)
+    calc(var(--ic-consent-inset) + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  width: min(
+    var(--ic-consent-width),
+    calc(100vw - var(--ic-consent-inset) - var(--ic-consent-inset))
+  );
+  margin-inline: auto;
+  border: 1px solid var(--ic-line-strong);
+  border-radius: var(--ic-consent-radius);
+  background: var(--ic-paper-raised);
+  padding: var(--ic-consent-padding-block) var(--ic-consent-padding-inline);
+  color: var(--ic-ink-900);
+}
+.analytics-consent-copy {
+  min-width: 0;
+}
+.analytics-consent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--ic-consent-action-gap);
+}
+.analytics-settings-link {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--ic-ink-400);
+  font: inherit;
+  line-height: 1.5;
+  text-decoration: underline;
+  text-decoration-color: var(--ic-line-strong);
+  text-underline-offset: var(--ic-consent-underline-offset);
+  cursor: pointer;
+}
+.analytics-settings-link:hover {
+  color: var(--ic-ink-900);
+}
+.analytics-settings-link:focus-visible {
+  outline: var(--ic-consent-focus-width) solid var(--ic-ink-900);
+  outline-offset: var(--ic-consent-focus-offset);
+}
+.glass-footer-nav .analytics-settings-link {
+  color: var(--ic-ink-900);
+}
+@media (max-width: 40rem) {
+  .analytics-consent {
+    inset-inline: 0;
+    bottom: env(safe-area-inset-bottom);
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ic-consent-mobile-gap);
+    width: auto;
+    max-width: none;
+    border-bottom: 0;
+    border-radius: var(--ic-consent-radius) var(--ic-consent-radius) 0 0;
+    padding: var(--ic-consent-mobile-padding);
+  }
+  .analytics-consent-actions {
+    justify-content: stretch;
+  }
+  .analytics-consent-actions > button {
+    flex: 1 1 0;
   }
 }

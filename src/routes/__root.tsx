@@ -10,7 +10,7 @@ import { useEffect } from 'react'
 import appCss from '#/styles.css?url'
 import { Colophon } from '#/components/colophon.tsx'
 import { Masthead } from '#/components/masthead.tsx'
-import { gtmHeadScript, gtmNoScriptSrc, posthogHeadScript } from '#/lib/analytics.ts'
+import { AnalyticsConsent } from '#/components/analytics-consent.tsx'
 import { mastheadHeadScript } from '#/lib/masthead.ts'
 import { openingHeadScript } from '#/lib/opening.ts'
 import { organizationJsonLd, seoTags, websiteJsonLd } from '#/lib/seo.ts'
@@ -61,18 +61,13 @@ export const Route = createRootRoute({
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
       ],
       /**
-       * Order matters. The GTM and PostHog loaders go first so their globals
-       * (`dataLayer`, the `posthog` stub) exist before anything else on the
-       * page could push to them, and `.filter` removes each one entirely when
-       * its key is unset — an empty inline script tag on every page of an
-       * unconfigured deployment is litter. The front page's once-a-visit mark
-       * has to be set before the first paint, so it is in the head as well, and
-       * so is the masthead's reading of where the reader is: both are about the
-       * page the browser paints before its script has run.
+       * Analytics loads after the visitor's saved choice is read by the client.
+       * The front page's once-a-visit mark has to be set before the first paint,
+       * so it is in the head as well, and so is the masthead's reading of where
+       * the reader is: both are about the page the browser paints before its
+       * script has run.
        */
       scripts: [
-        gtmHeadScript(),
-        posthogHeadScript(),
         { children: openingHeadScript },
         { children: mastheadHeadScript },
         { type: 'application/ld+json', children: organizationJsonLd() },
@@ -100,9 +95,14 @@ function RootComponent() {
         '/lab/particles',
         '/lab/trust',
         '/brief',
-      ].includes(
-        state.location.pathname,
-      ),
+      ].includes(state.location.pathname),
+  })
+  const privateRoute = useRouterState({
+    select: (state) =>
+      state.location.pathname === '/brief' ||
+      state.location.pathname.startsWith('/brief/') ||
+      state.location.pathname === '/lab' ||
+      state.location.pathname.startsWith('/lab/'),
   })
   useEffect(() => {
     /**
@@ -128,9 +128,15 @@ function RootComponent() {
 
       {!ownsChrome && <Masthead />}
 
-      <main id="main" tabIndex={-1}>
+      <main
+        id="main"
+        tabIndex={-1}
+        className={privateRoute ? 'ph-no-capture' : undefined}
+      >
         <Outlet />
       </main>
+
+      <AnalyticsConsent />
 
       {!ownsChrome && <Colophon />}
     </>
@@ -144,23 +150,6 @@ function RootDocument({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {/*
-          GTM's no-script fallback, first in `<body>` as Google requires, so
-          tags still fire for a visitor with JavaScript disabled. `title` is not
-          decoration — an iframe without an accessible name is a serious axe
-          violation, and this one is in the DOM on every page.
-        */}
-        {gtmNoScriptSrc ? (
-          <noscript>
-            <iframe
-              src={gtmNoScriptSrc}
-              title="Google Tag Manager"
-              height="0"
-              width="0"
-              style={{ display: 'none', visibility: 'hidden' }}
-            />
-          </noscript>
-        ) : null}
         {children}
         <Scripts />
       </body>

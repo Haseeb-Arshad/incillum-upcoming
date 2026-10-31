@@ -2,7 +2,7 @@
 
 The pre-launch site for **incillum.com**.
 
-Its argument is *the unattended hours*: commercial work keeps mattering after
+Its argument is _the unattended hours_: commercial work keeps mattering after
 the people carrying it have gone home. One page, one invented quotation, told
 in eight acts: the night plate and a form that asks for one email address; the
 night played on one sheet; the six documents the quotation is made of; four tabs
@@ -47,28 +47,38 @@ importer and must never be reached from a component.
 
 ### Public — `src/env.ts`
 
-| Variable | Default | Used for |
-| --- | --- | --- |
-| `VITE_SITE_URL` | `http://localhost:3200` | canonical URL, Open Graph, sitemap |
-| `VITE_CONTACT_EMAIL` | `hello@incillum.com` | the address in the colophon |
-| `VITE_GTM_ID` | *(unset)* | Google Tag Manager container. Unset = no script, no cookies, no request |
-| `VITE_POSTHOG_KEY` | *(unset)* | PostHog project API key (`phc_…`). Unset = the snippet is not rendered |
-| `VITE_POSTHOG_HOST` | `https://us.i.posthog.com` | PostHog ingestion host — set for an EU project or a proxy |
+| Variable             | Default                    | Used for                                                              |
+| -------------------- | -------------------------- | --------------------------------------------------------------------- |
+| `VITE_SITE_URL`      | `http://localhost:3200`    | canonical URL, Open Graph, sitemap                                    |
+| `VITE_CONTACT_EMAIL` | `hello@incillum.com`       | the address in the colophon                                           |
+| `VITE_GTM_ID`        | _(unset)_                  | Google Tag Manager container. Unset = no banner or analytics requests |
+| `VITE_POSTHOG_KEY`   | _(unset)_                  | PostHog project API key (`phc_…`). Unset = no banner or requests      |
+| `VITE_POSTHOG_HOST`  | `https://us.i.posthog.com` | PostHog ingestion host — set for an EU project or a proxy             |
 
 ### Server only — `src/server/env.ts`
 
-| Variable | Used for |
-| --- | --- |
-| `BREVO_API_KEY` | sending waitlist notifications |
-| `WAITLIST_NOTIFY_TO` | the inbox signups arrive in — yours, not the joiner's |
-| `WAITLIST_NOTIFY_FROM` | the From address; **must** be a Brevo-verified sender |
-| `SUPABASE_URL` | Supabase project URL — the durable copy of each signup |
-| `SUPABASE_SERVICE_ROLE_KEY` | the `service_role` key; bypasses RLS, so **server-only**, never the anon key |
+| Variable                    | Used for                                                                                 |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| `BREVO_API_KEY`             | sending waitlist notifications                                                           |
+| `WAITLIST_NOTIFY_TO`        | the inbox signups arrive in — yours, not the joiner's                                    |
+| `WAITLIST_NOTIFY_FROM`      | the From address; **must** be a Brevo-verified sender                                    |
+| `SUPABASE_URL`              | Supabase project URL — the durable copy of each signup                                   |
+| `SUPABASE_SECRET_KEY`       | preferred `sb_secret_…` key; bypasses RLS, so **server-only**, never the publishable key |
+| `SUPABASE_SERVICE_ROLE_KEY` | legacy JWT key, supported when `SUPABASE_SECRET_KEY` is unset                            |
 
-The three Brevo values are needed together, and so are the two Supabase values.
-With a group missing, that half falls back to the server log — nothing breaks,
-the record just lands somewhere less convenient. The two halves are
-independent: email can be configured without the database and vice versa.
+The three Brevo values are needed together. Supabase needs `SUPABASE_URL` and
+either `SUPABASE_SECRET_KEY` or the legacy `SUPABASE_SERVICE_ROLE_KEY`. With a
+group missing, that half falls back to the server log — nothing breaks, the
+record just lands somewhere less convenient. The two halves are independent:
+email can be configured without the database and vice versa.
+
+The `waitlist` table keeps one contact row per email. `waitlist_submissions`
+keeps each accepted form submission, including repeats, with the server receipt
+time, the page path, the referrer host, and any `utm_source`, `utm_medium`, and
+`utm_campaign` values. It does not store the full page URL, query string,
+cookies, IP address, or user agent. The form currently collects company, role,
+commercial work, quote volume, ERP, and the stated pain; it does not collect
+order or RFQ line details.
 
 ## Setting up Google Tag Manager
 
@@ -78,12 +88,13 @@ independent: email can be configured without the database and vice versa.
    It is a build-time value, so a redeploy is required; changing it in a
    dashboard without rebuilding does nothing.
 3. Confirm it with GTM's **Preview** button, which opens the site with Tag
-   Assistant attached. You should see the container connect on load.
+   Assistant attached. You should see the container connect after analytics is
+   allowed.
 
 ### The conversion event
 
-A successful signup pushes `waitlist_join` to the `dataLayer`, with a single
-`first_workflow` property (one of nine fixed options, or `not_answered`).
+A successful signup pushes `waitlist_join` to the `dataLayer`, with the public
+page path as `source_path`.
 
 To use it: **Triggers → New → Custom Event**, event name `waitlist_join`, then
 point whatever tag you care about at it — a GA4 event, an Ads conversion, a
@@ -94,36 +105,36 @@ LinkedIn Insight conversion.
 vendors are configured there, and a work email address in an analytics product
 is a data problem nobody signed up for.
 
-### Consent — do this before real EU/UK traffic
+### Consent
 
-There is **no consent gate**. GTM itself sets no cookies, but nearly every tag
-people put in it does, and under GDPR/PECR those need opt-in *before* they fire.
-Either configure Google Consent Mode v2 in the container with every storage type
-defaulting to `denied` and add a banner that updates it, or hold the snippet
-back entirely until a banner is accepted. See the header of `src/lib/analytics.ts`.
+The site holds GTM until a visitor allows analytics. It sends Google Consent
+Mode defaults as denied before loading the container, then grants analytics
+storage on acceptance. Advertising storage, personalization and advertising
+user data remain denied. The privacy settings control is available from each
+public footer.
 
 ## Setting up PostHog
 
-Independent of GTM and gated the same way: no `VITE_POSTHOG_KEY`, no snippet, no
-cookies, no request.
+Independent of GTM and gated the same way: no `VITE_POSTHOG_KEY`, no consent
+panel and no analytics request.
 
 1. Create a project at [posthog.com](https://posthog.com) (or an EU-region one).
 2. Copy the project API key (`phc_…`) from **Project settings**. Set
    `VITE_POSTHOG_KEY`, and `VITE_POSTHOG_HOST` if the project is not on US Cloud.
    Both are build-time values — a redeploy is required.
-3. The snippet is PostHog's own, inlined in `src/lib/analytics.ts` rather than
-   pulled in as `posthog-js` — same reasoning as the GTM loader. It autocaptures
-   `$pageview` and clicks; a successful signup also sends a `waitlist_join`
-   event (no address, no reference — see the call site in `waitlist-form.tsx`).
+3. The official PostHog browser snippet is loaded after opt-in. It captures SPA
+   page views and page leaves, clicks, dead and rage clicks, heatmaps, web
+   vitals, exceptions, and session replays. It is ready to use PostHog surveys,
+   feature flags, and experiments configured in the PostHog project.
 
-**Consent applies here too.** The snippet sets cookies out of the box. The same
-banner that gates GTM should gate this — `posthog.opt_out_capturing()` by
-default, or hold the snippet back until accepted.
+Session replay is enabled after consent. All input values and all text inside
+the waitlist forms and success receipts are masked. The forms are excluded from
+autocapture, and signup events do not send addresses, company details, or form
+answers. Replay network bodies and headers are disabled, query strings are
+removed from captured URLs, and the private brief and labs are excluded.
 
-**Session replay is off.** The pinned `defaults` date would switch it on; the
-snippet passes `disable_session_recording: true` to keep it off until there is a
-consent banner. To enable it later, drop that flag in `src/lib/analytics.ts` (or
-turn it on in the PostHog project).
+The `Privacy settings` control in each public footer can revoke consent. That
+stops recording and capture in the current browser and updates GTM consent.
 
 ## Where a signup goes
 
@@ -136,15 +147,16 @@ signup (AGENTS.md §6).
 
 ### Setting up the database
 
-1. Run the migration once: `supabase db push`, or paste
-   `supabase/migrations/*_waitlist.sql` into the project's SQL editor. It
-   creates `public.waitlist` with **RLS enabled and no policy** — only the
-   `service_role` key writes; the public anon key cannot touch the table.
-2. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (Project settings → API)
-   in your host's environment. The `service_role` key bypasses RLS — treat it
-   like the mail key, never prefix it `VITE_`.
-3. Repeat signups upsert on `work_email` and change nothing; a write failure is
-   logged at `error` with the full record and the signup still succeeds.
+1. Run `supabase/manual_waitlist_setup.sql` in the project's SQL Editor, or use
+   `supabase db push` with the ordered migration files. The setup creates
+   `public.waitlist` and `public.waitlist_submissions`, enables RLS, and grants
+   the server role insert-only access. Browser roles receive no access.
+2. Set `SUPABASE_URL` and either `SUPABASE_SECRET_KEY` or the legacy
+   `SUPABASE_SERVICE_ROLE_KEY` in the host environment. These server keys bypass
+   RLS; never prefix them `VITE_`.
+3. The contact table upserts on `work_email`; the submissions table keeps each
+   accepted signup. A write failure is logged at `error` with the full record
+   and the signup still succeeds.
 
 ### Setting up the email
 
@@ -168,7 +180,7 @@ header carries the exact shape for Mailgun, SendGrid, Postmark and Resend.
 
 - **A failed send never fails the submission.** From the visitor's side they
   filled in the form correctly; an error screen for a misconfigured mail
-  provider would lose the signup *and* insult them. A failure is logged at
+  provider would lose the signup _and_ insult them. A failure is logged at
   `error` with the full record — address included, because at that point the log
   is the only copy — and they are told they are on the list. Which they are.
 - **Nothing is sent to the person who joined.** That is why the success state
@@ -190,6 +202,5 @@ src/lib/               waitlist schema, spam heuristic, seo, cn
 src/server/            the one server function
 src/styles.css         tokens, type scale, the light and inverted scopes
 ```
-#   i n c i l l u m - u p c o m i n g 
- 
- 
+
+#
