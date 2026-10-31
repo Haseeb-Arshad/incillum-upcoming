@@ -12,16 +12,14 @@ import type { WaitlistResult } from '#/lib/waitlist.ts'
  *
  * Runs on the server only. It re-validates the payload with the same schema the
  * browser used — the client check exists to give fast feedback, not to decide
- * anything — evaluates the spam signals, and delivers the record.
+ * anything — evaluates the spam signals, stores the record, then notifies us.
  *
  * ── Where a signup actually goes ───────────────────────────────────────────
  *
- * Two systems, independently: an inbox via `server/notify.ts`, and Supabase
- * via `server/store.ts`, which keeps the unique contact and each accepted
- * submission. The store is the durable copy; the mail is how a person hears
- * about it and replies. Either can be unconfigured — then that
- * half logs instead — and **neither failing fails the submission** (AGENTS.md
- * §6): a signup that reached this function is on the list regardless.
+ * Supabase via `server/store.ts` keeps the unique contact and each accepted
+ * submission. A successful receipt requires both writes to complete. The email
+ * via `server/notify.ts` is independent: a failed or unconfigured mail provider
+ * is logged, but does not undo a saved signup (AGENTS.md §6).
  *
  * The mail goes to *us*. Nothing is sent to the person who joined, which is why
  * the success state on the form still refuses to say "check your inbox" — see
@@ -78,15 +76,18 @@ export const joinWaitlist = createServerFn({ method: 'POST' })
       receivedAt: new Date().toISOString(),
     }
 
-    /**
-     * The mail and the row are attempted independently, and a failure in
-     * either is logged with the full record — address included, because on the
-     * failure path the log may be the only copy left — and then swallowed. A
-     * failed delivery or a failed write must never fail the submission: from
-     * the visitor's side they filled in the form correctly, and an error screen
-     * for our misconfigured backend would lose the signup *and* insult them.
-     * See AGENTS.md §6.
-     */
+    try {
+      await waitlistStore().save(notification)
+    } catch (error) {
+      console.error('[waitlist] PERSIST FAILED', {
+        reference,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      // The form must not claim a durable save that did not happen. Send a
+      // provider-neutral error to the browser, never the database response.
+      throw new Error('Waitlist submission could not be saved')
+    }
+
     try {
       await waitlistNotifier().send(notification)
     } catch (error) {
@@ -96,22 +97,10 @@ export const joinWaitlist = createServerFn({ method: 'POST' })
       })
     }
 
-    try {
-      await waitlistStore().save(notification)
-    } catch (error) {
-      console.error('[waitlist] PERSIST FAILED — record follows', {
-        error,
-        notification,
-      })
-    }
-
     /**
-     * The signup is accepted regardless of what the two calls above did. The
-     * outcome of each — delivered, written, fell back to a log line, or failed
-     * loudly at `error` — is logged by the notifier and the store themselves;
-     * this line is just the "a real person joined" marker with the two answers
-     * worth counting. The address is in the mail and the row already, so only
-     * its domain is here.
+     * The durable write has succeeded. The email may be unavailable, but that
+     * does not undo the saved signup. This is the "a real person joined"
+     * marker with the two answers worth counting; the address stays out of it.
      */
     console.info('[waitlist] joined', {
       reference,

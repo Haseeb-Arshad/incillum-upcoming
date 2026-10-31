@@ -38,11 +38,10 @@ import type { WaitlistNotification } from '#/server/notify.ts'
  *
  * ── Failure policy, which is the important part ────────────────────────────
  *
- * **A failed write must never fail the submission** — the same rule the mailer
- * follows, for the same reason (AGENTS.md §6). The caller runs this in its own
- * try/catch, logs the full record at `error` on failure, and returns success.
- * A signup that reached the server is on the list whether or not both rows got
- * written.
+ * A durable Supabase write is required before the form may show success. In
+ * local development and preview, an unconfigured store logs the record so the
+ * UI can still be exercised. Production fails closed instead of telling a
+ * visitor that a request was saved when it was not.
  */
 
 export interface WaitlistStore {
@@ -56,19 +55,23 @@ const REST_PATH = '/rest/v1/waitlist?on_conflict=work_email'
 const SUBMISSIONS_PATH = '/rest/v1/waitlist_submissions'
 
 /**
- * The no-op store, used whenever Supabase is not configured.
+ * The no-op store, used in local development and preview when Supabase is not
+ * configured.
  *
  * Logs the same record it would have written, at `info`, so local development,
- * the end-to-end suite and any preview deployment exercise the whole signup
- * path without a database — and so nothing is lost if production is deployed
- * before the keys are set. A fallback, not a silent failure: the record is
- * always somewhere.
+ * the end-to-end suite and preview deployments can exercise the signup path
+ * without a database. Production uses `unconfiguredProductionStore` instead.
  */
 const loggingStore: WaitlistStore = {
   save: (record) => {
     console.info('[waitlist] not persisted — store unconfigured', record)
     return Promise.resolve()
   },
+}
+
+/** Production must never show a successful receipt without durable storage. */
+const unconfiguredProductionStore: WaitlistStore = {
+  save: () => Promise.reject(new Error('Supabase waitlist storage is not configured')),
 }
 
 /**
@@ -171,6 +174,11 @@ function httpStore(url: string, key: string): WaitlistStore {
           .join('; ')
         throw new AggregateError(failures, detail)
       }
+
+      console.info('[waitlist] persisted', {
+        reference: record.reference,
+        host: new URL(url).host,
+      })
     },
   }
 }
@@ -179,15 +187,18 @@ function httpStore(url: string, key: string): WaitlistStore {
  * The store for the current configuration.
  *
  * Both values are required together. A URL with no key, or a key with no URL,
- * is a half-finished setup — it falls back to logging rather than throwing on
- * the first signup after a deploy.
+ * is a half-finished setup. Local and preview environments log the signup so
+ * the UI remains testable; production rejects it rather than claiming it was
+ * saved.
  */
 export function waitlistStore(): WaitlistStore {
   const { SUPABASE_URL, SUPABASE_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY } = serverEnv()
   const key = SUPABASE_SECRET_KEY ?? SUPABASE_SERVICE_ROLE_KEY
 
   if (!SUPABASE_URL || !key) {
-    return loggingStore
+    return process.env.VERCEL_ENV === 'production'
+      ? unconfiguredProductionStore
+      : loggingStore
   }
 
   return httpStore(SUPABASE_URL.replace(/\/$/, ''), key)

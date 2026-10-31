@@ -51,6 +51,7 @@ afterEach(() => {
   vi.resetModules()
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
+  vi.unstubAllEnvs()
   vi.doUnmock('#/server/env.ts')
 })
 
@@ -108,6 +109,10 @@ describe('with the store configured', () => {
     expect(submissionBody.referrer_host).toBe('incillum.com')
     expect(submissionBody.utm_source).toBeNull()
     expect(submissionBody.utm_campaign).toBeNull()
+    expect(console.info).toHaveBeenCalledWith('[waitlist] persisted', {
+      reference: record.reference,
+      host: 'project.supabase.co',
+    })
   })
 
   /**
@@ -184,5 +189,17 @@ describe('with the store unconfigured', () => {
     expect(fetchMock).not.toHaveBeenCalled()
     // The record still has to exist somewhere.
     expect(console.info).toHaveBeenCalledWith(expect.any(String), record)
+  })
+
+  it('fails closed in production when Supabase is not configured', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production')
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    const store = await loadStore({})
+    await expect(store.save(record)).rejects.toThrow(/not configured/)
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(console.info).not.toHaveBeenCalled()
   })
 })
