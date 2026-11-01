@@ -69,11 +69,10 @@ describe('with the store configured', () => {
       string,
       RequestInit,
     ]
-    // Trailing slash on the base URL is stripped so this can never double up,
-    // and `on_conflict` names the column the upsert dedupes on.
-    expect(url).toBe(
-      'https://project.supabase.co/rest/v1/waitlist?on_conflict=work_email',
-    )
+    // Trailing slash on the base URL is stripped so this can never double up.
+    // The contact table is insert-only; duplicate email conflicts are handled
+    // from PostgREST's 23505 response instead of using an upsert.
+    expect(url).toBe('https://project.supabase.co/rest/v1/waitlist')
     expect(init.method).toBe('POST')
     expect(submissionUrl).toBe('https://project.supabase.co/rest/v1/waitlist_submissions')
     expect(submissionInit.method).toBe('POST')
@@ -84,8 +83,7 @@ describe('with the store configured', () => {
     const headers = init.headers as Record<string, string>
     expect(headers.apikey).toBe('service-role-test-key')
     expect(headers.authorization).toBe('Bearer service-role-test-key')
-    // A repeat signup must be a no-op, not a 409.
-    expect(headers.prefer).toContain('resolution=ignore-duplicates')
+    expect(headers.prefer).toBe('return=minimal')
 
     expect(typeof init.body).toBe('string')
     const body = JSON.parse(init.body as string) as Record<string, unknown>
@@ -121,19 +119,58 @@ describe('with the store configured', () => {
    * its response body; retaining that detail makes the server log actionable.
    */
   it('throws with the response body when the write is refused', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockImplementation(() =>
-        Promise.resolve(
-          new Response('{"message":"relation \\"public.waitlist\\" does not exist"}', {
-            status: 404,
-          }),
-        ),
-      ),
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response('{"message":"relation \\"public.waitlist\\" does not exist"}', {
+        status: 404,
+      }),
     )
+    vi.stubGlobal('fetch', fetchMock)
 
     const store = await loadStore(FULL_CONFIG)
     await expect(store.save(record)).rejects.toThrow(/404.*does not exist/s)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('treats an existing email as a saved contact and records the repeat submission', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response('{"code":"23505","message":"duplicate key value"}', {
+          status: 409,
+        }),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 201 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const store = await loadStore(FULL_CONFIG)
+    await expect(store.save(record)).resolves.toBeUndefined()
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      'https://project.supabase.co/rest/v1/waitlist',
+    )
+    expect(fetchMock.mock.calls[1]?.[0]).toBe(
+      'https://project.supabase.co/rest/v1/waitlist_submissions',
+    )
+    expect(console.info).toHaveBeenCalledWith('[waitlist] persisted', {
+      reference: record.reference,
+      host: 'project.supabase.co',
+    })
+  })
+
+  it('does not treat a submission-table unique violation as an existing contact', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 201 }))
+      .mockResolvedValueOnce(
+        new Response('{"code":"23505","message":"duplicate reference"}', {
+          status: 409,
+        }),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const store = await loadStore(FULL_CONFIG)
+    await expect(store.save(record)).rejects.toThrow(/409.*23505/s)
   })
 
   /**
@@ -182,7 +219,7 @@ describe('with the store configured', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(2)
     expect(fetchMock.mock.calls[0]?.[0]).toBe(
-      'https://project.supabase.co/rest/v1/waitlist?on_conflict=work_email',
+      'https://project.supabase.co/rest/v1/waitlist',
     )
   })
 })

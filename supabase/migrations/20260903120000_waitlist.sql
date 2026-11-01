@@ -30,9 +30,9 @@ create table if not exists public.waitlist (
   created_at      timestamptz not null default now(),
   received_at     timestamptz not null,
   reference       text not null,
-  -- Lower-cased by the server before insert, so the constraint actually
-  -- de-duplicates. A repeat signup is an upsert that changes nothing — see the
-  -- `on_conflict` / `resolution=ignore-duplicates` request in `store.ts`.
+  -- Lower-cased by the server before insert, so the unique constraint
+  -- de-duplicates. The server treats a 23505 conflict as an existing contact,
+  -- preserving the table's INSERT-only grant.
   work_email      text not null unique,
   commercial_work text not null default 'not answered',
   quote_volume    text not null default 'not answered',

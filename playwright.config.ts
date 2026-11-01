@@ -56,8 +56,13 @@ export default defineConfig({
         url: BASE_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,
-        // A disposable test credential exercises the private brief. It is not a
-        // deployment secret and never leaves the local Playwright server.
-        env: { ...process.env, BRIEF_PASSWORD: 'incillum-playwright-brief-password' },
+        // Disposable values exercise the private brief and consented analytics
+        // without relying on a developer's local environment or a real project.
+        env: {
+          ...process.env,
+          BRIEF_PASSWORD: 'incillum-playwright-brief-password',
+          VITE_GTM_ID: 'GTM-PLAYWRIGHT',
+          VITE_POSTHOG_KEY: 'phc_playwright',
+        },
       },
 })

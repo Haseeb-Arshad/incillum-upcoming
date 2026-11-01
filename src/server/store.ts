@@ -50,8 +50,8 @@ export interface WaitlistStore {
   save: (record: WaitlistNotification) => Promise<void>
 }
 
-/** PostgREST table path. `on_conflict` names the column the upsert dedupes on. */
-const REST_PATH = '/rest/v1/waitlist?on_conflict=work_email'
+/** PostgREST paths. The contact table is insert-only; duplicate emails are handled by the unique constraint. */
+const REST_PATH = '/rest/v1/waitlist'
 const SUBMISSIONS_PATH = '/rest/v1/waitlist_submissions'
 
 /**
@@ -111,14 +111,23 @@ function submissionRow(record: WaitlistNotification): Record<string, string | nu
  *
  * `apikey` carries either key type. Legacy JWT keys also use the Authorization
  * header; opaque `sb_secret_` keys must not be sent as bearer tokens. `Prefer:
- * return=minimal` skips the echoed row; `resolution=ignore-duplicates` keeps
- * the contact list at one row per address.
+ * return=minimal` skips the echoed row. The contact table stays insert-only;
+ * duplicate emails are recognized from its unique-constraint response.
  */
+function isUniqueViolation(detail: string): boolean {
+  try {
+    return (JSON.parse(detail) as { code?: unknown }).code === '23505'
+  } catch {
+    return false
+  }
+}
+
 function httpStore(url: string, key: string): WaitlistStore {
   const write = async (
     path: string,
     payload: Record<string, string | null>,
     prefer: string,
+    options?: { ignoreUniqueViolation?: boolean },
   ) => {
     const headers: Record<string, string> = {
       apikey: key,
@@ -143,37 +152,30 @@ function httpStore(url: string, key: string): WaitlistStore {
       // table, RLS denial, bad key) in it, and a bare status sends whoever is
       // debugging this to a dashboard for no reason.
       const detail = await response.text().catch(() => '<unreadable>')
+      if (
+        options?.ignoreUniqueViolation &&
+        response.status === 409 &&
+        isUniqueViolation(detail)
+      ) {
+        return
+      }
       throw new Error(`Supabase responded ${response.status}: ${detail}`)
     }
   }
 
   return {
     save: async (record) => {
-      const results = await Promise.allSettled([
-        // The first table remains a unique-email contact list. The second is an
-        // append-only record of every accepted submission, including repeats.
-        write(
-          REST_PATH,
-          contactRow(record),
-          'return=minimal,resolution=ignore-duplicates',
-        ),
-        write(SUBMISSIONS_PATH, submissionRow(record), 'return=minimal'),
-      ])
-      const failures = results.flatMap((result): Error[] => {
-        if (result.status !== 'rejected') return []
-
-        const reason: unknown = result.reason
-        return [reason instanceof Error ? reason : new Error(String(reason))]
+      // Keep the contact list insert-only. PostgREST upserts require SELECT,
+      // which the database deliberately withholds; a duplicate email is the
+      // expected unique constraint violation and means that contact exists.
+      await write(REST_PATH, contactRow(record), 'return=minimal', {
+        ignoreUniqueViolation: true,
       })
 
-      if (failures.length > 0) {
-        const detail = failures
-          .map((failure) =>
-            failure instanceof Error ? failure.message : String(failure),
-          )
-          .join('; ')
-        throw new AggregateError(failures, detail)
-      }
+      // Write attribution after the contact is durable. If it fails, the form
+      // reports the error and a retry can complete it without duplicating the
+      // unique-email contact.
+      await write(SUBMISSIONS_PATH, submissionRow(record), 'return=minimal')
 
       console.info('[waitlist] persisted', {
         reference: record.reference,
