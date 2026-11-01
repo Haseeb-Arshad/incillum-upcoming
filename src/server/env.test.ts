@@ -17,7 +17,9 @@ async function loadServerEnv(overrides: Record<string, string | undefined>) {
     'BREVO_API_KEY',
     'WAITLIST_NOTIFY_TO',
     'WAITLIST_NOTIFY_FROM',
+    'SUPABASE_API_URL',
     'SUPABASE_URL',
+    'SUPABASE_SECRET_KEY',
     'SUPABASE_SERVICE_ROLE_KEY',
   ]) {
     delete process.env[key]
@@ -54,6 +56,21 @@ it('reads a fully set configuration', async () => {
   expect(console.error).not.toHaveBeenCalled()
 })
 
+it('uses the HTTPS API URL without parsing a stale legacy URL', async () => {
+  const env = await loadServerEnv({
+    SUPABASE_API_URL: 'https://project.supabase.co',
+    SUPABASE_URL: 'not a URL',
+    SUPABASE_SECRET_KEY: 'sb_secret_test-key',
+  })
+
+  expect(env).toMatchObject({
+    SUPABASE_API_URL: 'https://project.supabase.co',
+    SUPABASE_SECRET_KEY: 'sb_secret_test-key',
+  })
+  expect(env.SUPABASE_URL).toBeUndefined()
+  expect(console.error).not.toHaveBeenCalled()
+})
+
 describe('an empty string is read as unset', () => {
   it('does not disable the mail path just because the Supabase key line is empty', async () => {
     const env = await loadServerEnv({
@@ -62,6 +79,7 @@ describe('an empty string is read as unset', () => {
       WAITLIST_NOTIFY_FROM: 'waitlist@incillum.com',
       // Present but empty — the state a copied .env.example is in.
       SUPABASE_URL: '',
+      SUPABASE_API_URL: '',
       SUPABASE_SERVICE_ROLE_KEY: '',
     })
 
@@ -69,6 +87,7 @@ describe('an empty string is read as unset', () => {
     expect(env.BREVO_API_KEY).toBe('xkeysib-abc')
     expect(env.WAITLIST_NOTIFY_TO).toBe('team@incillum.com')
     expect(env.SUPABASE_URL).toBeUndefined()
+    expect(env.SUPABASE_API_URL).toBeUndefined()
     expect(env.SUPABASE_SERVICE_ROLE_KEY).toBeUndefined()
     expect(console.error).not.toHaveBeenCalled()
   })
@@ -79,6 +98,7 @@ describe('an empty string is read as unset', () => {
       WAITLIST_NOTIFY_TO: '',
       WAITLIST_NOTIFY_FROM: '',
       SUPABASE_URL: '',
+      SUPABASE_API_URL: '',
       SUPABASE_SERVICE_ROLE_KEY: '',
     })
 

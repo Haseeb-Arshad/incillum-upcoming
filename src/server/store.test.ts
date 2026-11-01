@@ -116,9 +116,9 @@ describe('with the store configured', () => {
   })
 
   /**
-   * A refusal has to throw so the caller can log the full record. PostgREST
-   * answers a missing table or an RLS denial with a 4xx and a JSON body, and
-   * swallowing that is how a waitlist quietly stops being written.
+   * A refusal has to throw so production cannot show a receipt for a request
+   * that was not written. PostgREST explains missing tables and RLS denials in
+   * its response body; retaining that detail makes the server log actionable.
    */
   it('throws with the response body when the write is refused', async () => {
     vi.stubGlobal(
@@ -167,6 +167,23 @@ describe('with the store configured', () => {
       expect(headers.apikey).toBe('sb_secret_test-key')
       expect(headers.authorization).toBeUndefined()
     }
+  })
+
+  it('prefers the HTTPS API URL over a legacy URL value', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 201 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const store = await loadStore({
+      SUPABASE_URL: 'postgresql://legacy.invalid/postgres',
+      SUPABASE_API_URL: 'https://project.supabase.co',
+      SUPABASE_SECRET_KEY: 'sb_secret_test-key',
+    })
+    await store.save(record)
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      'https://project.supabase.co/rest/v1/waitlist?on_conflict=work_email',
+    )
   })
 })
 

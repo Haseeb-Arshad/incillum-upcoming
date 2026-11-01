@@ -50,6 +50,15 @@ const serverEnvSchema = z.object({
   WAITLIST_NOTIFY_FROM: z.email().optional(),
 
   /**
+   * Preferred HTTPS root for Supabase's Data API. This separate name lets a
+   * deployment replace a sensitive legacy `SUPABASE_URL` without exposing or
+   * copying its value. When both are present, `SUPABASE_API_URL` wins.
+   */
+  SUPABASE_API_URL: z
+    .url()
+    .refine((value) => value.startsWith('https://'), 'Must be an HTTPS Supabase API URL')
+    .optional(),
+  /**
    * Supabase project URL, e.g. `https://rsburzsagfpsconfyvrl.supabase.co`.
    *
    * Server-only alongside the key below, not because the URL is secret — it is
@@ -92,11 +101,16 @@ export function serverEnv(): ServerEnv {
    */
   const fromEnv = (value: string | undefined) => (value === '' ? undefined : value)
 
+  const supabaseApiUrl = fromEnv(process.env.SUPABASE_API_URL)
+
   const result = serverEnvSchema.safeParse({
     BREVO_API_KEY: fromEnv(process.env.BREVO_API_KEY),
     WAITLIST_NOTIFY_TO: fromEnv(process.env.WAITLIST_NOTIFY_TO),
     WAITLIST_NOTIFY_FROM: fromEnv(process.env.WAITLIST_NOTIFY_FROM),
-    SUPABASE_URL: fromEnv(process.env.SUPABASE_URL),
+    SUPABASE_API_URL: supabaseApiUrl,
+    // The new HTTPS value wins, even if a locked legacy value is malformed or
+    // contains a database connection URI instead of the Data API root.
+    SUPABASE_URL: supabaseApiUrl ? undefined : fromEnv(process.env.SUPABASE_URL),
     SUPABASE_SECRET_KEY: fromEnv(process.env.SUPABASE_SECRET_KEY),
     SUPABASE_SERVICE_ROLE_KEY: fromEnv(process.env.SUPABASE_SERVICE_ROLE_KEY),
     BRIEF_PASSWORD: fromEnv(process.env.BRIEF_PASSWORD),

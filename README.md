@@ -62,15 +62,17 @@ importer and must never be reached from a component.
 | `BREVO_API_KEY`             | sending waitlist notifications                                                           |
 | `WAITLIST_NOTIFY_TO`        | the inbox signups arrive in — yours, not the joiner's                                    |
 | `WAITLIST_NOTIFY_FROM`      | the From address; **must** be a Brevo-verified sender                                    |
-| `SUPABASE_URL`              | Supabase project URL — the durable copy of each signup                                   |
+| `SUPABASE_API_URL`          | Preferred HTTPS Data API root for Supabase                                               |
+| `SUPABASE_URL`              | Legacy project URL fallback; ignored when `SUPABASE_API_URL` is set                      |
 | `SUPABASE_SECRET_KEY`       | preferred `sb_secret_…` key; bypasses RLS, so **server-only**, never the publishable key |
 | `SUPABASE_SERVICE_ROLE_KEY` | legacy JWT key, supported when `SUPABASE_SECRET_KEY` is unset                            |
 
-The three Brevo values are needed together. Supabase needs `SUPABASE_URL` and
-either `SUPABASE_SECRET_KEY` or the legacy `SUPABASE_SERVICE_ROLE_KEY`. With a
-group missing, that half falls back to the server log — nothing breaks, the
-record just lands somewhere less convenient. The two halves are independent:
-email can be configured without the database and vice versa.
+The three Brevo values are needed together. Supabase needs `SUPABASE_API_URL`
+(or the legacy `SUPABASE_URL`) and either `SUPABASE_SECRET_KEY` or the legacy
+`SUPABASE_SERVICE_ROLE_KEY`. Local and preview builds log signups when storage
+is unconfigured; production reports an error instead of showing a success
+receipt without a durable write. Email remains independent: a mail failure does
+not undo a saved signup.
 
 The `waitlist` table keeps one contact row per email. `waitlist_submissions`
 keeps each accepted form submission, including repeats, with the server receipt
@@ -151,12 +153,13 @@ signup (AGENTS.md §6).
    `supabase db push` with the ordered migration files. The setup creates
    `public.waitlist` and `public.waitlist_submissions`, enables RLS, and grants
    the server role insert-only access. Browser roles receive no access.
-2. Set `SUPABASE_URL` and either `SUPABASE_SECRET_KEY` or the legacy
-   `SUPABASE_SERVICE_ROLE_KEY` in the host environment. These server keys bypass
+2. Set `SUPABASE_API_URL` to the HTTPS project URL and either
+   `SUPABASE_SECRET_KEY` or the legacy `SUPABASE_SERVICE_ROLE_KEY` in the host
+   environment. These server keys bypass
    RLS; never prefix them `VITE_`.
 3. The contact table upserts on `work_email`; the submissions table keeps each
-   accepted signup. A write failure is logged at `error` with the full record
-   and the signup still succeeds.
+   accepted signup. A production write failure is logged and returns the form
+   to an error state so the visitor can retry; it never shows a false receipt.
 
 ### Setting up the email
 

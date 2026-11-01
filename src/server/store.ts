@@ -192,14 +192,20 @@ function httpStore(url: string, key: string): WaitlistStore {
  * saved.
  */
 export function waitlistStore(): WaitlistStore {
-  const { SUPABASE_URL, SUPABASE_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY } = serverEnv()
+  const {
+    SUPABASE_API_URL,
+    SUPABASE_URL,
+    SUPABASE_SECRET_KEY,
+    SUPABASE_SERVICE_ROLE_KEY,
+  } = serverEnv()
+  const url = SUPABASE_API_URL ?? SUPABASE_URL
   const key = SUPABASE_SECRET_KEY ?? SUPABASE_SERVICE_ROLE_KEY
 
-  if (!SUPABASE_URL || !key) {
+  if (!url || !key) {
     return process.env.VERCEL_ENV === 'production'
       ? unconfiguredProductionStore
       : loggingStore
   }
 
-  return httpStore(SUPABASE_URL.replace(/\/$/, ''), key)
+  return httpStore(url.replace(/\/$/, ''), key)
 }
